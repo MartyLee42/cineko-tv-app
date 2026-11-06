@@ -3,6 +3,9 @@ import { MascotHat } from "./seasonSprites";
 import { MARTY_ANIMATED, MARTY_MOODS, MAYAKOVSKY, type MascotMood } from "./marty";
 import { useSeasonHat, type MascotHatId } from "./seasonStore";
 import { useAppliedDesign } from "./designs";
+import { costumePlan } from "./mascotCostume";
+import { CostumeArt } from "./MascotCostume";
+import { useI18nOptional } from "./i18n";
 
 /** Circle with a profile's initial and color (or emoji avatar). */
 export function ProfileAvatar({
@@ -64,6 +67,7 @@ export function Mascot({
   mood = "idle",
   animated,
   alt = "",
+  costume = true,
 }: {
   size?: number;
   /** @deprecated old SVG mascot; ignored. */
@@ -78,9 +82,12 @@ export function Mascot({
   mood?: MascotMood;
   animated?: boolean;
   alt?: string;
+  /** The design's costume (top hat, visor, sunglasses…); false = the plain sticker. */
+  costume?: boolean;
 }) {
   const live = useSeasonHat();
   const design = useAppliedDesign();
+  const i18n = useI18nOptional();
   // «Конструктивизм»: Mayakovsky (a poster tile, slightly tilted) stands in for Cineko — same box, so layouts keep their shape.
   if (design === "constructivism") {
     return (
@@ -102,14 +109,17 @@ export function Mascot({
     );
   }
   const worn = hat === undefined ? live : hat;
+  const plan = costume ? costumePlan(design, worn, mood) : null;
   const loop = MARTY_ANIMATED[mood];
-  const anim = !!loop && (animated ?? size >= 80) && !prefersReducedMotion();
+  // Head and face costumes sit on the still sticker (the loop's frames move).
+  const anim = !!loop && !plan?.still && (animated ?? size >= 80) && !prefersReducedMotion();
   const src = anim ? loop : MARTY_MOODS[mood];
   return (
     <span
       className={`relative inline-block shrink-0 align-middle ${className}`}
       style={size ? { width: size, height: size } : undefined}
       data-mascot={mood}
+      data-costume={plan?.costume}
       aria-hidden={alt ? undefined : true}
     >
       <img src={src} alt={alt} draggable={false} decoding="async" className="pointer-events-none block h-full w-full select-none object-contain" />
@@ -120,6 +130,7 @@ export function Mascot({
           </g>
         </svg>
       )}
+      {plan && <CostumeArt plan={plan} bubble={i18n ? i18n.t("mascot.bubble") : "BAM!"} />}
     </span>
   );
 }
