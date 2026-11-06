@@ -18,6 +18,8 @@ import { bufferStripe, netStats } from "./stats";
 import { formatBytes, formatSpeed } from "./format";
 import { useServerStatus } from "../design/data";
 import { stageOf, TorrentHold, type LoadStage } from "./loading";
+import { SLEEP_CHOICES, sleepChoiceOf, type SleepChoice, type SleepState } from "./sleep";
+import { SleepOverlay, useSleepTimer } from "./SleepTimer";
 import { useSettings } from "../profile/settings";
 import { accumulateSeek, playerKey, registerMediaKeys, type SeekPreview } from "./keys";
 import { ReleasePicker } from "./ReleasePicker";
@@ -353,10 +355,13 @@ const COUNTDOWN = 10;
 const MANUAL = -1;
 
 interface PanelItem {
-  group: "episode" | "audio" | "subtitles" | "quality" | "compat";
+  group: "episode" | "audio" | "subtitles" | "quality" | "compat" | "sleep";
   id: string | null;
   label: string;
 }
+
+/** The sleep timer fired: a normal pause (the progress reporter saves the spot). */
+const pauseForSleep = () => void player.pause();
 
 function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "playing" }> }) {
   const { t, locale } = useI18n();
@@ -439,6 +444,12 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   }, [hasMarkers, rerender]);
 
   const v = player.video;
+  // «Таймер сна»: per playback session (this view), see SleepTimer.tsx.
+  const sleep = useSleepTimer(v, pauseForSleep, setNote);
+  const sleepRef = useRef(sleep);
+  useEffect(() => {
+    sleepRef.current = sleep;
+  });
   // Rebuffering pauses the element itself: that's not the user's pause.
   const paused = playing && player.userPaused();
   // Up hides the overlay even while paused (to look at the frame); any key
@@ -509,6 +520,8 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
     const onEnded = () => {
       // A cut-off stream also fires "ended": the controller recovers it.
       if (!player.endedForReal()) return;
+      // «После этой серии»: the goodnight screen instead of the next one.
+      if (sleepRef.current.atEpisodeEnd()) return;
       if (ctx.kind === "series" && player.nextRef()) setCountdown(autoplay ? COUNTDOWN : MANUAL);
       else player.close();
     };
@@ -546,6 +559,12 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         { group: "subtitles" as const, id: null, label: t("player.subtitles_off") },
         ...tracks.subtitles.map((s) => ({ group: "subtitles" as const, id: s.id, label: s.label })),
         ...(qualities?.list ?? []).map((q) => ({ group: "quality" as const, id: String(q), label: `${q}p` })),
+        // «Таймер сна»: «После этой серии» only for series.
+        ...SLEEP_CHOICES.filter((c) => c !== "episode" || ctx.kind === "series").map((c) => ({
+          group: "sleep" as const,
+          id: String(c),
+          label: c === "off" ? t("sleep.off") : c === "episode" ? t("sleep.episode") : t("sleep.minutes", { n: c }),
+        })),
       ]
     : [];
   const itemsRef = useRef(items);
@@ -569,6 +588,8 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
       e.stopPropagation();
       // Any key restarts the paused overlay's 10 s auto-hide.
       setKeyTick((n) => n + 1);
+      // Sleep timer: a key wakes the goodnight screen (to the paused player) or extends the dim.
+      if (sleepRef.current.onKey()) return showControls();
       const st = state.current;
       const sl = slowTRef.current;
       if (sl.slow && !seekRef.current && st.panel === null) {
@@ -612,6 +633,11 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
           }
           if (it.group === "compat") {
             player.setCompatPref(it.id as "auto" | "on" | "off");
+            return;
+          }
+          if (it.group === "sleep") {
+            const c = (it.id === "off" || it.id === "episode" ? it.id : Number(it.id)) as SleepChoice;
+            setNote(sleepRef.current.choose(c));
             return;
           }
           if (it.group === "quality") {
@@ -894,7 +920,14 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
               )}
             </div>
             <p className="mt-6 flex justify-between text-2xl text-muted">
-              <span>{t("player.tv.controls_hint")}</span>
+              <span>
+                {t("player.tv.controls_hint")}
+                {sleep.label && (
+                  <span data-testid="player-sleep-left" className="ml-6 rounded-full bg-text/10 px-4 py-1 tabular-nums">
+                    ☾ {sleep.label}
+                  </span>
+                )}
+              </span>
               {ahead !== null && (
                 <span data-testid="player-buffer" className="tabular-nums">
                   {bufferLabel(t, locale, ahead, flow.source)}
@@ -928,16 +961,30 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
           </div>
         </div>
       )}
-      {panel !== null && tracks && <TracksPanel items={items} index={panel} tracks={tracks} quality={qualities?.current ?? null} />}
+      {panel !== null && tracks && <TracksPanel items={items} index={panel} tracks={tracks} quality={qualities?.current ?? null} sleep={sleep.state} />}
 
       {countdown !== null && <NextCountdown n={countdown} />}
+
+      <SleepOverlay timer={sleep} />
 
       {note && <div className="absolute bottom-16 left-1/2 -translate-x-1/2 rounded-3xl bg-surface-2 px-10 py-5 text-3xl shadow-2xl">{note}</div>}
     </div>
   );
 }
 
-function TracksPanel({ items, index, tracks, quality }: { items: PanelItem[]; index: number; tracks: ReturnType<typeof player.tracks>; quality: number | null }) {
+function TracksPanel({
+  items,
+  index,
+  tracks,
+  quality,
+  sleep,
+}: {
+  items: PanelItem[];
+  index: number;
+  tracks: ReturnType<typeof player.tracks>;
+  quality: number | null;
+  sleep: SleepState;
+}) {
   const { t } = useI18n();
   const ROW = 76;
   const scroll = Math.max(0, (index - 7) * ROW);
@@ -946,10 +993,12 @@ function TracksPanel({ items, index, tracks, quality }: { items: PanelItem[]; in
       <div className="tv-track" style={{ transform: `translate3d(0,${-scroll}px,0)` }}>
         {items.map((it, i) => {
           const header = i === 0 || items[i - 1]!.group !== it.group;
-          const can = it.group === "audio" ? tracks.canAudio : it.group === "quality" || it.group === "compat" || it.group === "episode" ? true : tracks.canSubtitles;
+          const can = it.group === "audio" ? tracks.canAudio : it.group === "quality" || it.group === "compat" || it.group === "episode" || it.group === "sleep" ? true : tracks.canSubtitles;
           const selected =
             it.group === "episode"
               ? false
+              : it.group === "sleep"
+              ? sleepChoiceOf(sleep, (it.id === "off" || it.id === "episode" ? it.id : Number(it.id)) as SleepChoice)
               : it.group === "audio"
               ? tracks.audioId === it.id
               : it.group === "quality"
@@ -964,6 +1013,8 @@ function TracksPanel({ items, index, tracks, quality }: { items: PanelItem[]; in
                   <p className="text-3xl font-bold">
                     {it.group === "episode"
                       ? t("player.episodes")
+                      : it.group === "sleep"
+                      ? t("sleep.title")
                       : it.group === "audio"
                       ? t("player.audio")
                       : it.group === "quality"
