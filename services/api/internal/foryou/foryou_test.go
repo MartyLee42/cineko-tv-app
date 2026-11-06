@@ -372,13 +372,13 @@ func TestAIClientRetriesAndNoSecrets(t *testing.T) {
 	defer srv.Close()
 	c := newAIClient(config.ForYouConfig{DeepSeekAPIKey: "sk-test", DeepSeekBaseURL: srv.URL, DeepSeekModel: "deepseek-chat"})
 	c.backoff = func(int) time.Duration { return time.Millisecond }
-	content, tokens, err := c.complete(context.Background(), "s", "u")
+	content, tokens, err := c.complete(context.Background(), "s", "u", 1)
 	if err != nil || content != `{"ok":1}` || tokens != 42 || calls.Load() != 3 {
 		t.Fatalf("complete: %q %d %v calls=%d", content, tokens, err, calls.Load())
 	}
 	// Retries are capped at 2; errors never carry the key or URL.
 	calls.Store(-100)
-	_, _, err = c.complete(context.Background(), "s", "u")
+	_, _, err = c.complete(context.Background(), "s", "u", 1)
 	if err == nil || strings.Contains(err.Error(), "sk-test") || strings.Contains(err.Error(), srv.URL) {
 		t.Fatalf("error %v", err)
 	}
@@ -387,7 +387,7 @@ func TestAIClientRetriesAndNoSecrets(t *testing.T) {
 	}
 	bad := newAIClient(config.ForYouConfig{DeepSeekAPIKey: "sk-wrong", DeepSeekBaseURL: srv.URL})
 	bad.backoff = c.backoff
-	if _, _, err := bad.complete(context.Background(), "s", "u"); err == nil || strings.Contains(err.Error(), "sk-wrong") {
+	if _, _, err := bad.complete(context.Background(), "s", "u", 1); err == nil || strings.Contains(err.Error(), "sk-wrong") {
 		t.Fatalf("401: %v", err)
 	}
 }

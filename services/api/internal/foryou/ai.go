@@ -79,13 +79,13 @@ func (e *aiError) Error() string { return e.msg }
 
 // complete sends one chat completion with up to aiMaxRetries retries on
 // transport errors, 429 and 5xx. Returns the content and total tokens.
-func (c *aiClient) complete(ctx context.Context, system, user string) (string, int, error) {
+func (c *aiClient) complete(ctx context.Context, system, user string, temperature float64) (string, int, error) {
 	body, _ := json.Marshal(map[string]any{
 		"model":           c.model,
 		"messages":        []chatMessage{{"system", system}, {"user", user}},
 		"response_format": map[string]string{"type": "json_object"},
 		"max_tokens":      aiMaxTokens,
-		"temperature":     1.0,
+		"temperature":     temperature,
 		"stream":          false,
 	})
 	var lastErr error
@@ -606,7 +606,7 @@ func (s *Service) askAI(ctx context.Context, run *runState, user string) ([]aiCo
 	if err := s.aiBudgetCheck(ctx, run); err != nil {
 		return nil, err
 	}
-	content, tokens, err := s.ai.complete(ctx, systemPrompt, user)
+	content, tokens, err := s.ai.complete(ctx, systemPrompt, user, s.aiTemperature(ctx).Collections)
 	if tokens > 0 || err == nil {
 		s.recordAIUsage(ctx, run, tokens)
 	}

@@ -2667,6 +2667,18 @@ paths:
         "429": { $ref: "#/components/responses/Error" }
         "502": { $ref: "#/components/responses/Error" }
         "503": { $ref: "#/components/responses/Error" }
+  /foryou/ai-settings:
+    get:
+      tags: [foryou]
+      operationId: forYouAISettings
+      description: The admin's DeepSeek temperatures and the creativity offsets (users and TVs; Cineko Music reads its default here).
+      responses:
+        "200":
+          description: Settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ForYouAISettings" }
+        "401": { $ref: "#/components/responses/Error" }
   /foryou/asks:
     get:
       tags: [foryou]
@@ -2798,6 +2810,33 @@ paths:
                   daily_at: { type: string, description: "HH:MM Moscow time of the daily run (FORYOU_DAILY_AT); \"off\" when disabled." }
                   next_run_at: { type: [string, "null"], format: date-time }
         "403": { $ref: "#/components/responses/Error" }
+  /admin/foryou/ai:
+    put:
+      tags: [foryou]
+      operationId: adminSetForYouAI
+      description: Sets the DeepSeek temperatures (app_settings `ai_temperature`). Omitted fields keep their value. Admin only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [temperature]
+              properties:
+                temperature:
+                  type: object
+                  properties:
+                    collections: { type: number, minimum: 0, maximum: 1.5 }
+                    ask: { type: number, minimum: 0, maximum: 1.5 }
+                    music: { type: number, minimum: 0, maximum: 1.5 }
+      responses:
+        "200":
+          description: The new settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ForYouAISettings" }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
   # ---- end foryou
 
   # ------------------------------------------------------------ server downloads
@@ -5556,9 +5595,10 @@ components:
         duration_ms: { type: [integer, "null"] }
     ForYouAIStatus:
       type: object
-      required: [enabled, model, tokens_today, daily_budget, run_budget, balance]
+      required: [enabled, model, tokens_today, daily_budget, run_budget, balance, temperature]
       properties:
         enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
+        temperature: { $ref: "#/components/schemas/AITemperature" }
         model: { type: string }
         tokens_today: { type: integer, description: "Tokens used today (Moscow date)." }
         daily_budget: { type: integer }
@@ -5566,6 +5606,35 @@ components:
         balance:
           description: "DeepSeek account balance (GET /user/balance, cached 10 min, refreshed after each run); null without a key or when the call failed."
           oneOf: [{ $ref: "#/components/schemas/ForYouAIBalance" }, { type: "null" }]
+    AITemperature:
+      type: object
+      description: "The admin's DeepSeek temperature per feature (0–1.5, default 1.0)."
+      required: [collections, ask, music]
+      properties:
+        collections: { type: number, minimum: 0, maximum: 1.5, description: "AI collections (daily run)." }
+        ask: { type: number, minimum: 0, maximum: 1.5, description: "«Спросить ИИ»." }
+        music: { type: number, minimum: 0, maximum: 1.5, description: "Cineko Music AI playlists." }
+    AICreativity:
+      type: string
+      enum: [precise, normal, bold]
+      default: normal
+      description: "The viewer's nudge on the admin's temperature («Точнее / Обычно / Смелее»): −0.4 / 0 / +0.4, clamped to 0–1.5."
+    ForYouAISettings:
+      type: object
+      required: [enabled, temperature, creativity, min, max]
+      properties:
+        enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
+        temperature: { $ref: "#/components/schemas/AITemperature" }
+        creativity:
+          type: object
+          description: "Offset each creativity adds to the temperature."
+          required: [precise, normal, bold]
+          properties:
+            precise: { type: number }
+            normal: { type: number }
+            bold: { type: number }
+        min: { type: number }
+        max: { type: number }
     ForYouRegenStatus:
       type: object
       required: [available, used_today, daily_limit, unlimited, next_available_at, running, run_id, ai_enabled]
@@ -5605,6 +5674,7 @@ components:
         kind: { type: string, enum: [movie, series, any], default: any }
         include_watched: { type: boolean, default: false, description: "Allow titles the profile completed or rated." }
         device_id: { type: string, format: uuid, description: "Also deliver the answer to this TV (owned by the caller) as `foryou.ask`." }
+        creativity: { $ref: "#/components/schemas/AICreativity" }
     ForYouAskItem:
       type: object
       required: [media, why]

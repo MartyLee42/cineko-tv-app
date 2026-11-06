@@ -5,7 +5,7 @@ import { useProfiles } from "../queries";
 import { useAdminUsers } from "../pages/AdminPage";
 import { ProgressBar } from "../watch/components";
 import { anyRunning, runProgress } from "../foryou/logic";
-import { useForYouRuns, useRerun, type ForYouRun, type RerunBody } from "../foryou/queries";
+import { useForYouRuns, useRerun, useSetAITemperature, type AITemperature, type ForYouRun, type RerunBody } from "../foryou/queries";
 import { balanceLow, formatBalance, type AIBalance } from "../foryou/taste";
 
 type Scope = RerunBody["scope"];
@@ -135,6 +135,8 @@ export function ForYouTab() {
         </form>
       </Card>
 
+      {ai$?.enabled && ai$.temperature && <TemperatureCard current={ai$.temperature} />}
+
       <Card className="space-y-3">
         <h2 className="font-semibold">{t("fy.admin.runs")}</h2>
         <ErrorText error={runs.error} />
@@ -227,5 +229,70 @@ function BalanceLine({ balance }: { balance: AIBalance | null | undefined }) {
       {t("taste.admin.balance", { amount: formatBalance(balance, locale) })}
       {!balance.available ? ` · ${t("taste.admin.balance_unavailable")}` : low ? ` · ${t("taste.admin.balance_low")}` : ""}
     </p>
+  );
+}
+
+const TEMP_KEYS: (keyof AITemperature)[] = ["collections", "ask", "music"];
+
+/** DeepSeek temperature per feature (0–1.5); viewers nudge it with «Точнее / Смелее». */
+function TemperatureCard({ current }: { current: AITemperature }) {
+  const { t, locale } = useI18n();
+  const save = useSetAITemperature();
+  const [draft, setDraft] = useState<AITemperature>(current);
+  const [saved, setSaved] = useState(false);
+  const changed = TEMP_KEYS.some((k) => draft[k] !== current[k]);
+  const fmt = (v: number) => v.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+  return (
+    <Card className="space-y-3">
+      <div data-testid="foryou-temperature">
+        <h2 className="font-semibold">{t("fy.admin.temp")}</h2>
+        <p className="mt-0.5 text-xs text-muted">{t("fy.admin.temp_hint")}</p>
+      </div>
+      <form
+        className="space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setSaved(false);
+          save.mutate(draft, { onSuccess: () => setSaved(true) });
+        }}
+      >
+        {TEMP_KEYS.map((k) => (
+          <label key={k} className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="w-52 font-medium">{t(`fy.admin.temp.${k}` as MessageKey)}</span>
+            <input
+              type="range"
+              min={0}
+              max={1.5}
+              step={0.05}
+              value={draft[k]}
+              onChange={(e) => {
+                setSaved(false);
+                setDraft({ ...draft, [k]: Number(e.target.value) });
+              }}
+              className="w-56 accent-[rgb(var(--mt-accent))]"
+              data-testid={`foryou-temp-${k}`}
+            />
+            <span className="w-10 tabular-nums text-muted">{fmt(draft[k])}</span>
+          </label>
+        ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="submit" busy={save.isPending} disabled={!changed} data-testid="foryou-temp-save">
+            {t("fy.admin.temp_save")}
+          </Button>
+          <button
+            type="button"
+            className="text-sm text-muted underline-offset-2 hover:text-text hover:underline"
+            onClick={() => {
+              setSaved(false);
+              setDraft({ collections: 1, ask: 1, music: 1 });
+            }}
+          >
+            {t("fy.admin.temp_reset")}
+          </button>
+          {saved && !changed && <p className="text-sm text-ok">{t("fy.admin.temp_saved")}</p>}
+        </div>
+        <ErrorText error={save.error} />
+      </form>
+    </Card>
   );
 }

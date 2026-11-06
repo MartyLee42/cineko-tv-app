@@ -1798,7 +1798,7 @@ Explore's «Подборки дня» row (the row appears even without collecti
 
 OpenAI-compatible `POST {DEEPSEEK_BASE_URL}/chat/completions`, model
 `DEEPSEEK_MODEL` (deepseek-chat), `response_format: json_object`,
-`max_tokens` 3500, temperature 1, 90 s timeout, ≤ 2 retries (transport,
+`max_tokens` 3500, temperature from the admin (below), 90 s timeout, ≤ 2 retries (transport,
 429, 5xx; backoff 2 s/8 s), no redirects; errors never carry the URL or
 key. The system prompt asks for 3–5 themed collections of 8–12 real,
 unseen titles with `title`, `original_title`, `year`, `kind` and ru/en
@@ -1836,6 +1836,18 @@ prompts) are logged and shown in the admin runs list. One call costs
 ~2–2.5k tokens (smoke test: 2,124 tokens → 4 collections, 7–10 titles
 each). Without `DEEPSEEK_API_KEY` AI is off (`ai_enabled: false`) and
 everything else works.
+
+**Temperature.** Admins set the DeepSeek temperature per feature on the
+«Рекомендации» tab (`PUT /admin/foryou/ai`, app_settings `ai_temperature`,
+cached in memory; shown in `GET /admin/foryou/runs` → `ai.temperature`):
+collections, Ask AI and Cineko Music playlists, each 0–1.5 (default 1.0).
+Viewers nudge the Ask/music value per request with `creativity`
+(«Точнее / Обычно / Смелее»: −0.4 / 0 / +0.4, clamped to 0–1.5), remembered
+per device under `martytv.ai_creativity` (`packages/ui/src/aiCreativity.ts`;
+web AskPage and the search's AI mode, TV «Спросить ИИ» chip). Collections are
+a background run, so only the admin value applies. `GET /foryou/ai-settings`
+returns the temperatures, offsets and range; Cineko Music reads its default
+there (with the viewer's session cookie).
 
 ### Ask AI («Спросить ИИ»)
 

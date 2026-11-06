@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 
+	"martytv/api/internal/appsettings"
 	"martytv/api/internal/audit"
 	"martytv/api/internal/auth"
 	"martytv/api/internal/catalog"
@@ -32,6 +33,7 @@ func (s *Service) Routes(r fiber.Router) {
 	r.Get("/foryou/collections", caller, s.hCollections)
 	r.Get("/foryou/collections/:id", caller, s.hCollection)
 	r.Post("/foryou/ask", caller, s.hAsk)
+	r.Get("/foryou/ai-settings", caller, s.hAISettings)
 	r.Get("/foryou/asks", caller, s.hAsks)
 	r.Get("/foryou/regenerate", caller, s.hRegenStatus)
 	r.Post("/foryou/regenerate", caller, s.hRegenerate)
@@ -52,6 +54,7 @@ func (s *Service) Routes(r fiber.Router) {
 func (s *Service) AdminRoutes(admin fiber.Router) {
 	admin.Post("/foryou/rerun", s.hRerun)
 	admin.Get("/foryou/runs", s.hRuns)
+	admin.Put("/foryou/ai", s.hPutAI)
 }
 
 // ---- params ----
@@ -482,10 +485,71 @@ func (s *Service) hRuns(c fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"items": runs,
 		"ai": fiber.Map{"enabled": s.ai != nil, "model": s.cfg.DeepSeekModel, "tokens_today": used,
-			"daily_budget": s.cfg.AIDailyTokens, "run_budget": s.cfg.AIRunTokens, "balance": s.aiBalance(c.Context())},
+			"daily_budget": s.cfg.AIDailyTokens, "run_budget": s.cfg.AIRunTokens, "balance": s.aiBalance(c.Context()),
+			"temperature": s.aiTemperature(c.Context())},
 		"daily_at":    s.cfg.DailyAt(),
 		"next_run_at": next,
 	})
+}
+
+// ---- AI temperature ----
+
+// aiSettingsView is GET /foryou/ai-settings (ForYouAISettings): what clients
+// and Cineko Music need to apply a viewer's creativity.
+func (s *Service) aiSettingsView(ctx context.Context) fiber.Map {
+	return fiber.Map{"enabled": s.ai != nil, "temperature": s.aiTemperature(ctx), "creativity": appsettings.Creativity,
+		"min": appsettings.TemperatureMin, "max": appsettings.TemperatureMax}
+}
+
+func (s *Service) hAISettings(c fiber.Ctx) error {
+	return c.JSON(s.aiSettingsView(c.Context()))
+}
+
+// hPutAI is PUT /admin/foryou/ai {temperature: {collections, ask, music}}.
+func (s *Service) hPutAI(c fiber.Ctx) error {
+	if s.settings == nil {
+		return httpx.NewError(fiber.StatusServiceUnavailable, "unavailable", "Settings are not available.")
+	}
+	var in struct {
+		Temperature *struct {
+			Collections *float64 `json:"collections"`
+			Ask         *float64 `json:"ask"`
+			Music       *float64 `json:"music"`
+		} `json:"temperature"`
+	}
+	if err := httpx.BindJSON(c, &in); err != nil {
+		return err
+	}
+	if in.Temperature == nil {
+		return httpx.Validation(map[string]string{"temperature": "is required"})
+	}
+	t := s.aiTemperature(c.Context())
+	f := map[string]string{}
+	set := func(name string, v *float64, dst *float64) {
+		if v == nil {
+			return
+		}
+		if !appsettings.ValidTemperature(*v) {
+			f["temperature."+name] = fmt.Sprintf("must be between %g and %g", appsettings.TemperatureMin, appsettings.TemperatureMax)
+			return
+		}
+		*dst = appsettings.ClampTemperature(*v)
+	}
+	set("collections", in.Temperature.Collections, &t.Collections)
+	set("ask", in.Temperature.Ask, &t.Ask)
+	set("music", in.Temperature.Music, &t.Music)
+	if len(f) > 0 {
+		return httpx.Validation(f)
+	}
+	p := auth.PrincipalFrom(c)
+	if err := s.settings.SetAITemperature(c.Context(), t, p.UserID); err != nil {
+		return err
+	}
+	if s.audit != nil {
+		s.audit.Record(c.Context(), audit.Event{UserID: p.UserID, Action: "foryou.ai_updated", TargetType: "app_settings", TargetID: "ai_temperature",
+			IP: c.IP(), RequestID: httpx.RequestID(c), Metadata: map[string]any{"collections": t.Collections, "ask": t.Ask, "music": t.Music}})
+	}
+	return c.JSON(s.aiSettingsView(c.Context()))
 }
 
 // ---- ask AI ----
@@ -516,6 +580,9 @@ func (s *Service) hAsk(c fiber.Ctx) error {
 	case "movie", "series", "any":
 	default:
 		f["kind"] = "must be movie, series or any"
+	}
+	if _, ok := appsettings.WithCreativity(0, req.Creativity); !ok {
+		f["creativity"] = "must be one of precise, normal, bold"
 	}
 	p := auth.PrincipalFrom(c)
 	if req.DeviceID != "" {

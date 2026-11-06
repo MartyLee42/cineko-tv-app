@@ -34,3 +34,4 @@ export { normTitle, pickByTitle as pickFilmByTitle, findFilms, readCache as read
 export * from "./mascotCostume";
 export * from "./genreReaction";
 export { GenreReaction } from "./GenreReaction";
+export * from "./aiCreativity";

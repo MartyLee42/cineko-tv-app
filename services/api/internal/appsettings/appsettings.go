@@ -1,7 +1,8 @@
 // Package appsettings holds server-wide switches set by admins (table
 // app_settings, one JSON value per key). Today it has one: the global
-// switch of the seasonal/holiday animations. Readers see it in GET /status
-// (`seasonal_effects`); admins change it at /admin/appearance.
+// switch of the seasonal/holiday animations (readers see it in GET /status
+// `seasonal_effects`; admins change it at /admin/appearance) and the
+// DeepSeek temperatures (internal/foryou: /admin/foryou/ai).
 //
 // The value is cached in memory (one API instance, see the architecture
 // doc's assumptions), so /status never reads the database for it.
@@ -12,6 +13,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"math"
 	"sync"
 
 	"github.com/gofiber/fiber/v3"
@@ -23,7 +25,42 @@ import (
 	"martytv/api/internal/httpx"
 )
 
-const keySeasonal = "seasonal_effects"
+const (
+	keySeasonal      = "seasonal_effects"
+	keyAITemperature = "ai_temperature"
+)
+
+// AI temperature range and default (DeepSeek accepts 0–2; above 1.5 the
+// titles turn into inventions).
+const (
+	TemperatureMin     = 0.0
+	TemperatureMax     = 1.5
+	TemperatureDefault = 1.0
+)
+
+// AITemperature is the admin's DeepSeek temperature per feature: AI
+// collections, «Спросить ИИ» and Cineko Music playlists.
+type AITemperature struct {
+	Collections float64 `json:"collections"`
+	Ask         float64 `json:"ask"`
+	Music       float64 `json:"music"`
+}
+
+// DefaultAITemperature is used until an admin changes it.
+func DefaultAITemperature() AITemperature {
+	return AITemperature{Collections: TemperatureDefault, Ask: TemperatureDefault, Music: TemperatureDefault}
+}
+
+// ClampTemperature keeps t within [TemperatureMin, TemperatureMax], rounded to 0.05.
+func ClampTemperature(t float64) float64 {
+	t = math.Round(t*20) / 20
+	return math.Max(TemperatureMin, math.Min(TemperatureMax, t))
+}
+
+// ValidTemperature reports whether t is a number in range.
+func ValidTemperature(t float64) bool {
+	return !math.IsNaN(t) && t >= TemperatureMin && t <= TemperatureMax
+}
 
 // Store reads and writes app_settings.
 type Store struct {
@@ -34,6 +71,9 @@ type Store struct {
 	mu       sync.Mutex
 	loaded   bool
 	seasonal bool
+
+	tempLoaded bool
+	temp       AITemperature
 }
 
 func NewStore(q db.Querier, auditLog *audit.Logger, log *slog.Logger) *Store {
@@ -73,7 +113,62 @@ func (s *Store) SeasonalEnabled(ctx context.Context) bool {
 
 // SetSeasonalEnabled stores the global switch.
 func (s *Store) SetSeasonalEnabled(ctx context.Context, enabled bool, by string) error {
-	b, _ := json.Marshal(seasonalValue{Enabled: enabled})
+	if err := s.put(ctx, keySeasonal, seasonalValue{Enabled: enabled}, by); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	s.seasonal, s.loaded = enabled, true
+	s.mu.Unlock()
+	return nil
+}
+
+// AITemperature returns the admin's temperatures (defaults when unset;
+// a database error also answers the defaults and is retried next call).
+// Missing or out-of-range fields fall back to the default.
+func (s *Store) AITemperature(ctx context.Context) AITemperature {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.tempLoaded {
+		return s.temp
+	}
+	var raw []byte
+	err := s.q.QueryRow(ctx, `SELECT value FROM app_settings WHERE key = $1`, keyAITemperature).Scan(&raw)
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		s.temp, s.tempLoaded = DefaultAITemperature(), true
+	case err != nil:
+		if s.log != nil {
+			s.log.Warn("app settings: read failed", "err", err)
+		}
+		return DefaultAITemperature()
+	default:
+		var v map[string]float64
+		_ = json.Unmarshal(raw, &v)
+		pick := func(k string) float64 {
+			if t, ok := v[k]; ok && ValidTemperature(t) {
+				return t
+			}
+			return TemperatureDefault
+		}
+		s.temp = AITemperature{Collections: pick("collections"), Ask: pick("ask"), Music: pick("music")}
+		s.tempLoaded = true
+	}
+	return s.temp
+}
+
+// SetAITemperature stores the temperatures (callers validate the range).
+func (s *Store) SetAITemperature(ctx context.Context, t AITemperature, by string) error {
+	if err := s.put(ctx, keyAITemperature, t, by); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	s.temp, s.tempLoaded = t, true
+	s.mu.Unlock()
+	return nil
+}
+
+func (s *Store) put(ctx context.Context, key string, value any, by string) error {
+	b, _ := json.Marshal(value)
 	var who any
 	if by != "" {
 		who = by
@@ -81,14 +176,8 @@ func (s *Store) SetSeasonalEnabled(ctx context.Context, enabled bool, by string)
 	_, err := s.q.Exec(ctx, `
 		INSERT INTO app_settings (key, value, updated_at, updated_by) VALUES ($1, $2::jsonb, now(), $3)
 		ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now(), updated_by = EXCLUDED.updated_by`,
-		keySeasonal, string(b), who)
-	if err != nil {
-		return err
-	}
-	s.mu.Lock()
-	s.seasonal, s.loaded = enabled, true
-	s.mu.Unlock()
-	return nil
+		key, string(b), who)
+	return err
 }
 
 // Appearance is the admin view: GET/PUT /admin/appearance.
@@ -121,4 +210,21 @@ func (s *Store) AdminRoutes(admin fiber.Router) {
 		on := *in.SeasonalEffects
 		return c.JSON(Appearance{SeasonalEffects: &on})
 	})
+}
+
+// Creativity is the viewer's nudge on the admin's temperature
+// («Точнее / Обычно / Смелее»).
+var Creativity = map[string]float64{"precise": -0.4, "normal": 0, "bold": 0.4}
+
+// WithCreativity applies a viewer's creativity ("" = normal) to an admin
+// temperature; ok is false for an unknown value.
+func WithCreativity(base float64, creativity string) (float64, bool) {
+	if creativity == "" {
+		creativity = "normal"
+	}
+	off, ok := Creativity[creativity]
+	if !ok {
+		return base, false
+	}
+	return ClampTemperature(base + off), true
 }

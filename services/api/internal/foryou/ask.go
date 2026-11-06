@@ -13,6 +13,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"martytv/api/internal/appsettings"
 	"martytv/api/internal/catalog"
 	"martytv/api/internal/realtime"
 )
@@ -50,6 +51,8 @@ type AskRequest struct {
 	IncludeWatched bool   `json:"include_watched"`
 	// DeviceID: also deliver the answer to this TV (phone → TV).
 	DeviceID string `json:"device_id"`
+	// Creativity nudges the admin's temperature: precise, normal (default) or bold.
+	Creativity string `json:"creativity"`
 }
 
 // AskItem is one recommended title.
@@ -366,11 +369,12 @@ func (s *Service) Ask(ctx context.Context, userID string, req AskRequest) (*AskR
 	}
 	vnote := viewerNote(tasteNoteOf(st))
 	run := &runState{interactive: true, tmdb: resolveBudget - askTMDBBudget}
+	temp, _ := appsettings.WithCreativity(s.aiTemperature(ctx).Ask, req.Creativity)
 	call := func(note string, extraAvoid []string) (*askReply, error) {
 		if err := s.aiBudgetCheck(ctx, run); err != nil {
 			return nil, err
 		}
-		content, tokens, err := s.ai.complete(ctx, askSystem(lang), askUserMessage(sum, vnote, slices.Concat(avoid, extraAvoid), req.Kind, req.Prompt, note))
+		content, tokens, err := s.ai.complete(ctx, askSystem(lang), askUserMessage(sum, vnote, slices.Concat(avoid, extraAvoid), req.Kind, req.Prompt, note), temp)
 		if tokens > 0 || err == nil {
 			s.recordAIUsage(ctx, run, tokens)
 		}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import type { MediaSummary } from "@martytv/contracts";
 import { imageUrl, placeholderColor, formatRating } from "@martytv/media-types";
-import { CvIcon, Mascot, translate, useConstructivism, useI18n, type MascotMood, type MessageKey } from "@martytv/ui";
+import { AI_CREATIVITY, CvIcon, Mascot, readAICreativity, translate, useConstructivism, useI18n, writeAICreativity, type AICreativity, type MascotMood, type MessageKey } from "@martytv/ui";
 import { CatalogPage, Img } from "../catalog/components";
 import { useCatalogConfig, useCatalogLang } from "../catalog/queries";
 import { CastIcon, DeviceIcon, PlayIcon, TvIcon } from "../icons";
@@ -256,6 +256,7 @@ function Composer({
             />
             {t("ask.include_watched")}
           </label>
+          <CreativityPicker />
           <span className="ml-auto flex items-center gap-2">
             {len > ASK_MAX - 100 && <span className="text-xs tabular-nums text-muted">{len}/{ASK_MAX}</span>}
             <button
@@ -569,3 +570,29 @@ export const SparkIcon = (p: React.SVGProps<SVGSVGElement>) =>
     <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" />
   </svg>
 );
+
+/** «Точнее / Обычно / Смелее»: nudges the admin's temperature; remembered on this device. */
+export function CreativityPicker() {
+  const { t } = useI18n();
+  const [v, setV] = useState<AICreativity>(readAICreativity);
+  return (
+    <div role="radiogroup" aria-label={t("ai.creativity")} title={t("ai.creativity.hint")} className="inline-flex rounded-full bg-surface-2 p-1" data-testid="ask-creativity">
+      {AI_CREATIVITY.map((c) => (
+        <button
+          key={c}
+          type="button"
+          role="radio"
+          aria-checked={v === c}
+          data-creativity={c}
+          onClick={() => {
+            setV(c);
+            writeAICreativity(c);
+          }}
+          className={`min-h-[32px] rounded-full px-3 text-xs font-semibold transition sm:text-sm ${v === c ? "bg-accent text-on-accent" : "text-muted hover:text-text"}`}
+        >
+          {t(`ai.creativity.${c}` as MessageKey)}
+        </button>
+      ))}
+    </div>
+  );
+}

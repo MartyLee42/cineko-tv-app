@@ -21,6 +21,7 @@ import (
 	"golang.org/x/sync/singleflight"
 	"golang.org/x/time/rate"
 
+	"martytv/api/internal/appsettings"
 	"martytv/api/internal/audit"
 	"martytv/api/internal/catalog"
 	"martytv/api/internal/config"
@@ -76,6 +77,14 @@ type Deps struct {
 	Audit    *audit.Logger
 	Config   config.ForYouConfig
 	Log      *slog.Logger
+	// Settings holds the admin's DeepSeek temperatures (optional: defaults).
+	Settings AISettings
+}
+
+// AISettings is the part of appsettings.Store foryou uses.
+type AISettings interface {
+	AITemperature(ctx context.Context) appsettings.AITemperature
+	SetAITemperature(ctx context.Context, t appsettings.AITemperature, by string) error
 }
 
 type Service struct {
@@ -90,6 +99,7 @@ type Service struct {
 	audit    *audit.Logger
 	cfg      config.ForYouConfig
 	log      *slog.Logger
+	settings AISettings
 	w        Weights
 	ai       *aiClient
 
@@ -122,7 +132,7 @@ type Service struct {
 func NewService(d Deps) *Service {
 	s := &Service{
 		pool: d.Pool, cat: d.Catalog, personal: d.Personal, profiles: d.Profiles, ratings: d.Ratings,
-		hub: d.Hub, family: d.Family, curated: d.Curated, audit: d.Audit, cfg: d.Config, log: d.Log, w: DefaultWeights(),
+		hub: d.Hub, family: d.Family, curated: d.Curated, audit: d.Audit, cfg: d.Config, log: d.Log, settings: d.Settings, w: DefaultWeights(),
 		now:     time.Now,
 		pace:    rate.NewLimiter(rate.Limit(4), 4),
 		baseCtx: context.Background(),
@@ -135,6 +145,14 @@ func NewService(d Deps) *Service {
 		s.ai = newAIClient(d.Config)
 	}
 	return s
+}
+
+// aiTemperature is the admin's temperatures (defaults without a store).
+func (s *Service) aiTemperature(ctx context.Context) appsettings.AITemperature {
+	if s.settings == nil {
+		return appsettings.DefaultAITemperature()
+	}
+	return s.settings.AITemperature(ctx)
 }
 
 // base is the service lifetime context (cancelled on shutdown).

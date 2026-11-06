@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { ApiError, unwrap, type MediaKind, type Schemas } from "@martytv/contracts";
-import { withoutMedia, type SurpriseRequestBody } from "@martytv/ui";
+import { readAICreativity, withoutMedia, type SurpriseRequestBody } from "@martytv/ui";
 import { api, realtime } from "../api";
 import { useCatalogLang } from "../catalog/queries";
 import { useActiveProfile } from "../watch/ActiveProfile";
@@ -232,6 +232,17 @@ export function useForYouRuns(poll: boolean) {
   });
 }
 
+export type AITemperature = Schemas["AITemperature"];
+
+/** PUT /admin/foryou/ai: the DeepSeek temperatures. */
+export function useSetAITemperature() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (temperature: Partial<AITemperature>) => unwrap(api.PUT("/admin/foryou/ai", { body: { temperature } })),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["admin", "foryou-runs"] }),
+  });
+}
+
 export type RerunBody = { scope: "all" | "user" | "profile"; id?: string; ai: boolean };
 
 /** Starts a run; a 409 resolves with `{ running: run_id }` instead of throwing. */
@@ -389,7 +400,9 @@ export function useAsk() {
   const qc = useQueryClient();
   const lang = useCatalogLang();
   return useMutation({
-    mutationFn: (body: ForYouAskBody) => unwrap(api.POST("/foryou/ask", { params: { query: { lang } }, body })),
+    // The device's «Точнее / Обычно / Смелее» goes with every ask (AskPage and the search's AI mode).
+    mutationFn: (body: ForYouAskBody) =>
+      unwrap(api.POST("/foryou/ask", { params: { query: { lang } }, body: { creativity: readAICreativity(), ...body } })),
     onSuccess: (res, body) => {
       qc.setQueriesData<{ items: ForYouAsk[]; ai_enabled: boolean; daily_limit: number }>({ queryKey: ["foryou", "asks", body.profile_id] }, (d) =>
         d ? { ...d, items: [res, ...d.items.filter((a) => a.id !== res.id)].slice(0, 20) } : d,

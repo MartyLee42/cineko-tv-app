@@ -201,6 +201,21 @@ export const foryouEn = {
   "fy.taste.coverage": "Cast and crew loaded for {n} of {total} titles; people fill in after the nightly run.",
   "fy.taste.computed": "Updated {time}",
 
+  // ---- AI creativity («Спросить ИИ», admin temperatures) ----
+  "ai.creativity": "How adventurous",
+  "ai.creativity.precise": "Precise",
+  "ai.creativity.normal": "Normal",
+  "ai.creativity.bold": "Bold",
+  "ai.creativity.hint": "Precise sticks to well-known, safe picks; bold goes for surprising finds.",
+  "fy.admin.temp": "AI temperature",
+  "fy.admin.temp_hint": "Lower makes DeepSeek more precise and predictable; higher makes it more varied (and more likely to get titles wrong). Viewers can shift it by ±0.4 with «Precise / Bold».",
+  "fy.admin.temp.collections": "AI collections",
+  "fy.admin.temp.ask": "Ask AI",
+  "fy.admin.temp.music": "Cineko Music playlists",
+  "fy.admin.temp_save": "Save",
+  "fy.admin.temp_saved": "Saved.",
+  "fy.admin.temp_reset": "Default (1.0)",
+
   // ---- Admin ----
   "fy.admin.tab": "Recommendations",
   "fy.admin.rerun": "Recompute recommendations",

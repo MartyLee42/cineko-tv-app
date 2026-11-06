@@ -192,8 +192,9 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	curatedSvc := curated.NewService(curated.Deps{Pool: pool, Catalog: catalogSvc, Personal: watchSvc, Profiles: profileStore,
 		Ratings: ratingsSrc, Log: log})
 	curatedSvc.Routes(api)
+	appSettings := appsettings.NewStore(pool, auditLog, log) // global switches: /admin/appearance, /status seasonal_effects, AI temperatures
 	forYouSvc := foryou.NewService(foryou.Deps{Pool: pool, Catalog: catalogSvc, Personal: watchSvc, Profiles: profileStore,
-		Ratings: ratingsSrc, Hub: hub, Family: familySvc, Curated: curatedSvc, Audit: auditLog, Config: cfg.ForYou, Log: log})
+		Ratings: ratingsSrc, Hub: hub, Family: familySvc, Curated: curatedSvc, Audit: auditLog, Config: cfg.ForYou, Log: log, Settings: appSettings})
 	forYouSvc.Routes(api)
 	profileHandlers.OnSettingsChanged(forYouSvc.SettingsChanged)
 
@@ -281,7 +282,6 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	sysmonSvc.AdminRoutes(admin)
 	clientLog.Routes(api)
 	clientLog.AdminRoutes(admin)
-	appSettings := appsettings.NewStore(pool, auditLog, log) // global switches: /admin/appearance, /status seasonal_effects
 	appSettings.AdminRoutes(admin)
 	deviceHandlers.AdminRoutes(admin) // super_admin: /admin/devices*
 	pairHandlers.AdminRoutes(admin)   // super_admin: /admin/pairing*

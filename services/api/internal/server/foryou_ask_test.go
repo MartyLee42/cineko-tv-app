@@ -22,6 +22,7 @@ type askFake struct {
 	replies []string
 	systems []string
 	users   []string
+	temps   []float64
 }
 
 func newAskFake(t *testing.T) *askFake {
@@ -32,10 +33,12 @@ func newAskFake(t *testing.T) *askFake {
 			return
 		}
 		var req struct {
-			Messages []struct{ Role, Content string } `json:"messages"`
+			Messages    []struct{ Role, Content string } `json:"messages"`
+			Temperature float64                          `json:"temperature"`
 		}
 		_ = json.NewDecoder(r.Body).Decode(&req)
 		f.mu.Lock()
+		f.temps = append(f.temps, req.Temperature)
 		content := `{"answer":"ok","items":[]}`
 		if len(f.replies) > 0 {
 			content = f.replies[0]
@@ -69,6 +72,12 @@ func (f *askFake) calls() int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	return len(f.users)
+}
+
+func (f *askFake) lastTemp() float64 {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.temps[len(f.temps)-1]
 }
 
 func (f *askFake) lastUser() string {
@@ -361,4 +370,54 @@ func TestForYouAskBudgetAndDisabled(t *testing.T) {
 		t.Fatalf("history %v", h)
 	}
 	g.env.Server.ForYou.Wait()
+}
+
+func TestForYouAITemperature(t *testing.T) {
+	f, fake := newAskEnv(t)
+	a := f.sciFiProfile(t, f.alice, "Sci")
+	ask := func(creativity string) {
+		t.Helper()
+		body := map[string]any{"profile_id": a, "prompt": "что-нибудь медитативное", "lang": "ru"}
+		if creativity != "" {
+			body["creativity"] = creativity
+		}
+		f.alice.Do("POST", "/api/v1/foryou/ask", body).Expect(200)
+	}
+
+	// Defaults: 1.0 everywhere; creativity nudges by ±0.4.
+	st := f.alice.Do("GET", "/api/v1/foryou/ai-settings", nil).Expect(200).JSON()
+	if st["enabled"] != true || st["temperature"].(map[string]any)["music"] != 1.0 || st["max"] != 1.5 {
+		t.Fatalf("ai-settings = %v", st)
+	}
+	ask("")
+	if got := fake.lastTemp(); got != 1.0 {
+		t.Fatalf("default temperature = %v", got)
+	}
+	ask("bold")
+	if got := fake.lastTemp(); got != 1.4 {
+		t.Fatalf("bold temperature = %v", got)
+	}
+	f.alice.Do("POST", "/api/v1/foryou/ask", map[string]any{"profile_id": a, "prompt": "что-нибудь", "creativity": "wild"}).Expect(422)
+
+	// Admin changes the Ask temperature; others stay; bold is clamped to the max.
+	f.alice.Do("PUT", "/api/v1/admin/foryou/ai", map[string]any{"temperature": map[string]any{"ask": 0.5}}).Expect(403)
+	f.admin.Do("PUT", "/api/v1/admin/foryou/ai", map[string]any{"temperature": map[string]any{"ask": 1.6}}).Expect(422)
+	f.admin.Do("PUT", "/api/v1/admin/foryou/ai", map[string]any{}).Expect(422)
+	res := f.admin.Do("PUT", "/api/v1/admin/foryou/ai", map[string]any{"temperature": map[string]any{"ask": 0.3, "music": 1.5}}).Expect(200).JSON()
+	tm := res["temperature"].(map[string]any)
+	if tm["ask"] != 0.3 || tm["music"] != 1.5 || tm["collections"] != 1.0 {
+		t.Fatalf("after PUT = %v", tm)
+	}
+	ask("precise")
+	if got := fake.lastTemp(); got != 0 {
+		t.Fatalf("precise at 0.3 = %v (want clamped to 0)", got)
+	}
+	ask("")
+	if got := fake.lastTemp(); got != 0.3 {
+		t.Fatalf("normal at 0.3 = %v", got)
+	}
+	runs := f.admin.Do("GET", "/api/v1/admin/foryou/runs", nil).Expect(200).JSON()
+	if runs["ai"].(map[string]any)["temperature"].(map[string]any)["ask"] != 0.3 {
+		t.Fatalf("runs ai = %v", runs["ai"])
+	}
 }

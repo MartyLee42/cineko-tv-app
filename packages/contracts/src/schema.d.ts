@@ -2497,6 +2497,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/foryou/ai-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The admin's DeepSeek temperatures and the creativity offsets (users and TVs; Cineko Music reads its default here). */
+        get: operations["forYouAISettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/foryou/asks": {
         parameters: {
             query?: never;
@@ -2579,6 +2596,23 @@ export interface paths {
         /** @description Recent runs (newest first, up to 30) with progress, AI usage and errors, plus the AI budget status. Admin only. */
         get: operations["adminForYouRuns"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/foryou/ai": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** @description Sets the DeepSeek temperatures (app_settings `ai_temperature`). Omitted fields keep their value. Admin only. */
+        put: operations["adminSetForYouAI"];
         post?: never;
         delete?: never;
         options?: never;
@@ -5587,6 +5621,7 @@ export interface components {
         ForYouAIStatus: {
             /** @description False without DEEPSEEK_API_KEY. */
             enabled: boolean;
+            temperature: components["schemas"]["AITemperature"];
             model: string;
             /** @description Tokens used today (Moscow date). */
             tokens_today: number;
@@ -5594,6 +5629,34 @@ export interface components {
             run_budget: number;
             /** @description DeepSeek account balance (GET /user/balance, cached 10 min, refreshed after each run); null without a key or when the call failed. */
             balance: components["schemas"]["ForYouAIBalance"] | null;
+        };
+        /** @description The admin's DeepSeek temperature per feature (0–1.5, default 1.0). */
+        AITemperature: {
+            /** @description AI collections (daily run). */
+            collections: number;
+            /** @description «Спросить ИИ». */
+            ask: number;
+            /** @description Cineko Music AI playlists. */
+            music: number;
+        };
+        /**
+         * @description The viewer's nudge on the admin's temperature («Точнее / Обычно / Смелее»): −0.4 / 0 / +0.4, clamped to 0–1.5.
+         * @default normal
+         * @enum {string}
+         */
+        AICreativity: "precise" | "normal" | "bold";
+        ForYouAISettings: {
+            /** @description False without DEEPSEEK_API_KEY. */
+            enabled: boolean;
+            temperature: components["schemas"]["AITemperature"];
+            /** @description Offset each creativity adds to the temperature. */
+            creativity: {
+                precise: number;
+                normal: number;
+                bold: number;
+            };
+            min: number;
+            max: number;
         };
         ForYouRegenStatus: {
             /** @description A POST would start a regeneration now. */
@@ -5657,6 +5720,7 @@ export interface components {
              * @description Also deliver the answer to this TV (owned by the caller) as `foryou.ask`.
              */
             device_id?: string;
+            creativity?: components["schemas"]["AICreativity"];
         };
         ForYouAskItem: {
             media: components["schemas"]["MediaSummary"];
@@ -10442,6 +10506,27 @@ export interface operations {
             503: components["responses"]["Error"];
         };
     };
+    forYouAISettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Settings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForYouAISettings"];
+                };
+            };
+            401: components["responses"]["Error"];
+        };
+    };
     forYouAsks: {
         parameters: {
             query: {
@@ -10610,6 +10695,38 @@ export interface operations {
                 };
             };
             403: components["responses"]["Error"];
+        };
+    };
+    adminSetForYouAI: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    temperature: {
+                        collections?: number;
+                        ask?: number;
+                        music?: number;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description The new settings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForYouAISettings"];
+                };
+            };
+            403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     listDownloads: {

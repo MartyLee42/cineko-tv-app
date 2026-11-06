@@ -199,6 +199,21 @@ export const foryouRu: Record<keyof typeof foryouEn, string> = {
   "fy.taste.coverage": "Актёры и съёмочная группа загружены для {n} из {total} тайтлов; остальные подтянутся ночным пересчётом.",
   "fy.taste.computed": "Обновлено {time}",
 
+  // ---- AI creativity («Спросить ИИ», admin temperatures) ----
+  "ai.creativity": "Насколько смело",
+  "ai.creativity.precise": "Точнее",
+  "ai.creativity.normal": "Обычно",
+  "ai.creativity.bold": "Смелее",
+  "ai.creativity.hint": "Точнее — известные, надёжные варианты; смелее — неожиданные находки.",
+  "fy.admin.temp": "Температура ИИ",
+  "fy.admin.temp_hint": "Чем ниже, тем точнее и предсказуемее ответы DeepSeek; чем выше, тем разнообразнее (и чаще ошибки в названиях). Зрители могут сдвинуть её на ±0,4 кнопками «Точнее / Смелее».",
+  "fy.admin.temp.collections": "AI-подборки",
+  "fy.admin.temp.ask": "Спросить ИИ",
+  "fy.admin.temp.music": "Плейлисты Cineko Music",
+  "fy.admin.temp_save": "Сохранить",
+  "fy.admin.temp_saved": "Сохранено.",
+  "fy.admin.temp_reset": "По умолчанию (1,0)",
+
   // ---- Admin ----
   "fy.admin.tab": "Рекомендации",
   "fy.admin.rerun": "Пересчитать рекомендации",

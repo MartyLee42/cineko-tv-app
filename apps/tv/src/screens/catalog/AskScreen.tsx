@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import QRCode from "qrcode";
 import type { MediaSummary } from "@martytv/contracts";
-import { Mascot, useI18n, type MessageKey } from "@martytv/ui";
+import { AI_CREATIVITY, Mascot, readAICreativity, useI18n, writeAICreativity, type AICreativity, type MessageKey } from "@martytv/ui";
 import { FocusButton, FocusLine, FocusSection, setFocus, useInitialFocus } from "../../focus";
 import { cardKey } from "../../catalog/focusKeys";
 import { applyKey, physicalKey, type KeyAction, type Layout } from "../../catalog/keyboard";
@@ -103,6 +103,13 @@ export function AskScreen({ mem, profileId, onOpen }: { mem: RouteMemory; profil
     setKind(next);
     mem.set("kind", next);
   };
+  // «Точнее / Обычно / Смелее»: this TV's nudge on the admin's AI temperature.
+  const [creativity, setCreativity] = useState<AICreativity>(readAICreativity);
+  const toggleCreativity = () => {
+    const next = cycle(AI_CREATIVITY, creativity);
+    setCreativity(next);
+    writeAICreativity(next);
+  };
 
   useInitialFocus(true, mem, () => (result ? (result.items.length ? cardKey("a-card", result.items[0]!.media.id) : "a-chips") : cardKey("a-tile", ASK_EXAMPLES[0].id)));
   useToTop(() => false);
@@ -140,6 +147,12 @@ export function AskScreen({ mem, profileId, onOpen }: { mem: RouteMemory; profil
             <span className={`block text-[19px] text-muted ${design === "terminal" ? "t-label" : ""}`}>{t("ask.kind")}</span>
             <span data-testid="ask-kind" className="mt-1 block text-[28px] font-bold">
               {t(KIND_LABEL[kind])}
+            </span>
+          </FocusButton>
+          <FocusButton focusKey="a-creativity" onPress={toggleCreativity} className={`tv-chip ml-4 bg-surface-2 px-7 py-3 ${design === "terminal" ? "" : "rounded-control"}`}>
+            <span className={`block text-[19px] text-muted ${design === "terminal" ? "t-label" : ""}`}>{t("ai.creativity")}</span>
+            <span data-testid="ask-creativity" data-creativity={creativity} className="mt-1 block text-[28px] font-bold">
+              {t(`ai.creativity.${creativity}` as MessageKey)}
             </span>
           </FocusButton>
         </FocusSection>

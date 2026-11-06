@@ -2,7 +2,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiError, unwrap } from "@martytv/contracts";
 import { catalogLang } from "@martytv/media-types";
-import { useI18n } from "@martytv/ui";
+import { readAICreativity, useI18n } from "@martytv/ui";
 import { api } from "../api";
 import { queryClient } from "../catalog/queries";
 import { useActiveProfileId } from "../profile/active";
@@ -16,7 +16,7 @@ export function useAsk() {
   const lang = useLang();
   return useMutation({
     mutationFn: (body: { profile_id: string; prompt: string; kind: AskKind }) =>
-      unwrap(api.POST("/foryou/ask", { params: { query: { lang } }, body: { include_watched: false, ...body, lang } })),
+      unwrap(api.POST("/foryou/ask", { params: { query: { lang } }, body: { include_watched: false, creativity: readAICreativity(), ...body, lang } })),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["foryou", "asks"] }),
   });
 }
