@@ -196,8 +196,12 @@ export function isHlsSource(s: { format?: string | null; mime_type?: string | nu
 
 // ---------------------------------------------------------------- skip markers
 
+export type SkipKind = "opening" | "recap" | "ending";
+/** Profile setting skip_segments: offer a button, skip by itself, or never. */
+export type SkipMode = "button" | "auto" | "off";
+
 export interface SkipMarkerLike {
-  kind: "opening" | "ending";
+  kind: SkipKind;
   start_seconds: number;
   end_seconds: number;
 }
@@ -209,4 +213,43 @@ export function activeMarker<M extends SkipMarkerLike>(markers: readonly M[] | n
     if (position >= m.start_seconds && position < m.end_seconds - 2) return m;
   }
   return null;
+}
+
+/**
+ * What «Пропустить» offers at this position: the intro or recap it is in, or
+ * (when `ending` is allowed — series with a next episode) the credits. Ends
+ * are clamped to the media's duration (0 = unknown); the last 2 s offer
+ * nothing (nothing left to skip).
+ */
+export function skipTarget<M extends SkipMarkerLike>(
+  markers: readonly M[] | null | undefined,
+  position: number,
+  duration = 0,
+  ending = false,
+): M | null {
+  for (const m of markers ?? []) {
+    if (m.kind === "ending" && !ending) continue;
+    const end = duration > 0 ? Math.min(m.end_seconds, duration) : m.end_seconds;
+    if (end - m.start_seconds < 5) continue;
+    if (position >= m.start_seconds && position < end - 2) return m;
+  }
+  return null;
+}
+
+/**
+ * Auto-skip only when playback has just entered the range — not when the
+ * viewer seeked or resumed into the middle of it (they chose to be there).
+ */
+export function autoSkipDue(m: SkipMarkerLike, position: number): boolean {
+  return position - m.start_seconds < 4;
+}
+
+/** Identifies a marker within one playback (auto-skip once, undo). */
+export function markerKey(m: SkipMarkerLike): string {
+  return `${m.kind}:${m.start_seconds}`;
+}
+
+/** Normalizes the skip_segments setting (default "button"). */
+export function skipMode(v: unknown): SkipMode {
+  return v === "auto" || v === "off" ? v : "button";
 }

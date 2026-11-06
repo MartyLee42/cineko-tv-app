@@ -31,6 +31,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hide_anime: false,
   hide_watched: false,
   autoplay_next_episode: true,
+  skip_segments: "button",
   spoiler_free_episodes: false,
   loading_style: "popcorn",
   onboarding_completed: false,
@@ -65,6 +66,7 @@ export function withDefaults(s: ProfileSettings | null | undefined): Settings {
   if (s.seasonal_effects === "on" || s.seasonal_effects === "calm" || s.seasonal_effects === "off") out.seasonal_effects = s.seasonal_effects;
   if (Array.isArray(s.hidden_tabs)) out.hidden_tabs = s.hidden_tabs;
   if (s.cozy_ambience === "rain" || s.cozy_ambience === "fireplace" || s.cozy_ambience === "off") out.cozy_ambience = s.cozy_ambience;
+  if (s.skip_segments === "button" || s.skip_segments === "auto" || s.skip_segments === "off") out.skip_segments = s.skip_segments;
   if (s.video_quality === 480 || s.video_quality === 720 || s.video_quality === 1080) out.video_quality = s.video_quality;
   for (const k of ["hide_anime", "hide_watched", "autoplay_next_episode", "spoiler_free_episodes", "onboarding_completed", "video_hide_shorts", "cozy_mode", "cozy_sound", "poster_wobble", "share_with_family", "show_family", "show_curated"] as const) {
     if (typeof s[k] === "boolean") out[k] = s[k];

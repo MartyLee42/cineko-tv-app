@@ -4649,7 +4649,17 @@ components:
         video_level: { type: [integer, "null"], description: "ffprobe's level (H.264: 41 = 4.1; HEVC: 30 × level, 150 = 5.0)." }
         interlaced: { type: [boolean, "null"], description: "From field_order, when known." }
         video_codec_string: { type: [string, "null"], description: "RFC 6381 codec string (avc1.6e0028), when ffprobe prints one." }
-        probe_version: { type: integer, description: "2+ = includes the video detail fields." }
+        probe_version: { type: integer, description: "2+ = includes the video detail fields; 3+ = the chapters." }
+        chapters:
+          type: array
+          description: "The file's titled chapters (at most 64 kept). Opening / «Заставка» / Credits / «Титры» ones become skip markers."
+          items:
+            type: object
+            required: [start_seconds, end_seconds, title]
+            properties:
+              start_seconds: { type: number }
+              end_seconds: { type: number }
+              title: { type: string }
     PlaybackSource:
       type: object
       required: [id, media_id, episode_id, release, status, error, file, stream_url, stream_expires_at, mime_type, media_info, torrent, created_at]
@@ -4687,7 +4697,14 @@ components:
         quality: { type: [integer, "null"], description: "Online: current quality." }
         qualities: { type: array, items: { type: integer }, description: "Online: switchable qualities (PATCH {quality}). Torrent: []." }
         subtitles: { type: array, items: { $ref: "#/components/schemas/Subtitle" }, description: "Online: external subtitle tracks (proxied VTT)." }
-        markers: { type: array, items: { $ref: "#/components/schemas/SkipMarker" }, description: "Online: opening/ending ranges when the provider knows them (\"skip intro\"). Omitted when none." }
+        markers:
+          type: array
+          items: { $ref: "#/components/schemas/SkipMarker" }
+          description: |
+            Intro / recap / credits ranges for «Пропустить заставку» and «Следующая серия» (live GET of a ready source only).
+            Per kind the best source wins: the file's chapters, the online provider (Anilibria), TheIntroDB (by TMDB id),
+            IntroDB (by IMDb id, series). Ranges are clamped to the media's duration when known; an ending of unknown
+            length runs 15 minutes past its start (players clamp it to the duration). Omitted when none.
         duration_seconds: { type: [number, "null"], description: "Online: the provider's episode/film length when known (torrent sources report duration in media_info). Optional." }
         compat_url: { type: [string, "null"], description: "Torrent: browser compatibility stream (/api/v1/stream/<token>/compat.mp4; add ?audio=&start=); null when the server has no transcoder or for online sources. Subtitles: replace compat.mp4 with subs/<index>.vtt. Safari / iOS: compat.m3u8 (HLS) instead of compat.mp4." }
         compat_video: { type: boolean, description: "Torrent: the compat stream can re-encode this file's video to H.264 (add video=h264 to compat_url): an old codec (MPEG-4 Part 2 / XviD / DivX, MPEG-1/2, VC-1/WMV, H.263) at ≤ 1080p per media_info. false without media_info or transcoder. Optional (absent for other kinds)." }
@@ -4791,9 +4808,10 @@ components:
       type: object
       required: [kind, start_seconds, end_seconds]
       properties:
-        kind: { type: string, enum: [opening, ending] }
+        kind: { type: string, enum: [opening, recap, ending], description: "opening = the intro / title sequence; recap = «Ранее в сериале»; ending = the end credits (with a next-episode preview)." }
         start_seconds: { type: number }
         end_seconds: { type: number }
+        source: { type: string, enum: [chapters, provider, theintrodb, introdb], description: "Where the range came from. chapters is exact for this file; the databases time the original release (a dub's logo can shift it by seconds)." }
     Subtitle:
       type: object
       required: [url, lang, label]
@@ -4811,6 +4829,7 @@ components:
         hide_anime: { type: boolean, default: false, description: "Hide Japanese animation (TMDB genre Animation + original language ja) everywhere in the catalog." }
         hide_watched: { type: boolean, default: false, description: "Default for hiding completed titles in catalog lists." }
         autoplay_next_episode: { type: boolean, default: true }
+        skip_segments: { type: string, enum: [button, auto, "off"], default: button, description: "«Заставки и титры» (SkipMarker): button = show «Пропустить заставку» / «Пропустить пересказ» during them and «Следующая серия» at a series' credits; auto = skip intros and recaps by themselves (with «Вернуть» for a few seconds) and start the next-episode countdown at the credits; off = never." }
         spoiler_free_episodes: { type: boolean, default: false, description: "Blur stills/overviews of unwatched episodes." }
         poster_rating: { type: string, enum: [kp, tmdb, imdb, "off"], default: kp, description: "Which rating the small badge in the top-right corner of posters shows (falls back kp → tmdb when unknown)." }
         onboarding_completed: { type: boolean, default: false, description: "Set to true when the profile finished (or skipped) the first-run setup guide." }

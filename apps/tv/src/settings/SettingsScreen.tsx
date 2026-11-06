@@ -49,6 +49,7 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
     r.hideAnime,
     r.hideWatched,
     r.autoplay,
+    r.skipSegments,
     r.spoilers,
     ...family,
     tasteNote(() => setEditingNote(true)),

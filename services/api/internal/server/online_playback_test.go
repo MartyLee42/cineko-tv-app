@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"martytv/api/internal/segments"
 	"martytv/api/internal/sources"
 )
 
@@ -95,6 +96,17 @@ func (p *fakeAnime) SkipMarkers(context.Context, sources.Variant) map[string][2]
 	return map[string][2]float64{"opening": {56, 145}}
 }
 
+type fakeSegments struct {
+	segs []segments.Segment
+	last segments.Query
+}
+
+func (f *fakeSegments) Name() string { return "fake" }
+func (f *fakeSegments) Fetch(_ context.Context, q segments.Query) ([]segments.Segment, error) {
+	f.last = q
+	return f.segs, nil
+}
+
 func itoa(i int) string { b, _ := json.Marshal(i); return string(b) }
 
 type fakeProviders struct{ p sources.OnlineProvider }
@@ -168,6 +180,15 @@ func TestOnlinePlaybackHLSProxy(t *testing.T) {
 	if m, _ := got["markers"].([]any); len(m) != 1 || m[0].(map[string]any)["kind"] != "opening" || got["media_info"] != nil || got["file"] != nil {
 		t.Fatalf("markers/media_info: %v", got)
 	}
+	// Intro databases: the provider's opening wins, their credits join.
+	db := &fakeSegments{segs: []segments.Segment{{Kind: "opening", Start: 50, End: 140, Source: "theintrodb"}, {Kind: "ending", Start: 5000, Source: "theintrodb"}}}
+	pe.Server.Playback.SetSegments(segments.New(pe.Pool, nil, db))
+	got = alice.Do("GET", "/api/v1/playback/sources/"+id, nil).Expect(200).JSON()
+	if m, _ := got["markers"].([]any); len(m) != 2 || m[0].(map[string]any)["source"] != "provider" || m[0].(map[string]any)["start_seconds"] != 56.0 ||
+		m[1].(map[string]any)["kind"] != "ending" || m[1].(map[string]any)["source"] != "theintrodb" || db.last.TMDBID == 0 || !db.last.Movie {
+		t.Fatalf("merged markers: %v (query %+v)", got["markers"], db.last)
+	}
+	pe.Server.Playback.SetSegments(nil)
 	if pr, _ := got["provider"].(map[string]any); pr["id"] != "anilibria" || pr["name"] != "AniLiberty" || pr["kind"] != "anime" {
 		t.Fatalf("provider: %v", got["provider"])
 	}

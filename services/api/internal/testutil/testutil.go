@@ -97,6 +97,8 @@ func New(t *testing.T, opts ...Options) *Env {
 			return "off" // never reach the public instance from tests
 		case "KINOPOISK_WIKIDATA_URL":
 			return "off" // ratings tests point it at a fake
+		case "THEINTRODB_URL", "INTRODB_URL":
+			return "off" // intro/credits databases: segments tests use fakes
 		}
 		return ""
 	})

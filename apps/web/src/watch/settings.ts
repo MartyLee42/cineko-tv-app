@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hide_anime: false,
   hide_watched: false,
   autoplay_next_episode: true,
+  skip_segments: "button",
   spoiler_free_episodes: false,
   onboarding_completed: false,
   loading_style: "popcorn",
