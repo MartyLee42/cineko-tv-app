@@ -31,6 +31,28 @@ lyrics; "wrong recording?" picker per track (shared by everyone); per-album
 "always play from this torrent"; lock-screen / headphone controls (Media
 Session); installable on phones (manifest).
 
+## AI playlists (`/music/ai`)
+
+`POST /music/api/ai/playlist` `{prompt, avoid?, taste?, fresh?, creativity?}`
+asks DeepSeek (`DEEPSEEK_API_KEY`, the key Cineko's AI collections use) for
+25 tracks, then matches each to the catalog like an import. The typed text
+only travels inside the JSON `request` field of the user message; obvious
+override/extraction attempts are refused locally (no model call, no quota),
+and a reply quoting the system prompt is turned into a refusal. A request
+that is not about music answers `200 {refused: true, answer, tracks: []}`.
+
+- **Creativity** («Точнее · Обычно · Смелее»): `precise | normal | bold`.
+  Temperature = the admin's music default plus the level's offset, clamped,
+  from Cineko's `GET /api/v1/foryou/ai-settings` (cached for a minute;
+  1.0 / ±0.4 / 0–1.5 when unavailable).
+- **Cache**: the same account + prompt (+ creativity unless normal) is reused
+  for 3 days; refusals are never cached.
+- **Limits** (table `ai_usage` in `music.db`, Moscow days, kept 90 days):
+  `MUSIC_AI_DAILY_PER_USER` requests per account (default 40) and
+  `MUSIC_AI_DAILY_TOKENS` tokens across all accounts (default 150000,
+  0 = unlimited; a call needs 3000 left). Failed model calls are refunded.
+  Only token counts are logged, never prompts.
+
 ## Development
 
 ```sh
@@ -46,5 +68,5 @@ cd services/music/web && npm install && npm run dev
 In the dev stack (`make dev`) it is the `music` service behind Caddy at
 <http://localhost:8080/music/>.
 
-Data (`/data`): `music.db` (library, YouTube matches, opened torrents),
+Data (`/data`): `music.db` (library, YouTube matches, opened torrents, AI cache and usage),
 `audio/` (YouTube audio cache), `img/` (covers).

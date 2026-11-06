@@ -6,13 +6,36 @@ import { usePlayer } from "../player";
 import { toast } from "../toast";
 import { BigPlay, DownloadButton, EqBars, TrackList } from "../ui";
 
+type Creativity = "precise" | "normal" | "bold";
+
 interface AiResult {
+  /** The request was not about music: show `answer` instead of a playlist. */
+  refused?: boolean;
+  answer?: string;
   title: string;
   description: string;
   prompt: string;
+  creativity?: Creativity;
   tracks: Track[];
   createdAt?: number;
   cached?: boolean;
+}
+
+const CREATIVITY: [Creativity, string, string][] = [
+  ["precise", "Точнее", "Ближе к запросу, без неожиданностей"],
+  ["normal", "Обычно", "Как обычно"],
+  ["bold", "Смелее", "Больше неожиданных находок"],
+];
+
+const CREATIVITY_KEY = "martytv.music_ai_creativity";
+
+function loadCreativity(): Creativity {
+  try {
+    const v = localStorage.getItem(CREATIVITY_KEY);
+    return v === "precise" || v === "bold" ? v : "normal";
+  } catch {
+    return "normal";
+  }
 }
 
 function builtAgo(at?: number): string {
@@ -23,10 +46,10 @@ function builtAgo(at?: number): string {
 
 const CACHE = "mm.ai.last";
 
-function cached(prompt: string): AiResult | null {
+function cached(prompt: string, creativity: Creativity): AiResult | null {
   try {
     const r = JSON.parse(sessionStorage.getItem(CACHE) || "null") as AiResult | null;
-    return r && r.prompt === prompt ? r : null;
+    return r && r.prompt === prompt && (r.creativity ?? "normal") === creativity ? r : null;
   } catch {
     return null;
   }
@@ -39,16 +62,17 @@ export function AiPage() {
   const navigate = useNavigate();
   const player = usePlayer();
   const lib = useLibrary();
-  const [res, setRes] = useState<AiResult | null>(() => cached(prompt));
+  const [creativity, setCreativity] = useState<Creativity>(loadCreativity);
+  const [res, setRes] = useState<AiResult | null>(() => cached(prompt, creativity));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [text, setText] = useState(prompt);
 
-  const generate = async (avoid: string[] = [], fresh = false) => {
+  const generate = async (avoid: string[] = [], fresh = false, level: Creativity = creativity) => {
     setBusy(true);
     setError(null);
     try {
-      const r = await api.post<AiResult>("/ai/playlist", { prompt, avoid, fresh });
+      const r = await api.post<AiResult>("/ai/playlist", { prompt, avoid, fresh, creativity: level });
       setRes(r);
       try {
         sessionStorage.setItem(CACHE, JSON.stringify(r));
@@ -62,10 +86,24 @@ export function AiPage() {
     }
   };
 
+  const pickCreativity = (c: Creativity) => {
+    if (c === creativity) return;
+    setCreativity(c);
+    try {
+      localStorage.setItem(CREATIVITY_KEY, c);
+    } catch {
+      /* private mode */
+    }
+    if (!prompt || busy) return;
+    const hit = cached(prompt, c);
+    if (hit) setRes(hit);
+    else void generate([], false, c);
+  };
+
   useEffect(() => {
     setText(prompt);
-    if (prompt && !cached(prompt)) void generate();
-    else setRes(cached(prompt));
+    if (prompt && !cached(prompt, creativity)) void generate();
+    else setRes(cached(prompt, creativity));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prompt]);
 
@@ -88,6 +126,22 @@ export function AiPage() {
           Собрать
         </button>
       </form>
+      <div className="chips ai-creativity" role="radiogroup" aria-label="Смелость подборки">
+        {CREATIVITY.map(([c, label, hint]) => (
+          <button
+            key={c}
+            type="button"
+            role="radio"
+            aria-checked={creativity === c}
+            className={`chip ${creativity === c ? "on" : ""}`}
+            title={hint}
+            disabled={busy}
+            onClick={() => pickCreativity(c)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       {busy && (
         <div className="ai-busy">
@@ -102,7 +156,14 @@ export function AiPage() {
           </button>
         </div>
       )}
-      {res && !busy && (
+      {res?.refused && !busy && (
+        <div className="ai-refused">
+          <span className="ai-spark">✦</span>
+          <p>{res.answer || "Я могу помочь только с подбором музыки."}</p>
+          <p className="ai-refused-hint">Например: «вечер под дождём», «русский рок 90-х», «музыка для пробежки»</p>
+        </div>
+      )}
+      {res && !res.refused && !busy && (
         <>
           <header className="hero ai-hero">
             <div className="hero-art ai-art">

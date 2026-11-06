@@ -77,7 +77,7 @@ func newApp(cfg config, st *Store, log *slog.Logger) *App {
 		dz:        newDeezer(cfg.DeezerURL, ext),
 		yt:        newYouTube(cfg.InvidiousURL, cfg.Region),
 		tor:       newTorrents(cfg),
-		ai:        newAI(cfg.AIKey, cfg.AIBase, cfg.AIModel, cfg.AIPerDay),
+		ai:        newAI(cfg.AIKey, cfg.AIBase, cfg.AIModel, cfg.AIPerDay, cfg.AIDayTokens),
 		zv:        newZaycev(),
 		zvStream:  &http.Client{Transport: &http.Transport{ResponseHeaderTimeout: 20 * time.Second, MaxIdleConnsPerHost: 8}},
 		ext:       ext,

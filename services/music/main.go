@@ -47,6 +47,7 @@ type config struct {
 	AIBase       string
 	AIModel      string
 	AIPerDay     int
+	AIDayTokens  int   // DeepSeek tokens per Moscow day, all accounts (0 = unlimited)
 	CacheBytes   int64 // YouTube audio disk cache
 	Region       string
 }
@@ -75,6 +76,7 @@ func loadConfig() config {
 	gb, _ := strconv.ParseFloat(env("MUSIC_CACHE_GB", "10"), 64)
 	n, _ := strconv.Atoi(env("MUSIC_MAX_TRANSCODES", "4"))
 	aiDay, _ := strconv.Atoi(env("MUSIC_AI_DAILY_PER_USER", "40"))
+	aiTokens, _ := strconv.Atoi(env("MUSIC_AI_DAILY_TOKENS", "150000"))
 	if n < 1 {
 		n = 1
 	}
@@ -98,6 +100,7 @@ func loadConfig() config {
 		AIBase:       env("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
 		AIModel:      env("DEEPSEEK_MODEL", "deepseek-chat"),
 		AIPerDay:     aiDay,
+		AIDayTokens:  aiTokens,
 		CacheBytes:   int64(gb * (1 << 30)),
 		Region:       env("MUSIC_REGION", "RU"),
 	}

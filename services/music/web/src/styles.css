@@ -2338,6 +2338,31 @@ button.avatar {
   color: var(--accent);
   font-size: 18px;
 }
+.ai-creativity {
+  margin: 10px 0 0;
+}
+.ai-refused {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  text-align: center;
+}
+.ai-refused .ai-spark {
+  font-size: 32px;
+}
+.ai-refused p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+.ai-refused .ai-refused-hint {
+  color: var(--muted);
+  font-size: 13px;
+}
 .ai-busy {
   display: flex;
   align-items: center;
