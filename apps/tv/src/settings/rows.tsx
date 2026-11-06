@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PlayerKind } from "@martytv/contracts";
 import { imageUrl } from "@martytv/media-types";
-import { useI18n, type Locale } from "@martytv/ui";
+import { uiSoundsPref, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
 import { useCatalogConfig, useHome } from "../catalog/queries";
 import { Loader } from "../player/Loader";
 import type { LoadStage } from "../player/loading";
@@ -33,6 +33,7 @@ export function useSettingRows() {
   const [player, setPlayer] = useState(() => defaultPlayerStore.get());
   const calm = useCalmMotion();
   const [intro, setIntro] = useState(() => introPref.get());
+  const sounds = useUiSoundsPref();
   const available = useMemo(() => currentPlayers(), []);
 
   const set = (patch: Partial<Settings>) => {
@@ -94,6 +95,16 @@ export function useSettingRows() {
         introPref.set(v === true);
         setIntro(v === true);
       },
+    } as Row,
+    // «Звуки интерфейса»: this TV's tick / click (device-local, @martytv/ui uiSounds).
+    sounds: {
+      kind: "choice",
+      key: "ui_sounds",
+      label: t("sounds.setting"),
+      hint: t("sounds.setting_hint"),
+      choices: onOff,
+      value: sounds,
+      onChange: (v) => uiSoundsPref.set(v === true),
     } as Row,
     theme: {
       kind: "choice",

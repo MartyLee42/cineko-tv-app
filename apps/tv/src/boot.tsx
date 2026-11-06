@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { getCurrentFocusKey, init } from "@noriginmedia/norigin-spatial-navigation";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { apiErrorMiddleware, ErrorBoundary, I18nProvider, installErrorReporter, parseDeviceModel } from "@martytv/ui";
+import { apiErrorMiddleware, ErrorBoundary, I18nProvider, installErrorReporter, installKeySounds, parseDeviceModel } from "@martytv/ui";
 import { queryClient } from "./catalog/queries";
 import { App } from "./App";
 import { api } from "./api";
@@ -43,6 +43,8 @@ init({ debug: false, visualDebug: false, throttle: 80, throttleKeypresses: true 
 if (detectPlatform() !== "browser" && !navigator.webdriver) installKeyDedupe();
 installNavTrace();
 installFastNav();
+// «Звуки интерфейса»: a tick on arrows, a click on OK (off unless switched on in Settings).
+installKeySounds();
 // A new deploy reaches the TV without a manual restart (update.ts).
 if (!navigator.webdriver) installAutoUpdate(() => player.flow.phase === "idle");
 
