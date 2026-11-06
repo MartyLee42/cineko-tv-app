@@ -121,6 +121,15 @@ const INFO_BG_POLL_MS = 3_000;
 const INFO_GIVE_UP_MS = 90_000;
 /** Premature-end recoveries before giving up with a network error. */
 const MAX_RECOVERIES = 4;
+/**
+ * A load with no first frame yet whose element shows no sign of life (no
+ * new buffered data, no readyState change) this long is reopened with a
+ * fresh URL — e.g. resuming after a long pause, when the engine opened the
+ * stream, read the header and then never asked for more. Each retry waits
+ * one step longer (a slow torrent still finding peers); it never fails the
+ * playback (the loading screen's own «dead torrent» check does that).
+ */
+export const FIRST_LOAD_STUCK_MS = 30_000;
 /** After a played-out rebuffer, a native stall this long brings «Буферизация» back. */
 export const QUIET_STALL_MS = 15_000;
 
@@ -1822,11 +1831,40 @@ export class PlayerController {
   }
 
   /** Every 500 ms while the built-in player shows a source: rebuffer progress and the rate estimate. */
+  /** The first-load watchdog's state (see FIRST_LOAD_STUCK_MS). */
+  private firstLoad: { url: string | null; sig: string; since: number; tries: number } = { url: null, sig: "", since: 0, tries: 0 };
+
+  private watchFirstLoad(v: HTMLVideoElement, now: number) {
+    const w = this.firstLoad;
+    const end = rangesOf(v).reduce((m, r) => Math.max(m, r[1]), 0);
+    const sig = `${v.readyState}|${end.toFixed(1)}`;
+    if (w.url !== this.loadedUrl) {
+      // Another stream (a fresh URL keeps the retry count: same attempt).
+      const sameLoad = w.url !== null && this.resumeAt !== null;
+      this.firstLoad = { url: this.loadedUrl, sig, since: now, tries: sameLoad ? w.tries : 0 };
+      return;
+    }
+    if (sig !== w.sig || (v.paused && v.readyState >= 2)) {
+      w.sig = sig;
+      w.since = now;
+      return;
+    }
+    if (now - w.since < FIRST_LOAD_STUCK_MS * (w.tries + 1)) return;
+    w.tries++;
+    w.since = now;
+    this.resumeAt = this.resumeAt ?? this.lastGood;
+    void this.refreshUrl(true);
+  }
+
   private tick() {
     const v = this.video;
     const f = this.flow;
-    if (!v || f.phase !== "playing" || f.ctx.player !== "builtin" || this.loadedUrl === null || !this.started || this.compatPending !== null) return;
+    if (!v || f.phase !== "playing" || f.ctx.player !== "builtin" || this.loadedUrl === null || this.compatPending !== null) return;
     const now = Date.now();
+    if (!this.started) {
+      if (!this.compat && !f.source.live && f.source.kind !== "online") this.watchFirstLoad(v, now);
+      return;
+    }
     const ahead = bufferedAhead(rangesOf(v), v.currentTime);
     const bitrate = this.bitrate();
     // Buffer growth measures the link only while the engine is still

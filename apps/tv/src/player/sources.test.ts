@@ -363,3 +363,65 @@ describe("dead torrent", () => {
     }
   });
 });
+
+describe("first load stuck before a frame", () => {
+  it("reopens the stream with a fresh URL, waiting longer each time, never failing", async () => {
+    const data = await import("./data");
+    let n = 0;
+    const torrent = () =>
+      online({ id: "s-tor", kind: "torrent", format: undefined, mime_type: "video/mp4", stream_url: `/api/v1/stream/t${++n}`, qualities: [], quality: null });
+    vi.mocked(data.createSource).mockImplementation(async () => torrent());
+    vi.mocked(data.getSource).mockImplementation(async () => torrent());
+    const { PlayerController, FIRST_LOAD_STUCK_MS } = await import("./controller");
+    const transport = { start: async () => ({ id: "sess", resume_position_seconds: null, progress: null, report_token: null }), report: async () => null, beacon: () => undefined };
+    const c = new PlayerController(Date.now, transport as never);
+    const v = new FakeVideo();
+    v.canPlayType = () => "maybe";
+    v.readyState = 1;
+    c.attach(v as unknown as HTMLVideoElement);
+    const ctx = { media_id: MOVIE, kind: "movie" as const, title: "T", poster_path: null, backdrop_path: null, season: null, episode: null, episode_id: null, episode_name: null, profile_id: "p", lang: "en" as const, player: "builtin" as const, app: null };
+    c.playRelease(ctx, variantRelease(variant) as Release);
+    await vi.waitFor(() => expect(c.flow.phase).toBe("playing"));
+    await vi.waitFor(() => expect(v.src).toMatch(/\/api\/v1\/stream\/t\d+$/));
+    const first = v.src;
+    const tick = () => (c as unknown as { tick(): void }).tick();
+    const t0 = Date.now();
+    const now = vi.spyOn(Date, "now");
+    try {
+      now.mockReturnValue(t0);
+      tick();
+      now.mockReturnValue(t0 + FIRST_LOAD_STUCK_MS - 1000);
+      tick();
+      expect(v.src).toBe(first);
+      now.mockReturnValue(t0 + FIRST_LOAD_STUCK_MS + 1000);
+      tick();
+      await vi.waitFor(() => expect(v.src).not.toBe(first));
+      const second = v.src;
+      // The next try waits twice as long; still playing (no failure screen).
+      const t1 = t0 + FIRST_LOAD_STUCK_MS + 1000;
+      now.mockReturnValue(t1);
+      tick();
+      now.mockReturnValue(t1 + FIRST_LOAD_STUCK_MS + 1000);
+      tick();
+      expect(v.src).toBe(second);
+      now.mockReturnValue(t1 + 2 * FIRST_LOAD_STUCK_MS + 1000);
+      tick();
+      await vi.waitFor(() => expect(v.src).not.toBe(second));
+      expect(c.flow.phase).toBe("playing");
+      // Signs of life (data buffered) restart the clock.
+      v.readyState = 2;
+      const t2 = t1 + 2 * FIRST_LOAD_STUCK_MS + 1000;
+      now.mockReturnValue(t2);
+      tick();
+      const third = v.src;
+      now.mockReturnValue(t2 + 3 * FIRST_LOAD_STUCK_MS - 1000);
+      tick();
+      expect(v.src).toBe(third);
+    } finally {
+      now.mockRestore();
+      vi.mocked(data.createSource).mockImplementation(async () => online());
+      vi.mocked(data.getSource).mockImplementation(async () => online());
+      c.close();
+    }
+  });
+});
