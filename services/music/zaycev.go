@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -158,59 +159,90 @@ func zvToTrack(t zvTrack) Track {
 	return Track{ID: "zv:" + strconv.FormatInt(t.ID, 10), Title: t.Title, Artist: t.Artist, Duration: t.Duration, Cover: t.Cover}
 }
 
-// Best finds the zaycev upload of a track (same title, artist, ±6 s).
-func (z *Zaycev) Best(ctx context.Context, t *Track) (*zvTrack, error) {
+// zvScore rates a zaycev upload against a catalog track: same title and
+// artist are required, the length decides between versions.
+func zvScore(t *Track, c *zvTrack) (float64, bool) {
+	if !c.Playable {
+		return 0, false
+	}
 	artist := strings.TrimSpace(strings.Split(t.Artist, ",")[0])
-	title := cleanTitle(t.Title)
-	cands, err := z.Search(ctx, strings.TrimSpace(artist+" "+title), 20)
+	nt, na := normalize(cleanTitle(t.Title)), normalize(artist)
+	ct, ca := normalize(cleanTitle(c.Title)), normalize(c.Artist)
+	s := 0.0
+	switch {
+	case ct == nt:
+		s += 50
+	case len(nt) > 3 && strings.Contains(ct, nt):
+		s += 25
+	default:
+		return 0, false
+	}
+	switch {
+	case na != "" && (ca == na || strings.Contains(ca, na)):
+		s += 40
+	case na != "" && strings.Contains(na, ca) && ca != "":
+		s += 20
+	default:
+		return 0, false // another artist's song with the same name
+	}
+	if t.Duration > 0 && c.Duration > 0 {
+		d := math.Abs(float64(t.Duration - c.Duration))
+		switch {
+		case d <= 4:
+			s += 20
+		case d <= 10:
+			s += 5
+		case d > 30:
+			s -= 40
+		}
+	}
+	for _, w := range variantWords {
+		if containsWord(normalize(c.Title), w) && !containsWord(normalize(t.Title+" "+t.Version), w) {
+			s -= 22
+		}
+	}
+	return s, true
+}
+
+// ZvCandidate is a zaycev upload offered in the "choose recording" dialog.
+type ZvCandidate struct {
+	ID       string  `json:"id"` // "zv:<n>"
+	Title    string  `json:"title"`
+	Artist   string  `json:"artist"`
+	Duration int     `json:"duration"`
+	Bitrate  int     `json:"bitrate,omitempty"`
+	Score    float64 `json:"score"`
+}
+
+// Ranked: the zaycev uploads of a track, best first.
+func (z *Zaycev) Ranked(ctx context.Context, t *Track) ([]ZvCandidate, error) {
+	artist := strings.TrimSpace(strings.Split(t.Artist, ",")[0])
+	cands, err := z.Search(ctx, strings.TrimSpace(artist+" "+cleanTitle(t.Title)), 20)
 	if err != nil {
 		return nil, err
 	}
-	nt, na := normalize(title), normalize(artist)
-	var best *zvTrack
-	bestScore := 0.0
+	out := []ZvCandidate{}
 	for i := range cands {
 		c := &cands[i]
-		if !c.Playable {
-			continue
-		}
-		ct, ca := normalize(cleanTitle(c.Title)), normalize(c.Artist)
-		s := 0.0
-		switch {
-		case ct == nt:
-			s += 50
-		case len(nt) > 3 && strings.Contains(ct, nt):
-			s += 25
-		default:
-			continue
-		}
-		switch {
-		case na != "" && (ca == na || strings.Contains(ca, na)):
-			s += 40
-		case na != "" && strings.Contains(na, ca) && ca != "":
-			s += 20
-		default:
-			continue // another artist's song with the same name
-		}
-		if t.Duration > 0 && c.Duration > 0 {
-			d := math.Abs(float64(t.Duration - c.Duration))
-			switch {
-			case d <= 4:
-				s += 20
-			case d <= 10:
-				s += 5
-			case d > 30:
-				s -= 40
-			}
-		}
-		if s > bestScore {
-			best, bestScore = c, s
+		if sc, ok := zvScore(t, c); ok {
+			out = append(out, ZvCandidate{ID: "zv:" + strconv.FormatInt(c.ID, 10), Title: c.Title, Artist: c.Artist,
+				Duration: c.Duration, Bitrate: c.Bitrate, Score: sc - float64(i)*0.5})
 		}
 	}
-	if best == nil || bestScore < 70 {
-		return nil, errors.New("zaycev: no match")
+	sort.SliceStable(out, func(i, j int) bool { return out[i].Score > out[j].Score })
+	return out, nil
+}
+
+// Best finds the zaycev upload of a track (same title, artist, ±6 s).
+func (z *Zaycev) Best(ctx context.Context, t *Track) (int64, error) {
+	r, err := z.Ranked(ctx, t)
+	if err != nil {
+		return 0, err
 	}
-	return best, nil
+	if len(r) == 0 || r[0].Score < 70 {
+		return 0, errors.New("zaycev: no match")
+	}
+	return strconv.ParseInt(strings.TrimPrefix(r[0].ID, "zv:"), 10, 64)
 }
 
 var zvIDRe = regexp.MustCompile(`^\d{1,12}$`)
@@ -290,20 +322,23 @@ func (a *App) streamZv(w http.ResponseWriter, r *http.Request, id int64) error {
 	return errStatus(404, "not_found", "Трек недоступен на Zaycev")
 }
 
-// zaycevFallback: the zaycev upload of a catalog track (cached per track).
+// zaycevFallback: the zaycev upload of a catalog track (cached per track),
+// checked to give a play link; a dead one is replaced.
 func (a *App) zaycevFallback(ctx context.Context, t *Track) (int64, bool) {
 	key := "zv|" + t.ID
 	if v, ok := a.st.Match(ctx, key); ok {
-		if id, err := strconv.ParseInt(v, 10, 64); err == nil {
-			return id, id > 0
+		if id, err := strconv.ParseInt(v, 10, 64); err == nil && id > 0 && !memo.isBad(t.ID, "zv:"+v) {
+			if _, err := a.zv.PlayURL(ctx, id, false); err == nil {
+				return id, true
+			}
+			memo.markBad(t.ID, "zv:"+v)
+			_ = a.st.ForgetAutoMatch(ctx, key, v)
 		}
 	}
-	zctx, cancel := context.WithTimeout(ctx, 20*time.Second)
-	defer cancel()
-	best, err := a.zv.Best(zctx, t)
-	if err != nil {
+	id, ok := a.zvPick(ctx, t)
+	if !ok {
 		return 0, false
 	}
-	_ = a.st.SetMatch(ctx, key, strconv.FormatInt(best.ID, 10), false)
-	return best.ID, true
+	_ = a.st.SetMatch(ctx, key, strconv.FormatInt(id, 10), false)
+	return id, true
 }

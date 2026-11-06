@@ -186,6 +186,16 @@ export interface Candidate {
   score: number;
 }
 
+/** A zaycev.net upload offered next to the YouTube ones. */
+export interface ZvCandidate {
+  id: string; // "zv:<n>"
+  title: string;
+  artist: string;
+  duration: number;
+  bitrate?: number;
+  score: number;
+}
+
 export interface Lyrics {
   plain: string;
   synced: string;

@@ -76,7 +76,7 @@ func (s *Store) SetManualTorrent(ctx context.Context, trackID string, src *Torre
 // serveManual redirects to the chosen torrent file, if the track has one.
 func (a *App) serveManual(w http.ResponseWriter, r *http.Request, trackID string) bool {
 	src, ok := a.st.ManualTorrent(r.Context(), trackID)
-	if !ok {
+	if !ok || memo.isBad(trackID, torrentValue(src)) {
 		return false
 	}
 	if row, err := a.st.Torrent(r.Context(), src.Hash); err != nil {
@@ -84,6 +84,7 @@ func (a *App) serveManual(w http.ResponseWriter, r *http.Request, trackID string
 	} else if _, err := a.tor.ensure(r.Context(), row); err != nil {
 		return false
 	}
+	memo.setServed(trackID, torrentValue(src))
 	redirectTorrent(w, r, src)
 	return true
 }
@@ -129,7 +130,7 @@ func (a *App) torrentFallback(ctx context.Context, t *Track) (*TorrentSrc, error
 	if !a.tor.SearchConfigured() {
 		return nil, errNoTorrent
 	}
-	if src, ok := a.st.TorrentMatch(ctx, t.ID); ok {
+	if src, ok := a.st.TorrentMatch(ctx, t.ID); ok && !memo.isBad(t.ID, torrentValue(src)) {
 		if row, err := a.st.Torrent(ctx, src.Hash); err == nil {
 			if _, err := a.tor.ensure(ctx, row); err == nil {
 				return src, nil
@@ -208,7 +209,7 @@ func (a *App) findInTorrents(ctx context.Context, t *Track) (*TorrentSrc, error)
 		if err != nil || !info.Ready {
 			continue
 		}
-		if tr := pickTorrentTrack(t, info.Tracks); tr != nil {
+		if tr := pickTorrentTrack(t, info.Tracks); tr != nil && !memo.isBad(t.ID, torrentValue(tr.Src)) {
 			a.log.Info("fallback: torrent match", "track", t.ID, "release", r.Title, "file", tr.Title)
 			return tr.Src, nil
 		}
@@ -278,6 +279,7 @@ func redirectTorrent(w http.ResponseWriter, r *http.Request, src *TorrentSrc) {
 func (a *App) playFallback(w http.ResponseWriter, r *http.Request, t *Track, ytErr error) error {
 	// Zaycev first (quick, 320 kbps MP3), then the trackers.
 	if id, ok := a.zaycevFallback(r.Context(), t); ok {
+		memo.setServed(t.ID, "zv:"+strconv.FormatInt(id, 10))
 		w.Header().Set("Cache-Control", "no-store")
 		http.Redirect(w, r, "/music/api/zv/"+strconv.FormatInt(id, 10), http.StatusFound)
 		return nil
@@ -290,6 +292,7 @@ func (a *App) playFallback(w http.ResponseWriter, r *http.Request, t *Track, ytE
 		}
 		return err
 	}
+	memo.setServed(t.ID, torrentValue(src))
 	redirectTorrent(w, r, src)
 	return nil
 }

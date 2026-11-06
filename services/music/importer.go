@@ -158,25 +158,30 @@ func (a *App) hYTQuery(w http.ResponseWriter, r *http.Request, u *User) error {
 		return errStatus(400, "bad_request", "Некорректный трек")
 	}
 	t.ID = id
+	if wantsRepick(r) {
+		a.repick(r.Context(), id)
+	}
 	if a.serveManual(w, r, id) {
 		return nil
 	}
 	v, ok := a.st.Match(r.Context(), id)
-	if !ok {
+	if !ok || memo.isBad(id, v) {
 		var err error
-		v, err = a.findYT(r.Context(), &Track{Artist: t.Artist, Title: t.Title, Duration: t.Duration})
+		v, err = a.findYT(r.Context(), &Track{ID: id, Artist: t.Artist, Title: t.Title, Duration: t.Duration})
 		if err != nil {
 			return a.playFallback(w, r, t, err)
 		}
 		_ = a.st.SetMatch(r.Context(), id, v, false)
 	}
+	memo.setServed(id, v)
 	if a.serveCached(w, r, v) {
 		return nil
 	}
 	a.cacheAudio(v)
 	err := a.streamYT(w, r, v)
 	if errors.Is(err, errYTNoAudio) {
-		_ = a.st.ForgetMatch(r.Context(), id)
+		memo.markBad(id, v)
+		_ = a.st.ForgetAutoMatch(r.Context(), id, v)
 		return a.playFallback(w, r, t, err)
 	}
 	return err
@@ -192,6 +197,9 @@ func (a *App) findYT(ctx context.Context, t *Track) (string, error) {
 	for i, c := range cands {
 		if i >= 4 || c.Score < cands[0].Score-45 {
 			break
+		}
+		if t.ID != "" && memo.isBad(t.ID, c.VideoID) {
+			continue
 		}
 		if a.probeVideo(ctx, c.VideoID) {
 			return c.VideoID, nil

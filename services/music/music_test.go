@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"golang.org/x/text/encoding/charmap"
 )
@@ -305,5 +306,61 @@ func TestRoutesBuild(t *testing.T) {
 	a := newApp(config{DataDir: t.TempDir()}, st, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	if a.routes() == nil {
 		t.Fatal("no handler")
+	}
+}
+
+func TestStudioLikeRejectsLiveAndOffLength(t *testing.T) {
+	tr := &Track{Title: "Группа крови", Artist: "Кино", Album: "Группа крови", Duration: 285}
+	if !studioLike(tr, Candidate{Title: "Группа крови", Duration: 287}) {
+		t.Error("studio upload rejected")
+	}
+	if studioLike(tr, Candidate{Title: "Кино - Группа крови (live 1988)", Duration: 286}) {
+		t.Error("live upload accepted")
+	}
+	if studioLike(tr, Candidate{Title: "Группа крови", Duration: 320}) {
+		t.Error("much longer upload accepted")
+	}
+	liveAlbum := &Track{Title: "Группа крови (live)", Artist: "Кино", Duration: 300}
+	if !studioLike(liveAlbum, Candidate{Title: "Кино - Группа крови (live)", Duration: 301}) {
+		t.Error("live catalog track should accept a live upload")
+	}
+}
+
+func TestZvScore(t *testing.T) {
+	tr := &Track{Title: "Группа крови", Artist: "Кино", Duration: 285}
+	good, ok := zvScore(tr, &zvTrack{Title: "Группа крови", Artist: "Кино", Duration: 286, Playable: true})
+	if !ok || good < 70 {
+		t.Fatalf("studio upload: %.1f %v", good, ok)
+	}
+	if live, ok := zvScore(tr, &zvTrack{Title: "Группа крови (live)", Artist: "Кино", Duration: 286, Playable: true}); ok && live >= good {
+		t.Errorf("live %.1f ≥ studio %.1f", live, good)
+	}
+	if _, ok := zvScore(tr, &zvTrack{Title: "Группа крови", Artist: "Другая группа", Duration: 286, Playable: true}); ok {
+		t.Error("other artist accepted")
+	}
+	if id, ok := zvMatch("zv:123"); !ok || id != 123 {
+		t.Error("zvMatch")
+	}
+	if _, ok := zvMatch("dQw4w9WgXcQ"); ok {
+		t.Error("video id taken for zaycev")
+	}
+}
+
+func TestSourceMemo(t *testing.T) {
+	m := &sourceMemo{bad: map[string]map[string]time.Time{}, served: map[string]string{}}
+	m.setServed("dz:1", "zv:5")
+	if m.lastServed("dz:1") != "zv:5" || m.lastServed("dz:2") != "" {
+		t.Fatal("served")
+	}
+	m.markBad("dz:1", "zv:5")
+	if !m.isBad("dz:1", "zv:5") || m.isBad("dz:1", "abc") || m.isBad("dz:2", "zv:5") {
+		t.Fatal("bad")
+	}
+	m.bad["dz:1"]["zv:5"] = time.Now().Add(-badTTL - time.Minute)
+	if m.isBad("dz:1", "zv:5") {
+		t.Fatal("bad mark should expire")
+	}
+	if torrentValue(&TorrentSrc{Hash: "h", File: 3}) != "t:h:3" {
+		t.Fatal("torrentValue")
 	}
 }

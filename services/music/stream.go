@@ -25,7 +25,7 @@ import (
 // calls for the same track share one search).
 func (a *App) resolve(ctx context.Context, dzID int64) (string, error) {
 	key := "dz:" + strconv.FormatInt(dzID, 10)
-	if v, ok := a.st.Match(ctx, key); ok {
+	if v, ok := a.st.Match(ctx, key); ok && !memo.isBad(key, v) {
 		return v, nil
 	}
 	a.resolveMu.Lock()
@@ -59,15 +59,31 @@ func (a *App) resolveNow(ctx context.Context, key string, dzID int64) (string, e
 	if err != nil {
 		return "", err
 	}
-	cands, err := a.yt.Candidates(ctx, t)
+	all, err := a.yt.Candidates(ctx, t)
 	if err != nil {
 		return "", err
+	}
+	cands := all[:0:0]
+	for _, c := range all {
+		if !memo.isBad(key, c.VideoID) {
+			cands = append(cands, c)
+		}
 	}
 	// Take the best-ranked candidate whose audio actually streams: some
 	// uploads (often label ones) come back empty from the server's VPN exit.
 	// The top few are probed in parallel; ranks are honoured.
 	if len(cands) == 0 {
 		return "", errYTNoMatch
+	}
+	// YouTube often has only live / cover uploads of a song: then the
+	// studio MP3 from zaycev is the better match.
+	if !studioLike(t, cands[0]) {
+		if id, ok := a.zvPick(ctx, t); ok {
+			v := "zv:" + strconv.FormatInt(id, 10)
+			_ = a.st.SetMatch(ctx, key, v, false)
+			a.log.Debug("matched", "track", key, "zaycev", id, "youtube", cands[0].Title)
+			return v, nil
+		}
 	}
 	n := min(len(cands), 4)
 	floor := cands[0].Score - 45 // never fall back to a clearly different recording
@@ -89,6 +105,31 @@ func (a *App) resolveNow(ctx context.Context, key string, dzID int64) (string, e
 		}
 	}
 	return "", errYTNoMatch
+}
+
+// studioLike: the YouTube upload looks like the catalog recording — about
+// the same length and no "live" / "cover" / … the catalog title lacks.
+func studioLike(t *Track, c Candidate) bool {
+	if t.Duration > 0 && c.Duration > 0 && (c.Duration-t.Duration > 5 || t.Duration-c.Duration > 5) {
+		return false
+	}
+	title, full, album := normalize(c.Title), normalize(t.Title+" "+t.Version), normalize(t.Album)
+	for _, w := range variantWords {
+		if containsWord(title, w) && !containsWord(full, w) && !containsWord(album, w) {
+			return false
+		}
+	}
+	return true
+}
+
+// zvMatch: the zaycev id of a match stored as "zv:<n>".
+func zvMatch(v string) (int64, bool) {
+	raw, ok := strings.CutPrefix(v, "zv:")
+	if !ok || !zvIDRe.MatchString(raw) {
+		return 0, false
+	}
+	id, err := strconv.ParseInt(raw, 10, 64)
+	return id, err == nil
 }
 
 // probeVideo checks that a video's audio really delivers bytes.
@@ -131,6 +172,10 @@ func (a *App) hResolve(w http.ResponseWriter, r *http.Request, u *User) error {
 	if err != nil {
 		return err
 	}
+	if _, ok := zvMatch(v); ok {
+		writeJSON(w, 200, map[string]any{"videoId": v, "cached": false})
+		return nil
+	}
 	a.cacheAudio(v) // prefetch: the next track then plays from disk
 	_, _, cached := a.cacheLookup(v)
 	writeJSON(w, 200, map[string]any{"videoId": v, "cached": cached})
@@ -142,38 +187,54 @@ func (a *App) hPlay(w http.ResponseWriter, r *http.Request, u *User) error {
 	if err != nil {
 		return err
 	}
-	if a.serveManual(w, r, "dz:"+strconv.FormatInt(id, 10)) {
+	ctx := r.Context()
+	key := "dz:" + strconv.FormatInt(id, 10)
+	if wantsRepick(r) {
+		a.repick(ctx, key)
+	}
+	if a.serveManual(w, r, key) {
 		return nil
 	}
 	fallback := func(ytErr error) error {
-		t, terr := a.dz.Track(r.Context(), id)
+		t, terr := a.dz.Track(ctx, id)
 		if terr != nil {
 			return ytErr
 		}
 		return a.playFallback(w, r, t, ytErr)
 	}
-	v, err := a.resolve(r.Context(), id)
-	if err != nil {
-		// No YouTube upload (or YouTube unreachable): try the trackers.
-		return fallback(err)
-	}
-	if a.serveCached(w, r, v) {
-		return nil
-	}
-	a.cacheAudio(v)
-	err = a.streamYT(w, r, v)
-	if errors.Is(err, errYTNoAudio) {
-		// The upload vanished since it was matched: match again once.
-		key := "dz:" + strconv.FormatInt(id, 10)
-		_ = a.st.ForgetMatch(r.Context(), key)
-		if v2, err2 := a.resolve(r.Context(), id); err2 == nil && v2 != v {
-			err = a.streamYT(w, r, v2)
-		}
-		if errors.Is(err, errYTNoAudio) {
+	// A source that turns out unplayable is marked bad and the next one is
+	// picked (a vanished upload, a dead zaycev link).
+	for try := 0; try < 3; try++ {
+		v, err := a.resolve(ctx, id)
+		if err != nil {
+			// No YouTube upload (or YouTube unreachable): zaycev, the trackers.
 			return fallback(err)
 		}
+		if zid, ok := zvMatch(v); ok {
+			if _, err := a.zv.PlayURL(ctx, zid, false); err != nil {
+				memo.markBad(key, v)
+				_ = a.st.ForgetAutoMatch(ctx, key, v)
+				continue
+			}
+			memo.setServed(key, v)
+			w.Header().Set("Cache-Control", "no-store")
+			http.Redirect(w, r, "/music/api/zv/"+strconv.FormatInt(zid, 10), http.StatusFound)
+			return nil
+		}
+		memo.setServed(key, v)
+		if a.serveCached(w, r, v) {
+			return nil
+		}
+		a.cacheAudio(v)
+		err = a.streamYT(w, r, v)
+		if errors.Is(err, errYTNoAudio) {
+			memo.markBad(key, v)
+			_ = a.st.ForgetAutoMatch(ctx, key, v)
+			continue
+		}
+		return err
 	}
-	return err
+	return fallback(errYTNoMatch)
 }
 
 func (a *App) hYT(w http.ResponseWriter, r *http.Request, u *User) error {
@@ -228,12 +289,32 @@ func (a *App) hCandidates(w http.ResponseWriter, r *http.Request, u *User) error
 	if err != nil {
 		return err
 	}
+	// YouTube and zaycev side by side; one of them failing is fine.
+	var zv []ZvCandidate
+	var zvErr error
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		zctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+		defer cancel()
+		zv, zvErr = a.zv.Ranked(zctx, t)
+	}()
 	cands, err := a.yt.Candidates(r.Context(), t)
-	if err != nil {
+	<-done
+	if err != nil && zvErr != nil {
 		return err
 	}
+	if cands == nil {
+		cands = []Candidate{}
+	}
+	if zv == nil {
+		zv = []ZvCandidate{}
+	}
+	if len(zv) > 8 {
+		zv = zv[:8]
+	}
 	current, _ := a.st.Match(r.Context(), t.ID)
-	writeJSON(w, 200, map[string]any{"current": current, "candidates": cands})
+	writeJSON(w, 200, map[string]any{"current": current, "candidates": cands, "zaycev": zv})
 	return nil
 }
 
@@ -248,7 +329,7 @@ func (a *App) hSetMatch(w http.ResponseWriter, r *http.Request, u *User) error {
 	if err := readJSON(r, &b); err != nil {
 		return err
 	}
-	if !validVideoID(b.VideoID) {
+	if _, zv := zvMatch(b.VideoID); !zv && !validVideoID(b.VideoID) {
 		return errStatus(400, "bad_request", "Некорректный id видео")
 	}
 	if err := a.st.SetMatch(r.Context(), "dz:"+strconv.FormatInt(id, 10), b.VideoID, true); err != nil {

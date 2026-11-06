@@ -155,7 +155,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const reportedRef = useRef<string | null>(null);
   const prefetched = useRef(new Set<string>());
   const errorsRef = useRef(0);
+  // Track that already asked the server for another source (once per load).
+  const repickRef = useRef<string | null>(null);
   const extendingRef = useRef(false);
+  const topUpRef = useRef<string | null>(null); // last track already topped up for
 
   const current = state.queue[state.index] ?? null;
 
@@ -165,13 +168,21 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     !isDownloaded(t.id) &&
     !!t.src && (!!t.src.start || !!t.src.end || !NATIVE.has(t.src.ext) || forcedTc.current.has(t.id));
 
-  const srcFor = (t: Track, tc: boolean, at: number): string => {
+  // The server picks a track's source; with repick it drops the one it
+  // served last (it failed here) and picks the next.
+  const canRepick = (t: Track) => !isDownloaded(t.id) && (dzId(t) !== null || t.id.startsWith("yq:"));
+
+  const srcFor = (t: Track, tc: boolean, at: number, repick = false): string => {
     if (isDownloaded(t.id)) return offlineUrl(t.id);
     const id = dzId(t);
-    if (id !== null) return `/music/api/play/${id}`;
+    if (id !== null) return `/music/api/play/${id}${repick ? "?repick=1" : ""}`;
     if (t.id.startsWith("yt:")) return `/music/api/yt/${t.id.slice(3)}`;
     if (t.id.startsWith("zv:")) return `/music/api/zv/${t.id.slice(3)}`;
-    if (t.id.startsWith("yq:")) return `/music/api/ytq?${new URLSearchParams({ id: t.id, artist: t.artist, title: t.title, duration: String(t.duration || 0) })}`;
+    if (t.id.startsWith("yq:")) {
+      const q = new URLSearchParams({ id: t.id, artist: t.artist, title: t.title, duration: String(t.duration || 0) });
+      if (repick) q.set("repick", "1");
+      return `/music/api/ytq?${q}`;
+    }
     if (t.src) {
       const base = `/music/api/stream/${t.src.hash}/${t.src.file}`;
       if (!tc) return `${base}?ext=${encodeURIComponent(t.src.ext)}`;
@@ -184,9 +195,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     return "";
   };
 
-  const loadTrack = useCallback((t: Track, autoplayNow: boolean, at = 0) => {
+  const loadTrack = useCallback((t: Track, autoplayNow: boolean, at = 0, repick = false) => {
     let audio = audioRef.current;
     if (!audio) return;
+    if (!repick) repickRef.current = null;
     const tc = needsTc(t);
     transcodingRef.current = tc;
     offsetRef.current = tc ? at : 0;
@@ -195,7 +207,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     // Only a preload with a known length: a live-converted stream (torrent
     // FLAC/CUE behind /play) has none and no Range, so after sitting paused it
     // played the few seconds it had buffered and stopped. Those open fresh.
-    if (pre && preIdRef.current === t.id && !tc && at === 0 && pre.src && !pre.error && Number.isFinite(pre.duration)) {
+    // Hidden page (screen off): keep the element that is already playing.
+    // Mobile browsers may refuse play() on the spare one in the background,
+    // so it only warms the cache there.
+    if (!repick && pre && preIdRef.current === t.id && !tc && at === 0 && !document.hidden && pre.src && !pre.error && Number.isFinite(pre.duration)) {
       // Swap in the preloaded element.
       const old = audio;
       old.pause();
@@ -215,7 +230,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         pre.load();
         preIdRef.current = null;
       }
-      audio.src = srcFor(t, tc, at);
+      audio.src = srcFor(t, tc, at, repick);
     }
     if (!tc && at > 0) {
       const onMeta = () => {
@@ -247,9 +262,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   // ---- queue operations ----
 
-  const setIndex = useCallback((i: number, playing = true) => {
+  // Starts the track right away, in the same task (e.g. the "ended" event):
+  // with the screen off a page whose audio has stopped gets throttled or
+  // frozen, so waiting for a render + effect left the next track silent.
+  const setIndex = useCallback((i: number, playing = true, queue?: Track[]) => {
+    const t = (queue ?? stateRef.current.queue)[i];
+    if (playing && t) {
+      reportedRef.current = null;
+      restoreAtRef.current = null;
+      loadTrack(t, true, 0);
+    }
     setState((s) => ({ ...s, index: i, playing }));
-  }, []);
+  }, [loadTrack]);
 
   const playList = useCallback(
     (tracks: Track[], start = 0, ctx?: PlayContext) => {
@@ -300,11 +324,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [play, pause]);
 
   // Endless contexts and "autoplay": add more tracks near the end.
-  const extend = useCallback(async (): Promise<boolean> => {
-    if (extendingRef.current) return false;
+  const extend = useCallback(async (): Promise<Track[] | null> => {
+    if (extendingRef.current) return null;
     const s = stateRef.current;
     const last = s.queue[s.queue.length - 1];
-    if (!last) return false;
+    if (!last) return null;
     const ctx = s.context;
     let path: string | null = null;
     if (ctx?.type === "flow") {
@@ -315,17 +339,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     } else if (autoplayRef.current && last.artistId) {
       path = `/artist/${last.artistId}/radio`;
     }
-    if (!path) return false;
+    if (!path) return null;
     extendingRef.current = true;
     try {
       const more = await api.get<Track[]>(path);
       const have = new Set(stateRef.current.queue.map((t) => t.id));
       const fresh = more.filter((t) => !have.has(t.id));
-      if (fresh.length === 0) return false;
+      if (fresh.length === 0) return null;
+      const queue = [...stateRef.current.queue, ...fresh];
+      stateRef.current = { ...stateRef.current, queue }; // read before the next render
       setState((st) => ({ ...st, queue: [...st.queue, ...fresh] }));
-      return true;
+      return queue;
     } catch {
-      return false;
+      return null;
     } finally {
       extendingRef.current = false;
     }
@@ -339,12 +365,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (s.repeat === "all" && s.queue.length > 0) {
-        loadedIdRef.current = s.queue.length === 1 ? null : loadedIdRef.current;
         setIndex(0);
         return;
       }
-      void extend().then((ok) => {
-        if (ok) setIndex(stateRef.current.index + 1);
+      void extend().then((queue) => {
+        if (queue) setIndex(stateRef.current.index + 1, true, queue);
         else if (auto) setState((st) => ({ ...st, playing: false }));
       });
     },
@@ -543,6 +568,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         }
         // Endless contexts: top up when 3 tracks are left.
         if ((s.context?.type === "flow" || s.context?.type === "radio") && s.queue.length - s.index <= 3) void extend();
+        // Autoplay: fetch more during the last track, not after it ended
+        // (a page with the screen off may not get to run the request).
+        else if (s.index === s.queue.length - 1 && s.repeat === "off" && d > 0 && d - p < 40 && topUpRef.current !== t.id) {
+          topUpRef.current = t.id;
+          void extend();
+        }
       }
       if ("mediaSession" in navigator && Math.abs(p - lastPos) > 4 && d > 0) {
         lastPos = p;
@@ -582,6 +613,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (t.src && !transcodingRef.current) {
         forcedTc.current.add(t.id);
         loadTrack(t, true, pos());
+        return;
+      }
+      // This source can't play (dead zaycev link, vanished upload…): once,
+      // let the server pick another one and go on from the same spot.
+      if (canRepick(t) && repickRef.current !== t.id) {
+        repickRef.current = t.id;
+        const at = pos();
+        loadTrack(t, true, at > 1 ? at : 0, true);
         return;
       }
       errorsRef.current++;

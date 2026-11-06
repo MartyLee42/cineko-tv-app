@@ -417,6 +417,12 @@ func (s *Store) SetMatch(ctx context.Context, trackID, videoID string, manual bo
 	return err
 }
 
+// ForgetAutoMatch drops an automatic match, only if it still is videoID.
+func (s *Store) ForgetAutoMatch(ctx context.Context, trackID, videoID string) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM yt_match WHERE track_id=? AND video_id=? AND manual=0`, trackID, videoID)
+	return err
+}
+
 func (s *Store) ForgetMatch(ctx context.Context, trackID string) error {
 	_, err := s.db.ExecContext(ctx, `DELETE FROM yt_match WHERE track_id=?`, trackID)
 	return err

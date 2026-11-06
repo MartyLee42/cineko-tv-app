@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { api, dzId, fmtSize, fmtTime, type Album, type Candidate, type Release, type TorrentInfo, type TorrentTrack, type Track } from "./api";
+import { api, dzId, fmtSize, fmtTime, type Album, type Candidate, type Release, type ZvCandidate, type TorrentInfo, type TorrentTrack, type Track } from "./api";
 import { CloseIcon, MagnetIcon, PlayIcon } from "./icons";
 import { useLibrary } from "./library";
 import { usePlayer } from "./player";
@@ -191,11 +191,14 @@ export function openMatchPicker(t: Track) {
 function MatchDialog({ track, close }: { track: Track; close: () => void }) {
   const id = dzId(track)!;
   const player = usePlayer();
-  const q = useQuery({ queryKey: ["candidates", id], queryFn: () => api.get<{ current: string; candidates: Candidate[] }>(`/track/${id}/candidates`) });
+  const q = useQuery({
+    queryKey: ["candidates", id],
+    queryFn: () => api.get<{ current: string; candidates: Candidate[]; zaycev?: ZvCandidate[] }>(`/track/${id}/candidates`),
+  });
   const [preview, setPreview] = useState<string | null>(null);
   useEffect(() => {
     if (!preview) return;
-    const a = new Audio(`/music/api/yt/${preview}?preview=1`);
+    const a = new Audio(preview.startsWith("zv:") ? `/music/api/zv/${preview.slice(3)}` : `/music/api/yt/${preview}?preview=1`);
     const wasPlaying = player.playing;
     if (wasPlaying) player.pause();
     a.play().catch(() => toast("Не удалось воспроизвести"));
@@ -220,34 +223,65 @@ function MatchDialog({ track, close }: { track: Track; close: () => void }) {
     <>
       <ModalHead title="Выберите запись" close={close} />
       <p className="muted small">
-        {track.artist} — {track.title} · {fmtTime(track.duration)}. Звук берётся с YouTube; если попалась не та версия (концерт, кавер), выберите другую.
+        {track.artist} — {track.title} · {fmtTime(track.duration)}. Звук берётся с YouTube или Zaycev.net; если попалась не та версия (концерт, кавер), выберите другую.
       </p>
       {q.isLoading && <p className="muted">Ищем…</p>}
       {q.error && <p className="error-text">{(q.error as Error).message}</p>}
+      {q.data && (q.data.zaycev?.length ?? 0) > 0 && (
+        <>
+          <h4 className="cand-head">Zaycev.net · студийные MP3</h4>
+          <div className="cand-list">
+            {q.data.zaycev!.map((c) => (
+              <CandRow key={c.id} id={c.id} title={c.title} sub={`${c.artist}${c.bitrate ? ` · ${c.bitrate} кбит/с` : ""}`}
+                duration={c.duration} track={track} current={q.data.current === c.id} previewing={preview === c.id}
+                onPreview={() => setPreview(preview === c.id ? null : c.id)} onChoose={() => void choose(c.id)} />
+            ))}
+          </div>
+        </>
+      )}
+      {q.data && q.data.candidates.length > 0 && <h4 className="cand-head">YouTube</h4>}
       <div className="cand-list">
         {q.data?.candidates.map((c) => (
-          <div key={c.videoId} className={`cand ${q.data.current === c.videoId ? "current" : ""}`}>
-            <button className="icon-btn" title="Прослушать" onClick={() => setPreview(preview === c.videoId ? null : c.videoId)}>
-              {preview === c.videoId ? "■" : <PlayIcon size={16} />}
-            </button>
-            <div className="cand-text">
-              <div className="cand-title">{c.title}</div>
-              <div className="muted small">
-                {c.author} · {fmtTime(c.duration)}
-                {Math.abs(c.duration - track.duration) > 10 && <span className="warn"> · длина отличается</span>}
-              </div>
-            </div>
-            {q.data.current === c.videoId ? (
-              <span className="chip">Сейчас</span>
-            ) : (
-              <button className="btn small" onClick={() => void choose(c.videoId)}>
-                Выбрать
-              </button>
-            )}
-          </div>
+          <CandRow key={c.videoId} id={c.videoId} title={c.title} sub={c.author} duration={c.duration} track={track}
+            current={q.data.current === c.videoId} previewing={preview === c.videoId}
+            onPreview={() => setPreview(preview === c.videoId ? null : c.videoId)} onChoose={() => void choose(c.videoId)} />
         ))}
       </div>
     </>
+  );
+}
+
+function CandRow(p: {
+  id: string;
+  title: string;
+  sub: string;
+  duration: number;
+  track: Track;
+  current: boolean;
+  previewing: boolean;
+  onPreview: () => void;
+  onChoose: () => void;
+}) {
+  return (
+    <div className={`cand ${p.current ? "current" : ""}`}>
+      <button className="icon-btn" title="Прослушать" onClick={p.onPreview}>
+        {p.previewing ? "■" : <PlayIcon size={16} />}
+      </button>
+      <div className="cand-text">
+        <div className="cand-title">{p.title}</div>
+        <div className="muted small">
+          {p.sub} · {fmtTime(p.duration)}
+          {Math.abs(p.duration - p.track.duration) > 10 && <span className="warn"> · длина отличается</span>}
+        </div>
+      </div>
+      {p.current ? (
+        <span className="chip">Сейчас</span>
+      ) : (
+        <button className="btn small" onClick={p.onChoose}>
+          Выбрать
+        </button>
+      )}
+    </div>
   );
 }
 
