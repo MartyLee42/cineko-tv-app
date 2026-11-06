@@ -443,7 +443,7 @@ func TestPlaybackMovieLifecycleAndStream(t *testing.T) {
 		t.Fatalf("audio: %v", a0)
 	}
 	if mi["video_profile"] != "High 10" || mi["pix_fmt"] != "yuv420p10le" || mi["bit_depth"].(float64) != 10 ||
-		mi["video_level"].(float64) != 41 || mi["interlaced"] != false || mi["probe_version"].(float64) != 2 {
+		mi["video_level"].(float64) != 41 || mi["interlaced"] != false || mi["probe_version"].(float64) != 3 {
 		t.Fatalf("video details: %v", mi)
 	}
 

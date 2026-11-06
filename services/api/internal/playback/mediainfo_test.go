@@ -127,3 +127,22 @@ func TestPixFmtDepth(t *testing.T) {
 		}
 	}
 }
+
+func TestMediaInfoChaptersToMarkers(t *testing.T) {
+	// ffprobe -show_chapters prints times as strings; a re-encoder may not.
+	p := probeOf(t, `{"format":{"format_name":"matroska,webm","duration":"1420.5"},"streams":[],
+		"chapters":[
+			{"id":1,"start_time":"0.000000","end_time":"88.400000","tags":{"title":"Opening"}},
+			{"id":2,"start_time":88.4,"end_time":1330,"tags":{"title":"Part A"}},
+			{"id":3,"start_time":"1330.000000","end_time":"1420.500000","tags":{"title":"Ending"}},
+			{"id":4,"start_time":"1420.500000","end_time":"1420.500000","tags":{}}]}`)
+	mi := mediaInfoFrom(p)
+	if mi.ProbeVersion != 3 || len(mi.Chapters) != 3 || mi.Chapters[0].Title != "Opening" || mi.Chapters[2].EndSeconds != 1420.5 {
+		t.Fatalf("chapters: %+v", mi.Chapters)
+	}
+	s := &Service{}
+	got := s.markersFor(t.Context(), &source{MediaInfo: mi}, nil, nil, nil, *mi.DurationSeconds)
+	if len(got) != 2 || got[0].Kind != "opening" || got[0].EndSeconds != 88.4 || got[1].Kind != "ending" || got[1].StartSeconds != 1330 || got[1].Source != "chapters" {
+		t.Fatalf("markers: %+v", got)
+	}
+}

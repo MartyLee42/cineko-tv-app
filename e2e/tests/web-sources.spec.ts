@@ -86,7 +86,7 @@ interface Log {
 }
 
 /** Sources, online variants, releases (filtered by the profile's sources), an online HLS source and its stream. */
-async function mockSources(page: Page, mediaId: string): Promise<Log> {
+async function mockSources(page: Page, mediaId: string, opts: { settings?: Record<string, unknown>; markers?: unknown[] } = {}): Promise<Log> {
   const log: Log = { created: [], patched: [], streams: {}, settingsPuts: [], releaseQueries: [] };
   let enabled: "all" | string[] = "all";
   let quality = 1080;
@@ -107,7 +107,7 @@ async function mockSources(page: Page, mediaId: string): Promise<Log> {
       log.settingsPuts.push(body);
       if (body.sources) enabled = body.sources.enabled;
     }
-    return json(route, { ...SETTINGS, sources: { enabled } });
+    return json(route, { ...SETTINGS, ...opts.settings, sources: { enabled } });
   });
   await page.route(/\/api\/v1\/media\/[^/]+\/releases/, (route) => {
     log.releaseQueries.push(new URL(route.request().url()).searchParams);
@@ -148,7 +148,7 @@ async function mockSources(page: Page, mediaId: string): Promise<Log> {
     quality,
     qualities: [1080, 720, 480],
     subtitles: [{ url: `/api/v1/stream/tok-q${quality}/subs.vtt`, lang: "en", label: "English" }],
-    markers: [{ kind: "opening", start_seconds: 1, end_seconds: 9 }],
+    markers: opts.markers ?? [{ kind: "opening", start_seconds: 1, end_seconds: 9 }],
     duration_seconds: 16,
   });
   await page.route(/\/api\/v1\/playback\/sources(\/[^/?]+)?(\?.*)?$/, (route) => {
@@ -223,6 +223,41 @@ for (const vp of [
      * group; "Watch here" on the preferred variant plays the HLS stream
      * (hls.js), skips the opening, switches quality keeping the position.
      */
+    /** «Пропускать сами»: the recap goes by itself; «Вернуть» brings it back (then a button). */
+    test("auto-skip recap → undo", async ({ page }) => {
+      test.setTimeout(90_000);
+      if (vp.engine === "hlsjs") {
+        await page.addInitScript(() => {
+          const orig = HTMLMediaElement.prototype.canPlayType;
+          HTMLMediaElement.prototype.canPlayType = function (t: string) {
+            return /mpegurl/i.test(t) ? "" : orig.call(this, t);
+          };
+        });
+      }
+      const { movie } = await setup(page);
+      await mockSources(page, movie.id, {
+        settings: { skip_segments: "auto" },
+        markers: [{ kind: "recap", start_seconds: 0, end_seconds: 9, source: "theintrodb" }],
+      });
+      await page.goto(`/title/${movie.id}`);
+      await page.getByTestId("choose-release").click();
+      await page.getByTestId("release-sheet").getByTestId("online-row").nth(0).getByTestId("online-watch-here").click();
+      await expect(page).toHaveURL(new RegExp(`/watch/${SOURCE_ID}`), { timeout: 15_000 });
+
+      const undo = page.getByTestId("skip-undo");
+      await expect(undo).toBeVisible({ timeout: 20_000 });
+      await expect(undo).toContainText("Пересказ пропущен");
+      await expect.poll(() => currentTime(page)).toBeGreaterThanOrEqual(8.9);
+      await page.screenshot({ path: `${SHOTS}/web-player-autoskip-${vp.name}.png` });
+      await undo.getByRole("button", { name: "Вернуть" }).click();
+      await expect.poll(() => currentTime(page)).toBeLessThan(6);
+      await expect(undo).toHaveCount(0);
+      // Once undone it stays a button.
+      const skip = page.getByTestId("skip-opening");
+      await expect(skip).toHaveAttribute("data-kind", "recap");
+      await expect(skip).toHaveText(/Пропустить пересказ/);
+    });
+
     test("anime group → watch here (HLS) → skip opening → quality switch", async ({ page }) => {
       test.setTimeout(120_000);
       if (vp.engine === "hlsjs") {

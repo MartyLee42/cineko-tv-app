@@ -10,7 +10,7 @@ import { clientId } from "../devprefs/logic";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { unwrap, type PlaybackSource } from "@martytv/contracts";
-import { episodeCode, imageUrl } from "@martytv/media-types";
+import { episodeCode, imageUrl, skipMode } from "@martytv/media-types";
 import { useI18n } from "@martytv/ui";
 import { api } from "../api";
 import { useDevices } from "../queries";
@@ -425,6 +425,7 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
           next={next}
           prev={prev}
           autoplayNext={settings.autoplay_next_episode}
+          skipMode={skipMode(settings.skip_segments)}
         >
           {silent && !fallback && (
             <Banner

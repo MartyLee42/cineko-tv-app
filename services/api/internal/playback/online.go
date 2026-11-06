@@ -16,6 +16,7 @@ import (
 
 	"martytv/api/internal/httpx"
 	"martytv/api/internal/releases"
+	"martytv/api/internal/segments"
 	"martytv/api/internal/sources"
 )
 
@@ -55,9 +56,11 @@ type StreamSubtitle struct {
 
 // SkipMarker is an opening/ending range the player may offer to skip.
 type SkipMarker struct {
-	Kind         string  `json:"kind"` // opening | ending
+	Kind         string  `json:"kind"` // opening | recap | ending
 	StartSeconds float64 `json:"start_seconds"`
 	EndSeconds   float64 `json:"end_seconds"`
+	// Source: chapters | provider | theintrodb | introdb.
+	Source string `json:"source,omitempty"`
 }
 
 const (
@@ -326,19 +329,28 @@ func (s *Service) presentOnline(ctx context.Context, src *source, live bool) *Pl
 			out.StreamURL, out.StreamExpiresAt, out.MimeType = &u, &exp, &mime
 		}
 	}
+	var provider []segments.Segment
 	if live && s.online != nil && src.Provider != nil {
 		lctx, cancel := context.WithTimeout(ctx, s.t.StatsTimeout)
 		defer cancel()
 		if p, err := s.online.providers.Online(lctx, *src.Provider); err == nil {
 			v := st.variant()
 			if m, ok := p.(skipMarkerer); ok {
-				for _, k := range []string{"opening", "ending"} {
-					if r, ok := m.SkipMarkers(lctx, v)[k]; ok {
-						out.Markers = append(out.Markers, SkipMarker{Kind: k, StartSeconds: r[0], EndSeconds: r[1]})
+				marks := m.SkipMarkers(lctx, v)
+				for _, k := range []string{segments.Opening, segments.Recap, segments.Ending} {
+					if r, ok := marks[k]; ok {
+						provider = append(provider, segments.Segment{Kind: k, Start: r[0], End: r[1], Source: "provider"})
 					}
 				}
 			}
 		}
+	}
+	if live && src.Status == "ready" {
+		var length float64
+		if out.DurationSeconds != nil {
+			length = *out.DurationSeconds
+		}
+		out.Markers = s.markersFor(ctx, src, nil, nil, provider, length)
 	}
 	return out
 }

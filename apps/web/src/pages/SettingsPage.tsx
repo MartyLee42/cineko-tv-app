@@ -245,6 +245,23 @@ function ProfileSettingsCard() {
               on={s.autoplay_next_episode}
               onChange={(v) => set({ autoplay_next_episode: v })}
             />
+            <label className="block px-3.5 py-3">
+              <span className="block font-medium">{t("skip.setting")}</span>
+              <span className="mt-0.5 block text-xs text-muted">{t("skip.setting_hint")}</span>
+              <Select
+                className="mt-2 sm:w-72"
+                value={s.skip_segments ?? "button"}
+                onChange={(e) => set({ skip_segments: e.target.value as Settings["skip_segments"] })}
+                data-testid="setting-skip-segments"
+                aria-label={t("skip.setting")}
+              >
+                {(["button", "auto", "off"] as const).map((m) => (
+                  <option key={m} value={m}>
+                    {t(`skip.mode.${m}`)}
+                  </option>
+                ))}
+              </Select>
+            </label>
             <Toggle
               testId="setting-spoiler-free"
               label={t("settings.spoiler_free")}

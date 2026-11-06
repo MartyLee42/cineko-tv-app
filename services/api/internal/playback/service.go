@@ -22,6 +22,7 @@ import (
 	"martytv/api/internal/config"
 	"martytv/api/internal/integrations/torrserver"
 	"martytv/api/internal/releases"
+	"martytv/api/internal/segments"
 )
 
 // Error codes stored on sources / returned to clients.
@@ -63,10 +64,23 @@ type MediaInfo struct {
 	// ProbeVersion: mediaInfoVersion at the time of the probe; older rows
 	// are re-probed once (lazily) to get the newer fields.
 	ProbeVersion int `json:"probe_version,omitempty"`
+	// Chapters (probe version 3+): the file's titled chapters; "Opening" /
+	// «Заставка» / "Credits" ones become skip markers (segments.go).
+	Chapters []MediaChapter `json:"chapters,omitempty"`
 }
 
-// mediaInfoVersion 2 added the video profile fields.
-const mediaInfoVersion = 2
+// MediaChapter is one titled chapter of the file.
+type MediaChapter struct {
+	StartSeconds float64 `json:"start_seconds"`
+	EndSeconds   float64 `json:"end_seconds"`
+	Title        string  `json:"title"`
+}
+
+// mediaInfoVersion 2 added the video profile fields, 3 the chapters.
+const mediaInfoVersion = 3
+
+// maxChapters: more than this is a menu of scenes, not intro/credits marks.
+const maxChapters = 64
 
 // TorrentStats is the live torrent block of a PlaybackSource.
 type TorrentStats struct {
@@ -184,11 +198,12 @@ type Service struct {
 	waking     map[string]time.Time          // source id → last preload asked of an idle torrent
 	bg         sync.WaitGroup
 
-	online *onlineDeps // nil until SetOnline (online.go)
-	live   *liveDeps   // nil until SetLive (live.go, IPTV)
-	video  *videoDeps  // nil until SetVideo (video.go, YouTube via Invidious)
-	tc     *transcoder // nil = no compat streams (compat.go)
-	lib    Library     // nil = no server downloads (library.go)
+	online *onlineDeps       // nil until SetOnline (online.go)
+	live   *liveDeps         // nil until SetLive (live.go, IPTV)
+	video  *videoDeps        // nil until SetVideo (video.go, YouTube via Invidious)
+	tc     *transcoder       // nil = no compat streams (compat.go)
+	lib    Library           // nil = no server downloads (library.go)
+	segs   *segments.Service // nil = no intro/credits databases (segments.go)
 }
 
 func NewService(pool *pgxpool.Pool, cfg *config.Config, r releases.Resolver, log *slog.Logger) *Service {
@@ -292,6 +307,8 @@ func (s *Service) Create(ctx context.Context, who caller, in CreateInput, log *s
 		}
 	}
 
+	// Intro/credits times: looked up while the source prepares.
+	s.prefetchSegments(in.MediaID, in.EpisodeID)
 	if isOnlineRelease(in.ReleaseID) {
 		return s.createOnline(ctx, who, in, tgt, log)
 	}
@@ -714,6 +731,17 @@ func (s *Service) present(ctx context.Context, src *source, live bool) *Playback
 		}
 		cancel()
 	}
+	if live && src.Status == "ready" {
+		var length float64
+		if src.MediaInfo != nil && src.MediaInfo.DurationSeconds != nil {
+			length = *src.MediaInfo.DurationSeconds
+		}
+		var season, episode *int
+		if out.File != nil {
+			season, episode = out.File.Season, out.File.Episode
+		}
+		out.Markers = s.markersFor(ctx, src, season, episode, nil, length)
+	}
 	// Probe when there's no media info yet, or (once per MediaInfoRetry)
 	// re-probe an older row for the newer fields — unless the file plays
 	// from disk, where the torrent isn't worth waking for that.
@@ -787,6 +815,13 @@ func mediaInfoFrom(p *torrserver.Probe) *MediaInfo {
 	}
 	if d, err := strconv.ParseFloat(p.Format.Duration, 64); err == nil && d > 0 {
 		mi.DurationSeconds = &d
+	}
+	if len(p.Chapters) <= maxChapters {
+		for _, c := range p.Chapters {
+			if t := strings.TrimSpace(c.Tags["title"]); t != "" && c.EndTime > c.StartTime {
+				mi.Chapters = append(mi.Chapters, MediaChapter{StartSeconds: float64(c.StartTime), EndSeconds: float64(c.EndTime), Title: truncRunes(t, 80)})
+			}
+		}
 	}
 	for _, st := range p.Streams {
 		ms := MediaStream{Index: st.Index, Codec: st.CodecName, Default: st.Disposition["default"] == 1}

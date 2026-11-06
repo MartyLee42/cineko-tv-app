@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   activeMarker,
+  autoSkipDue,
+  markerKey,
+  skipMode,
+  skipTarget,
   episodeRanges,
   groupProviders,
   hlsMode,
@@ -156,5 +160,36 @@ describe("skip markers", () => {
     expect(activeMarker(m, 149)).toBeNull(); // last 2 s: nothing left to skip
     expect(activeMarker(m, 1310)).toBeNull(); // endings aren't offered by default
     expect(activeMarker(m, 1310, ["ending"])?.kind).toBe("ending");
+  });
+});
+
+describe("skip targets (intro / recap / credits)", () => {
+  const m = [
+    { kind: "recap" as const, start_seconds: 0, end_seconds: 40 },
+    { kind: "opening" as const, start_seconds: 60, end_seconds: 150 },
+    { kind: "ending" as const, start_seconds: 1300, end_seconds: 2200 },
+  ];
+  it("offers the recap, the intro, and the credits only when allowed", () => {
+    expect(skipTarget(m, 10)?.kind).toBe("recap");
+    expect(skipTarget(m, 45)).toBeNull();
+    expect(skipTarget(m, 100)?.kind).toBe("opening");
+    expect(skipTarget(m, 1310)).toBeNull(); // a film, or no next episode
+    expect(skipTarget(m, 1310, 1400, true)?.kind).toBe("ending");
+  });
+  it("clamps an open ending to the duration", () => {
+    expect(skipTarget(m, 1399, 1400, true)).toBeNull(); // last 2 s
+    expect(skipTarget(m, 1500, 0, true)?.kind).toBe("ending"); // duration unknown
+    expect(skipTarget([{ kind: "ending" as const, start_seconds: 1398, end_seconds: 2000 }], 1398, 1400, true)).toBeNull();
+  });
+  it("auto-skips only right after the range starts", () => {
+    expect(autoSkipDue(m[1]!, 61)).toBe(true);
+    expect(autoSkipDue(m[1]!, 90)).toBe(false); // resumed / seeked into it
+    expect(markerKey(m[1]!)).toBe("opening:60");
+  });
+  it("normalizes the setting", () => {
+    expect(skipMode("auto")).toBe("auto");
+    expect(skipMode("off")).toBe("off");
+    expect(skipMode(undefined)).toBe("button");
+    expect(skipMode("nope")).toBe("button");
   });
 });

@@ -12,7 +12,7 @@ import { sessionThroughput } from "../devprefs/logic";
 import { api } from "../api";
 import { formatSpeed } from "../play/releases";
 import { releaseSummary } from "../play/PlayOnTv";
-import { activeMarker, hasMediaSource, hlsMode, isAndroid, isHlsSource, type HlsMode } from "@martytv/media-types";
+import { autoSkipDue, hasMediaSource, hlsMode, isAndroid, isHlsSource, markerKey, skipTarget, type HlsMode, type SkipMode } from "@martytv/media-types";
 import { Spinner, useI18n } from "@martytv/ui";
 import {
   AudioTrackIcon,
@@ -141,6 +141,8 @@ export interface PlayerProps {
   /** Series: the previous episode (⏮ in the controls), when there is one. */
   prev?: NextUpInfo | null;
   autoplayNext: boolean;
+  /** «Заставки и титры» (profile skip_segments): button (default), auto, off. */
+  skipMode?: SkipMode;
   /** Overlays from the page (no-sound banner, stale notice). */
   children?: ReactNode;
   /** Play the compat stream (source.compat_url: audio → AAC, MP4) instead of stream_url. */
@@ -1024,10 +1026,60 @@ export function Player(props: PlayerProps) {
     return () => clearTimeout(id);
   }, [countdown]);
 
+  // ------------------------------------------------------------ skip
+
+  // «Пропустить заставку / пересказ», «Следующая серия» at a series' credits;
+  // «Пропускать сами» skips once per range when playback has just entered it
+  // (a seek or resume into the middle leaves the button), with «Вернуть».
+  const skipModeNow = props.skipMode ?? "button";
+  const skipDuration = vs.duration || source.media_info?.duration_seconds || source.duration_seconds || 0;
+  const skipM = vs.duration > 0 && skipModeNow !== "off" ? skipTarget(source.markers, vs.time, skipDuration, !!props.next) : null;
+  const skipHandled = useRef({ id: "", done: new Set<string>() });
+  const [skipUndo, setSkipUndo] = useState<{ kind: "opening" | "recap"; at: number; id: string } | null>(null);
+  const skipNow = useRef({ m: skipM, time: vs.time, id: source.id });
+  useEffect(() => {
+    skipNow.current = { m: skipM, time: vs.time, id: source.id };
+  });
+  const skipDone = () => {
+    const id = skipNow.current.id;
+    if (skipHandled.current.id !== id) skipHandled.current = { id, done: new Set() };
+    return skipHandled.current.done;
+  };
+  useEffect(() => {
+    if (skipModeNow !== "auto") return;
+    const timer = setInterval(() => {
+      const { m, time, id } = skipNow.current;
+      if (!m) return;
+      const done = skipDone();
+      const k = markerKey(m);
+      if (done.has(k)) return;
+      done.add(k);
+      if (!autoSkipDue(m, time)) return;
+      if (m.kind === "ending") {
+        if (P.current.autoplayNext && P.current.next) setCountdown((c) => c ?? NEXT_COUNTDOWN);
+        return;
+      }
+      seek(m.end_seconds);
+      setSkipUndo({ kind: m.kind, at: time, id });
+    }, 500);
+    return () => clearInterval(timer);
+  }, [skipModeNow, seek]);
+  useEffect(() => {
+    if (!skipUndo) return;
+    const id = setTimeout(() => setSkipUndo(null), 6000);
+    return () => clearTimeout(id);
+  }, [skipUndo]);
+  const shownUndo = skipUndo && skipUndo.id === source.id ? skipUndo : null;
+  const doSkip = () => {
+    if (!skipM) return;
+    skipDone().add(markerKey(skipM));
+    if (skipM.kind === "ending") return props.next?.go();
+    seek(skipDuration > 0 ? Math.min(skipM.end_seconds, skipDuration - 1) : skipM.end_seconds);
+  };
+
   // ------------------------------------------------------------ render
 
-  const duration = vs.duration || source.media_info?.duration_seconds || source.duration_seconds || 0;
-  const opening = activeMarker(source.markers, vs.time);
+  const duration = skipDuration;
   const qualities = source.kind === "online" ? [...(source.qualities ?? [])].sort((a, b) => b - a) : [];
   const shownTime = scrub ?? vs.time;
   const show = controls.visible || shownPaused || !shown;
@@ -1349,15 +1401,35 @@ export function Player(props: PlayerProps) {
         )}
       </div>
 
-      {opening && !props.covered && countdown == null && (
+      {shownUndo && !props.covered && countdown == null && (
+        <div
+          role="status"
+          data-testid="skip-undo"
+          className="absolute bottom-[calc(7.5rem+env(safe-area-inset-bottom))] right-[max(env(safe-area-inset-right),0.75rem)] z-10 flex min-h-[44px] items-center gap-3 rounded-xl border border-white/25 bg-black/70 pl-4 pr-1.5 text-white shadow-xl backdrop-blur sm:right-5"
+        >
+          {t(`skip.skipped.${shownUndo.kind}`)}
+          <button
+            type="button"
+            onClick={() => {
+              seek(shownUndo.at);
+              setSkipUndo(null);
+            }}
+            className="min-h-[36px] rounded-lg bg-white/15 px-3 font-semibold hover:bg-white hover:text-black"
+          >
+            {t("skip.undo")}
+          </button>
+        </div>
+      )}
+      {skipM && !shownUndo && !props.covered && countdown == null && (
         <button
           type="button"
-          onClick={() => seek(opening.end_seconds)}
+          onClick={doSkip}
           data-testid="skip-opening"
+          data-kind={skipM.kind}
           className="absolute bottom-[calc(7.5rem+env(safe-area-inset-bottom))] right-[max(env(safe-area-inset-right),0.75rem)] z-10 flex min-h-[44px] items-center gap-2 rounded-xl border border-white/25 bg-black/60 px-4 font-semibold text-white shadow-xl backdrop-blur transition hover:bg-white hover:text-black sm:right-5"
         >
           <NextIcon className="text-lg" />
-          {t("sources.player.skip_opening")}
+          {skipM.kind === "opening" && source.provider?.kind === "anime" ? t("sources.player.skip_opening") : t(`skip.${skipM.kind}`)}
         </button>
       )}
 
