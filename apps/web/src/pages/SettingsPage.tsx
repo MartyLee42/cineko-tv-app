@@ -7,8 +7,11 @@ import {
   DESIGNS,
   LOCALES,
   Mascot,
+  matrixPillSeen,
   PopcornLoader,
   ProfileAvatar,
+  requestPill,
+  shouldAskPill,
   Spinner,
   useI18n,
   type CozyAmbience,
@@ -208,7 +211,16 @@ function ProfileSettingsCard() {
         <ErrorText error={q.error} />
       ) : (
         <>
-          <LookPicker design={s.design} theme={s.theme} onChange={set} />
+          <LookPicker
+            design={s.design}
+            theme={s.theme}
+            onChange={(p) => {
+              set(p);
+              // «Матрица», the first time in this browser: the red / blue pill.
+              const prev = s.design;
+              if (p.design && shouldAskPill(p.design, prev, matrixPillSeen())) requestPill({ previous: prev, revert: () => set({ design: prev }) });
+            }}
+          />
 
           <div className="divide-y divide-border rounded-xl border border-border">
             <Toggle

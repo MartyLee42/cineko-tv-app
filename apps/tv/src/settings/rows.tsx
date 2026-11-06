@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PlayerKind } from "@martytv/contracts";
 import { imageUrl } from "@martytv/media-types";
-import { useI18n, type Locale } from "@martytv/ui";
+import { matrixPillSeen, requestPill, shouldAskPill, useI18n, type Locale } from "@martytv/ui";
 import { useCatalogConfig, useHome } from "../catalog/queries";
 import { Loader } from "../player/Loader";
 import type { LoadStage } from "../player/loading";
@@ -67,14 +67,20 @@ export function useSettingRows() {
       hint: t(`settings.design.${settings.design}_hint`),
       choices: DESIGNS.map((v) => ({ value: v, label: t(`settings.design.${v}`) })),
       value: settings.design,
-      onChange: (v) => set({ design: v as Settings["design"] }),
+      onChange: (v) => {
+        const next = v as Settings["design"];
+        const prev = settings.design;
+        set({ design: next });
+        // «Матрица», the first time on this TV: the red / blue pill.
+        if (shouldAskPill(next, prev, matrixPillSeen())) requestPill({ previous: prev, revert: () => set({ design: prev }) });
+      },
     } as Row,
     // «Каркас»: this TV's background motion (device-local, see design/skins.tsx).
     motion: {
       kind: "choice",
       key: "calm_motion",
       label: t("designs.motion"),
-      hint: t("designs.motion_hint"),
+      hint: settings.design === "matrix" ? t("designs.motion_hint_matrix") : t("designs.motion_hint"),
       choices: [
         { value: false, label: t("designs.motion.on") },
         { value: true, label: t("designs.motion.calm") },

@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import type { MediaSummary } from "@martytv/contracts";
-import { Mascot, martyMood, ProfileAvatar, StatusDot, useI18n, type MessageKey } from "@martytv/ui";
+import { Mascot, martyMood, ProfileAvatar, StatusDot, useAppliedDesign, useI18n, wakeUpTail, type MessageKey } from "@martytv/ui";
+import "../matrix/matrix.css";
 import { useEffect, useState } from "react";
 import { useSession } from "../session";
 import { useDevices, useProfiles } from "../queries";
@@ -176,12 +177,42 @@ function MartyHello({ name }: { name: string }) {
     return () => clearInterval(id);
   }, []);
   const m = martyMood(now);
+  const matrix = useAppliedDesign() === "matrix";
   return (
     <div className="flex min-w-0 items-center gap-2" data-testid="marty-hello" data-mood={m.mood} data-line={m.key}>
       <Mascot size={64} mood={m.mood} animated />
       <div className="relative min-w-0 rounded-2xl rounded-bl-md lg:max-w-[26rem] border border-border bg-surface px-4 py-2.5 shadow-sm">
-        <p className="text-lg font-bold leading-snug sm:text-xl">{t(m.key, { name: name || "" }).replace(/,\s*!/, "!")}</p>
+        {matrix ? (
+          <WakeUpLine name={name} now={now} />
+        ) : (
+          <p className="text-lg font-bold leading-snug sm:text-xl">{t(m.key, { name: name || "" }).replace(/,\s*!/, "!")}</p>
+        )}
       </div>
     </div>
   );
 }
+
+const WAKE_TAILS = ["designs.matrix.tail1", "designs.matrix.tail2", "designs.matrix.tail3", "designs.matrix.tail4"] as const;
+
+/** «Матрица»: «Wake up, Anna… follow the white rabbit 🐇» typed out like a terminal, the tail changing once a day. */
+function WakeUpLine({ name, now }: { name: string; now: Date }) {
+  const { t } = useI18n();
+  const text = `${name ? t("designs.matrix.wake", { name }) : t("designs.matrix.wake_anon")} ${t(wakeUpTail(WAKE_TAILS, now))}`;
+  const chars = Array.from(text); // emoji-safe
+  const reduced = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const [n, setN] = useState(reduced ? chars.length : 0);
+  useEffect(() => {
+    if (reduced) return setN(chars.length);
+    setN(0);
+    const id = setInterval(() => setN((x) => (x >= chars.length ? x : x + 1)), 55);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text]);
+  return (
+    <p className="mx-wake text-base font-bold leading-snug sm:text-lg" data-testid="matrix-wake" aria-label={text}>
+      <span aria-hidden>{chars.slice(0, n).join("")}</span>
+      <i aria-hidden />
+    </p>
+  );
+}
+

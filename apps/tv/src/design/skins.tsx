@@ -560,11 +560,17 @@ const RAIN = (() => {
  * over the lower half and scanlines. Plain text in a few dozen divs — cheap
  * on old TV engines (nothing animates).
  */
-function RainBackground() {
+export function RainBackground() {
+  // «Фон движется»: every 8th column slowly falls (transform only); «Спокойно» keeps all still.
+  const calm = useCalmMotion();
   return (
-    <div data-skin-bg="rain" className={`mx-rain ${layer}`}>
-      {RAIN.map((c) => (
-        <div key={c.x} className="mx-col" style={{ left: c.x, top: c.top, opacity: c.o }}>
+    <div data-skin-bg="rain" data-motion={calm ? "calm" : "on"} className={`mx-rain ${layer}`}>
+      {RAIN.map((c, i) => (
+        <div
+          key={c.x}
+          className={`mx-col ${!calm && i % 8 === 3 ? "mx-fall" : ""}`}
+          style={{ left: c.x, top: c.top, opacity: c.o, animationDelay: !calm && i % 8 === 3 ? `${-((i * 7) % 20)}s` : undefined }}
+        >
           {c.tail}
           <span className="mx-head">{c.head}</span>
         </div>

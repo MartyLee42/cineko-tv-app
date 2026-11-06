@@ -7,6 +7,7 @@ import { api, realtime, setCsrfToken } from "./api";
 import { useSession } from "./session";
 import { Button, ErrorText } from "./components";
 import { LoginPage } from "./pages/LoginPage";
+import { PillLayer } from "./matrix/PillDialog";
 import { HomePage } from "./pages/HomePage";
 import { PairPage } from "./pages/PairPage";
 import { DevicesPage } from "./pages/DevicesPage";
@@ -80,6 +81,7 @@ export function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <PillLayer />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         {/* Plays a video saved on this device: works with no connection. */}

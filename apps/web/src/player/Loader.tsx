@@ -9,6 +9,7 @@ import { loadStatus, Mascot, PopcornLoader, SloganTicker, SovietEmblem, useAppli
 import { formatSize, formatSpeed } from "../play/releases";
 import type { LoadingStyle } from "../watch/settings";
 import { LoadTracker, preloadTarget, type LoadStage } from "./logic";
+import "../matrix/matrix.css";
 
 export interface LoaderModel {
   p: number;
@@ -61,9 +62,14 @@ const pct = (p: number) => `${Math.round(p * 100)}%`;
 
 export function Loader({ style, m, children }: { style: LoadingStyle; m: LoaderModel; children?: ReactNode }) {
   // «Конструктивизм»: one poster loader whatever the style — no mascot; the emblem and changing slogans.
-  const cv = useAppliedDesign() === "constructivism";
+  const applied = useAppliedDesign();
+  const cv = applied === "constructivism";
+  // «Матрица»: its own terminal loader too.
+  const mx = applied === "matrix";
   const body = cv ? (
     <PosterLoader m={m} />
+  ) : mx ? (
+    <MatrixLoader m={m} />
   ) : style === "popcorn" ? (
       <Popcorn m={m} />
     ) : style === "poster_reveal" ? (
@@ -248,6 +254,39 @@ function MartyLoader({ m, mood }: { m: LoaderModel; mood: "loading" | "popcorn" 
 }
 
 /** «Конструктивизм»: the hammer and sickle in a red disc, the title in heavy capitals, a slogan slab that changes every ~3.5 s. */
+const MX_CELLS = 20;
+
+/** «Матрица»: «> Loading construct…», the percentage counting up in green and a block bar. */
+function MatrixLoader({ m }: { m: LoaderModel }) {
+  const { t } = useI18n();
+  const filled = Math.round(m.p * MX_CELLS);
+  return (
+    <div data-testid="mx-loader" className="mx-wake w-full max-w-xl px-5 py-6 text-left" style={{ background: "rgba(0,6,2,.86)", boxShadow: "inset 0 0 0 1px rgba(0,255,65,.45), 0 0 40px rgba(0,255,65,.15)" }}>
+      <p className="text-sm sm:text-base">
+        {"> "}
+        {t("designs.matrix.loading")}
+        <i aria-hidden />
+      </p>
+      <h1 className="mt-4 line-clamp-2 text-2xl font-bold uppercase leading-tight sm:text-3xl" style={{ color: "#c8ffd2" }}>
+        {m.title || "…"}
+      </h1>
+      {m.subtitle && <p className="mt-1 truncate text-sm text-muted">{m.subtitle}</p>}
+      <div className="mt-6 flex items-baseline gap-4">
+        <span className="w-[4.5ch] text-4xl font-bold tabular-nums sm:text-5xl" style={{ textShadow: "0 0 18px rgba(0,255,65,.7)" }}>
+          {pct(m.p)}
+        </span>
+        <span className="whitespace-pre text-lg leading-none sm:text-xl" aria-hidden>
+          {"█".repeat(filled)}
+          <span style={{ color: "rgba(0,255,65,.22)" }}>{"░".repeat(MX_CELLS - filled)}</span>
+        </span>
+      </div>
+      <div className="mt-5 text-text">
+        <Status m={m} center={false} />
+      </div>
+    </div>
+  );
+}
+
 function PosterLoader({ m }: { m: LoaderModel }) {
   return (
     <div className="flex w-full max-w-2xl flex-col items-center gap-5" data-testid="cv-loader">

@@ -17,6 +17,7 @@ export { SeasonSprite, type SpriteId } from "./seasonSprites";
 export * from "./seasonStore";
 export * from "./marty";
 export * from "./martyMood";
+export * from "./matrix";
 export * from "./cozy";
 export { CozyLayer, useCozyPalette, type CozyLayerProps } from "./CozyLayer";
 export { useCozySound, startCozySound, type CozySoundHandle } from "./cozyAudio";

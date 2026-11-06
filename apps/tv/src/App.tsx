@@ -53,6 +53,7 @@ import { useVideoSession, videoSession } from "./video/session";
 import { videoPlaybackState, type VideoItem } from "./video/logic";
 import { qualityInPlace, videoControl } from "./video/remote";
 import { StartupIntro } from "./intro/StartupIntro";
+import { PillLayer } from "./design/PillDialog";
 import { introEnv, shouldShowIntro } from "./intro/logic";
 
 type Screen =
@@ -750,6 +751,7 @@ export function App() {
           onCancel={() => setExitAsk(false)}
         />
       )}
+      <PillLayer onRed={() => setIntro("matrix")} />
       {intro && <StartupIntro design={intro} onDone={endIntro} />}
     </div>
     </DeviceProvider>

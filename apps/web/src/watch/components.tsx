@@ -227,7 +227,10 @@ function ContinueCard({ item, onOpen, onGo, hasTv }: { item: ContinueItem; onOpe
           </div>
         )}
       </div>
-      {sub && <p className="mt-1.5 truncate text-xs text-muted">{sub}</p>}
+      {/* Always one line tall: cards without «Осталось…» keep their buttons level with the others. */}
+      <p className="mt-1.5 truncate text-xs leading-4 text-muted" aria-hidden={sub ? undefined : true}>
+        {sub || "\u00a0"}
+      </p>
       {/* Resume right away: in this browser, or on the TV. */}
       <div className="mt-2 flex gap-2">
         {(hasTv ? (["here", "tv"] as const) : (["here"] as const)).map((w) => (

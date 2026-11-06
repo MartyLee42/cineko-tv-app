@@ -39,7 +39,7 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
   const rows: Row[] = [
     { kind: "header", key: "h-profile", label: t("settings.profile_section", { name: profile.name }), hint: t("tv.settings.profile_hint") },
     r.design,
-    ...(settings.design === "wireframe" ? [r.motion] : []),
+    ...(settings.design === "wireframe" || settings.design === "matrix" ? [r.motion] : []),
     // Light colours exist for «Кинозал» only.
     ...(settings.design === "kinozal" ? [r.theme] : []),
     r.loading,
