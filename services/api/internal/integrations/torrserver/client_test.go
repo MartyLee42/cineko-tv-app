@@ -79,3 +79,44 @@ func TestClientErrorsAreSanitized(t *testing.T) {
 		t.Fatalf("ftp: %v", err)
 	}
 }
+
+func TestIdle(t *testing.T) {
+	cases := []struct {
+		t    *Torrent
+		idle bool
+	}{
+		{nil, false},
+		{&Torrent{Stat: StatClosed}, true},
+		{&Torrent{Stat: StatInDB}, true},
+		{&Torrent{Stat: StatGettingInfo}, false},
+		{&Torrent{Stat: StatWorking}, true},
+		{&Torrent{Stat: StatWorking, TotalPeers: 5}, false},
+		{&Torrent{Stat: StatWorking, DownloadSpeed: 1000}, false},
+		{&Torrent{Stat: StatPreload, ActivePeers: 2, TotalPeers: 2}, false},
+	}
+	for i, c := range cases {
+		if got := c.t.Idle(); got != c.idle {
+			t.Errorf("case %d: Idle() = %v, want %v", i, got, c.idle)
+		}
+	}
+}
+
+func TestPreload(t *testing.T) {
+	var got string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got = r.URL.Path + "?" + r.URL.RawQuery
+		_, _ = io.WriteString(w, `{"stat":2}`)
+	}))
+	defer srv.Close()
+	c := New(config.TorrServerConfig{URL: srv.URL})
+	hash := strings.Repeat("b", 40)
+	if err := c.Preload(context.Background(), hash, 3); err != nil {
+		t.Fatal(err)
+	}
+	if got != "/stream?index=3&link="+hash+"&preload=" {
+		t.Fatalf("request %q", got)
+	}
+	if err := c.Preload(context.Background(), "../x", 1); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("bad hash: %v", err)
+	}
+}

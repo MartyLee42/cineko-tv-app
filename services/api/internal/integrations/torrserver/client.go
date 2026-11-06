@@ -427,20 +427,20 @@ func ValidHash(h string) bool { return hashPattern.MatchString(h) }
 // Probe is the part of ffprobe's JSON we use.
 type Probe struct {
 	Streams []struct {
-		Index       int               `json:"index"`
-		CodecName   string            `json:"codec_name"`
-		CodecType   string            `json:"codec_type"`
-		Width       int               `json:"width"`
-		Height      int               `json:"height"`
-		Channels    int               `json:"channels"`
-		Profile     string            `json:"profile"`
-		PixFmt      string            `json:"pix_fmt"`
-		Level       int               `json:"level"`
+		Index     int    `json:"index"`
+		CodecName string `json:"codec_name"`
+		CodecType string `json:"codec_type"`
+		Width     int    `json:"width"`
+		Height    int    `json:"height"`
+		Channels  int    `json:"channels"`
+		Profile   string `json:"profile"`
+		PixFmt    string `json:"pix_fmt"`
+		Level     int    `json:"level"`
 		// BitsPerRawSample: ffprobe prints it as a string ("10").
 		BitsPerRawSample string `json:"bits_per_raw_sample"`
 		FieldOrder       string `json:"field_order"`
 		// MimeCodec: the RFC 6381 codec string (newer ffprobe only), e.g. "avc1.6e0028".
-		MimeCodec string `json:"mime_codec_string"`
+		MimeCodec   string            `json:"mime_codec_string"`
 		Disposition map[string]int    `json:"disposition"`
 		Tags        map[string]string `json:"tags"`
 	} `json:"streams"`
@@ -499,6 +499,47 @@ func (c *Client) StreamInput(hash string, id int) (streamURL, authorization stri
 		authorization = "Basic " + base64.StdEncoding.EncodeToString([]byte(c.username+":"+c.password))
 	}
 	return c.endpoint("/stream", q), authorization, nil
+}
+
+// Idle reports whether TorrServer has stopped fetching a torrent that is
+// known (closed / only in its DB, or no peers and nothing coming in): it
+// won't download again until something reads it or asks for a preload.
+func (t *Torrent) Idle() bool {
+	if t == nil {
+		return false
+	}
+	switch t.Stat {
+	case StatClosed, StatInDB:
+		return true
+	case StatWorking, StatPreload:
+		return t.ActivePeers == 0 && t.TotalPeers == 0 && t.DownloadSpeed <= 0
+	}
+	return false
+}
+
+// Preload asks TorrServer to (re)connect and preload file id of hash, like
+// the «Preload» button of its web UI: GET /stream?link=<hash>&index=<id>&preload.
+// TorrServer answers once its preload is done (or ctx ends); the answer is
+// discarded.
+func (c *Client) Preload(ctx context.Context, hash string, id int) error {
+	if !ValidHash(hash) || id < 0 {
+		return ErrNotFound
+	}
+	q := url.Values{}
+	q.Set("link", hash)
+	q.Set("index", strconv.Itoa(id))
+	q.Set("preload", "")
+	req, err := c.newRequest(ctx, http.MethodGet, "/stream", q, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.stream.Do(req)
+	if err != nil {
+		return transportError(err)
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 1<<20))
+	return statusError(resp.StatusCode)
 }
 
 // Stream opens GET /stream?link=<hash>&index=<id>&play, forwarding only the

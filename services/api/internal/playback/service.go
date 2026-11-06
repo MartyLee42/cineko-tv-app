@@ -181,6 +181,7 @@ type Service struct {
 	prepCancel map[string]context.CancelFunc // source id → stops its preparer
 	fresh      map[string]time.Time          // source id → when this process added its torrent (cancel.go)
 	probing    map[string]time.Time          // source id → last ffprobe attempt
+	waking     map[string]time.Time          // source id → last preload asked of an idle torrent
 	bg         sync.WaitGroup
 
 	online *onlineDeps // nil until SetOnline (online.go)
@@ -202,6 +203,7 @@ func NewService(pool *pgxpool.Pool, cfg *config.Config, r releases.Resolver, log
 		prepCancel: map[string]context.CancelFunc{},
 		fresh:      map[string]time.Time{},
 		probing:    map[string]time.Time{},
+		waking:     map[string]time.Time{},
 		tc:         newTranscoder(cfg.Transcoder),
 	}
 }
@@ -703,6 +705,12 @@ func (s *Service) present(ctx context.Context, src *source, live bool) *Playback
 		sctx, cancel := context.WithTimeout(ctx, s.t.StatsTimeout)
 		if t, err := s.ts.Get(sctx, src.InfoHash); err == nil {
 			out.Torrent = torrentStats(t)
+			// Someone is waiting on it (the TV polls while loading or
+			// stuck), yet TorrServer stopped fetching (e.g. after a long
+			// pause): wake it, as its «Preload» button would.
+			if src.Status == "ready" && src.FileIndex != nil && t.Idle() {
+				s.wakeLater(src.ID, src.InfoHash, *src.FileIndex)
+			}
 		}
 		cancel()
 	}
@@ -714,6 +722,33 @@ func (s *Service) present(ctx context.Context, src *source, live bool) *Playback
 		s.probeLater(src.ID, src.InfoHash, *src.FileIndex)
 	}
 	return out
+}
+
+// wakeIdleEvery: at most one preload per source this often.
+const wakeIdleEvery = time.Minute
+
+// wakeLater asks TorrServer to preload an idle torrent in the background.
+func (s *Service) wakeLater(id, hash string, index int) {
+	s.mu.Lock()
+	if last, ok := s.waking[id]; ok && time.Since(last) < wakeIdleEvery {
+		s.mu.Unlock()
+		return
+	}
+	if len(s.waking) > 1000 {
+		s.waking = map[string]time.Time{}
+	}
+	s.waking[id] = time.Now()
+	s.mu.Unlock()
+	s.log.Info("torrent idle: preloading", "source_id", id)
+	s.bg.Add(1)
+	go func() {
+		defer s.bg.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+		defer cancel()
+		if err := s.ts.Preload(ctx, hash, index); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+			s.log.Info("preload failed", "source_id", id, "err", err)
+		}
+	}()
 }
 
 // probeLater fetches media info via TorrServer's ffprobe in the background
