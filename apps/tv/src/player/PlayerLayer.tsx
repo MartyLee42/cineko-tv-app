@@ -247,7 +247,7 @@ function PreparingOverlay({ flow }: { flow: Extract<Flow, { phase: "preparing" |
   const ctx = flow.ctx;
   const stage: LoadStage = flow.phase === "preparing" ? stageOf(flow.step, flow.source) : "starting";
   const source = flow.source;
-  const p = useLoadProgress(player.loadKey(), stage, source, player.metadata);
+  const p = useLoadProgress(player.loadKey(), stage, source, player.metadata, `${ctx.media_id}|${ctx.episode_id ?? ""}`);
   // While the first seconds buffer (source ready), keep the numbers live.
   const torrent = useLiveTorrent(source, flow.phase === "playing");
   const cs = flow.phase === "playing" ? player.compatState() : null;

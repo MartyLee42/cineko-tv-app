@@ -102,7 +102,18 @@ const STAGE_ORDER: LoadStage[] = ["resolving", "searching", "creating", "metadat
  * (failover): that one's progress continues from the value already shown,
  * scaled into what is left. Only a new load (`key`) starts again from 0.
  */
+/** Where a load's progress survives a page restart (weak TVs reload the page mid-load). */
+export interface LoadStore {
+  get(): string | null;
+  set(v: string | null): void;
+}
+
+/** A restarted page continues a load saved this recently. */
+export const RESUME_MS = 2 * 60_000;
+
 export class LoadTracker {
+  constructor(private store: LoadStore | null = null) {}
+  private saved = -1;
   private key: string | null = null;
   private sourceId: string | null = null;
   private meter = new LoadMeter();
@@ -116,13 +127,20 @@ export class LoadTracker {
     return key === this.key ? this.meter.current : 0;
   }
 
-  update(key: string, i: Omit<LoadInput, "stageMs"> & { sourceId?: string | null }, now: number): number {
+  /**
+   * `title`: what is loading (title + episode). A page that restarted while
+   * it loaded (the TV ran out of memory) and loads it again continues from
+   * the saved value instead of 0.
+   */
+  update(key: string, i: Omit<LoadInput, "stageMs"> & { sourceId?: string | null; title?: string }, now: number): number {
     const sid = i.sourceId ?? null;
     if (key !== this.key) {
       this.key = key;
       this.sourceId = null;
       this.meter.reset();
-      this.base = 0;
+      this.base = i.title ? this.resumed(i.title, now) : 0;
+      this.meter.update(this.base);
+      this.saved = -1;
       this.stage = i.stage;
       this.stageAt = now;
     } else if (sid !== null && this.sourceId !== null && sid !== this.sourceId) {
@@ -138,6 +156,50 @@ export class LoadTracker {
       this.stageAt = now;
     }
     const raw = rawProgress({ stage: this.stage, stageMs: now - this.stageAt, source: i.source, metadata: i.metadata });
-    return this.meter.update(this.base + (1 - this.base) * raw);
+    const v = this.meter.update(this.base + (1 - this.base) * raw);
+    if (i.title && this.store && v < 1 && v - this.saved >= 0.01) {
+      this.saved = v;
+      try {
+        this.store.set(JSON.stringify({ title: i.title, p: v, at: now }));
+      } catch {
+        /* storage full / blocked */
+      }
+    }
+    return v;
+  }
+
+  /** The player was left on purpose: the next load starts at 0. */
+  forget() {
+    this.key = null;
+    try {
+      this.store?.set(null);
+    } catch {
+      /* blocked */
+    }
+  }
+
+  private resumed(title: string, now: number): number {
+    try {
+      const raw = this.store?.get();
+      if (!raw) return 0;
+      const s = JSON.parse(raw) as { title?: string; p?: number; at?: number };
+      if (s.title !== title || typeof s.p !== "number" || typeof s.at !== "number") return 0;
+      if (now - s.at > RESUME_MS || now < s.at) return 0;
+      return Math.max(0, Math.min(0.95, s.p));
+    } catch {
+      return 0;
+    }
   }
 }
+
+const STORE_KEY = "martytv.loadProgress";
+
+/** The app's one tracker (only one load shows at a time), kept in localStorage across page restarts. */
+export const loadTracker = new LoadTracker(
+  typeof localStorage === "undefined"
+    ? null
+    : {
+        get: () => localStorage.getItem(STORE_KEY),
+        set: (v) => (v === null ? localStorage.removeItem(STORE_KEY) : localStorage.setItem(STORE_KEY, v)),
+      },
+);

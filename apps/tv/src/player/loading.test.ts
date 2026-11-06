@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LoadMeter, LoadTracker, preloadTarget, rawProgress, STAGE_RANGE, stageOf, type LoadStage } from "./loading";
+import { LoadMeter, LoadTracker, preloadTarget, rawProgress, RESUME_MS, STAGE_RANGE, stageOf, type LoadStage } from "./loading";
 
 const MB = 1024 * 1024;
 const tor = (preloaded: number, peers = 5) => ({ peers, seeders: 3, download_speed_bps: 1, preloaded_bytes: preloaded });
@@ -121,5 +121,34 @@ describe("one load's progress (LoadTracker)", () => {
     expect(s2b).toBeLessThan(1);
     // A new load: from 0.
     expect(t.update("g2", { stage: "resolving" }, 7400)).toBeLessThan(0.1);
+  });
+});
+
+describe("load progress across a page restart", () => {
+  const memStore = () => {
+    let v: string | null = null;
+    return { get: () => v, set: (x: string | null) => void (v = x) };
+  };
+
+  it("a restarted page loading the same title continues from the saved value", () => {
+    const store = memStore();
+    const before = new LoadTracker(store);
+    before.update("m1||0", { stage: "metadata", title: "m1|" }, 0);
+    const shown = before.update("m1||0", { stage: "metadata", title: "m1|" }, 8000);
+    expect(shown).toBeGreaterThan(0.1);
+    // The TV reloads the page: a fresh tracker (and controller counter).
+    const after = new LoadTracker(store);
+    expect(after.update("m1||0", { stage: "resolving", title: "m1|" }, 20_000)).toBeGreaterThanOrEqual(shown - 0.01);
+  });
+
+  it("starts at 0 for another title, after a while, or after leaving the player", () => {
+    const store = memStore();
+    const t = new LoadTracker(store);
+    t.update("m1||0", { stage: "metadata", title: "m1|" }, 0);
+    t.update("m1||0", { stage: "metadata", title: "m1|" }, 8000);
+    expect(new LoadTracker(store).update("m2||0", { stage: "resolving", title: "m2|" }, 9000)).toBeLessThan(0.05);
+    expect(new LoadTracker(store).update("m1||0", { stage: "resolving", title: "m1|" }, 8000 + RESUME_MS + 1)).toBeLessThan(0.05);
+    t.forget();
+    expect(new LoadTracker(store).update("m1||1", { stage: "resolving", title: "m1|" }, 9000)).toBeLessThan(0.05);
   });
 });

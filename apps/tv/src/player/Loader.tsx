@@ -8,7 +8,7 @@ import { placeholderColor } from "@martytv/media-types";
 import { loadStatus, Mascot, PopcornLoader, SloganTicker, SovietEmblem, useAppliedDesign, useI18n } from "@martytv/ui";
 import { Img, legacyColor } from "../components/Img";
 import { formatBytes, formatSpeed } from "./format";
-import { LoadTracker, preloadTarget, type LoadStage } from "./loading";
+import { loadTracker, preloadTarget, type LoadStage } from "./loading";
 import type { LoadingStyle } from "../profile/settings";
 
 export interface LoaderModel {
@@ -32,23 +32,29 @@ export interface LoaderModel {
   online?: boolean;
 }
 
-/** The first load's progress: one tracker for the app (only one load shows at a time), so a remount doesn't restart it. */
-const tracker = new LoadTracker();
+/** The first load's progress: one tracker for the app, so a remount (or a page restart) doesn't restart it. */
+const tracker = loadTracker;
 
 /**
  * Drives the tracker: recomputes every 400 ms (time-based creep inside a
  * stage) and whenever the stage/source changes. Never goes backwards within
  * one load (`loadKey`); a new load or another source starts from 0.
  */
-export function useLoadProgress(loadKey: string, stage: LoadStage, source: Pick<PlaybackSource, "id" | "torrent" | "file" | "release"> | null, metadata: boolean): number {
+export function useLoadProgress(
+  loadKey: string,
+  stage: LoadStage,
+  source: Pick<PlaybackSource, "id" | "torrent" | "file" | "release"> | null,
+  metadata: boolean,
+  title?: string,
+): number {
   const [p, setP] = useState(() => tracker.current(loadKey));
   useEffect(() => {
-    const calc = () => setP(tracker.update(loadKey, { stage, source, sourceId: source?.id ?? null, metadata }, Date.now()));
+    const calc = () => setP(tracker.update(loadKey, { stage, source, sourceId: source?.id ?? null, metadata, title }, Date.now()));
     calc();
     if (stage === "done") return;
     const id = setInterval(calc, 400);
     return () => clearInterval(id);
-  }, [loadKey, stage, source, metadata]);
+  }, [loadKey, stage, source, metadata, title]);
   return p;
 }
 

@@ -85,7 +85,7 @@ import {
 } from "./data";
 import { nextEpisode as resolveNext, packCovers, prevEpisode as resolvePrev, type EpisodeRef } from "./episodes";
 import { episodeLabel, releaseRow } from "./format";
-import { stageOf } from "./loading";
+import { loadTracker, stageOf } from "./loading";
 import { normLang, pickPreferredAudio, trackLabel } from "./tracks";
 import { loadPreferences } from "../profile/settings";
 import { IDLE, isBusy, reduceFlow, type Flow, type FlowAction, type PlayContext } from "./session";
@@ -513,6 +513,7 @@ export class PlayerController {
     this.cancelLoading();
     this.gen++;
     this.loadSeq++;
+    loadTracker.forget();
     this.dispatch({ type: "back" });
   }
 
@@ -521,6 +522,7 @@ export class PlayerController {
     this.cancelLoading();
     this.gen++;
     this.loadSeq++;
+    loadTracker.forget();
     this.dispatch({ type: "close" });
   }
 
