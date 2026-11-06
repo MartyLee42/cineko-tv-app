@@ -602,10 +602,47 @@ error triggers one re-resolve (the provider's optional `Refresh` drops its own
 cache first), and a segment 403/410 drops the cache so the player's next
 playlist reload re-resolves. External subtitles from `Stream.Subtitles` are
 exposed as signed proxy URLs. The optional provider method `SkipMarkers`
-feeds `markers` (opening/ending). Without an explicit `quality`, the profile's
-preferred resolution caps the pick.
+feeds `markers` (opening/ending; see «Заставки и титры» below). Without an
+explicit `quality`, the profile's preferred resolution caps the pick.
 Same-origin HLS also sidesteps CDN CORS and old TV engines' cross-origin
 limits.
+
+### «Заставки и титры» (skip markers)
+
+`PlaybackSource.markers` lists the intro (`opening`), the «Ранее в сериале»
+recap (`recap`) and the end credits (`ending`) of a ready source, torrent or
+online (live GET only). `internal/segments` merges, per kind, the first that
+knows it:
+
+1. the file's titled chapters (TorrServer's ffprobe runs `-show_chapters`;
+   `media_info.chapters`, probe version 3): "Opening" / "OP" / «Заставка»,
+   "Recap" / «Ранее», "Credits" / "Ending" / «Титры» (+ "Preview") —
+   exact for that file;
+2. the online provider's `SkipMarkers` (AniLiberty);
+3. [TheIntroDB](https://theintrodb.org) — `GET /v2/media?tmdb_id=&season=&episode=`
+   (films without season/episode), intro / recap / credits / preview in ms,
+   null start = 0, null end = the file's end, 404 = unknown;
+4. [IntroDB](https://introdb.app) — `GET /segments?imdb_id=&season=&episode=`
+   (series only), intro / recap / outro.
+
+Both databases are asked at once (6 s timeout, the TMDB proxy if set), cached
+in memory (found 24 h, unknown 12 h, failure 10 min) and prefetched when the
+source is created, so the player's GET usually hits the cache (it waits at
+most 1.5 s). Ranges are clamped to the media's duration; one that starts past
+the end (another cut) is dropped; an ending of unknown length runs 15 min
+past its start and players clamp it. `THEINTRODB_URL` / `INTRODB_URL` change
+the bases, `off` disables one.
+
+The databases time the original release: a dub studio's logo in front can
+shift a rip by a few seconds. The profile setting `skip_segments` decides:
+`button` (default) shows «Пропустить заставку / пересказ» and, at a series'
+credits when a next episode exists, «Следующая серия»; `auto` skips intros
+and recaps by itself only when playback has just entered them (not after a
+seek or resume into the middle), then shows «… пропущена · Вернуть» for 6 s,
+and at the credits starts the next-episode countdown (with autoplay on);
+`off` shows nothing. On the TV, OK acts on the pill. Shared logic:
+`skipTarget` / `autoSkipDue` in `@martytv/media-types`; TV `player/skip.ts`,
+web `player/Player.tsx`.
 
 ### AniLiberty (anime provider)
 

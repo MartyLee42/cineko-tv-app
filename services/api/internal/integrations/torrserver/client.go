@@ -448,6 +448,30 @@ type Probe struct {
 		FormatName string `json:"format_name"`
 		Duration   string `json:"duration"`
 	} `json:"format"`
+	// Chapters (-show_chapters): titled ones mark the intro / credits.
+	Chapters []struct {
+		StartTime FlexFloat         `json:"start_time"`
+		EndTime   FlexFloat         `json:"end_time"`
+		Tags      map[string]string `json:"tags"`
+	} `json:"chapters"`
+}
+
+// FlexFloat reads a number that ffprobe (or a JSON re-encoder) may print as
+// a string ("90.000000").
+type FlexFloat float64
+
+func (f *FlexFloat) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), `"`)
+	if s == "" || s == "null" || s == "N/A" {
+		*f = 0
+		return nil
+	}
+	v, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return nil // junk: treat as unknown
+	}
+	*f = FlexFloat(v)
+	return nil
 }
 
 // FFProbe runs TorrServer's ffprobe on one file (GET /ffp/{hash}/{id}). It

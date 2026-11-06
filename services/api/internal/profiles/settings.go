@@ -23,6 +23,10 @@ type Settings struct {
 	HideAnime           *bool   `json:"hide_anime,omitempty"`
 	HideWatched         *bool   `json:"hide_watched,omitempty"`
 	AutoplayNextEpisode *bool   `json:"autoplay_next_episode,omitempty"`
+	// SkipSegments («Заставки и титры»): "button" (default) offers to skip
+	// intros / recaps and the next episode at the credits, "auto" skips by
+	// itself, "off" never (playback markers, internal/segments).
+	SkipSegments        *string `json:"skip_segments,omitempty"`
 	SpoilerFreeEpisodes *bool   `json:"spoiler_free_episodes,omitempty"`
 	LoadingStyle        *string `json:"loading_style,omitempty"`
 	OnboardingCompleted *bool   `json:"onboarding_completed,omitempty"`
@@ -71,6 +75,9 @@ type Settings struct {
 	// «Для вас» row (internal/curated, foryou). Default on.
 	ShowCurated *bool `json:"show_curated,omitempty"`
 }
+
+// SkipModes are the allowed skip_segments values.
+var SkipModes = []string{"button", "auto", "off"}
 
 // CozyAmbiences are the allowed cozy_ambience values.
 var CozyAmbiences = []string{"rain", "fireplace", "off"}
@@ -177,7 +184,7 @@ var (
 func DefaultSettings() Settings {
 	t, l, ds := "system", "popcorn", "kinozal"
 	f, tr := false, true
-	return Settings{Theme: &t, HideAnime: &f, HideWatched: ptr(f), AutoplayNextEpisode: &tr,
+	return Settings{Theme: &t, HideAnime: &f, HideWatched: ptr(f), AutoplayNextEpisode: &tr, SkipSegments: ptr("button"),
 		SpoilerFreeEpisodes: ptr(f), LoadingStyle: &l, OnboardingCompleted: ptr(f), Design: &ds, PosterRating: ptr("kp"),
 		Sources: &SourcesSetting{All: true}, TasteNote: ptr(""), MinVotes: ptr(DefaultMinVotes),
 		IPTVPlaylists: &IPTVPlaylistsSetting{All: true}, VideoQuality: ptr(720), VideoHideShorts: ptr(true),
@@ -202,6 +209,9 @@ func (s Settings) withDefaults() Settings {
 	}
 	if s.AutoplayNextEpisode != nil {
 		d.AutoplayNextEpisode = s.AutoplayNextEpisode
+	}
+	if s.SkipSegments != nil && slices.Contains(SkipModes, *s.SkipSegments) {
+		d.SkipSegments = s.SkipSegments
 	}
 	if s.SpoilerFreeEpisodes != nil {
 		d.SpoilerFreeEpisodes = s.SpoilerFreeEpisodes
@@ -276,6 +286,9 @@ func (s Settings) validate() map[string]string {
 	f := map[string]string{}
 	if s.Theme != nil && !slices.Contains(themes, *s.Theme) {
 		f["theme"] = "must be one of system, dark, light"
+	}
+	if s.SkipSegments != nil && !slices.Contains(SkipModes, *s.SkipSegments) {
+		f["skip_segments"] = "must be one of " + strings.Join(SkipModes, ", ")
 	}
 	if s.LoadingStyle != nil && !slices.Contains(loadingStyles, *s.LoadingStyle) {
 		f["loading_style"] = "must be one of popcorn, fill_title, poster_reveal, film_reel, minimal, marty, marty_popcorn"

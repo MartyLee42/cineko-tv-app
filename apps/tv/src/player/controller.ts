@@ -2,7 +2,7 @@
 // <video> element while the player is shown, answers remote commands
 // synchronously and reports PlaybackState. React components subscribe to it.
 import type { Episode, PlaybackLoading, PlaybackSource, PlaybackState, Release, Schemas } from "@martytv/contracts";
-import { activeMarker, isAndroid } from "@martytv/media-types";
+import { isAndroid, skipTarget } from "@martytv/media-types";
 import { setMediaContext } from "@martytv/ui";
 import { hasAudio } from "./audio";
 import { tvVolume } from "./volume";
@@ -2296,17 +2296,21 @@ export class PlayerController {
     }
   }
 
-  /** The opening the position is in (the skip button), if the provider knows it. */
-  opening() {
+  /**
+   * The intro / recap the position is in (the skip pill), or — `ending`:
+   * a series with a next episode — the credits (source.markers: chapters,
+   * the provider, TheIntroDB / IntroDB).
+   */
+  skipMarker(ending = false) {
     const f = this.flow;
     if (f.phase !== "playing" || !this.isPlaying()) return null;
-    return activeMarker(f.source.markers, this.position());
+    return skipTarget(f.source.markers, this.position(), this.duration() ?? 0, ending);
   }
 
-  /** "Skip opening": to its end. */
-  skipOpening(): boolean {
-    const m = this.opening();
-    return m ? this.seekTo(m.end_seconds) : false;
+  /** «Пропустить заставку / пересказ»: to its end. */
+  skipPast(m: { end_seconds: number }): boolean {
+    const d = this.duration() ?? 0;
+    return this.seekTo(d > 0 ? Math.min(m.end_seconds, d - 1) : m.end_seconds);
   }
 
   /** PlaybackState for device.state (null when nothing plays). */

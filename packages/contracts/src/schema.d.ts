@@ -4470,8 +4470,14 @@ export interface components {
             interlaced?: boolean | null;
             /** @description RFC 6381 codec string (avc1.6e0028), when ffprobe prints one. */
             video_codec_string?: string | null;
-            /** @description 2+ = includes the video detail fields. */
+            /** @description 2+ = includes the video detail fields; 3+ = the chapters. */
             probe_version?: number;
+            /** @description The file's titled chapters (at most 64 kept). Opening / «Заставка» / Credits / «Титры» ones become skip markers. */
+            chapters?: {
+                start_seconds: number;
+                end_seconds: number;
+                title: string;
+            }[];
         };
         PlaybackSource: {
             /** Format: uuid */
@@ -4539,7 +4545,12 @@ export interface components {
             qualities?: number[];
             /** @description Online: external subtitle tracks (proxied VTT). */
             subtitles?: components["schemas"]["Subtitle"][];
-            /** @description Online: opening/ending ranges when the provider knows them ("skip intro"). Omitted when none. */
+            /**
+             * @description Intro / recap / credits ranges for «Пропустить заставку» and «Следующая серия» (live GET of a ready source only).
+             *     Per kind the best source wins: the file's chapters, the online provider (Anilibria), TheIntroDB (by TMDB id),
+             *     IntroDB (by IMDb id, series). Ranges are clamped to the media's duration when known; an ending of unknown
+             *     length runs 15 minutes past its start (players clamp it to the duration). Omitted when none.
+             */
             markers?: components["schemas"]["SkipMarker"][];
             /** @description Online: the provider's episode/film length when known (torrent sources report duration in media_info). Optional. */
             duration_seconds?: number | null;
@@ -4653,10 +4664,18 @@ export interface components {
             cached: boolean;
         };
         SkipMarker: {
-            /** @enum {string} */
-            kind: "opening" | "ending";
+            /**
+             * @description opening = the intro / title sequence; recap = «Ранее в сериале»; ending = the end credits (with a next-episode preview).
+             * @enum {string}
+             */
+            kind: "opening" | "recap" | "ending";
             start_seconds: number;
             end_seconds: number;
+            /**
+             * @description Where the range came from. chapters is exact for this file; the databases time the original release (a dub's logo can shift it by seconds).
+             * @enum {string}
+             */
+            source?: "chapters" | "provider" | "theintrodb" | "introdb";
         };
         Subtitle: {
             /** @description Relative, proxied through the API. */
@@ -4689,6 +4708,12 @@ export interface components {
             hide_watched: boolean;
             /** @default true */
             autoplay_next_episode: boolean;
+            /**
+             * @description «Заставки и титры» (SkipMarker): button = show «Пропустить заставку» / «Пропустить пересказ» during them and «Следующая серия» at a series' credits; auto = skip intros and recaps by themselves (with «Вернуть» for a few seconds) and start the next-episode countdown at the credits; off = never.
+             * @default button
+             * @enum {string}
+             */
+            skip_segments: "button" | "auto" | "off";
             /**
              * @description Blur stills/overviews of unwatched episodes.
              * @default false

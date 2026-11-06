@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-spatial-navigation";
 import type { PlaybackSource, Release } from "@martytv/contracts";
-import { imageUrl, releaseBitrate } from "@martytv/media-types";
+import { imageUrl, releaseBitrate, skipMode } from "@martytv/media-types";
 import { CvIcon, loadStatsLines, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
 import { FocusButton, FocusLine } from "../focus";
 import { useCatalogConfig } from "../catalog/queries";
@@ -21,6 +21,7 @@ import { stageOf, TorrentHold, type LoadStage } from "./loading";
 import { SLEEP_CHOICES, sleepChoiceOf, type SleepChoice, type SleepState } from "./sleep";
 import { SleepOverlay, useSleepTimer } from "./SleepTimer";
 import { useSettings } from "../profile/settings";
+import { useSkip } from "./skip";
 import { accumulateSeek, playerKey, registerMediaKeys, type SeekPreview } from "./keys";
 import { ReleasePicker } from "./ReleasePicker";
 import { errorKey, type Flow, type PlayContext } from "./session";
@@ -447,6 +448,23 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   // «Таймер сна»: per playback session (this view), see SleepTimer.tsx.
   const sleep = useSleepTimer(v, pauseForSleep, setNote);
   const sleepRef = useRef(sleep);
+  // «Заставки и титры»: skip pill, auto-skip with «Вернуть», next episode at the credits.
+  const skip = useSkip({
+    active: playing && player.started,
+    mode: skipMode(settings.skip_segments),
+    ending: playing && ctx.kind === "series" && sleep.state.mode !== "episode" && !!player.nextRef(),
+    playKey: `${flow.source?.id ?? ""}|${ctx.season ?? ""}|${ctx.episode ?? ""}`,
+    autoplay,
+    startCountdown: () => setCountdown((c) => c ?? COUNTDOWN),
+    nextEpisode: () => {
+      setCountdown(null);
+      if (!player.nextEpisode()) player.close();
+    },
+  });
+  const skipRef = useRef(skip);
+  useEffect(() => {
+    skipRef.current = skip;
+  });
   useEffect(() => {
     sleepRef.current = sleep;
   });
@@ -671,8 +689,8 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
           if (seekRef.current) return commitSeek();
           // «Буферизация…»: OK plays now.
           if (player.resumeNow()) return showControls();
-          // During an opening the provider marked, OK skips it.
-          if (k === "ok" && player.skipOpening()) return showControls();
+          // An intro / recap / credits range (or «Вернуть» after an auto-skip): OK acts on it.
+          if (k === "ok" && skipRef.current.onOk()) return showControls();
           player.toggle();
           return showControls();
         case "play":
@@ -777,7 +795,9 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   const pct = dur ? Math.max(0, Math.min(100, (pos / dur) * 100)) : 0;
   const playedPct = dur ? Math.max(0, Math.min(100, (player.position() / dur) * 100)) : 0;
   const ep = episodeLabel(ctx.season, ctx.episode, ctx.episode_name);
-  const opening = playing ? player.opening() : null;
+  const skipKind = skip.marker?.kind ?? null;
+  // Anime keeps «опенинг».
+  const anime = flow.phase === "playing" && flow.source.provider?.kind === "anime";
   // «Показывать буфер»: read on each render (Settings may change it between plays).
   const ahead = playing && prebufferPref.get() ? player.bufferAhead() : null;
   const stripe = bufferStripe(player.position(), ahead, dur);
@@ -944,9 +964,14 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         </div>
       )}
 
-      {playing && player.started && panel === null && countdown === null && opening && (
-        <div data-testid="skip-opening" className="absolute bottom-[300px] right-24 rounded-2xl bg-text px-10 py-5 text-3xl font-semibold text-bg shadow-2xl">
-          {t("sources.tv.skip_opening")}
+      {playing && player.started && panel === null && countdown === null && skip.undo && (
+        <div data-testid="skip-undo" className="absolute bottom-[300px] right-24 rounded-2xl bg-surface-2 px-10 py-5 text-3xl shadow-2xl">
+          {t(`skip.skipped.${skip.undo.kind}`)} · <span className="font-semibold text-accent">{t("skip.tv.undo")}</span>
+        </div>
+      )}
+      {playing && player.started && panel === null && countdown === null && !skip.undo && skipKind && (
+        <div data-testid="skip-opening" data-kind={skipKind} className="absolute bottom-[300px] right-24 rounded-2xl bg-text px-10 py-5 text-3xl font-semibold text-bg shadow-2xl">
+          {skipKind === "opening" && anime ? t("sources.tv.skip_opening") : t(`skip.tv.${skipKind}`)}
         </div>
       )}
 

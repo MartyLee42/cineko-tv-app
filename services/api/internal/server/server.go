@@ -39,6 +39,7 @@ import (
 	"martytv/api/internal/realtime"
 	"martytv/api/internal/reco"
 	"martytv/api/internal/releases"
+	"martytv/api/internal/segments"
 	"martytv/api/internal/sources"
 	"martytv/api/internal/sources/anilibria"
 	"martytv/api/internal/sources/cdnvideohub"
@@ -243,6 +244,16 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	srcHandlers.Routes(api)
 	profiles.SetKnownSources(srcReg.IDs)
 	playbackSvc.SetOnline(srcReg, onlineSvc) // online playback (internal/playback/online.go)
+	// Intro / recap / credits times for «Пропустить заставку» (internal/segments).
+	segHTTP := tmdb.HTTPClient(cfg.TMDB, 6*time.Second)
+	var segProviders []segments.Provider
+	if u := cfg.Segments.TheIntroDBURL; u != "" && u != "off" {
+		segProviders = append(segProviders, segments.TheIntroDB{Base: u, HTTP: segHTTP})
+	}
+	if u := cfg.Segments.IntroDBURL; u != "" && u != "off" {
+		segProviders = append(segProviders, segments.IntroDB{Base: u, HTTP: segHTTP})
+	}
+	playbackSvc.SetSegments(segments.New(pool, log.With("module", "segments"), segProviders...))
 	// Phase 7: IPTV (internal/iptv); live playback through playback/live.go.
 	iptvSvc := iptv.NewService(iptv.Deps{Pool: pool, Config: cfg.IPTV, Profiles: profileStore, Audit: auditLog,
 		LogoDir: cfg.Catalog.ImageCacheDir + "/iptv", Log: log})

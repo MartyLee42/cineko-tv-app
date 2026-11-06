@@ -68,6 +68,9 @@ type Config struct {
 	// Library: server downloads (config/library.go).
 	Library LibraryConfig
 
+	// Segments: intro/credits databases for «Пропустить заставку».
+	Segments SegmentsConfig
+
 	// Video: the YouTube «Видео» tab via Invidious (config/video.go).
 	Video VideoConfig
 }
@@ -99,6 +102,14 @@ type TorrServerConfig struct {
 	URL      string
 	Username string
 	Password string
+}
+
+// SegmentsConfig: base URLs of the intro/credits databases (TheIntroDB by
+// TMDB id, IntroDB by IMDb id). "off" disables one. They go through the
+// TMDB proxy when one is set.
+type SegmentsConfig struct {
+	TheIntroDBURL string
+	IntroDBURL    string
 }
 
 type TMDBConfig struct {
@@ -212,6 +223,10 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 			URL:      strings.TrimRight(get("TORRSERVER_URL", ""), "/"),
 			Username: firstNonEmpty(secret("TORRSERVER_USERNAME"), secret("TORRSERVER_LOGIN")),
 			Password: firstNonEmpty(secret("TORRSERVER_PASSWORD"), secret("TORRSERVER_PWD")),
+		},
+		Segments: SegmentsConfig{
+			TheIntroDBURL: strings.TrimRight(get("THEINTRODB_URL", "https://api.theintrodb.org"), "/"),
+			IntroDBURL:    strings.TrimRight(get("INTRODB_URL", "https://api.introdb.app"), "/"),
 		},
 		TMDB: TMDBConfig{
 			APIKey:       secret("TMDB_API_KEY"),

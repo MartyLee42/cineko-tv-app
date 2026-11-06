@@ -155,6 +155,16 @@ export function useSettingRows() {
     hideAnime: bool("hide_anime", t("settings.hide_anime"), t("settings.hide_anime_hint")),
     hideWatched: bool("hide_watched", t("settings.hide_watched"), t("settings.hide_watched_hint")),
     autoplay: bool("autoplay_next_episode", t("settings.autoplay_next")),
+    // «Заставки и титры»: the skip pill, skipping by itself, or nothing.
+    skipSegments: {
+      kind: "choice",
+      key: "skip_segments",
+      label: t("skip.setting"),
+      hint: t("skip.setting_hint"),
+      choices: (["button", "auto", "off"] as const).map((v) => ({ value: v, label: t(`skip.mode.${v}`) })),
+      value: settings.skip_segments,
+      onChange: (v) => set({ skip_segments: v as Settings["skip_segments"] }),
+    } as Row,
     spoilers: bool("spoiler_free_episodes", t("settings.spoiler_free"), t("settings.spoiler_free_hint")),
     // «Видео» (YouTube): the playback height cap and Shorts.
     videoQuality: {
