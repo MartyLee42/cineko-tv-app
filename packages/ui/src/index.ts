@@ -21,6 +21,8 @@ export * from "./matrix";
 export * from "./cozy";
 export { CozyLayer, useCozyPalette, type CozyLayerProps } from "./CozyLayer";
 export { useCozySound, startCozySound, type CozySoundHandle } from "./cozyAudio";
+export * from "./uiSounds";
+export { installClickSounds, installKeySounds, playUiSound } from "./uiSoundsAudio";
 export * from "./deviceHealth";
 export * from "./loadStatus";
 export * from "./slowTorrent";

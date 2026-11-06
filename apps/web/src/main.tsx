@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { apiErrorMiddleware, ErrorBoundary, I18nProvider, installErrorReporter } from "@martytv/ui";
+import { apiErrorMiddleware, ErrorBoundary, I18nProvider, installClickSounds, installErrorReporter } from "@martytv/ui";
 import { registerSW } from "virtual:pwa-register";
 import { initInstall } from "./install/install";
 import { api, queryClient } from "./api";
@@ -18,6 +18,8 @@ captureFromTv();
 setLook(readCachedLook());
 syncThemeColorMeta();
 captureInstallPrompt();
+// «Звуки интерфейса»: a click on buttons and links (off unless switched on in Settings).
+installClickSounds();
 
 registerSW({ immediate: true });
 // Catch `beforeinstallprompt` before React mounts (it fires early, once).

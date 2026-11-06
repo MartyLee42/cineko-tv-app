@@ -13,7 +13,9 @@ import {
   requestPill,
   shouldAskPill,
   Spinner,
+  uiSoundsPref,
   useI18n,
+  useUiSoundsPref,
   type CozyAmbience,
   type DesignSetting,
   type Locale,
@@ -272,6 +274,8 @@ function ProfileSettingsCard() {
 
           <CozySetting settings={s} onChange={set} />
 
+          <UiSoundsSetting />
+
           {/* «Семья советует»: opt-in sharing (off by default) and showing the family (on). */}
           <div>
             <p className="mb-2 text-sm text-muted">{t("family.section")}</p>
@@ -522,6 +526,17 @@ export function Toggle({
 }
 
 /** «Уютный режим»: warm colours, the Home ambience and its quiet sound. */
+/** «Звуки интерфейса»: this device's click on buttons (localStorage, off by default). */
+function UiSoundsSetting() {
+  const { t } = useI18n();
+  const on = useUiSoundsPref();
+  return (
+    <div className="rounded-xl border border-border" data-testid="setting-ui-sounds">
+      <Toggle testId="setting-ui-sounds-toggle" label={t("sounds.setting")} hint={t("sounds.setting_hint_web")} on={on} onChange={(v) => uiSoundsPref.set(v)} />
+    </div>
+  );
+}
+
 function CozySetting({ settings, onChange }: { settings: Settings; onChange: (p: Partial<Settings>) => void }) {
   const { t } = useI18n();
   const on = settings.cozy_mode ?? false;

@@ -66,6 +66,7 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
     r.player,
     r.intro,
     r.saver,
+    r.sounds,
     r.language,
     ...playback.rows,
     {
