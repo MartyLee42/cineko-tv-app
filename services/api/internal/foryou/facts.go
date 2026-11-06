@@ -37,13 +37,14 @@ type AIFact struct {
 	Spoiler bool   `json:"spoiler"`
 }
 
-// AIAvailable reports whether DeepSeek is configured.
-func (s *Service) AIAvailable() bool { return s.ai != nil }
+// AIAvailable reports whether DeepSeek is configured and the admin hasn't
+// switched AI «Факты» off.
+func (s *Service) AIAvailable(ctx context.Context) bool { return s.ai != nil && s.factsAI(ctx) }
 
 // TitleFacts asks DeepSeek for facts about t in lang (ru | en).
 // errAIDisabled without a key, errBudget when today's tokens are spent.
 func (s *Service) TitleFacts(ctx context.Context, t FactsTitle, lang string) ([]AIFact, error) {
-	if s.ai == nil {
+	if !s.AIAvailable(ctx) {
 		return nil, errAIDisabled
 	}
 	run := &runState{interactive: true}

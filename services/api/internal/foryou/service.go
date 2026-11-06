@@ -85,6 +85,8 @@ type Deps struct {
 type AISettings interface {
 	AITemperature(ctx context.Context) appsettings.AITemperature
 	SetAITemperature(ctx context.Context, t appsettings.AITemperature, by string) error
+	FactsAIEnabled(ctx context.Context) bool
+	SetFactsAIEnabled(ctx context.Context, enabled bool, by string) error
 }
 
 type Service struct {
@@ -153,6 +155,11 @@ func (s *Service) aiTemperature(ctx context.Context) appsettings.AITemperature {
 		return appsettings.DefaultAITemperature()
 	}
 	return s.settings.AITemperature(ctx)
+}
+
+// factsAI: the admin allows AI-written «Факты» (default on).
+func (s *Service) factsAI(ctx context.Context) bool {
+	return s.settings == nil || s.settings.FactsAIEnabled(ctx)
 }
 
 // base is the service lifetime context (cancelled on shutdown).
@@ -431,6 +438,7 @@ func (s *Service) notify(ctx context.Context, profileIDs []string, reason string
 
 // Rows is GET /foryou/rows.
 func (s *Service) Rows(ctx context.Context, profileID, lang string) (*Rows, error) {
+	s.noteVisit(ctx, profileID)
 	c, err := s.ensureCache(ctx, profileID, lang)
 	if err != nil {
 		return nil, err

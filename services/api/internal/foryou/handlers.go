@@ -486,7 +486,7 @@ func (s *Service) hRuns(c fiber.Ctx) error {
 		"items": runs,
 		"ai": fiber.Map{"enabled": s.ai != nil, "model": s.cfg.DeepSeekModel, "tokens_today": used,
 			"daily_budget": s.cfg.AIDailyTokens, "run_budget": s.cfg.AIRunTokens, "balance": s.aiBalance(c.Context()),
-			"temperature": s.aiTemperature(c.Context())},
+			"temperature": s.aiTemperature(c.Context()), "facts_ai": s.factsAI(c.Context())},
 		"daily_at":    s.cfg.DailyAt(),
 		"next_run_at": next,
 	})
@@ -497,7 +497,7 @@ func (s *Service) hRuns(c fiber.Ctx) error {
 // aiSettingsView is GET /foryou/ai-settings (ForYouAISettings): what clients
 // and Cineko Music need to apply a viewer's creativity.
 func (s *Service) aiSettingsView(ctx context.Context) fiber.Map {
-	return fiber.Map{"enabled": s.ai != nil, "temperature": s.aiTemperature(ctx), "creativity": appsettings.Creativity,
+	return fiber.Map{"enabled": s.ai != nil, "temperature": s.aiTemperature(ctx), "facts_ai": s.factsAI(ctx), "creativity": appsettings.Creativity,
 		"min": appsettings.TemperatureMin, "max": appsettings.TemperatureMax}
 }
 
@@ -505,7 +505,7 @@ func (s *Service) hAISettings(c fiber.Ctx) error {
 	return c.JSON(s.aiSettingsView(c.Context()))
 }
 
-// hPutAI is PUT /admin/foryou/ai {temperature: {collections, ask, music}}.
+// hPutAI is PUT /admin/foryou/ai {temperature?: {collections, ask, music, facts}, facts_ai?}.
 func (s *Service) hPutAI(c fiber.Ctx) error {
 	if s.settings == nil {
 		return httpx.NewError(fiber.StatusServiceUnavailable, "unavailable", "Settings are not available.")
@@ -517,12 +517,21 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 			Music       *float64 `json:"music"`
 			Facts       *float64 `json:"facts"`
 		} `json:"temperature"`
+		FactsAI *bool `json:"facts_ai"`
 	}
 	if err := httpx.BindJSON(c, &in); err != nil {
 		return err
 	}
+	if in.Temperature == nil && in.FactsAI == nil {
+		return httpx.Validation(map[string]string{"temperature": "temperature or facts_ai is required"})
+	}
 	if in.Temperature == nil {
-		return httpx.Validation(map[string]string{"temperature": "is required"})
+		in.Temperature = &struct {
+			Collections *float64 `json:"collections"`
+			Ask         *float64 `json:"ask"`
+			Music       *float64 `json:"music"`
+			Facts       *float64 `json:"facts"`
+		}{}
 	}
 	t := s.aiTemperature(c.Context())
 	f := map[string]string{}
@@ -547,9 +556,15 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 	if err := s.settings.SetAITemperature(c.Context(), t, p.UserID); err != nil {
 		return err
 	}
+	if in.FactsAI != nil {
+		if err := s.settings.SetFactsAIEnabled(c.Context(), *in.FactsAI, p.UserID); err != nil {
+			return err
+		}
+	}
 	if s.audit != nil {
 		s.audit.Record(c.Context(), audit.Event{UserID: p.UserID, Action: "foryou.ai_updated", TargetType: "app_settings", TargetID: "ai_temperature",
-			IP: c.IP(), RequestID: httpx.RequestID(c), Metadata: map[string]any{"collections": t.Collections, "ask": t.Ask, "music": t.Music, "facts": t.Facts}})
+			IP: c.IP(), RequestID: httpx.RequestID(c), Metadata: map[string]any{"collections": t.Collections, "ask": t.Ask, "music": t.Music, "facts": t.Facts,
+				"facts_ai": s.factsAI(c.Context())}})
 	}
 	return c.JSON(s.aiSettingsView(c.Context()))
 }

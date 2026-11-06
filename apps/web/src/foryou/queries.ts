@@ -243,6 +243,19 @@ export function useSetAITemperature() {
   });
 }
 
+/** PUT /admin/foryou/ai {facts_ai}: AI-written «Факты» on or off. */
+export function useSetFactsAI() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (factsAI: boolean) => unwrap(api.PUT("/admin/foryou/ai", { body: { facts_ai: factsAI } })),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["admin", "foryou-runs"] });
+      // Already loaded «Факты» may change (AI ones hidden or back).
+      void qc.invalidateQueries({ predicate: (q) => q.queryKey[0] === "media" && q.queryKey[2] === "facts" });
+    },
+  });
+}
+
 export type RerunBody = { scope: "all" | "user" | "profile"; id?: string; ai: boolean };
 
 /** Starts a run; a 409 resolves with `{ running: run_id }` instead of throwing. */

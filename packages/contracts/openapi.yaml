@@ -2856,14 +2856,13 @@ paths:
     put:
       tags: [foryou]
       operationId: adminSetForYouAI
-      description: Sets the DeepSeek temperatures (app_settings `ai_temperature`). Omitted fields keep their value. Admin only.
+      description: Sets the DeepSeek temperatures (app_settings `ai_temperature`) and the AI «Факты» switch (`ai_facts`). Omitted fields keep their value; at least one of the two is required. Admin only.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [temperature]
               properties:
                 temperature:
                   type: object
@@ -2872,6 +2871,7 @@ paths:
                     ask: { type: number, minimum: 0, maximum: 1.5 }
                     music: { type: number, minimum: 0, maximum: 1.5 }
                     facts: { type: number, minimum: 0, maximum: 1.5 }
+                facts_ai: { type: boolean, description: "False: «Факты» show only Kinopoisk's (stored AI ones are hidden)." }
       responses:
         "200":
           description: The new settings.
@@ -5669,7 +5669,7 @@ components:
         scope: { type: string, enum: [all, user, profile] }
         target_id: { type: [string, "null"], format: uuid }
         ai: { type: boolean }
-        trigger: { type: string, enum: [schedule, admin, startup, taste_note, user] }
+        trigger: { type: string, enum: [schedule, admin, startup, taste_note, user, return], description: "return: an idle profile's first visit (the daily run skips profiles not seen for a day)." }
         status: { type: string, enum: [running, completed, failed] }
         requested_by:
           oneOf:
@@ -5690,10 +5690,11 @@ components:
         duration_ms: { type: [integer, "null"] }
     ForYouAIStatus:
       type: object
-      required: [enabled, model, tokens_today, daily_budget, run_budget, balance, temperature]
+      required: [enabled, model, tokens_today, daily_budget, run_budget, balance, temperature, facts_ai]
       properties:
         enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
         temperature: { $ref: "#/components/schemas/AITemperature" }
+        facts_ai: { type: boolean, description: "DeepSeek may write «Факты» for titles Kinopoisk has none for (admin switch, default true)." }
         model: { type: string }
         tokens_today: { type: integer, description: "Tokens used today (Moscow date)." }
         daily_budget: { type: integer }
@@ -5717,10 +5718,11 @@ components:
       description: "The viewer's nudge on the admin's temperature («Точнее / Обычно / Смелее»): −0.4 / 0 / +0.4, clamped to 0–1.5."
     ForYouAISettings:
       type: object
-      required: [enabled, temperature, creativity, min, max]
+      required: [enabled, temperature, facts_ai, creativity, min, max]
       properties:
         enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
         temperature: { $ref: "#/components/schemas/AITemperature" }
+        facts_ai: { type: boolean, description: "AI-written «Факты» allowed (admin switch)." }
         creativity:
           type: object
           description: "Offset each creativity adds to the temperature."

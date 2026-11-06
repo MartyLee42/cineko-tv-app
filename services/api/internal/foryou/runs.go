@@ -81,6 +81,16 @@ func (s *Service) StartRun(ctx context.Context, scope, targetID string, ai bool,
 	if err != nil {
 		return "", err
 	}
+	if scope == "all" && (trigger == "schedule" || trigger == "startup") {
+		// Idle profiles are caught up on their next visit (seen.go).
+		all := len(profiles)
+		if profiles, err = s.activeProfiles(ctx, profiles); err != nil {
+			return "", err
+		}
+		if skipped := all - len(profiles); skipped > 0 {
+			s.log.Info("foryou: skipping idle profiles", "skipped", skipped, "active", len(profiles))
+		}
+	}
 	var target, by *string
 	if targetID != "" {
 		target = &targetID
@@ -186,7 +196,7 @@ func (s *Service) execute(run *runState, scope string, ai bool, profiles []strin
 		run.mu.Unlock()
 		s.saveRun(ctx, run, "running")
 	}
-	if scope == "all" && ai && s.ai != nil && !run.aiStopped {
+	if scope == "all" && ai && s.ai != nil && !run.aiStopped && len(profiles) > 0 {
 		pctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 		if _, err := s.generateGlobalCollections(pctx, run); err != nil {
 			s.recordAIError(run, "", "global_ai", err)
