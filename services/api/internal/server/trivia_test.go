@@ -188,4 +188,27 @@ func TestTriviaFacts(t *testing.T) {
 	if err := env.Pool.QueryRow(ctx, `SELECT EXTRACT(EPOCH FROM expires_at - now()) / 86400 FROM media_trivia WHERE media_id = $1 AND kind = 'facts'`, other).Scan(&ttlDays); err != nil || ttlDays > 1.01 {
 		t.Fatalf("ai facts ttl %v days (%v)", ttlDays, err)
 	}
+
+	// The admin switches AI «Факты» off: stored ones are hidden, no new calls.
+	admin, _ := env.NewUserClient("boss", "admin")
+	c.Do("PUT", "/api/v1/admin/foryou/ai", map[string]any{"facts_ai": false}).Expect(403)
+	s := admin.Do("PUT", "/api/v1/admin/foryou/ai", map[string]any{"facts_ai": false}).Expect(200).JSON()
+	if s["facts_ai"] != false {
+		t.Fatalf("settings %v", s)
+	}
+	if g := c.Do("GET", "/api/v1/media/"+other+"/facts?lang=ru", nil).Expect(200).JSON(); g["source"] != nil || len(g["items"].([]any)) != 0 {
+		t.Fatalf("ai facts while off %v", g)
+	}
+	c.Do("GET", "/api/v1/media/"+other+"/facts?lang=en", nil).Expect(200)
+	if ai.calls() != 1 {
+		t.Fatalf("AI called while off (%d)", ai.calls())
+	}
+	// Kinopoisk facts are unaffected; switching back on shows the stored ones.
+	if f := c.Do("GET", "/api/v1/media/"+id+"/facts?lang=ru", nil).Expect(200).JSON(); f["source"] != "kinopoisk" {
+		t.Fatalf("kinopoisk facts while ai off %v", f)
+	}
+	admin.Do("PUT", "/api/v1/admin/foryou/ai", map[string]any{"facts_ai": true}).Expect(200)
+	if g := c.Do("GET", "/api/v1/media/"+other+"/facts?lang=ru", nil).Expect(200).JSON(); g["source"] != "ai" {
+		t.Fatalf("ai facts back on %v", g)
+	}
 }

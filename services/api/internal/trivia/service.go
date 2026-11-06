@@ -78,7 +78,7 @@ type KPFacts interface {
 
 // AIFacts is the DeepSeek side (foryou.Service).
 type AIFacts interface {
-	AIAvailable() bool
+	AIAvailable(ctx context.Context) bool
 	TitleFacts(ctx context.Context, t foryou.FactsTitle, lang string) ([]foryou.AIFact, error)
 }
 
@@ -264,6 +264,10 @@ func (s *Service) fetchQuotes(ctx context.Context, t *title, lang string) (*Quot
 func (s *Service) Facts(ctx context.Context, id, lang string) (*Facts, error) {
 	var f Facts
 	if s.cached(ctx, id, "facts", lang, &f) {
+		if f.Source != nil && *f.Source == "ai" && (s.ai == nil || !s.ai.AIAvailable(ctx)) {
+			// AI «Факты» switched off: hide the stored ones (kept for when it's back on).
+			return &Facts{Items: []Fact{}, Lang: lang}, nil
+		}
 		return &f, nil
 	}
 	t, err := s.title(ctx, id, lang)
@@ -325,11 +329,12 @@ func (s *Service) fetchFacts(ctx context.Context, t *title, lang string) (*Facts
 			}
 		}
 	}
-	if s.ai == nil || !s.ai.AIAvailable() {
+	if s.ai == nil || !s.ai.AIAvailable(ctx) {
 		if kpLater || !kpOK {
 			return res, 0, nil // nothing to ask (yet): don't remember the miss
 		}
-		return res, ttlMiss, nil
+		// A short miss: the admin may switch AI «Факты» back on.
+		return res, ttlRetry, nil
 	}
 	ai, err := s.ai.TitleFacts(ctx, foryou.FactsTitle{Title: t.name, OriginalTitle: t.original, Year: t.year, Kind: t.kind}, lang)
 	switch {

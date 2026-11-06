@@ -28,6 +28,7 @@ import (
 const (
 	keySeasonal      = "seasonal_effects"
 	keyAITemperature = "ai_temperature"
+	keyFactsAI       = "ai_facts"
 )
 
 // AI temperature range and default (DeepSeek accepts 0–2; above 1.5 the
@@ -78,6 +79,9 @@ type Store struct {
 
 	tempLoaded bool
 	temp       AITemperature
+
+	factsAILoaded bool
+	factsAI       bool
 }
 
 func NewStore(q db.Querier, auditLog *audit.Logger, log *slog.Logger) *Store {
@@ -168,6 +172,44 @@ func (s *Store) SetAITemperature(ctx context.Context, t AITemperature, by string
 	}
 	s.mu.Lock()
 	s.temp, s.tempLoaded = t, true
+	s.mu.Unlock()
+	return nil
+}
+
+// FactsAIEnabled reports whether DeepSeek may write «Факты» for titles
+// Kinopoisk has none for (default true; a database error also answers
+// true and is retried on the next call).
+func (s *Store) FactsAIEnabled(ctx context.Context) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.factsAILoaded {
+		return s.factsAI
+	}
+	var raw []byte
+	err := s.q.QueryRow(ctx, `SELECT value FROM app_settings WHERE key = $1`, keyFactsAI).Scan(&raw)
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		s.factsAI, s.factsAILoaded = true, true
+	case err != nil:
+		if s.log != nil {
+			s.log.Warn("app settings: read failed", "err", err)
+		}
+		return true
+	default:
+		v := seasonalValue{Enabled: true}
+		_ = json.Unmarshal(raw, &v)
+		s.factsAI, s.factsAILoaded = v.Enabled, true
+	}
+	return s.factsAI
+}
+
+// SetFactsAIEnabled stores the AI «Факты» switch.
+func (s *Store) SetFactsAIEnabled(ctx context.Context, enabled bool, by string) error {
+	if err := s.put(ctx, keyFactsAI, seasonalValue{Enabled: enabled}, by); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	s.factsAI, s.factsAILoaded = enabled, true
 	s.mu.Unlock()
 	return nil
 }

@@ -2659,7 +2659,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Sets the DeepSeek temperatures (app_settings `ai_temperature`). Omitted fields keep their value. Admin only. */
+        /** @description Sets the DeepSeek temperatures (app_settings `ai_temperature`) and the AI «Факты» switch (`ai_facts`). Omitted fields keep their value; at least one of the two is required. Admin only. */
         put: operations["adminSetForYouAI"];
         post?: never;
         delete?: never;
@@ -5678,8 +5678,11 @@ export interface components {
             /** Format: uuid */
             target_id: string | null;
             ai: boolean;
-            /** @enum {string} */
-            trigger: "schedule" | "admin" | "startup" | "taste_note" | "user";
+            /**
+             * @description return: an idle profile's first visit (the daily run skips profiles not seen for a day).
+             * @enum {string}
+             */
+            trigger: "schedule" | "admin" | "startup" | "taste_note" | "user" | "return";
             /** @enum {string} */
             status: "running" | "completed" | "failed";
             requested_by: null | {
@@ -5704,6 +5707,8 @@ export interface components {
             /** @description False without DEEPSEEK_API_KEY. */
             enabled: boolean;
             temperature: components["schemas"]["AITemperature"];
+            /** @description DeepSeek may write «Факты» for titles Kinopoisk has none for (admin switch, default true). */
+            facts_ai: boolean;
             model: string;
             /** @description Tokens used today (Moscow date). */
             tokens_today: number;
@@ -5733,6 +5738,8 @@ export interface components {
             /** @description False without DEEPSEEK_API_KEY. */
             enabled: boolean;
             temperature: components["schemas"]["AITemperature"];
+            /** @description AI-written «Факты» allowed (admin switch). */
+            facts_ai: boolean;
             /** @description Offset each creativity adds to the temperature. */
             creativity: {
                 precise: number;
@@ -10847,12 +10854,14 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    temperature: {
+                    temperature?: {
                         collections?: number;
                         ask?: number;
                         music?: number;
                         facts?: number;
                     };
+                    /** @description False: «Факты» show only Kinopoisk's (stored AI ones are hidden). */
+                    facts_ai?: boolean;
                 };
             };
         };

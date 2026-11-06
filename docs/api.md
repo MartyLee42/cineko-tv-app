@@ -530,7 +530,7 @@ collection_id, collection_title, mood}`); see
 | POST | `/profiles/{id}/taste-quiz/dismiss` | Hides the Home invitation; the quiz stays in Settings → state |
 | POST | `/admin/foryou/rerun` | Admin. `{scope: all\|user\|profile, id?, ai?: true}` → 202 `{run_id}`; 409 `{error: {code: run_in_progress}, run_id}` while a run is active; unknown user/profile 404. Audited `foryou.rerun` |
 | GET | `/admin/foryou/runs` | Admin. `{items: ForYouRun[] (last 30), ai: {enabled, model, tokens_today, daily_budget, run_budget, balance, temperature}, daily_at, next_run_at}`; `balance` = DeepSeek's `GET /user/balance` as `{available, currency, total, granted, topped_up, checked_at}` (USD preferred; cached 10 min, refreshed after every run) or `null` without a key / when the call failed. `ForYouRun {id, scope, target_id, ai, trigger: schedule\|admin\|startup\|taste_note\|user, status: running\|completed\|failed, requested_by, profiles_total, profiles_done, ai_calls, ai_tokens, collections_created, errors: [{profile_id, step, message}], started_at, finished_at, duration_ms}` |
-| PUT | `/admin/foryou/ai` | Admin. `{temperature: {collections?, ask?, music?}}` (each 0–1.5; omitted keep their value) → `ForYouAISettings`. 422 out of range. Audited as `foryou.ai_updated` |
+| PUT | `/admin/foryou/ai` | Admin. `{temperature?: {collections?, ask?, music?, facts?}, facts_ai?}` (each 0–1.5; omitted keep their value; `facts_ai: false` = «Факты» from Kinopoisk only) → `ForYouAISettings`. 422 out of range or empty. Audited as `foryou.ai_updated` |
 
 Realtime: `{"type":"foryou.updated","payload":{"profile_ids":[…],"reason":"run|signals|collections|settings"}}`
 to the owning users' browser sockets when rows or collections changed.

@@ -1368,6 +1368,9 @@ and PWA) open `GET /media/{id}/quotes` and `/facts`.
   an outage, DeepSeek writes 6–10 (`foryou.TitleFacts`: told only the title,
   original title, year and kind; same token budget; admin temperature `facts`,
   default 0.7) and the answer is `source: ai` (clients label it «✦ ИИ»).
+  The admin can switch AI facts off (Admin → «Рекомендации», app_settings
+  `ai_facts`): then only Kinopoisk's are shown, stored AI ones are hidden
+  (kept for when it's back on) and a Kinopoisk miss is cached for 1 day.
 - **Cache** (`media_trivia`, per title/kind/language): found data 30 days,
   misses 7 days, AI stand-ins 1 day while Kinopoisk might still answer
   (unresolved id, budget, outage); failures and AI-unavailable answers aren't
@@ -1987,6 +1990,15 @@ profiles active in the last 30 days (progress, ratings, feedback, sessions),
 or every profile when there are ≤ 30. Each step's error is recorded
 (≤ 50, `{profile_id, step, message}`) and the run continues; one profile
 gets ≤ 10 min.
+
+Idle profiles (`foryou/seen.go`, migration `00030`): `GET /foryou/rows`
+records the visit in `foryou_seen` (at most every 5 min). The scheduled and
+startup runs skip profiles not seen for 24 h (never-seen ones count from
+their creation), and global collections when nobody is active, so no AI
+tokens go to nobody. The first visit after such a break starts a
+per-profile run with trigger `return` (taste → AI collections → rows →
+`foryou.updated`) unless the profile got collections in the last 20 h.
+Admin reruns cover everyone.
 
 `POST /admin/foryou/rerun {scope: all|user|profile, id?, ai}` starts the
 same pipeline in the background → `{run_id}`; one run at a time (409
