@@ -97,9 +97,10 @@ const STAGE_ORDER: LoadStage[] = ["resolving", "searching", "creating", "metadat
  * One load's progress, monotonic for the whole load — across remounts of the
  * loading screen (it lives outside React), stage flapping (a poll without
  * torrent stats turns "preloading" back into "metadata": the stage never
- * moves back, so the creep doesn't restart) and preload targets that grow
- * once the file size is known. A new load (`key`: the controller's attempt)
- * or another source within it starts again from 0.
+ * moves back, so the creep doesn't restart), preload targets that grow once
+ * the file size is known, and another source / release within the load
+ * (failover): that one's progress continues from the value already shown,
+ * scaled into what is left. Only a new load (`key`) starts again from 0.
  */
 export class LoadTracker {
   private key: string | null = null;
@@ -107,6 +108,8 @@ export class LoadTracker {
   private meter = new LoadMeter();
   private stage: LoadStage = "resolving";
   private stageAt = 0;
+  /** Value reached when the current source took over (0 for the first). */
+  private base = 0;
 
   /** The value shown so far for this load (0 for another one): a remounted screen starts there, not at 0. */
   current(key: string): number {
@@ -115,10 +118,17 @@ export class LoadTracker {
 
   update(key: string, i: Omit<LoadInput, "stageMs"> & { sourceId?: string | null }, now: number): number {
     const sid = i.sourceId ?? null;
-    if (key !== this.key || (sid !== null && this.sourceId !== null && sid !== this.sourceId)) {
+    if (key !== this.key) {
       this.key = key;
       this.sourceId = null;
       this.meter.reset();
+      this.base = 0;
+      this.stage = i.stage;
+      this.stageAt = now;
+    } else if (sid !== null && this.sourceId !== null && sid !== this.sourceId) {
+      // Another source: its stages start over, the bar doesn't.
+      this.sourceId = null;
+      this.base = this.meter.current;
       this.stage = i.stage;
       this.stageAt = now;
     }
@@ -127,6 +137,7 @@ export class LoadTracker {
       this.stage = i.stage;
       this.stageAt = now;
     }
-    return this.meter.update(rawProgress({ stage: this.stage, stageMs: now - this.stageAt, source: i.source, metadata: i.metadata }));
+    const raw = rawProgress({ stage: this.stage, stageMs: now - this.stageAt, source: i.source, metadata: i.metadata });
+    return this.meter.update(this.base + (1 - this.base) * raw);
   }
 }

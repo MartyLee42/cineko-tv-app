@@ -104,18 +104,22 @@ describe("one load's progress (LoadTracker)", () => {
     expect(t.current("g2")).toBe(0);
   });
 
-  it("starts over for a new load or another source, not when the source first appears", () => {
+  it("never goes back for another source within the load; starts over only for a new load", () => {
     const t = new LoadTracker();
     t.update("g1", { stage: "creating" }, 0);
     const first = t.update("g1", { stage: "creating" }, 5000);
     // The source appears (null → s1): same load.
     expect(t.update("g1", { stage: "metadata", source: src("s1", null), sourceId: "s1" }, 5400)).toBeGreaterThanOrEqual(first);
-    t.update("g1", { stage: "preloading", source: src("s1", 20 * MB), sourceId: "s1" }, 6000);
-    expect(t.current("g1")).toBeGreaterThan(0.8);
-    // The phone sent another source during the load: from 0.
-    expect(t.update("g1", { stage: "metadata", source: src("s2", null), sourceId: "s2" }, 6400)).toBeLessThan(0.2);
-    // A new attempt: from 0 too.
-    t.update("g1", { stage: "starting", source: src("s2", 32 * MB), sourceId: "s2" }, 7000);
+    const shown = t.update("g1", { stage: "preloading", source: src("s1", 20 * MB), sourceId: "s1" }, 6000);
+    expect(shown).toBeGreaterThan(0.8);
+    // Failover to another source: continues from what was shown…
+    const s2 = t.update("g1", { stage: "metadata", source: src("s2", null), sourceId: "s2" }, 6400);
+    expect(s2).toBeGreaterThanOrEqual(shown);
+    // …and keeps growing with that source's stages, below 1 until it plays.
+    const s2b = t.update("g1", { stage: "preloading", source: src("s2", 10 * MB, 1000 * MB), sourceId: "s2" }, 7000);
+    expect(s2b).toBeGreaterThan(s2);
+    expect(s2b).toBeLessThan(1);
+    // A new load: from 0.
     expect(t.update("g2", { stage: "resolving" }, 7400)).toBeLessThan(0.1);
   });
 });

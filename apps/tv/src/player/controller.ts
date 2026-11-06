@@ -181,6 +181,8 @@ export class PlayerController {
   video: HTMLVideoElement | null = null;
 
   private gen = 0;
+  /** Bumped when the player is left: the next load of the same title starts its progress at 0. */
+  private loadSeq = 0;
   private listeners = new Set<Listener>();
   private mem: RouteMemory | undefined;
   /** Online variant id → quality chosen in «Смотреть онлайн» (sent on POST /playback/sources). */
@@ -510,6 +512,7 @@ export class PlayerController {
   back() {
     this.cancelLoading();
     this.gen++;
+    this.loadSeq++;
     this.dispatch({ type: "back" });
   }
 
@@ -517,6 +520,7 @@ export class PlayerController {
   close() {
     this.cancelLoading();
     this.gen++;
+    this.loadSeq++;
     this.dispatch({ type: "close" });
   }
 
@@ -611,12 +615,13 @@ export class PlayerController {
 
   /** Identifies one load attempt (the loading screen's progress restarts only for a new one). */
   loadKey(): string {
-    // Title + release, not the attempt counter: internal restarts while
-    // loading (compat switch, reload, re-applied seek) bump `gen` and would
-    // send the loading bar back to 0. Another release starts again.
+    // Title + episode, not the attempt counter or the release: internal
+    // restarts (compat switch, reload, re-applied seek) and failing over to
+    // another release / source must not send the loading bar back to 0 —
+    // it only ever grows until the player is left.
     const f = this.flow;
-    if (f.phase !== "preparing" && f.phase !== "playing") return String(this.gen);
-    return `${f.ctx.media_id}|${f.ctx.episode_id ?? ""}|${f.release?.id ?? ""}`;
+    if (f.phase !== "preparing" && f.phase !== "playing") return `idle|${this.gen}`;
+    return `${f.ctx.media_id}|${f.ctx.episode_id ?? ""}|${this.loadSeq}`;
   }
 
   /** Leaving while it loads: the server stops loading the source too. */
