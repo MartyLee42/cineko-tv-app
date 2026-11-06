@@ -23,7 +23,7 @@ export function AwardsLine({ awards, onOpen, className = "" }: { awards: Awards 
   const noms = awardNominationCount(awards);
   return (
     <div className={`flex ${className}`}>
-      <FocusButton focusKey="d-awards" onPress={onOpen} className="flex h-[52px] max-w-[1060px] items-center rounded-control px-4 text-[23px]" focusedClassName="!bg-text !text-bg">
+      <FocusButton focusKey="d-awards" onPress={onOpen} className="flex h-[52px] min-w-0 max-w-[1060px] items-center rounded-control px-4 text-[23px]" focusedClassName="!bg-text !text-bg">
         <span data-testid="tv-awards-line" className="truncate">
           {summary || `🏆 ${t("awards.title")}`}
           {noms > 0 && <span className="opacity-70">{`  ·  ${nominationsLabel(noms, locale, t)}`}</span>}

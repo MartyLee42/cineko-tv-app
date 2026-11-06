@@ -1,0 +1,27 @@
+import type { triviaEn } from "./trivia.en";
+
+export const triviaRu: Record<keyof typeof triviaEn, string> = {
+  "trivia.quotes": "Цитаты",
+  "trivia.facts": "Факты",
+  "trivia.quotes_title": "Цитаты · {title}",
+  "trivia.facts_title": "Факты · {title}",
+  "trivia.quotes_loading": "Ищем цитаты…",
+  "trivia.facts_loading": "Собираем факты…",
+  "trivia.slow_hint": "В первый раз это может занять несколько секунд.",
+  "trivia.quotes_empty": "Известных цитат не нашлось.",
+  "trivia.facts_empty": "Фактов пока нет.",
+  "trivia.load_error": "Не удалось загрузить. Попробуйте ещё раз.",
+  "trivia.counter": "{i} / {n}",
+  "trivia.other_lang_en": "На русском цитат не нашлось — показываем английские.",
+  "trivia.other_lang_ru": "На английском цитат не нашлось — показываем русские.",
+  "trivia.blooper": "Ляп",
+  "trivia.spoiler": "Спойлер",
+  "trivia.show_spoiler": "Показать спойлер",
+  "trivia.ai_badge": "✦ ИИ",
+  "trivia.ai_note": "Факты собраны ИИ и могут содержать неточности.",
+  "trivia.source.wikiquote": "Источник: Викицитатник",
+  "trivia.source.kinopoisk": "Источник: Кинопоиск",
+  "trivia.source.ai": "Источник: ИИ",
+  "trivia.tv_quotes_hint": "◀ ▶ листать · Назад: закрыть",
+  "trivia.tv_facts_hint": "▲▼ листать · OK: показать спойлер · Назад: закрыть",
+};

@@ -232,7 +232,7 @@ function BalanceLine({ balance }: { balance: AIBalance | null | undefined }) {
   );
 }
 
-const TEMP_KEYS: (keyof AITemperature)[] = ["collections", "ask", "music"];
+const TEMP_KEYS: (keyof AITemperature)[] = ["collections", "ask", "music", "facts"];
 
 /** DeepSeek temperature per feature (0–1.5); viewers nudge it with «Точнее / Смелее». */
 function TemperatureCard({ current }: { current: AITemperature }) {
@@ -284,7 +284,7 @@ function TemperatureCard({ current }: { current: AITemperature }) {
             className="text-sm text-muted underline-offset-2 hover:text-text hover:underline"
             onClick={() => {
               setSaved(false);
-              setDraft({ collections: 1, ask: 1, music: 1 });
+              setDraft({ collections: 1, ask: 1, music: 1, facts: 0.7 });
             }}
           >
             {t("fy.admin.temp_reset")}

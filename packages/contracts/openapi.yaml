@@ -1076,6 +1076,48 @@ paths:
         "401": { $ref: "#/components/responses/Error" }
         "503": { $ref: "#/components/responses/CatalogUnavailable" }
         "502": { $ref: "#/components/responses/Error" }
+  /media/{id}/quotes:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [catalog]
+      operationId: getMediaQuotes
+      description: |
+        «Цитаты»: famous quotes from Wikiquote (the page is found through Wikidata
+        by TMDB id), in `lang` or else the other language; at most 12, taken
+        round-robin across characters. Empty when Wikiquote has nothing. Never
+        AI-written. Cached 30 days (misses 7); the first call may take seconds.
+      parameters:
+        - { $ref: "#/components/parameters/Lang" }
+      responses:
+        "200":
+          description: Quotes.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaQuotes" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "502": { $ref: "#/components/responses/Error" }
+  /media/{id}/facts:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [catalog]
+      operationId: getMediaFacts
+      description: |
+        «Факты»: Kinopoisk's facts and bloopers (keyed API, budgeted; Russian) when
+        the title has a Kinopoisk id and some facts; otherwise written by DeepSeek
+        in `lang` (`source: ai`). At most 15, facts before bloopers. Cached 30 days
+        (AI stand-ins for a day while Kinopoisk may still answer).
+      parameters:
+        - { $ref: "#/components/parameters/Lang" }
+      responses:
+        "200":
+          description: Facts.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaFacts" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "502": { $ref: "#/components/responses/Error" }
   /people/{tmdb_id}:
     get:
       tags: [catalog]
@@ -2829,6 +2871,7 @@ paths:
                     collections: { type: number, minimum: 0, maximum: 1.5 }
                     ask: { type: number, minimum: 0, maximum: 1.5 }
                     music: { type: number, minimum: 0, maximum: 1.5 }
+                    facts: { type: number, minimum: 0, maximum: 1.5 }
       responses:
         "200":
           description: The new settings.
@@ -4216,6 +4259,39 @@ components:
         key: { type: string }
         name: { type: string }
         type: { type: string, description: "Trailer, Teaser…" }
+    MediaQuotes:
+      type: object
+      required: [items, source, source_url, lang]
+      properties:
+        items:
+          type: array
+          maxItems: 12
+          items:
+            type: object
+            required: [text, speaker]
+            properties:
+              text: { type: string }
+              speaker: { type: [string, "null"], description: "The character, when the page says." }
+        source: { type: [string, "null"], enum: [wikiquote, null] }
+        source_url: { type: [string, "null"], description: "The Wikiquote page." }
+        lang: { type: string, enum: [ru, en], description: "Language of the quotes (may differ from the request)." }
+    MediaFacts:
+      type: object
+      required: [items, source, source_url, lang]
+      properties:
+        items:
+          type: array
+          maxItems: 15
+          items:
+            type: object
+            required: [text, kind, spoiler]
+            properties:
+              text: { type: string, description: "Plain text." }
+              kind: { type: string, enum: [fact, blooper] }
+              spoiler: { type: boolean, description: "Reveals the plot: hide until asked." }
+        source: { type: [string, "null"], enum: [kinopoisk, ai, null], description: "ai = written by DeepSeek (label it, may be inaccurate)." }
+        source_url: { type: [string, "null"] }
+        lang: { type: string, enum: [ru, en] }
     MediaDetail:
       allOf:
         - $ref: "#/components/schemas/MediaSummary"
@@ -5609,11 +5685,12 @@ components:
     AITemperature:
       type: object
       description: "The admin's DeepSeek temperature per feature (0–1.5, default 1.0)."
-      required: [collections, ask, music]
+      required: [collections, ask, music, facts]
       properties:
         collections: { type: number, minimum: 0, maximum: 1.5, description: "AI collections (daily run)." }
         ask: { type: number, minimum: 0, maximum: 1.5, description: "«Спросить ИИ»." }
         music: { type: number, minimum: 0, maximum: 1.5, description: "Cineko Music AI playlists." }
+        facts: { type: number, minimum: 0, maximum: 1.5, description: "AI-written «Факты» (default 0.7)." }
     AICreativity:
       type: string
       enum: [precise, normal, bold]

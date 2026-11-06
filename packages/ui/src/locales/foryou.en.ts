@@ -212,9 +212,10 @@ export const foryouEn = {
   "fy.admin.temp.collections": "AI collections",
   "fy.admin.temp.ask": "Ask AI",
   "fy.admin.temp.music": "Cineko Music playlists",
+  "fy.admin.temp.facts": "Film facts (when Kinopoisk has none)",
   "fy.admin.temp_save": "Save",
   "fy.admin.temp_saved": "Saved.",
-  "fy.admin.temp_reset": "Default (1.0)",
+  "fy.admin.temp_reset": "Defaults",
 
   // ---- Admin ----
   "fy.admin.tab": "Recommendations",

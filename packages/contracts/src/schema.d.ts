@@ -936,6 +936,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/media/{id}/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /**
+         * @description «Цитаты»: famous quotes from Wikiquote (the page is found through Wikidata
+         *     by TMDB id), in `lang` or else the other language; at most 12, taken
+         *     round-robin across characters. Empty when Wikiquote has nothing. Never
+         *     AI-written. Cached 30 days (misses 7); the first call may take seconds.
+         */
+        get: operations["getMediaQuotes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/{id}/facts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /**
+         * @description «Факты»: Kinopoisk's facts and bloopers (keyed API, budgeted; Russian) when
+         *     the title has a Kinopoisk id and some facts; otherwise written by DeepSeek
+         *     in `lang` (`source: ai`). At most 15, facts before bloopers. Cached 30 days
+         *     (AI stand-ins for a day while Kinopoisk may still answer).
+         */
+        get: operations["getMediaFacts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/people/{tmdb_id}": {
         parameters: {
             query?: never;
@@ -4011,6 +4059,40 @@ export interface components {
             /** @description Trailer, Teaser… */
             type: string;
         };
+        MediaQuotes: {
+            items: {
+                text: string;
+                /** @description The character, when the page says. */
+                speaker: string | null;
+            }[];
+            /** @enum {string|null} */
+            source: "wikiquote" | null;
+            /** @description The Wikiquote page. */
+            source_url: string | null;
+            /**
+             * @description Language of the quotes (may differ from the request).
+             * @enum {string}
+             */
+            lang: "ru" | "en";
+        };
+        MediaFacts: {
+            items: {
+                /** @description Plain text. */
+                text: string;
+                /** @enum {string} */
+                kind: "fact" | "blooper";
+                /** @description Reveals the plot: hide until asked. */
+                spoiler: boolean;
+            }[];
+            /**
+             * @description ai = written by DeepSeek (label it, may be inaccurate).
+             * @enum {string|null}
+             */
+            source: "kinopoisk" | "ai" | null;
+            source_url: string | null;
+            /** @enum {string} */
+            lang: "ru" | "en";
+        };
         MediaDetail: components["schemas"]["MediaSummary"] & {
             tagline: string;
             /** @description Minutes. Series: typical episode runtime. */
@@ -5638,6 +5720,8 @@ export interface components {
             ask: number;
             /** @description Cineko Music AI playlists. */
             music: number;
+            /** @description AI-written «Факты» (default 0.7). */
+            facts: number;
         };
         /**
          * @description The viewer's nudge on the admin's temperature («Точнее / Обычно / Смелее»): −0.4 / 0 / +0.4, clamped to 0–1.5.
@@ -8133,6 +8217,62 @@ export interface operations {
             401: components["responses"]["Error"];
             502: components["responses"]["Error"];
             503: components["responses"]["CatalogUnavailable"];
+        };
+    };
+    getMediaQuotes: {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Quotes. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaQuotes"];
+                };
+            };
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+            502: components["responses"]["Error"];
+        };
+    };
+    getMediaFacts: {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Facts. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaFacts"];
+                };
+            };
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+            502: components["responses"]["Error"];
         };
     };
     getPerson: {
@@ -10711,6 +10851,7 @@ export interface operations {
                         collections?: number;
                         ask?: number;
                         music?: number;
+                        facts?: number;
                     };
                 };
             };

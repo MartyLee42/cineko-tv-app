@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MyNote } from "../../foryou/MyNote";
 import { ApiError, type CatalogConfig, type Episode, type MediaDetail, type MediaSummary, type Profile, type Release, type WatchProgress } from "@martytv/contracts";
 import { catalogLang, episodeCode, formatDate, formatRuntime, imageUrl, placeholderColor, variantRelease } from "@martytv/media-types";
-import { GenreReaction, useI18n } from "@martytv/ui";
-import { FocusBlock, FocusButton, FocusLine, getCurrentFocusKey, offsetWithin, useInitialFocus } from "../../focus";
+import { GenreReaction, showQuotesButton, useI18n } from "@martytv/ui";
+import { FocusBlock, FocusButton, FocusLine, getCurrentFocusKey, offsetWithin, setFocus, useInitialFocus } from "../../focus";
 import { playerKey } from "../../player/keys";
 import { cardKey } from "../../catalog/focusKeys";
 import { pickSeason } from "../../catalog/seasons";
@@ -28,6 +28,8 @@ import { Brackets, PosterCard, WideCard } from "../../design/cards";
 import { HEADER_H, KinozalBackdrop, KinozalHeader, ProjectorBackdrop, ProjectorHeader, TerminalBackdrop, TerminalHeader, type DetailActions, type SourceState } from "../../design/details";
 import { TrailerLayer } from "../../design/TrailerLayer";
 import { AwardsPanel } from "../../design/awards";
+import { FactsPanel, QuotesPanel } from "../../design/trivia";
+import { useFacts, useQuotes } from "../../catalog/trivia";
 import { indexTag } from "../../design/format";
 import { useMediaProgress, useSetWatched } from "../../watch/api";
 import { watchOnlineItems } from "../../player/online";
@@ -275,6 +277,15 @@ export function DetailsScreen({
   const dlLabel = useDownloadLabel();
   const [onlineOpen, setOnlineOpen] = useState(false);
   const [awardsOpen, setAwardsOpen] = useState(false);
+  // «Цитаты»: prefetched (none found → no button); «Факты»: loaded on open.
+  const [triviaOpen, setTriviaOpen] = useState<"quotes" | "facts" | null>(null);
+  const quotesQ = useQuotes(id, !!d);
+  const factsQ = useFacts(id, triviaOpen === "facts");
+  const hasQuotes = showQuotesButton(quotesQ);
+  // The button vanishing under focus (the prefetch found nothing): focus moves to «Факты».
+  useEffect(() => {
+    if (!hasQuotes && getCurrentFocusKey() === "d-quotes") setFocus("d-facts");
+  }, [hasQuotes]);
 
 
   // Recommended by someone: their note, and opening Details marks it seen.
@@ -402,6 +413,8 @@ export function DetailsScreen({
     onRefine: () => play(ep, "pick"),
     onOnline: d && onlineItems.length > 0 ? () => setOnlineOpen(true) : null,
     onAwards: d?.awards?.length ? () => setAwardsOpen(true) : null,
+    onQuotes: d && hasQuotes ? () => setTriviaOpen("quotes") : null,
+    onFacts: d ? () => setTriviaOpen("facts") : null,
   };
   const playOnline = (c: OnlineChoice) => {
     setOnlineOpen(false);
@@ -568,6 +581,8 @@ export function DetailsScreen({
       {menu && <ActionMenu title={menu.title} subtitle={menu.subtitle} actions={menu.actions} testId={menu.testId} onCancel={() => setMenu(null)} />}
       {trailer && d?.trailer && <TrailerLayer video={d.trailer} onClose={() => setTrailer(false)} />}
       {awardsOpen && d?.awards?.length ? <AwardsPanel title={d.title} awards={d.awards} onClose={() => setAwardsOpen(false)} /> : null}
+      {triviaOpen === "quotes" && d && <QuotesPanel title={d.title} q={quotesQ} onClose={() => setTriviaOpen(null)} />}
+      {triviaOpen === "facts" && d && <FactsPanel title={d.title} q={factsQ} onClose={() => setTriviaOpen(null)} />}
       {onlineOpen && d && (
         <OnlinePicker
           title={d.title}

@@ -1341,6 +1341,39 @@ URLs (the unofficial quota endpoint has the key in its path). Direct access
 is right in production (Russia); `KINOPOISK_PROXY_URL` exists for networks
 that need it.
 
+## Quotes and facts («Цитаты», «Факты»)
+
+`internal/trivia`, migration `00029`. Two buttons on a title's details (TV
+and PWA) open `GET /media/{id}/quotes` and `/facts`.
+
+- **Quotes** come only from Wikiquote, never from AI (invented quotes would
+  look real). One SPARQL query finds the Wikidata item by TMDB id (P4947 movie
+  / P4983 series) and its ru/en Wikiquote sitelinks; the MediaWiki parse API
+  returns the page's wikitext. `parseQuotes` takes `{{q|…}}` templates (ru) and
+  top-level `* …` bullets; a section heading is the speaker (container
+  headings like «Цитаты», «Сезон 1», «Другие» name none, and a leading
+  «Уолт: » does); dialogue, cast, taglines, reviews and links sections are
+  skipped, as are lines joined by `<br>` or holding two speakers. Links, stage
+  directions, templates and refs are stripped; a speech over 300 characters is
+  cut to its bold parts (English Wikiquote bolds the famous line). Up to 12,
+  round-robin across speakers in page order. The requested language first; a
+  page with fewer than 3 usable quotes falls back to the other. Wikimedia
+  requests carry a descriptive User-Agent and go one at a time, ≥ 1 s apart.
+- **Facts**: Kinopoisk's «Знаете ли вы» list through the configured keyed API
+  (`ratings.Service.Facts`: unofficial `/api/v2.2/films/{kp}/facts`, dev
+  `/v1.4/movie/{kp}?selectFields=facts`), one budget unit at high priority,
+  the usual rate limit and pause rules; HTML stripped, facts before bloopers,
+  ≤ 15, spoiler flags kept (clients hide those until asked). Kinopoisk facts are
+  Russian whatever the language. With no key, no Kinopoisk id yet, no facts or
+  an outage, DeepSeek writes 6–10 (`foryou.TitleFacts`: told only the title,
+  original title, year and kind; same token budget; admin temperature `facts`,
+  default 0.7) and the answer is `source: ai` (clients label it «✦ ИИ»).
+- **Cache** (`media_trivia`, per title/kind/language): found data 30 days,
+  misses 7 days, AI stand-ins 1 day while Kinopoisk might still answer
+  (unresolved id, budget, outage); failures and AI-unavailable answers aren't
+  cached. Concurrent requests share one fetch, which runs detached from the
+  request (≤ 90 s), so a client's prefetch that gives up still fills the cache.
+
 ## Awards and nominations (Wikidata)
 
 `internal/awards` answers «which competitions was this film nominated for or
@@ -1840,7 +1873,8 @@ everything else works.
 **Temperature.** Admins set the DeepSeek temperature per feature on the
 «Рекомендации» tab (`PUT /admin/foryou/ai`, app_settings `ai_temperature`,
 cached in memory; shown in `GET /admin/foryou/runs` → `ai.temperature`):
-collections, Ask AI and Cineko Music playlists, each 0–1.5 (default 1.0).
+collections, Ask AI, Cineko Music playlists (each 0–1.5, default 1.0) and
+the AI-written «Факты» (default 0.7).
 Viewers nudge the Ask/music value per request with `creativity`
 («Точнее / Обычно / Смелее»: −0.4 / 0 / +0.4, clamped to 0–1.5), remembered
 per device under `martytv.ai_creativity` (`packages/ui/src/aiCreativity.ts`;

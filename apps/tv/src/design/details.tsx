@@ -19,7 +19,7 @@ import { RatingRow } from "./hero";
 import { plateTitleSize, TitlePlate, useTitlePlate, useTitleScale } from "./skins";
 import { BackIcon, BookmarkIcon, ListIcon, MoreIcon, PlusIcon, CheckIcon, PlayGlyph, TrailerIcon } from "./icons";
 import { WaveCheckIcon, WaveMoreIcon, WavePlusIcon } from "./waveIcons";
-import { AwardsLine } from "./awards";
+import { ExtrasLine } from "./trivia";
 
 export interface SourceState {
   status: "idle" | "loading" | "ok" | "none" | "error";
@@ -44,6 +44,10 @@ export interface DetailActions {
   onOnline?: (() => void) | null;
   /** «Награды» panel: null/absent = no awards (line hidden). */
   onAwards?: (() => void) | null;
+  /** «Цитаты» panel: null/absent = none found (button hidden; shown while loading). */
+  onQuotes?: (() => void) | null;
+  /** «Факты» panel. */
+  onFacts?: (() => void) | null;
 }
 
 export interface HeaderProps {
@@ -153,7 +157,7 @@ export function KinozalHeader({ item, detail, from, progress, sources, actions, 
             </span>
           ))}
         </div>
-        <AwardsLine awards={detail?.awards} onOpen={actions.onAwards ?? null} className="-ml-4 mt-3" />
+        <ExtrasLine awards={detail?.awards} onAwards={actions.onAwards ?? null} onQuotes={actions.onQuotes ?? null} onFacts={actions.onFacts ?? null} className="-ml-4 mt-3" />
         <p className="mt-5 line-clamp-3 w-[880px] text-[25px] leading-[1.45] text-text/75">{item.overview || t("catalog.detail.no_overview")}</p>
         <MovieProgress progress={progress} className="mt-5" />
         <div className="mt-8 flex items-center">
@@ -267,33 +271,36 @@ export function TerminalHeader({ item, detail, from, profileName, progress, sour
             </div>
           ))}
         </div>
-        <AwardsLine awards={detail?.awards} onOpen={actions.onAwards ?? null} className="-ml-4 mt-4" />
-        <p className="mt-7 line-clamp-3 text-[25px] leading-[1.45] text-text/80">{item.overview || t("catalog.detail.no_overview")}</p>
-        <MovieProgress progress={progress} className="mt-5" />
-        {/* Own focus group: Down from the buttons goes to the seasons below, not into the sources table on the right. */}
-        <FocusBlock focusKey="d-buttons" className="mt-8 flex">
-          <FocusButton focusKey="d-play" onPress={actions.onPlay} className={`${btn} bg-accent text-on-accent`}>
-            <span className="mr-3">{cv ? <PlayGlyph size={26} /> : "▶"}</span>
-            {actions.playLabel}
-          </FocusButton>
-          {actions.onOnline && (
-            <FocusButton focusKey="d-online" onPress={actions.onOnline} className={`${btn} ${gap} border-2 border-accent text-accent`}>
-              {t("online.watch")}
+        {/* Extras line → buttons in one group: Up from the buttons reaches «Цитаты»/«Факты», not the sources table. */}
+        <FocusBlock focusKey="d-left">
+          <ExtrasLine awards={detail?.awards} onAwards={actions.onAwards ?? null} onQuotes={actions.onQuotes ?? null} onFacts={actions.onFacts ?? null} square className="-ml-4 mt-4" />
+          <p className="mt-7 line-clamp-3 text-[25px] leading-[1.45] text-text/80">{item.overview || t("catalog.detail.no_overview")}</p>
+          <MovieProgress progress={progress} className="mt-5" />
+          {/* Own focus group: Down from the buttons goes to the seasons below, not into the sources table on the right. */}
+          <FocusBlock focusKey="d-buttons" className="mt-8 flex">
+            <FocusButton focusKey="d-play" onPress={actions.onPlay} className={`${btn} bg-accent text-on-accent`}>
+              <span className="mr-3">{cv ? <PlayGlyph size={26} /> : "▶"}</span>
+              {actions.playLabel}
             </FocusButton>
-          )}
-          {actions.onTrailer && (
-            <FocusButton focusKey="d-trailer" onPress={actions.onTrailer} className={`${btn} ${gap} border-2 border-text/25`}>
-              {compact ? <TrailerIcon size={28} /> : t("tvd.btn.trailer")}
+            {actions.onOnline && (
+              <FocusButton focusKey="d-online" onPress={actions.onOnline} className={`${btn} ${gap} border-2 border-accent text-accent`}>
+                {t("online.watch")}
+              </FocusButton>
+            )}
+            {actions.onTrailer && (
+              <FocusButton focusKey="d-trailer" onPress={actions.onTrailer} className={`${btn} ${gap} border-2 border-text/25`}>
+                {compact ? <TrailerIcon size={28} /> : t("tvd.btn.trailer")}
+              </FocusButton>
+            )}
+            {actions.inList !== null && (
+              <FocusButton focusKey="d-list" onPress={actions.onList} className={`${btn} ${gap} border-2 ${actions.inList ? "border-accent text-accent" : "border-text/25"}`}>
+                {actions.inList ? t("tvd.btn.in_list") : t("tvd.btn.list_add")}
+              </FocusButton>
+            )}
+            <FocusButton focusKey="d-more" onPress={actions.onMore} className={`${btn} ${gap} border-2 border-text/25`}>
+              {cv ? <MoreIcon size={30} /> : "⋯"}
             </FocusButton>
-          )}
-          {actions.inList !== null && (
-            <FocusButton focusKey="d-list" onPress={actions.onList} className={`${btn} ${gap} border-2 ${actions.inList ? "border-accent text-accent" : "border-text/25"}`}>
-              {actions.inList ? t("tvd.btn.in_list") : t("tvd.btn.list_add")}
-            </FocusButton>
-          )}
-          <FocusButton focusKey="d-more" onPress={actions.onMore} className={`${btn} ${gap} border-2 border-text/25`}>
-            {cv ? <MoreIcon size={30} /> : "⋯"}
-          </FocusButton>
+          </FocusBlock>
         </FocusBlock>
         {aside && <div className="mt-8">{aside}</div>}
       </div>
@@ -423,7 +430,7 @@ export function ProjectorHeader({ item, detail, progress, sources, actions, asid
           {sub && <span className="mt-1 block truncate text-[40px] font-medium uppercase leading-tight tracking-[.24em] text-white/90">{sub}</span>}
         </h1>
         <p className="mt-6 truncate text-[25px] text-white/90">{meta.join("  ·  ")}</p>
-        <AwardsLine awards={detail?.awards} onOpen={actions.onAwards ?? null} className="-ml-4 mt-3 text-white/90" />
+        <ExtrasLine awards={detail?.awards} onAwards={actions.onAwards ?? null} onQuotes={actions.onQuotes ?? null} onFacts={actions.onFacts ?? null} className="-ml-4 mt-3 text-white/90" />
         {badges.length > 0 && (
           <div data-testid="release-badges" className="mt-5 flex">
             {badges.map((b) => (

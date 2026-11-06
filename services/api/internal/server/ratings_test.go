@@ -47,6 +47,13 @@ func newMockKinopoisk(t *testing.T) *mockKinopoisk {
 			return
 		}
 		k.api++
+		if r.URL.Path == "/api/v2.2/films/777/facts" {
+			_, _ = w.Write([]byte(`{"total":3,"items":[` +
+				`{"text":"Ляп: в кадре виден <a href=\"/name/1/\">микрофон</a> над головой героя.","type":"BLOOPER","spoiler":false},` +
+				`{"text":"Фильм снимали в&nbsp;Сиднее, а&nbsp;не в Чикаго, как задумано по &laquo;сценарию&raquo;.","type":"FACT","spoiler":false},` +
+				`{"text":"В финале герой оказывается программой — это раскрыли только в последней сцене.","type":"FACT","spoiler":true}]}`))
+			return
+		}
 		switch r.URL.Query().Get("imdbId") {
 		case "tt0000100":
 			_, _ = w.Write([]byte(`{"items":[{"kinopoiskId":777,"imdbId":"tt0000100","nameRu":"Альфа","nameOriginal":"Alpha","year":1999,"type":"FILM"}]}`))

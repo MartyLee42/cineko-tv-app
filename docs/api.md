@@ -87,6 +87,8 @@ Payloads are validated by the server (`realtime/payloads.go`): a bad one is
 | `GET /media/{id}?lang=` | Full details (cast ≤ 30, key crew, seasons, external ids, trailer) |
 | `GET /media/{id}/similar`, `/recommendations` | `MediaPage`; empty when TMDB has none |
 | `GET /media/{id}/seasons/{n}` | Series only; 404 for movies and unknown seasons. Episode ids are stable |
+| `GET /media/{id}/quotes?lang=` | «Цитаты»: `MediaQuotes {items: [{text, speaker\|null}] (≤ 12), source: wikiquote\|null, source_url, lang}` from Wikiquote (page found via Wikidata by TMDB id; `lang`, else the other language). Empty when there is no page. Never AI |
+| `GET /media/{id}/facts?lang=` | «Факты»: `MediaFacts {items: [{text, kind: fact\|blooper, spoiler}] (≤ 15), source: kinopoisk\|ai\|null, source_url, lang}`. Kinopoisk facts (keyed API, one budget unit, Russian) when the title has a Kinopoisk id and facts; else DeepSeek (`ai`, counts towards the AI token budget). 502 `trivia_failed` on an upstream failure |
 | `GET /media/{id}/providers?region=` | JustWatch data via TMDB; empty lists when none. Default region `CATALOG_REGION` |
 | `GET /people/{tmdb_id}?lang=&profile_id=` | An actor's / director's page: bio, dates and `credits` (films + series from TMDB combined credits, most popular first, max 150; talk shows and playing oneself dropped). Each credit: `media`, `role` (characters / jobs), `crew`. Obscure entries (no poster, no votes) are dropped too. Web `/person/:id` (cast and director names on a title link here; Все / Фильмы / Сериалы, Популярные / Сначала новые); TV: OK on a cast card in Details opens the actor's grid, Back returns to the title |
 | `GET /images/{size}/{file}` | Public image proxy (see below) |

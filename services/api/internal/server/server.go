@@ -45,6 +45,7 @@ import (
 	"martytv/api/internal/sources/collaps"
 	"martytv/api/internal/sources/sourcesapi"
 	"martytv/api/internal/sysmon"
+	"martytv/api/internal/trivia"
 	"martytv/api/internal/users"
 	"martytv/api/internal/video"
 	"martytv/api/internal/watch"
@@ -87,6 +88,8 @@ type Server struct {
 	IPTV *iptv.Service
 	// Video: the YouTube «Видео» tab via Invidious (Run: health, feeds).
 	Video *video.Service
+	// Trivia: «Цитаты» / «Факты» of a title.
+	Trivia *trivia.Service
 }
 
 // New builds the HTTP application.
@@ -196,6 +199,9 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	forYouSvc := foryou.NewService(foryou.Deps{Pool: pool, Catalog: catalogSvc, Personal: watchSvc, Profiles: profileStore,
 		Ratings: ratingsSrc, Hub: hub, Family: familySvc, Curated: curatedSvc, Audit: auditLog, Config: cfg.ForYou, Log: log, Settings: appSettings})
 	forYouSvc.Routes(api)
+	// «Цитаты» / «Факты» (internal/trivia): Wikiquote, Kinopoisk facts, DeepSeek stand-ins.
+	triviaSvc := trivia.New(trivia.Options{Pool: pool, KP: ratingsSvc, AI: forYouSvc, Log: log})
+	triviaSvc.Routes(api)
 	profileHandlers.OnSettingsChanged(forYouSvc.SettingsChanged)
 
 	catalogHandlers := catalog.NewHandlers(catalogSvc, catalog.NewImageProxy(cfg.TMDB, cfg.Catalog.ImageCacheDir, log))
@@ -290,7 +296,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 
 	api.Use(func(c fiber.Ctx) error { return httpx.NotFound() })
 
-	return &Server{App: app, Auth: authSvc, Pairing: pairSvc, Hub: hub, Catalog: catalogSvc, Playback: playbackSvc, Watch: watchSvc, Sysmon: sysmonSvc, Ratings: ratingsSvc, Awards: awardsSvc, Sources: srcReg, Online: onlineSvc, ClientLog: clientLog, Imports: importSvc, ForYou: forYouSvc, Curated: curatedSvc, Downloads: downloadsSvc, IPTV: iptvSvc, Video: videoSvc}
+	return &Server{App: app, Auth: authSvc, Pairing: pairSvc, Hub: hub, Catalog: catalogSvc, Playback: playbackSvc, Watch: watchSvc, Sysmon: sysmonSvc, Ratings: ratingsSvc, Awards: awardsSvc, Sources: srcReg, Online: onlineSvc, ClientLog: clientLog, Imports: importSvc, ForYou: forYouSvc, Curated: curatedSvc, Downloads: downloadsSvc, IPTV: iptvSvc, Video: videoSvc, Trivia: triviaSvc}
 }
 
 // RunCleanup periodically prunes expired sessions and pairing requests.

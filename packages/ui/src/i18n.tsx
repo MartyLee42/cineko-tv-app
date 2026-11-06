@@ -68,9 +68,11 @@ import { soundsEn } from "./locales/sounds.en";
 import { soundsRu } from "./locales/sounds.ru";
 import { sleepEn } from "./locales/sleep.en";
 import { sleepRu } from "./locales/sleep.ru";
+import { triviaEn } from "./locales/trivia.en";
+import { triviaRu } from "./locales/trivia.ru";
 
-const en = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn };
-const ru = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu };
+const en = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn };
+const ru = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu };
 export type MessageKey = keyof typeof en;
 
 export type Locale = "en" | "ru";

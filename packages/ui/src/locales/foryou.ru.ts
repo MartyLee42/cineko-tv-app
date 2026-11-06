@@ -210,9 +210,10 @@ export const foryouRu: Record<keyof typeof foryouEn, string> = {
   "fy.admin.temp.collections": "AI-подборки",
   "fy.admin.temp.ask": "Спросить ИИ",
   "fy.admin.temp.music": "Плейлисты Cineko Music",
+  "fy.admin.temp.facts": "Факты о фильмах (если их нет на Кинопоиске)",
   "fy.admin.temp_save": "Сохранить",
   "fy.admin.temp_saved": "Сохранено.",
-  "fy.admin.temp_reset": "По умолчанию (1,0)",
+  "fy.admin.temp_reset": "По умолчанию",
 
   // ---- Admin ----
   "fy.admin.tab": "Рекомендации",

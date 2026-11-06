@@ -515,6 +515,7 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 			Collections *float64 `json:"collections"`
 			Ask         *float64 `json:"ask"`
 			Music       *float64 `json:"music"`
+			Facts       *float64 `json:"facts"`
 		} `json:"temperature"`
 	}
 	if err := httpx.BindJSON(c, &in); err != nil {
@@ -538,6 +539,7 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 	set("collections", in.Temperature.Collections, &t.Collections)
 	set("ask", in.Temperature.Ask, &t.Ask)
 	set("music", in.Temperature.Music, &t.Music)
+	set("facts", in.Temperature.Facts, &t.Facts)
 	if len(f) > 0 {
 		return httpx.Validation(f)
 	}
@@ -547,7 +549,7 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 	}
 	if s.audit != nil {
 		s.audit.Record(c.Context(), audit.Event{UserID: p.UserID, Action: "foryou.ai_updated", TargetType: "app_settings", TargetID: "ai_temperature",
-			IP: c.IP(), RequestID: httpx.RequestID(c), Metadata: map[string]any{"collections": t.Collections, "ask": t.Ask, "music": t.Music}})
+			IP: c.IP(), RequestID: httpx.RequestID(c), Metadata: map[string]any{"collections": t.Collections, "ask": t.Ask, "music": t.Music, "facts": t.Facts}})
 	}
 	return c.JSON(s.aiSettingsView(c.Context()))
 }
