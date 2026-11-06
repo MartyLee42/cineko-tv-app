@@ -3,7 +3,7 @@ import { NoteCard } from "../foryou/NoteCard";
 import { Link, useParams, useSearchParams } from "react-router";
 import type { Episode, MediaDetail, Schemas, WatchProgress } from "@martytv/contracts";
 import { countryList, formatDate, formatRuntime, imageUrl, episodeCode, placeholderColor, formatRating } from "@martytv/media-types";
-import { useI18n, type MessageKey, ratingTone } from "@martytv/ui";
+import { GenreReaction, useI18n, type MessageKey, ratingTone } from "@martytv/ui";
 import { CheckIcon, PlayIcon, RestartIcon } from "../icons";
 import { Backdrop, CatalogError, CatalogPage, Img, Poster, PosterRow } from "../catalog/components";
 import { isNotFound, useCatalogConfig, useMedia, useRelated, useSeason } from "../catalog/queries";
@@ -127,6 +127,7 @@ function Hero({ m }: { m: MediaDetail }) {
             ))}
           </div>
           {m.genres.length > 0 && (
+            <div className="flex items-center gap-3">
             <ul className="flex flex-wrap gap-1.5" aria-label={t("catalog.detail.genres")}>
               {m.genres.map((g) => (
                 <li key={g.id}>
@@ -139,6 +140,9 @@ function Hero({ m }: { m: MediaDetail }) {
                 </li>
               ))}
             </ul>
+            {/* Cineko reacts to the genre (hides from horror, laughs, gets misty). */}
+            <GenreReaction genres={m.genres} size={64} />
+            </div>
           )}
           {m.kind === "movie" ? <MovieActions m={m} /> : <SeriesActions m={m} />}
           <div className="flex flex-wrap gap-2 pt-1"><ListToggles m={m} /><RecommendButton m={m} /></div>

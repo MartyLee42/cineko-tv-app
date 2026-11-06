@@ -29,3 +29,6 @@ export * from "./constructivism";
 export * from "./cvExtras";
 export * from "./cvIcons";
 export { normTitle, pickByTitle as pickFilmByTitle, findFilms, readCache as readCvCache, writeCache as writeCvCache, type TitleCandidate } from "./cvSearch";
+export * from "./mascotCostume";
+export * from "./genreReaction";
+export { GenreReaction } from "./GenreReaction";

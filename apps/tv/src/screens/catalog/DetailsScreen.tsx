@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MyNote } from "../../foryou/MyNote";
 import { ApiError, type CatalogConfig, type Episode, type MediaDetail, type MediaSummary, type Profile, type Release, type WatchProgress } from "@martytv/contracts";
 import { catalogLang, episodeCode, formatDate, formatRuntime, imageUrl, placeholderColor, variantRelease } from "@martytv/media-types";
-import { useI18n } from "@martytv/ui";
+import { GenreReaction, useI18n } from "@martytv/ui";
 import { FocusBlock, FocusButton, FocusLine, getCurrentFocusKey, offsetWithin, useInitialFocus } from "../../focus";
 import { playerKey } from "../../player/keys";
 import { cardKey } from "../../catalog/focusKeys";
@@ -444,7 +444,11 @@ export function DetailsScreen({
 
       <FocusLine focusKey="d-sections" keys={keys} className="d-track tv-track absolute left-0 right-0 top-0" style={{ transform: `translate3d(0,${-ty}px,0)` }}>
         <FocusBlock focusKey="d-actions" onEnter={scrollTo(true)}>
-          {header}
+          <div className="relative">
+            {header}
+            {/* Cineko reacts to the genre: top right, clear of every skeleton's title, table and notes. */}
+            {d && <GenreReaction genres={d.genres} size={96} className="pointer-events-none !absolute right-[110px] top-[110px]" />}
+          </div>
         </FocusBlock>
 
         <div style={{ paddingLeft: frame.x }}>
