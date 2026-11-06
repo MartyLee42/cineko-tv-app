@@ -1,0 +1,563 @@
+{
+  "id": "deleuze-cinema-2",
+  "group": "thinkers",
+  "title_ru": "Делёз: «Кино 2. Образ-время»",
+  "title_en": "Deleuze: Cinema 2. The Time-Image",
+  "author": "Жиль Делёз / Gilles Deleuze",
+  "source": "Cinéma 2. L'image-temps, 1985",
+  "source_url": "https://en.wikipedia.org/wiki/Cinema_2:_The_Time-Image",
+  "description_ru": "Послевоенное кино, в котором герой перестаёт действовать и начинает видеть: неореализм, Одзу, Уэллс, Рене, Феллини, Годар. Здесь время показано напрямую — как кристалл, пласты прошлого и сила ложного.",
+  "description_en": "Post-war cinema in which characters stop acting and start seeing: neorealism, Ozu, Welles, Resnais, Fellini, Godard. Time appears directly — as crystals, sheets of the past and powers of the false.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 5156,
+      "kind": "movie",
+      "title": "Похитители велосипедов",
+      "original_title": "Ladri di biciclette",
+      "year": 1948,
+      "note_ru": "неореализм: зритель вместо деятеля",
+      "note_en": "neorealism: seer rather than agent"
+    },
+    {
+      "tmdb_id": 4173,
+      "kind": "movie",
+      "title": "Стромболи",
+      "original_title": "Stromboli (Terra di Dio)",
+      "year": 1950,
+      "note_ru": "оптико-звуковая ситуация, бессилие героини",
+      "note_en": "pure optical situation, heroine's helplessness"
+    },
+    {
+      "tmdb_id": 41464,
+      "kind": "movie",
+      "title": "Европа 51",
+      "original_title": "Europa '51",
+      "year": 1952,
+      "note_ru": "героиня-ясновидица: видеть вместо действовать",
+      "note_en": "the seer-heroine: seeing replaces acting"
+    },
+    {
+      "tmdb_id": 833,
+      "kind": "movie",
+      "title": "Умберто Д.",
+      "original_title": "Umberto D.",
+      "year": 1952,
+      "note_ru": "служанка на кухне — чистая оптика повседневного",
+      "note_en": "the maid's morning: pure optical everyday"
+    },
+    {
+      "tmdb_id": 49781,
+      "kind": "movie",
+      "title": "Хроника одной любви",
+      "original_title": "Cronaca di un amore",
+      "year": 1950,
+      "note_ru": "Антониони: пустоты повседневности",
+      "note_en": "Antonioni: idle stretches of the everyday"
+    },
+    {
+      "tmdb_id": 41054,
+      "kind": "movie",
+      "title": "Крик",
+      "original_title": "Il Grido",
+      "year": 1957,
+      "note_ru": "блуждание вместо действия",
+      "note_en": "wandering instead of action"
+    },
+    {
+      "tmdb_id": 21135,
+      "kind": "movie",
+      "title": "Затмение",
+      "original_title": "L'eclisse",
+      "year": 1962,
+      "note_ru": "опустошённые пространства",
+      "note_en": "emptied any-spaces-whatever"
+    },
+    {
+      "tmdb_id": 20530,
+      "kind": "movie",
+      "title": "Поздняя весна",
+      "original_title": "晩春",
+      "year": 1949,
+      "note_ru": "ваза: неизменная форма времени",
+      "note_en": "the vase: the unchanging form of time"
+    },
+    {
+      "tmdb_id": 50759,
+      "kind": "movie",
+      "title": "Осенний полдень",
+      "original_title": "秋刀魚の味",
+      "year": 1962,
+      "note_ru": "Одзу: чистые оптические образы",
+      "note_en": "Ozu: pure optical images"
+    },
+    {
+      "tmdb_id": 27053,
+      "kind": "movie",
+      "title": "День начинается",
+      "original_title": "Le jour se lève",
+      "year": 1939,
+      "note_ru": "флешбэк как образ-воспоминание",
+      "note_en": "flashback as recollection-image"
+    },
+    {
+      "tmdb_id": 705,
+      "kind": "movie",
+      "title": "Всё о Еве",
+      "original_title": "All About Eve",
+      "year": 1950,
+      "note_ru": "Манкевич: развилки времени во флешбэке",
+      "note_en": "Mankiewicz: forking paths of flashback"
+    },
+    {
+      "tmdb_id": 45578,
+      "kind": "movie",
+      "title": "Письмо трём жёнам",
+      "original_title": "A Letter to Three Wives",
+      "year": 1949,
+      "note_ru": "воспоминание как развилка",
+      "note_en": "recollection as a fork in time"
+    },
+    {
+      "tmdb_id": 34689,
+      "kind": "movie",
+      "title": "Босоногая графиня",
+      "original_title": "The Barefoot Contessa",
+      "year": 1954,
+      "note_ru": "множественные флешбэки",
+      "note_en": "multiple flashbacks"
+    },
+    {
+      "tmdb_id": 18283,
+      "kind": "movie",
+      "title": "Бригадун",
+      "original_title": "Brigadoon",
+      "year": 1954,
+      "note_ru": "мюзикл: образ-сон и «движение мира»",
+      "note_en": "musical: dream-image, world-movement"
+    },
+    {
+      "tmdb_id": 29376,
+      "kind": "movie",
+      "title": "Театральный фургон",
+      "original_title": "The Band Wagon",
+      "year": 1953,
+      "note_ru": "танец как переход в сон",
+      "note_en": "dance as passage into dream"
+    },
+    {
+      "tmdb_id": 35987,
+      "kind": "movie",
+      "title": "Лола Монтес",
+      "original_title": "Lola Montès",
+      "year": 1955,
+      "note_ru": "кристалл: цирк-арена времени",
+      "note_en": "crystal: the circus ring of time"
+    },
+    {
+      "tmdb_id": 56167,
+      "kind": "movie",
+      "title": "Золотая карета",
+      "original_title": "Le Carrosse d'or",
+      "year": 1952,
+      "note_ru": "кристалл: театр и жизнь",
+      "note_en": "crystal: theatre and life"
+    },
+    {
+      "tmdb_id": 45218,
+      "kind": "movie",
+      "title": "Река",
+      "original_title": "The River",
+      "year": 1951,
+      "note_ru": "Ренуар: выход из кристалла",
+      "note_en": "Renoir: leaving the crystal"
+    },
+    {
+      "tmdb_id": 45213,
+      "kind": "movie",
+      "title": "Французский канкан",
+      "original_title": "French Cancan",
+      "year": 1955,
+      "note_ru": "сцена как кристалл",
+      "note_en": "the stage as crystal"
+    },
+    {
+      "tmdb_id": 422,
+      "kind": "movie",
+      "title": "8½",
+      "original_title": "8½",
+      "year": 1963,
+      "note_ru": "Феллини: кристалл и воспоминание",
+      "note_en": "Fellini: crystal and memory"
+    },
+    {
+      "tmdb_id": 11163,
+      "kind": "movie",
+      "title": "Сатирикон Феллини",
+      "original_title": "Fellini – satyricon",
+      "year": 1969,
+      "note_ru": "кристалл в процессе распада",
+      "note_en": "a crystal in decomposition"
+    },
+    {
+      "tmdb_id": 11035,
+      "kind": "movie",
+      "title": "Рим",
+      "original_title": "Roma",
+      "year": 1972,
+      "note_ru": "Феллини: зерно кристалла",
+      "note_en": "Fellini: the seed of the crystal"
+    },
+    {
+      "tmdb_id": 7857,
+      "kind": "movie",
+      "title": "Амаркорд",
+      "original_title": "Amarcord",
+      "year": 1973,
+      "note_ru": "прошлое как зрелище",
+      "note_en": "the past as a show"
+    },
+    {
+      "tmdb_id": 43195,
+      "kind": "movie",
+      "title": "Чувство",
+      "original_title": "Senso",
+      "year": 1954,
+      "note_ru": "Висконти: разлагающийся кристалл",
+      "note_en": "Visconti: the decaying crystal"
+    },
+    {
+      "tmdb_id": 1040,
+      "kind": "movie",
+      "title": "Леопард",
+      "original_title": "Il gattopardo",
+      "year": 1963,
+      "note_ru": "аристократия и «слишком поздно»",
+      "note_en": "the aristocracy and «too late»"
+    },
+    {
+      "tmdb_id": 3478,
+      "kind": "movie",
+      "title": "Людвиг",
+      "original_title": "Ludwig",
+      "year": 1973,
+      "note_ru": "кристалл и распад истории",
+      "note_en": "crystal and the decay of history"
+    },
+    {
+      "tmdb_id": 593,
+      "kind": "movie",
+      "title": "Солярис",
+      "original_title": "Солярис",
+      "year": 1972,
+      "note_ru": "океан как жидкий кристалл",
+      "note_en": "the ocean as a liquid crystal"
+    },
+    {
+      "tmdb_id": 1396,
+      "kind": "movie",
+      "title": "Зеркало",
+      "original_title": "Зеркало",
+      "year": 1975,
+      "note_ru": "Тарковский: вода, стекло, память",
+      "note_en": "Tarkovsky: water, glass, memory"
+    },
+    {
+      "tmdb_id": 15,
+      "kind": "movie",
+      "title": "Гражданин Кейн",
+      "original_title": "Citizen Kane",
+      "year": 1941,
+      "note_ru": "глубинный кадр и пласты прошлого",
+      "note_en": "depth of field, sheets of the past"
+    },
+    {
+      "tmdb_id": 3766,
+      "kind": "movie",
+      "title": "Леди из Шанхая",
+      "original_title": "The Lady from Shanghai",
+      "year": 1947,
+      "note_ru": "зеркальный кристалл",
+      "note_en": "the hall of mirrors as crystal"
+    },
+    {
+      "tmdb_id": 44026,
+      "kind": "movie",
+      "title": "Мистер Аркадин",
+      "original_title": "Mr. Arkadin",
+      "year": 1955,
+      "note_ru": "пласты прошлого, поиск свидетелей",
+      "note_en": "sheets of past, hunting witnesses"
+    },
+    {
+      "tmdb_id": 3009,
+      "kind": "movie",
+      "title": "Процесс",
+      "original_title": "Le Procès",
+      "year": 1962,
+      "note_ru": "пласты прошлого и обвинение",
+      "note_en": "sheets of past and the charge"
+    },
+    {
+      "tmdb_id": 1480,
+      "kind": "movie",
+      "title": "Печать зла",
+      "original_title": "Touch of Evil",
+      "year": 1958,
+      "note_ru": "фальсифицирующая сила",
+      "note_en": "the powers of the false"
+    },
+    {
+      "tmdb_id": 47697,
+      "kind": "movie",
+      "title": "Отелло",
+      "original_title": "Othello",
+      "year": 1951,
+      "note_ru": "Уэллс: суждение и ложь",
+      "note_en": "Welles: judgement and falsehood"
+    },
+    {
+      "tmdb_id": 43003,
+      "kind": "movie",
+      "title": "Ф как фальшивка",
+      "original_title": "Vérités et Mensonges",
+      "year": 1973,
+      "note_ru": "фальсификатор как художник",
+      "note_en": "the forger as artist"
+    },
+    {
+      "tmdb_id": 5544,
+      "kind": "movie",
+      "title": "Хиросима, любовь моя",
+      "original_title": "Hiroshima mon amour",
+      "year": 1959,
+      "note_ru": "Рене: пласты прошлого двух героев",
+      "note_en": "Resnais: two sheets of the past"
+    },
+    {
+      "tmdb_id": 4024,
+      "kind": "movie",
+      "title": "В прошлом году в Мариенбаде",
+      "original_title": "L'Année dernière à Marienbad",
+      "year": 1961,
+      "note_ru": "неразрешимые альтернативы прошлого",
+      "note_en": "undecidable alternatives of the past"
+    },
+    {
+      "tmdb_id": 54563,
+      "kind": "movie",
+      "title": "Мюриэль, или Время возвращения",
+      "original_title": "Muriel, ou le Temps d'un retour",
+      "year": 1963,
+      "note_ru": "память и мир, распавшийся на пласты",
+      "note_en": "memory and a world split into sheets"
+    },
+    {
+      "tmdb_id": 4798,
+      "kind": "movie",
+      "title": "Я тебя люблю, я тебя люблю",
+      "original_title": "Je t'aime, je t'aime",
+      "year": 1968,
+      "note_ru": "прыжки по пластам прошлого",
+      "note_en": "leaps between sheets of the past"
+    },
+    {
+      "tmdb_id": 54140,
+      "kind": "movie",
+      "title": "Провидение",
+      "original_title": "Providence",
+      "year": 1977,
+      "note_ru": "мозг как экран",
+      "note_en": "the brain as screen"
+    },
+    {
+      "tmdb_id": 803,
+      "kind": "movie",
+      "title": "Ночь и туман",
+      "original_title": "Nuit et Brouillard",
+      "year": 1956,
+      "note_ru": "память мира",
+      "note_en": "memory of the world"
+    },
+    {
+      "tmdb_id": 64299,
+      "kind": "movie",
+      "title": "Я — чёрный",
+      "original_title": "Moi, un noir",
+      "year": 1958,
+      "note_ru": "Руш: фабуляция персонажа",
+      "note_en": "Rouch: the character's fabulation"
+    },
+    {
+      "tmdb_id": 67403,
+      "kind": "movie",
+      "title": "Ради продолжения мира",
+      "original_title": "Pour la suite du monde",
+      "year": 1963,
+      "note_ru": "Перро: фабуляция народа",
+      "note_en": "Perrault: a people's fabulation"
+    },
+    {
+      "tmdb_id": 48035,
+      "kind": "movie",
+      "title": "Слово",
+      "original_title": "Ordet",
+      "year": 1955,
+      "note_ru": "Дрейер: выбор и мысль",
+      "note_en": "Dreyer: choice and thought"
+    },
+    {
+      "tmdb_id": 34181,
+      "kind": "movie",
+      "title": "Гертруда",
+      "original_title": "Gertrud",
+      "year": 1964,
+      "note_ru": "плоское пространство мысли",
+      "note_en": "the flat space of thought"
+    },
+    {
+      "tmdb_id": 15484,
+      "kind": "movie",
+      "title": "Тени",
+      "original_title": "Shadows",
+      "year": 1959,
+      "note_ru": "Кассаветис: кино тела",
+      "note_en": "Cassavetes: cinema of the body"
+    },
+    {
+      "tmdb_id": 753,
+      "kind": "movie",
+      "title": "Лица",
+      "original_title": "Faces",
+      "year": 1968,
+      "note_ru": "тело и его позы",
+      "note_en": "the body and its attitudes"
+    },
+    {
+      "tmdb_id": 44012,
+      "kind": "movie",
+      "title": "Жанна Дильман, набережная Коммерции 23, Брюссель 1080",
+      "original_title": "Jeanne Dielman, 23, quai du Commerce, 1080 Bruxelles",
+      "year": 1975,
+      "note_ru": "повседневные жесты тела",
+      "note_en": "the body's everyday gestures"
+    },
+    {
+      "tmdb_id": 62,
+      "kind": "movie",
+      "title": "2001 год: Космическая одиссея",
+      "original_title": "2001: A Space Odyssey",
+      "year": 1968,
+      "note_ru": "Кубрик: кино мозга",
+      "note_en": "Kubrick: cinema of the brain"
+    },
+    {
+      "tmdb_id": 694,
+      "kind": "movie",
+      "title": "Сияние",
+      "original_title": "The Shining",
+      "year": 1980,
+      "note_ru": "мир как мозг",
+      "note_en": "the world as a brain"
+    },
+    {
+      "tmdb_id": 1626,
+      "kind": "movie",
+      "title": "Жить своей жизнью",
+      "original_title": "Vivre sa vie: film en douze tableaux",
+      "year": 1962,
+      "note_ru": "Годар: категории и серии",
+      "note_en": "Godard: categories and series"
+    },
+    {
+      "tmdb_id": 2786,
+      "kind": "movie",
+      "title": "Безумный Пьеро",
+      "original_title": "Pierrot le fou",
+      "year": 1965,
+      "note_ru": "Годар: серии и тела",
+      "note_en": "Godard: series and bodies"
+    },
+    {
+      "tmdb_id": 8074,
+      "kind": "movie",
+      "title": "Две или три вещи, которые я знаю о ней",
+      "original_title": "2 ou 3 choses que je sais d'elle",
+      "year": 1967,
+      "note_ru": "мысль и клише",
+      "note_en": "thought and clichés"
+    },
+    {
+      "tmdb_id": 113479,
+      "kind": "movie",
+      "title": "Спасай, кто может (свою жизнь)",
+      "original_title": "Sauve qui peut (la vie)",
+      "year": 1980,
+      "note_ru": "разрыв звука и образа",
+      "note_en": "sound and image pulled apart"
+    },
+    {
+      "tmdb_id": 32692,
+      "kind": "movie",
+      "title": "Страсть",
+      "original_title": "Passion",
+      "year": 1982,
+      "note_ru": "живые картины и музыка",
+      "note_en": "tableaux vivants and music"
+    },
+    {
+      "tmdb_id": 32689,
+      "kind": "movie",
+      "title": "Имя: Кармен",
+      "original_title": "Prénom Carmen",
+      "year": 1983,
+      "note_ru": "звук отделяется от изображения",
+      "note_en": "sound detached from image"
+    },
+    {
+      "tmdb_id": 85927,
+      "kind": "movie",
+      "title": "Песня Индии",
+      "original_title": "India Song",
+      "year": 1975,
+      "note_ru": "Дюрас: звук и образ порознь",
+      "note_en": "Duras: sound and image apart"
+    },
+    {
+      "tmdb_id": 58435,
+      "kind": "movie",
+      "title": "Гитлер, фильм из Германии",
+      "original_title": "Hitler - Ein Film aus Deutschland",
+      "year": 1977,
+      "note_ru": "Зиберберг: информация и ложь",
+      "note_en": "Syberberg: information and falsehood"
+    },
+    {
+      "tmdb_id": 5335,
+      "kind": "movie",
+      "title": "Теорема",
+      "original_title": "Teorema",
+      "year": 1968,
+      "note_ru": "Пазолини: кино-доказательство",
+      "note_en": "Pasolini: film as demonstration"
+    },
+    {
+      "tmdb_id": 75733,
+      "kind": "movie",
+      "title": "Персеваль Галльский",
+      "original_title": "Perceval le Gallois",
+      "year": 1978,
+      "note_ru": "Ромер: речь и изображение",
+      "note_en": "Rohmer: speech and image"
+    },
+    {
+      "tmdb_id": 63213,
+      "kind": "movie",
+      "title": "Человек, который лжёт",
+      "original_title": "L'Homme qui ment",
+      "year": 1968,
+      "note_ru": "Роб-Грийе: сила ложного",
+      "note_en": "Robbe-Grillet: the power of the false"
+    }
+  ]
+}

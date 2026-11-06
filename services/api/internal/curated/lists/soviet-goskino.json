@@ -1,0 +1,242 @@
+{
+  "id": "soviet-goskino",
+  "group": "ru",
+  "title_ru": "Рекомендовано Госкино",
+  "title_en": "Recommended by Goskino",
+  "author": "Cineko",
+  "source": "Cineko",
+  "source_url": null,
+  "description_ru": "Наша семейная подборка советского кино, которое у нас знают наизусть: комедии Гайдая и Рязанова, военные драмы, сказки и фильмы, разошедшиеся на цитаты. Не официальный рейтинг, а то, что пересматривают под Новый год и на праздники.",
+  "description_en": "Our own family pick of Soviet films that Russian households know by heart: Gaidai and Ryazanov comedies, war dramas, fairy tales and endlessly quoted classics. Not an official ranking — the films people rewatch on holidays.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 21028,
+      "kind": "movie",
+      "title": "Москва слезам не верит",
+      "original_title": "Москва слезам не верит",
+      "year": 1979
+    },
+    {
+      "tmdb_id": 20873,
+      "kind": "movie",
+      "title": "Бриллиантовая рука",
+      "original_title": "Бриллиантовая рука",
+      "year": 1968
+    },
+    {
+      "tmdb_id": 20803,
+      "kind": "movie",
+      "title": "Иван Васильевич меняет профессию",
+      "original_title": "Иван Васильевич меняет профессию",
+      "year": 1973
+    },
+    {
+      "tmdb_id": 20878,
+      "kind": "movie",
+      "title": "Кавказская пленница",
+      "original_title": "Кавказская пленница, или Новые приключения Шурика",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 20871,
+      "kind": "movie",
+      "title": "Джентльмены удачи",
+      "original_title": "Джентльмены удачи",
+      "year": 1971
+    },
+    {
+      "tmdb_id": 43430,
+      "kind": "movie",
+      "title": "Ирония судьбы, или С лёгким паром!",
+      "original_title": "Ирония судьбы, или С легким паром!",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 31139,
+      "kind": "movie",
+      "title": "Служебный роман",
+      "original_title": "Служебный роман",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 20875,
+      "kind": "movie",
+      "title": "Операция «Ы» и другие приключения Шурика",
+      "original_title": "Операция «Ы» и другие приключения Шурика",
+      "year": 1965
+    },
+    {
+      "tmdb_id": 20848,
+      "kind": "movie",
+      "title": "Белое солнце пустыни",
+      "original_title": "Белое солнце пустыни",
+      "year": 1970
+    },
+    {
+      "tmdb_id": 20870,
+      "kind": "movie",
+      "title": "Афоня",
+      "original_title": "Афоня",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 5904,
+      "kind": "series",
+      "title": "Гостья из будущего",
+      "original_title": "Гостья из будущего",
+      "year": 1984,
+      "note_ru": "телефильм в 5 сериях",
+      "note_en": "five-part TV film"
+    },
+    {
+      "tmdb_id": 204802,
+      "kind": "movie",
+      "title": "Ленин в Октябре",
+      "original_title": "Ленин в Октябре",
+      "year": 1937,
+      "note_ru": "из «Ленинианы» Ромма",
+      "note_en": "from Romm’s Lenin films"
+    },
+    {
+      "tmdb_id": 46774,
+      "kind": "movie",
+      "title": "Чапаев",
+      "original_title": "Чапаев",
+      "year": 1934
+    },
+    {
+      "tmdb_id": 37128,
+      "kind": "movie",
+      "title": "Весёлые ребята",
+      "original_title": "Весёлые ребята",
+      "year": 1934
+    },
+    {
+      "tmdb_id": 38360,
+      "kind": "movie",
+      "title": "Летят журавли",
+      "original_title": "Летят журавли",
+      "year": 1957
+    },
+    {
+      "tmdb_id": 63258,
+      "kind": "movie",
+      "title": "Карнавальная ночь",
+      "original_title": "Карнавальная ночь",
+      "year": 1956
+    },
+    {
+      "tmdb_id": 20975,
+      "kind": "movie",
+      "title": "Девчата",
+      "original_title": "Девчата",
+      "year": 1961
+    },
+    {
+      "tmdb_id": 27862,
+      "kind": "movie",
+      "title": "Я шагаю по Москве",
+      "original_title": "Я шагаю по Москве",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 20886,
+      "kind": "movie",
+      "title": "Добро пожаловать, или Посторонним вход воспрещён",
+      "original_title": "Добро пожаловать, или Посторонним вход воспрещен",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 39768,
+      "kind": "movie",
+      "title": "Берегись автомобиля",
+      "original_title": "Берегись автомобиля",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 20932,
+      "kind": "movie",
+      "title": "Морозко",
+      "original_title": "Морозко",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 41979,
+      "kind": "movie",
+      "title": "Неуловимые мстители",
+      "original_title": "Неуловимые мстители",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 20879,
+      "kind": "movie",
+      "title": "Свадьба в Малиновке",
+      "original_title": "Свадьба в Малиновке",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 31648,
+      "kind": "movie",
+      "title": "12 стульев",
+      "original_title": "12 стульев",
+      "year": 1971
+    },
+    {
+      "tmdb_id": 65386,
+      "kind": "movie",
+      "title": "Офицеры",
+      "original_title": "Офицеры",
+      "year": 1971
+    },
+    {
+      "tmdb_id": 49106,
+      "kind": "movie",
+      "title": "А зори здесь тихие",
+      "original_title": "...А зори здесь тихие",
+      "year": 1972
+    },
+    {
+      "tmdb_id": 37129,
+      "kind": "movie",
+      "title": "В бой идут одни «старики»",
+      "original_title": "В бой идут одни старики",
+      "year": 1973
+    },
+    {
+      "tmdb_id": 27861,
+      "kind": "movie",
+      "title": "Мимино",
+      "original_title": "Мимино",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 37176,
+      "kind": "movie",
+      "title": "Покровские ворота",
+      "original_title": "Покровские ворота",
+      "year": 1982
+    },
+    {
+      "tmdb_id": 32334,
+      "kind": "movie",
+      "title": "Любовь и голуби",
+      "original_title": "Любовь и голуби",
+      "year": 1984
+    },
+    {
+      "tmdb_id": 20874,
+      "kind": "movie",
+      "title": "Кин-дза-дза!",
+      "original_title": "Кин-дза-дза!",
+      "year": 1986
+    },
+    {
+      "tmdb_id": 43680,
+      "kind": "movie",
+      "title": "Собачье сердце",
+      "original_title": "Собачье сердце",
+      "year": 1988
+    }
+  ]
+}

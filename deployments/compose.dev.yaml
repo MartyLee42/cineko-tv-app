@@ -1,0 +1,232 @@
+# Development stack: everything runs in Docker with live reload.
+#
+#   make dev        (or: docker compose -f deployments/compose.dev.yaml up --build)
+#   open http://localhost:8080        PWA
+#        http://localhost:8080/tv/    TV app
+#
+# Source is bind-mounted, so edits on the host reload instantly.
+# Integration secrets come from ../.env (git-ignored).
+name: martytv-dev
+
+x-node: &node
+  image: node:22-bookworm-slim
+  user: "${UID:-1000}:${GID:-1000}"
+  working_dir: /repo
+  volumes:
+    - ..:/repo
+  environment:
+    HMR_CLIENT_PORT: "8080"
+    COREPACK_HOME: /repo/.cache/corepack
+    PATH: /repo/.cache/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    npm_config_store_dir: /repo/.cache/pnpm-store
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: martytv
+      POSTGRES_PASSWORD: martytv-dev
+      POSTGRES_DB: martytv
+    ports:
+      # Exposed on localhost only, for running Go tests from the host.
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U martytv -d martytv"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: ../services/api
+      target: dev
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      DATABASE_URL: postgres://martytv:martytv-dev@postgres:5432/martytv?sslmode=disable
+      APP_SESSION_SECRET: ${APP_SESSION_SECRET:-dev-only-session-secret-change-me-0123456789}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+      TRUSTED_PROXIES: 172.16.0.0/12,10.0.0.0/8,192.168.0.0/16
+      LOG_LEVEL: debug
+      # e2e runs log in ~150 times in 20 min (production keeps 20 per 5 min).
+      LOGIN_IP_LIMIT: "500"
+      # Browser compatibility streams (services/transcoder).
+      TRANSCODER_URL: http://transcoder:8090
+      TRANSCODER_SECRET: ${TRANSCODER_SECRET:-dev-only-transcoder-secret-0123456789abcdef}
+      # Server downloads (dev: inside the container, lost on recreate).
+      LIBRARY_DIR: /tmp/martytv-library
+      INTERNAL_API_URL: http://api:8080
+      # «Видео»: Invidious (--profile video, make dev-video); 503 video_unavailable without it.
+      INVIDIOUS_URL: http://invidious:3000
+      GOCACHE: /cache/go-build
+      GOMODCACHE: /cache/go-mod
+      HOME: /tmp
+    volumes:
+      - ..:/src
+      - gocache:/cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Browser compatibility stream worker: ffmpeg remux, audio → AAC. Reached
+  # only by the API (no published port); reads TorrServer like the API does.
+  transcoder:
+    build:
+      context: ../services/transcoder
+    environment:
+      TRANSCODER_SECRET: ${TRANSCODER_SECRET:-dev-only-transcoder-secret-0123456789abcdef}
+      TRANSCODER_MAX_JOBS: "3"
+    cpus: 3
+    mem_limit: 1g
+
+  # Marty Music (/music, services/music): built image (web app + Go + ffmpeg).
+  # Rebuild after changes: docker compose -f deployments/compose.dev.yaml up -d --build music
+  # For live UI work use `npm run dev` in services/music/web instead.
+  music:
+    build:
+      context: ../services/music
+      target: runtime
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      LISTEN_ADDR: ":8080"
+      MARTYTV_API_URL: http://api:8080
+      INVIDIOUS_URL: http://invidious:3000
+      LOG_LEVEL: debug
+    volumes:
+      - music-data-dev:/data
+    depends_on: [api]
+
+  # YouTube «Видео» tab: self-hosted Invidious + invidious-companion
+  # (docs/architecture.md "Video (Invidious)"). Opt-in: `--profile video`
+  # (make dev-video). Without it the API answers 503 video_unavailable and
+  # everything else works. Dev talks to YouTube directly (no VPN here).
+  invidious-db:
+    image: postgres:17-alpine
+    profiles: [video]
+    environment:
+      POSTGRES_USER: invidious
+      POSTGRES_PASSWORD: invidious-dev
+      POSTGRES_DB: invidious
+    command: ["postgres", "-c", "shared_buffers=16MB", "-c", "max_connections=20"]
+    volumes:
+      - invidious-pgdata-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invidious -d invidious"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    mem_limit: 128m
+
+  invidious:
+    image: quay.io/invidious/invidious:2.20261022.0
+    profiles: [video]
+    environment:
+      INVIDIOUS_CONFIG: |
+        db:
+          dbname: invidious
+          user: invidious
+          password: invidious-dev
+          host: invidious-db
+          port: 5432
+        check_tables: true
+        hmac_key: dev-only-invidious-hmac-key-0123456789
+        invidious_companion:
+          - private_url: http://companion:8282/companion
+        invidious_companion_key: devonlycompanion
+        domain: invidious
+        external_port: 3000
+        https_only: false
+        registration_enabled: false
+        login_enabled: false
+        captcha_enabled: false
+        statistics_enabled: false
+        popular_enabled: false
+        channel_threads: 0
+        feed_threads: 0
+        log_level: Warn
+    depends_on:
+      invidious-db:
+        condition: service_healthy
+      companion:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -nv --tries=1 --spider http://127.0.0.1:3000/api/v1/stats || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    mem_limit: 512m
+
+  companion:
+    image: quay.io/invidious/invidious-companion:2026.10.18-fcb0456
+    profiles: [video]
+    environment:
+      SERVER_SECRET_KEY: devonlycompanion
+    read_only: true
+    volumes:
+      # youtubei.js player cache (the image seeds it, owned by appuser).
+      - companion-cache-dev:/var/tmp/youtubei.js:rw
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 512m
+
+  install:
+    <<: *node
+    command: ["sh", "-c", "mkdir -p /repo/.cache/bin && corepack enable --install-directory /repo/.cache/bin pnpm && pnpm install --frozen-lockfile"]
+    restart: "no"
+
+  web:
+    <<: *node
+    working_dir: /repo/apps/web
+    command: ["node_modules/.bin/vite", "--host", "0.0.0.0"]
+    depends_on:
+      install:
+        condition: service_completed_successfully
+
+  tv:
+    <<: *node
+    working_dir: /repo/apps/tv
+    command: ["node_modules/.bin/vite", "--host", "0.0.0.0"]
+    depends_on:
+      install:
+        condition: service_completed_successfully
+
+  # Browser end-to-end tests (make e2e). Not started by default.
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.64.0-noble
+    profiles: [e2e]
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /repo/e2e
+    volumes:
+      - ..:/repo
+    environment:
+      E2E_BASE_URL: http://caddy:8080
+      E2E_USER: e2e-admin
+      E2E_PASS: e2e-password-123
+      # web-compat.spec signs jobs for the dev transcoder directly.
+      TRANSCODER_URL: http://transcoder:8090
+      TRANSCODER_SECRET: ${TRANSCODER_SECRET:-dev-only-transcoder-secret-0123456789abcdef}
+      HOME: /tmp
+    command: ["node_modules/.bin/playwright", "test"]
+    depends_on: [caddy]
+
+  caddy:
+    image: caddy:2.10-alpine
+    ports:
+      # Reachable from phones/TVs on the LAN for pairing tests.
+      - "8080:8080"
+    volumes:
+      - ./Caddyfile.dev:/etc/caddy/Caddyfile:ro
+    depends_on: [api, web, tv, music]
+
+volumes:
+  pgdata-dev:
+  gocache:
+  invidious-pgdata-dev:
+  companion-cache-dev:
+  music-data-dev:

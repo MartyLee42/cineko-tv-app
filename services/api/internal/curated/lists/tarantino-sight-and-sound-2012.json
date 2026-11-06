@@ -1,0 +1,98 @@
+{
+  "id": "tarantino-sight-and-sound-2012",
+  "group": "directors",
+  "title_ru": "Тарантино: бюллетень Sight & Sound 2012",
+  "title_en": "Tarantino's Sight & Sound 2012 Ballot",
+  "author": "Квентин Тарантино / Quentin Tarantino",
+  "source": "опрос режиссёров Sight & Sound (BFI), 2012 — Тарантино назвал 12 фильмов вместо 10 / Sight & Sound directors’ poll (BFI), 2012 — Tarantino submitted 12 films",
+  "source_url": "https://collider.com/sight-sound-directors-list-quentin-tarantino/191040/",
+  "description_ru": "Двенадцать фильмов (Тарантино не уложился в десять), которые он назвал величайшими в 2012-м: в основном американское кино 70-х — от «Челюстей» до «Таксиста» — плюс Леоне и Хоукс.",
+  "description_en": "Twelve films (he wouldn’t stop at ten) Tarantino called the greatest in 2012: mostly 1970s American cinema — from Jaws to Taxi Driver — plus Leone and Hawks. Not ranked.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 28,
+      "kind": "movie",
+      "title": "Апокалипсис сегодня",
+      "original_title": "Apocalypse Now",
+      "year": 1979
+    },
+    {
+      "tmdb_id": 23479,
+      "kind": "movie",
+      "title": "Несносные медведи",
+      "original_title": "The Bad News Bears",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 7340,
+      "kind": "movie",
+      "title": "Кэрри",
+      "original_title": "Carrie",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 9571,
+      "kind": "movie",
+      "title": "Под кайфом и в смятении",
+      "original_title": "Dazed and Confused",
+      "year": 1993
+    },
+    {
+      "tmdb_id": 429,
+      "kind": "movie",
+      "title": "Хороший, плохой, злой",
+      "original_title": "Il buono, il brutto, il cattivo",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 5925,
+      "kind": "movie",
+      "title": "Большой побег",
+      "original_title": "The Great Escape",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 3085,
+      "kind": "movie",
+      "title": "Его девушка Пятница",
+      "original_title": "His Girl Friday",
+      "year": 1940
+    },
+    {
+      "tmdb_id": 578,
+      "kind": "movie",
+      "title": "Челюсти",
+      "original_title": "Jaws",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 69321,
+      "kind": "movie",
+      "title": "Хорошенькие девушки, станьте в ряд",
+      "original_title": "Pretty Maids All in a Row",
+      "year": 1971
+    },
+    {
+      "tmdb_id": 21948,
+      "kind": "movie",
+      "title": "Гремящий гром",
+      "original_title": "Rolling Thunder",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 38985,
+      "kind": "movie",
+      "title": "Колдун",
+      "original_title": "Sorcerer",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 103,
+      "kind": "movie",
+      "title": "Таксист",
+      "original_title": "Taxi Driver",
+      "year": 1976
+    }
+  ]
+}

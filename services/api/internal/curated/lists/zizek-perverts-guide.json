@@ -1,0 +1,617 @@
+{
+  "id": "zizek-perverts-guide",
+  "group": "thinkers",
+  "title_ru": "Жижек: «Киногид извращенца»",
+  "title_en": "Žižek: The Pervert's Guide",
+  "author": "Славой Жижек / Slavoj Žižek",
+  "source": "The Pervert's Guide to Cinema (2006, реж. Sophie Fiennes); The Pervert's Guide to Ideology (2012)",
+  "source_url": "https://en.wikipedia.org/wiki/The_Pervert%27s_Guide_to_Cinema",
+  "description_ru": "Фильмы, которые Жижек разбирает в двух документальных лекциях Софи Файнс: психоанализ желания и фантазма в кино и то, как идеология прячется в сюжетах, песнях и образах.",
+  "description_en": "Films Žižek dissects in Sophie Fiennes's two documentary lectures: psychoanalysis of desire and fantasy on screen, and how ideology hides in plots, songs and images.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 52239,
+      "kind": "movie",
+      "title": "Одержимая",
+      "original_title": "Possessed",
+      "year": 1931,
+      "note_ru": "Кино: желание и экран-окно поезда",
+      "note_en": "Cinema: desire and the train-window screen"
+    },
+    {
+      "tmdb_id": 13911,
+      "kind": "movie",
+      "title": "Обезьяньи проделки",
+      "original_title": "Monkey Business",
+      "year": 1931,
+      "note_ru": "Кино: братья Маркс: сверх-Я, Эго и Ид",
+      "note_en": "Cinema: Marx Brothers as superego, ego, id"
+    },
+    {
+      "tmdb_id": 3035,
+      "kind": "movie",
+      "title": "Франкенштейн",
+      "original_title": "Frankenstein",
+      "year": 1931,
+      "note_ru": "Кино: монстр и голос",
+      "note_en": "Cinema: the monster and the voice"
+    },
+    {
+      "tmdb_id": 901,
+      "kind": "movie",
+      "title": "Огни большого города",
+      "original_title": "City Lights",
+      "year": 1931,
+      "note_ru": "Кино: Чаплин и тревога звука",
+      "note_en": "Cinema: Chaplin and the threat of sound"
+    },
+    {
+      "tmdb_id": 3063,
+      "kind": "movie",
+      "title": "Утиный суп",
+      "original_title": "Duck Soup",
+      "year": 1933,
+      "note_ru": "Кино: братья Маркс и абсурд власти",
+      "note_en": "Cinema: Marx Brothers and the absurdity of power"
+    },
+    {
+      "tmdb_id": 12206,
+      "kind": "movie",
+      "title": "Завещание доктора Мабузе",
+      "original_title": "Das Testament des Dr. Mabuse",
+      "year": 1933,
+      "note_ru": "Кино: акусматический голос",
+      "note_en": "Cinema: the acousmatic voice"
+    },
+    {
+      "tmdb_id": 67162,
+      "kind": "movie",
+      "title": "Судный день Плуто",
+      "original_title": "Pluto's Judgement Day",
+      "year": 1935,
+      "note_ru": "Кино: мультфильм: вина и наказание",
+      "note_en": "Cinema: cartoon of guilt and punishment"
+    },
+    {
+      "tmdb_id": 630,
+      "kind": "movie",
+      "title": "Волшебник страны Оз",
+      "original_title": "The Wizard of Oz",
+      "year": 1939,
+      "note_ru": "Кино: голос за занавесом",
+      "note_en": "Cinema: the voice behind the curtain"
+    },
+    {
+      "tmdb_id": 914,
+      "kind": "movie",
+      "title": "Великий диктатор",
+      "original_title": "The Great Dictator",
+      "year": 1940,
+      "note_ru": "Кино: голос как власть",
+      "note_en": "Cinema: the voice as power"
+    },
+    {
+      "tmdb_id": 31997,
+      "kind": "movie",
+      "title": "Диверсант",
+      "original_title": "Saboteur",
+      "year": 1942,
+      "note_ru": "Кино: Хичкок: невинность и вина",
+      "note_en": "Cinema: Hitchcock: innocence and guilt"
+    },
+    {
+      "tmdb_id": 13581,
+      "kind": "movie",
+      "title": "Глубокой ночью",
+      "original_title": "Dead of Night",
+      "year": 1945,
+      "note_ru": "Кино: кукла чревовещателя, частичный объект",
+      "note_en": "Cinema: ventriloquist's dummy, partial object"
+    },
+    {
+      "tmdb_id": 19542,
+      "kind": "movie",
+      "title": "Красные башмачки",
+      "original_title": "The Red Shoes",
+      "year": 1948,
+      "note_ru": "Кино: влечение, которое не остановить",
+      "note_en": "Cinema: a drive that cannot stop"
+    },
+    {
+      "tmdb_id": 63306,
+      "kind": "movie",
+      "title": "Кубанские казаки",
+      "original_title": "Кубанские казаки",
+      "year": 1949,
+      "note_ru": "Кино: сталинский мюзикл и обязательное наслаждение",
+      "note_en": "Cinema: Stalinist musical and enforced enjoyment"
+    },
+    {
+      "tmdb_id": 12092,
+      "kind": "movie",
+      "title": "Алиса в Стране чудес",
+      "original_title": "Alice in Wonderland",
+      "year": 1951,
+      "note_ru": "Кино: по ту сторону зеркала",
+      "note_en": "Cinema: through the looking glass"
+    },
+    {
+      "tmdb_id": 567,
+      "kind": "movie",
+      "title": "Окно во двор",
+      "original_title": "Rear Window",
+      "year": 1954,
+      "note_ru": "Кино: взгляд и желание",
+      "note_en": "Cinema: the gaze and desire"
+    },
+    {
+      "tmdb_id": 381,
+      "kind": "movie",
+      "title": "Поймать вора",
+      "original_title": "To Catch a Thief",
+      "year": 1955,
+      "note_ru": "Кино: фантазм и сексуальность",
+      "note_en": "Cinema: fantasy and sexuality"
+    },
+    {
+      "tmdb_id": 6844,
+      "kind": "movie",
+      "title": "Десять заповедей",
+      "original_title": "The Ten Commandments",
+      "year": 1956,
+      "note_ru": "Кино: закон и его изнанка",
+      "note_en": "Cinema: the law and its underside"
+    },
+    {
+      "tmdb_id": 426,
+      "kind": "movie",
+      "title": "Головокружение",
+      "original_title": "Vertigo",
+      "year": 1958,
+      "note_ru": "Кино: фантазм идеальной женщины",
+      "note_en": "Cinema: fantasy of the ideal woman"
+    },
+    {
+      "tmdb_id": 43118,
+      "kind": "movie",
+      "title": "Иван Грозный. Сказ второй: Боярский заговор",
+      "original_title": "Иван Грозный. Сказ второй: Боярский заговор",
+      "year": 1958,
+      "note_ru": "Кино: непристойная изнанка власти",
+      "note_en": "Cinema: the obscene underside of power"
+    },
+    {
+      "tmdb_id": 213,
+      "kind": "movie",
+      "title": "К северу через северо-запад",
+      "original_title": "North by Northwest",
+      "year": 1959,
+      "note_ru": "Кино: мать, желание, самолёт-кукурузник",
+      "note_en": "Cinema: mother, desire and the crop-duster"
+    },
+    {
+      "tmdb_id": 539,
+      "kind": "movie",
+      "title": "Психо",
+      "original_title": "Psycho",
+      "year": 1960,
+      "note_ru": "Кино: дом как топология психики",
+      "note_en": "Cinema: the house as the mind's topology"
+    },
+    {
+      "tmdb_id": 571,
+      "kind": "movie",
+      "title": "Птицы",
+      "original_title": "The Birds",
+      "year": 1963,
+      "note_ru": "Кино: птицы как материнское сверх-Я",
+      "note_en": "Cinema: birds as maternal superego"
+    },
+    {
+      "tmdb_id": 935,
+      "kind": "movie",
+      "title": "Доктор Стрейнджлав",
+      "original_title": "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb",
+      "year": 1964,
+      "note_ru": "Кино: рука, живущая своей жизнью",
+      "note_en": "Cinema: the hand with a will of its own"
+    },
+    {
+      "tmdb_id": 797,
+      "kind": "movie",
+      "title": "Персона",
+      "original_title": "Persona",
+      "year": 1966,
+      "note_ru": "Кино: рассказ об оргии и наслаждение речи",
+      "note_en": "Cinema: the orgy monologue, enjoyment in speech"
+    },
+    {
+      "tmdb_id": 593,
+      "kind": "movie",
+      "title": "Солярис",
+      "original_title": "Солярис",
+      "year": 1972,
+      "note_ru": "Кино: материализация желания",
+      "note_en": "Cinema: desire materialised"
+    },
+    {
+      "tmdb_id": 9552,
+      "kind": "movie",
+      "title": "Изгоняющий дьявола",
+      "original_title": "The Exorcist",
+      "year": 1973,
+      "note_ru": "Кино: голос-чужак в теле",
+      "note_en": "Cinema: the alien voice in the body"
+    },
+    {
+      "tmdb_id": 592,
+      "kind": "movie",
+      "title": "Разговор",
+      "original_title": "The Conversation",
+      "year": 1974,
+      "note_ru": "Кино: паранойя слушания",
+      "note_en": "Cinema: paranoid listening"
+    },
+    {
+      "tmdb_id": 348,
+      "kind": "movie",
+      "title": "Чужой",
+      "original_title": "Alien",
+      "year": 1979,
+      "note_ru": "Кино: частичный объект, нежить",
+      "note_en": "Cinema: the partial object, the undead"
+    },
+    {
+      "tmdb_id": 1398,
+      "kind": "movie",
+      "title": "Сталкер",
+      "original_title": "Сталкер",
+      "year": 1979,
+      "note_ru": "Кино: Зона как пространство желания",
+      "note_en": "Cinema: the Zone as a space of desire"
+    },
+    {
+      "tmdb_id": 841,
+      "kind": "movie",
+      "title": "Дюна",
+      "original_title": "Dune",
+      "year": 1984,
+      "note_ru": "Кино: Линч: голос и тело",
+      "note_en": "Cinema: Lynch: voice and body"
+    },
+    {
+      "tmdb_id": 793,
+      "kind": "movie",
+      "title": "Синий бархат",
+      "original_title": "Blue Velvet",
+      "year": 1986,
+      "note_ru": "Кино: фантазм и травма",
+      "note_en": "Cinema: fantasy and trauma"
+    },
+    {
+      "tmdb_id": 483,
+      "kind": "movie",
+      "title": "Дикие сердцем",
+      "original_title": "Wild at Heart",
+      "year": 1990,
+      "note_ru": "Кино: Линч: насилие фантазма",
+      "note_en": "Cinema: Lynch: the violence of fantasy"
+    },
+    {
+      "tmdb_id": 108,
+      "kind": "movie",
+      "title": "Три цвета: Синий",
+      "original_title": "Trois couleurs : Bleu",
+      "year": 1993,
+      "note_ru": "Кино: горе и возвращение желания",
+      "note_en": "Cinema: grief and the return of desire"
+    },
+    {
+      "tmdb_id": 638,
+      "kind": "movie",
+      "title": "Шоссе в никуда",
+      "original_title": "Lost Highway",
+      "year": 1997,
+      "note_ru": "Кино: фантазм и реальность",
+      "note_en": "Cinema: fantasy versus reality"
+    },
+    {
+      "tmdb_id": 8078,
+      "kind": "movie",
+      "title": "Чужой 4: Воскрешение",
+      "original_title": "Alien Resurrection",
+      "year": 1997,
+      "note_ru": "Кино: встреча с собственными клонами",
+      "note_en": "Cinema: meeting one's own clones"
+    },
+    {
+      "tmdb_id": 603,
+      "kind": "movie",
+      "title": "Матрица",
+      "original_title": "The Matrix",
+      "year": 1999,
+      "note_ru": "Кино: красная таблетка: фантазм и реальное",
+      "note_en": "Cinema: red pill: fantasy and the Real"
+    },
+    {
+      "tmdb_id": 550,
+      "kind": "movie",
+      "title": "Бойцовский клуб",
+      "original_title": "Fight Club",
+      "year": 1999,
+      "note_ru": "Кино: избиение самого себя",
+      "note_en": "Cinema: beating up oneself"
+    },
+    {
+      "tmdb_id": 345,
+      "kind": "movie",
+      "title": "С широко закрытыми глазами",
+      "original_title": "Eyes Wide Shut",
+      "year": 1999,
+      "note_ru": "Кино: фантазм и пара",
+      "note_en": "Cinema: fantasy within the couple"
+    },
+    {
+      "tmdb_id": 1018,
+      "kind": "movie",
+      "title": "Малхолланд Драйв",
+      "original_title": "Mulholland Drive",
+      "year": 2001,
+      "note_ru": "Кино: «Silencio»: иллюзия голоса",
+      "note_en": "Cinema: «Silencio»: the illusion of voice"
+    },
+    {
+      "tmdb_id": 1791,
+      "kind": "movie",
+      "title": "Пианистка",
+      "original_title": "La Pianiste",
+      "year": 2001,
+      "note_ru": "Кино: желание и его письменный сценарий",
+      "note_en": "Cinema: desire scripted in a letter"
+    },
+    {
+      "tmdb_id": 10944,
+      "kind": "movie",
+      "title": "Сладкая полночь",
+      "original_title": "In the Cut",
+      "year": 2003,
+      "note_ru": "Кино: фантазм любви",
+      "note_en": "Cinema: fantasy of romance"
+    },
+    {
+      "tmdb_id": 553,
+      "kind": "movie",
+      "title": "Догвилль",
+      "original_title": "Dogville",
+      "year": 2003,
+      "note_ru": "Кино: фон Триер: милосердие и жестокость",
+      "note_en": "Cinema: von Trier: mercy and cruelty"
+    },
+    {
+      "tmdb_id": 1895,
+      "kind": "movie",
+      "title": "Звёздные войны: Месть ситхов",
+      "original_title": "Star Wars: Episode III - Revenge of the Sith",
+      "year": 2005,
+      "note_ru": "Кино: рождение зла из любви",
+      "note_en": "Cinema: evil born from love"
+    },
+    {
+      "tmdb_id": 39266,
+      "kind": "movie",
+      "title": "Триумф воли",
+      "original_title": "Triumph des Willens",
+      "year": 1935,
+      "note_ru": "Идеология: идеология как зрелище (разбирается критически)",
+      "note_en": "Ideology: ideology as spectacle (critiqued)"
+    },
+    {
+      "tmdb_id": 851,
+      "kind": "movie",
+      "title": "Короткая встреча",
+      "original_title": "Brief Encounter",
+      "year": 1945,
+      "note_ru": "Идеология: фантазм и запретная любовь",
+      "note_en": "Ideology: fantasy and forbidden love"
+    },
+    {
+      "tmdb_id": 106259,
+      "kind": "movie",
+      "title": "Падение Берлина",
+      "original_title": "Падение Берлина",
+      "year": 1950,
+      "note_ru": "Идеология: культ Сталина в кино",
+      "note_en": "Ideology: the Stalin cult on screen"
+    },
+    {
+      "tmdb_id": 3114,
+      "kind": "movie",
+      "title": "Искатели",
+      "original_title": "The Searchers",
+      "year": 1956,
+      "note_ru": "Идеология: Итан как прообраз Тревиса Бикла",
+      "note_en": "Ideology: Ethan as proto-Travis Bickle"
+    },
+    {
+      "tmdb_id": 1725,
+      "kind": "movie",
+      "title": "Вестсайдская история",
+      "original_title": "West Side Story",
+      "year": 1961,
+      "note_ru": "Идеология: идеология в песне",
+      "note_en": "Ideology: ideology in song"
+    },
+    {
+      "tmdb_id": 15121,
+      "kind": "movie",
+      "title": "Звуки музыки",
+      "original_title": "The Sound of Music",
+      "year": 1965,
+      "note_ru": "Идеология: «Взбирайся на каждую гору»: команда наслаждаться",
+      "note_en": "Ideology: «Climb Every Mountain»: the command to enjoy"
+    },
+    {
+      "tmdb_id": 39387,
+      "kind": "movie",
+      "title": "Любовные похождения блондинки",
+      "original_title": "Lásky jedné plavovlásky",
+      "year": 1965,
+      "note_ru": "Идеология: Форман и позднесоциалистическая скука",
+      "note_en": "Ideology: Forman and late-socialist ennui"
+    },
+    {
+      "tmdb_id": 20620,
+      "kind": "movie",
+      "title": "Вторые",
+      "original_title": "Seconds",
+      "year": 1966,
+      "note_ru": "Идеология: новая жизнь как товар",
+      "note_en": "Ideology: a new life as a commodity"
+    },
+    {
+      "tmdb_id": 38442,
+      "kind": "movie",
+      "title": "Бал пожарных",
+      "original_title": "Hoří, má panenko",
+      "year": 1967,
+      "note_ru": "Идеология: идеология в провале ритуала",
+      "note_en": "Ideology: ideology in a failing ritual"
+    },
+    {
+      "tmdb_id": 230291,
+      "kind": "movie",
+      "title": "Оратория для Праги",
+      "original_title": "Oratorio for Prague",
+      "year": 1968,
+      "note_ru": "Идеология: Пражская весна и вторжение",
+      "note_en": "Ideology: Prague Spring and the invasion"
+    },
+    {
+      "tmdb_id": 14794,
+      "kind": "movie",
+      "title": "Если....",
+      "original_title": "if....",
+      "year": 1968,
+      "note_ru": "Идеология: бунт и его пределы",
+      "note_en": "Ideology: revolt and its limits"
+    },
+    {
+      "tmdb_id": 651,
+      "kind": "movie",
+      "title": "Военно-полевой госпиталь",
+      "original_title": "M*A*S*H",
+      "year": 1970,
+      "note_ru": "Идеология: цинизм как идеология",
+      "note_en": "Ideology: cynicism as ideology"
+    },
+    {
+      "tmdb_id": 2998,
+      "kind": "movie",
+      "title": "Забриски-пойнт",
+      "original_title": "Zabriskie Point",
+      "year": 1970,
+      "note_ru": "Идеология: фантазм разрушения",
+      "note_en": "Ideology: fantasy of destruction"
+    },
+    {
+      "tmdb_id": 185,
+      "kind": "movie",
+      "title": "Заводной апельсин",
+      "original_title": "A Clockwork Orange",
+      "year": 1971,
+      "note_ru": "Идеология: насилие и «Ода к радости»",
+      "note_en": "Ideology: violence and the «Ode to Joy»"
+    },
+    {
+      "tmdb_id": 10784,
+      "kind": "movie",
+      "title": "Кабаре",
+      "original_title": "Cabaret",
+      "year": 1972,
+      "note_ru": "Идеология: «Завтра принадлежит мне»: соблазн нацизма",
+      "note_en": "Ideology: «Tomorrow Belongs to Me»: Nazism's lure"
+    },
+    {
+      "tmdb_id": 578,
+      "kind": "movie",
+      "title": "Челюсти",
+      "original_title": "Jaws",
+      "year": 1975,
+      "note_ru": "Идеология: акула как сгусток всех страхов",
+      "note_en": "Ideology: the shark condensing all fears"
+    },
+    {
+      "tmdb_id": 103,
+      "kind": "movie",
+      "title": "Таксист",
+      "original_title": "Taxi Driver",
+      "year": 1976,
+      "note_ru": "Идеология: насилие ради спасения",
+      "note_en": "Ideology: violence as rescue"
+    },
+    {
+      "tmdb_id": 68,
+      "kind": "movie",
+      "title": "Бразилия",
+      "original_title": "Brazil",
+      "year": 1985,
+      "note_ru": "Идеология: бюрократия и непристойность",
+      "note_en": "Ideology: bureaucracy and obscenity"
+    },
+    {
+      "tmdb_id": 600,
+      "kind": "movie",
+      "title": "Цельнометаллическая оболочка",
+      "original_title": "Full Metal Jacket",
+      "year": 1987,
+      "note_ru": "Идеология: непристойная изнанка армии",
+      "note_en": "Ideology: the army's obscene underside"
+    },
+    {
+      "tmdb_id": 11051,
+      "kind": "movie",
+      "title": "Последнее искушение Христа",
+      "original_title": "The Last Temptation of Christ",
+      "year": 1988,
+      "note_ru": "Идеология: христианство и атеизм",
+      "note_en": "Ideology: Christianity and atheism"
+    },
+    {
+      "tmdb_id": 8337,
+      "kind": "movie",
+      "title": "Чужие среди нас",
+      "original_title": "They Live",
+      "year": 1988,
+      "note_ru": "Идеология: очки идеологии",
+      "note_en": "Ideology: the glasses of ideology"
+    },
+    {
+      "tmdb_id": 597,
+      "kind": "movie",
+      "title": "Титаник",
+      "original_title": "Titanic",
+      "year": 1997,
+      "note_ru": "Идеология: классовая фантазия любви",
+      "note_en": "Ideology: the class fantasy of romance"
+    },
+    {
+      "tmdb_id": 6479,
+      "kind": "movie",
+      "title": "Я — легенда",
+      "original_title": "I Am Legend",
+      "year": 2007,
+      "note_ru": "Идеология: идеология выживания",
+      "note_en": "Ideology: the ideology of survival"
+    },
+    {
+      "tmdb_id": 155,
+      "kind": "movie",
+      "title": "Тёмный рыцарь",
+      "original_title": "The Dark Knight",
+      "year": 2008,
+      "note_ru": "Идеология: необходимая ложь",
+      "note_en": "Ideology: the necessary lie"
+    }
+  ]
+}

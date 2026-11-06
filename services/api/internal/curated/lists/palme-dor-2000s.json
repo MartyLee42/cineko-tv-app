@@ -1,0 +1,239 @@
+{
+  "id": "palme-dor-2000s",
+  "group": "modern",
+  "title_ru": "Золотая пальмовая ветвь: 2000–2025",
+  "title_en": "Palme d'Or Winners, 2000–2025",
+  "author": "Каннский кинофестиваль / Festival de Cannes",
+  "source": "Palme d'Or, 2000–2025",
+  "source_url": "https://en.wikipedia.org/wiki/Palme_d%27Or",
+  "description_ru": "Главные победители Каннского фестиваля за четверть века — от фон Триера до Панахи. В 2020 году фестиваль не прошёл из-за пандемии, поэтому этого года в списке нет.",
+  "description_en": "Cannes' top prize across a quarter century, from von Trier to Panahi. The 2020 festival was cancelled by the pandemic, so that year is missing.",
+  "ordered": true,
+  "items": [
+    {
+      "tmdb_id": 16,
+      "kind": "movie",
+      "title": "Танцующая в темноте",
+      "original_title": "Dancer in the Dark",
+      "year": 2000,
+      "note_ru": "Канны 2000",
+      "note_en": "Cannes 2000"
+    },
+    {
+      "tmdb_id": 11447,
+      "kind": "movie",
+      "title": "Комната сына",
+      "original_title": "La stanza del figlio",
+      "year": 2001,
+      "note_ru": "Канны 2001",
+      "note_en": "Cannes 2001"
+    },
+    {
+      "tmdb_id": 423,
+      "kind": "movie",
+      "title": "Пианист",
+      "original_title": "The Pianist",
+      "year": 2002,
+      "note_ru": "Канны 2002",
+      "note_en": "Cannes 2002"
+    },
+    {
+      "tmdb_id": 1807,
+      "kind": "movie",
+      "title": "Слон",
+      "original_title": "Elephant",
+      "year": 2003,
+      "note_ru": "Канны 2003",
+      "note_en": "Cannes 2003"
+    },
+    {
+      "tmdb_id": 1777,
+      "kind": "movie",
+      "title": "Фаренгейт 9/11",
+      "original_title": "Fahrenheit 9/11",
+      "year": 2004,
+      "note_ru": "Канны 2004",
+      "note_en": "Cannes 2004"
+    },
+    {
+      "tmdb_id": 11490,
+      "kind": "movie",
+      "title": "Дитя",
+      "original_title": "L'enfant",
+      "year": 2005,
+      "note_ru": "Канны 2005",
+      "note_en": "Cannes 2005"
+    },
+    {
+      "tmdb_id": 1116,
+      "kind": "movie",
+      "title": "Ветер, который качает вереск",
+      "original_title": "The Wind That Shakes the Barley",
+      "year": 2006,
+      "note_ru": "Канны 2006",
+      "note_en": "Cannes 2006"
+    },
+    {
+      "tmdb_id": 2009,
+      "kind": "movie",
+      "title": "4 месяца, 3 недели и 2 дня",
+      "original_title": "4 luni, 3 săptămâni și 2 zile",
+      "year": 2007,
+      "note_ru": "Канны 2007",
+      "note_en": "Cannes 2007"
+    },
+    {
+      "tmdb_id": 8841,
+      "kind": "movie",
+      "title": "Класс",
+      "original_title": "Entre les murs",
+      "year": 2008,
+      "note_ru": "Канны 2008",
+      "note_en": "Cannes 2008"
+    },
+    {
+      "tmdb_id": 37903,
+      "kind": "movie",
+      "title": "Белая лента",
+      "original_title": "Das weiße Band - Eine deutsche Kindergeschichte",
+      "year": 2009,
+      "note_ru": "Канны 2009",
+      "note_en": "Cannes 2009"
+    },
+    {
+      "tmdb_id": 38368,
+      "kind": "movie",
+      "title": "Дядюшка Бунми, который помнит свои прошлые жизни",
+      "original_title": "ลุงบุญมีระลึกชาติ",
+      "year": 2010,
+      "note_ru": "Канны 2010",
+      "note_en": "Cannes 2010"
+    },
+    {
+      "tmdb_id": 8967,
+      "kind": "movie",
+      "title": "Древо жизни",
+      "original_title": "The Tree of Life",
+      "year": 2011,
+      "note_ru": "Канны 2011",
+      "note_en": "Cannes 2011"
+    },
+    {
+      "tmdb_id": 86837,
+      "kind": "movie",
+      "title": "Любовь",
+      "original_title": "Amour",
+      "year": 2012,
+      "note_ru": "Канны 2012",
+      "note_en": "Cannes 2012"
+    },
+    {
+      "tmdb_id": 152584,
+      "kind": "movie",
+      "title": "Жизнь Адель",
+      "original_title": "La Vie d'Adèle - Chapitres 1 et 2",
+      "year": 2013,
+      "note_ru": "Канны 2013",
+      "note_en": "Cannes 2013"
+    },
+    {
+      "tmdb_id": 265169,
+      "kind": "movie",
+      "title": "Зимняя спячка",
+      "original_title": "Kış Uykusu",
+      "year": 2014,
+      "note_ru": "Канны 2014",
+      "note_en": "Cannes 2014"
+    },
+    {
+      "tmdb_id": 314402,
+      "kind": "movie",
+      "title": "Дипан",
+      "original_title": "Dheepan",
+      "year": 2015,
+      "note_ru": "Канны 2015",
+      "note_en": "Cannes 2015"
+    },
+    {
+      "tmdb_id": 374473,
+      "kind": "movie",
+      "title": "Я, Дэниел Блэйк",
+      "original_title": "I, Daniel Blake",
+      "year": 2016,
+      "note_ru": "Канны 2016",
+      "note_en": "Cannes 2016"
+    },
+    {
+      "tmdb_id": 401246,
+      "kind": "movie",
+      "title": "Квадрат",
+      "original_title": "The Square",
+      "year": 2017,
+      "note_ru": "Канны 2017",
+      "note_en": "Cannes 2017"
+    },
+    {
+      "tmdb_id": 505192,
+      "kind": "movie",
+      "title": "Магазинные воришки",
+      "original_title": "万引き家族",
+      "year": 2018,
+      "note_ru": "Канны 2018",
+      "note_en": "Cannes 2018"
+    },
+    {
+      "tmdb_id": 496243,
+      "kind": "movie",
+      "title": "Паразиты",
+      "original_title": "기생충",
+      "year": 2019,
+      "note_ru": "Канны 2019",
+      "note_en": "Cannes 2019"
+    },
+    {
+      "tmdb_id": 630240,
+      "kind": "movie",
+      "title": "Титан",
+      "original_title": "Titane",
+      "year": 2021,
+      "note_ru": "Канны 2021",
+      "note_en": "Cannes 2021"
+    },
+    {
+      "tmdb_id": 497828,
+      "kind": "movie",
+      "title": "Треугольник печали",
+      "original_title": "Triangle of Sadness",
+      "year": 2022,
+      "note_ru": "Канны 2022",
+      "note_en": "Cannes 2022"
+    },
+    {
+      "tmdb_id": 915935,
+      "kind": "movie",
+      "title": "Анатомия падения",
+      "original_title": "Anatomie d'une chute",
+      "year": 2023,
+      "note_ru": "Канны 2023",
+      "note_en": "Cannes 2023"
+    },
+    {
+      "tmdb_id": 1064213,
+      "kind": "movie",
+      "title": "Анора",
+      "original_title": "Anora",
+      "year": 2024,
+      "note_ru": "Канны 2024",
+      "note_en": "Cannes 2024"
+    },
+    {
+      "tmdb_id": 1456349,
+      "kind": "movie",
+      "title": "Простая случайность",
+      "original_title": "Un simple accident",
+      "year": 2025,
+      "note_ru": "Канны 2025",
+      "note_en": "Cannes 2025"
+    }
+  ]
+}

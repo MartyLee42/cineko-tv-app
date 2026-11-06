@@ -1,0 +1,230 @@
+{
+  "id": "tarkovsky-sculpting-in-time",
+  "group": "thinkers",
+  "title_ru": "Тарковский: «Запечатлённое время»",
+  "title_en": "Tarkovsky: Sculpting in Time",
+  "author": "Андрей Тарковский / Andrei Tarkovsky",
+  "source": "Запечатлённое время / Sculpting in Time, 1986",
+  "source_url": "https://en.wikipedia.org/wiki/Sculpting_in_Time",
+  "description_ru": "Фильмы, на которые Тарковский ссылается в своей книге о природе кино: Брессон, Бергман, Куросава, Бунюэль, Довженко, Иоселиани — примеры кинообраза, звука и времени. «Иван Грозный» — как полемический контрпример.",
+  "description_en": "Films Tarkovsky cites in his book on the nature of cinema — Bresson, Bergman, Kurosawa, Buñuel, Dovzhenko, Iosseliani — as lessons in image, sound and time; Ivan the Terrible appears as his polemical counter-example.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 160,
+      "kind": "movie",
+      "title": "Прибытие поезда на вокзал Ла-Сьота",
+      "original_title": "L'arrivée d'un train à La Ciotat",
+      "year": 1896,
+      "note_ru": "кино впервые запечатлело само время",
+      "note_en": "cinema first imprinted time itself"
+    },
+    {
+      "tmdb_id": 46594,
+      "kind": "movie",
+      "title": "Земля",
+      "original_title": "Земля",
+      "year": 1930,
+      "note_ru": "выстрел передан монтажом — пример поэзии",
+      "note_en": "the gunshot rendered through cutting"
+    },
+    {
+      "tmdb_id": 46774,
+      "kind": "movie",
+      "title": "Чапаев",
+      "original_title": "Чапаев",
+      "year": 1934,
+      "note_ru": "кино, которое смотрела вся страна",
+      "note_en": "a film the whole country went to see"
+    },
+    {
+      "tmdb_id": 780,
+      "kind": "movie",
+      "title": "Страсти Жанны д’Арк",
+      "original_title": "La Passion de Jeanne d'Arc",
+      "year": 1928,
+      "note_ru": "немой Дрейер, не стареющий со временем",
+      "note_en": "silent Dreyer that never dates"
+    },
+    {
+      "tmdb_id": 626,
+      "kind": "movie",
+      "title": "Андалузский пёс",
+      "original_title": "Un chien andalou",
+      "year": 1929,
+      "note_ru": "Бунюэль: искусство, которое тревожит",
+      "note_en": "Buñuel: art that disturbs"
+    },
+    {
+      "tmdb_id": 15,
+      "kind": "movie",
+      "title": "Гражданин Кейн",
+      "original_title": "Citizen Kane",
+      "year": 1941,
+      "note_ru": "Уэллс и подлинность характера",
+      "note_en": "Welles and the truth of a character"
+    },
+    {
+      "tmdb_id": 9797,
+      "kind": "movie",
+      "title": "Иван Грозный",
+      "original_title": "Иван Грозный",
+      "year": 1944,
+      "note_ru": "спор: кадр-иероглиф, почти опера",
+      "note_en": "a foil: hieroglyphic frames, near-opera"
+    },
+    {
+      "tmdb_id": 346,
+      "kind": "movie",
+      "title": "Семь самураев",
+      "original_title": "七人の侍",
+      "year": 1954,
+      "note_ru": "бой под ливнем в грязи — наблюдение жизни",
+      "note_en": "the battle in rain and mud as observation"
+    },
+    {
+      "tmdb_id": 3777,
+      "kind": "movie",
+      "title": "Трон в крови",
+      "original_title": "蜘蛛巣城",
+      "year": 1957,
+      "note_ru": "Макбет блуждает в лесу — образ пространства",
+      "note_en": "Macbeth lost in the forest, an image of space"
+    },
+    {
+      "tmdb_id": 5055,
+      "kind": "movie",
+      "title": "Пепел и алмаз",
+      "original_title": "Popiół i diament",
+      "year": 1958,
+      "note_ru": "кровь на белой простыне — не символ",
+      "note_en": "blood on a white sheet — not a symbol"
+    },
+    {
+      "tmdb_id": 35124,
+      "kind": "movie",
+      "title": "Назарин",
+      "original_title": "Nazarín",
+      "year": 1959,
+      "note_ru": "зачумлённая деревня — образ через факт",
+      "note_en": "the plague village: image through fact"
+    },
+    {
+      "tmdb_id": 11656,
+      "kind": "movie",
+      "title": "Девичий источник",
+      "original_title": "Jungfrukällan",
+      "year": 1960,
+      "note_ru": "кадр с умирающей героиней",
+      "note_en": "the shot of the dying girl"
+    },
+    {
+      "tmdb_id": 5165,
+      "kind": "movie",
+      "title": "Приключение",
+      "original_title": "L'avventura",
+      "year": 1960,
+      "note_ru": "Антониони и работа с актёром",
+      "note_en": "Antonioni's work with actors"
+    },
+    {
+      "tmdb_id": 11602,
+      "kind": "movie",
+      "title": "Как в зеркале",
+      "original_title": "Såsom i en spegel",
+      "year": 1961,
+      "note_ru": "звук маяка на грани слышимости",
+      "note_en": "the lighthouse sound at the edge of hearing"
+    },
+    {
+      "tmdb_id": 29455,
+      "kind": "movie",
+      "title": "Причастие",
+      "original_title": "Nattvardsgästerna",
+      "year": 1963,
+      "note_ru": "шум ручья — звук как у Бергмана",
+      "note_en": "the stream's noise: Bergman's sound"
+    },
+    {
+      "tmdb_id": 422,
+      "kind": "movie",
+      "title": "8½",
+      "original_title": "8½",
+      "year": 1963,
+      "note_ru": "музыка Нино Роты — грустная и насмешливая",
+      "note_en": "Nino Rota's sad, mocking score"
+    },
+    {
+      "tmdb_id": 797,
+      "kind": "movie",
+      "title": "Персона",
+      "original_title": "Persona",
+      "year": 1966,
+      "note_ru": "фильм, каждый раз открывающийся заново",
+      "note_en": "a film that renews itself on each viewing"
+    },
+    {
+      "tmdb_id": 128412,
+      "kind": "movie",
+      "title": "Листопад",
+      "original_title": "გიორგობისთვე",
+      "year": 1966,
+      "note_ru": "Иоселиани всё ближе к жизни",
+      "note_en": "Iosseliani moving ever closer to life"
+    },
+    {
+      "tmdb_id": 1561,
+      "kind": "movie",
+      "title": "Мушетт",
+      "original_title": "Mouchette",
+      "year": 1967,
+      "note_ru": "героиня не «играет» на зрителя",
+      "note_en": "the heroine never plays to the audience"
+    },
+    {
+      "tmdb_id": 26372,
+      "kind": "movie",
+      "title": "Стыд",
+      "original_title": "Skammen",
+      "year": 1968,
+      "note_ru": "война как способ исследовать человека",
+      "note_en": "war as a way of studying people"
+    },
+    {
+      "tmdb_id": 83235,
+      "kind": "movie",
+      "title": "Жил певчий дрозд",
+      "original_title": "იყო შაშვი მგალობელი",
+      "year": 1970,
+      "note_ru": "непрофессионал в главной роли",
+      "note_en": "a non-professional in the lead"
+    },
+    {
+      "tmdb_id": 10238,
+      "kind": "movie",
+      "title": "Шёпоты и крики",
+      "original_title": "Viskningar och rop",
+      "year": 1972,
+      "note_ru": "эпизод сестёр без слов",
+      "note_en": "the sisters' wordless scene"
+    },
+    {
+      "tmdb_id": 168179,
+      "kind": "movie",
+      "title": "Пастораль",
+      "original_title": "პასტორალი",
+      "year": 1975,
+      "note_ru": "поэзия грузовика на пыльной дороге",
+      "note_en": "the poetry of a lorry on a dusty road"
+    },
+    {
+      "tmdb_id": 42112,
+      "kind": "movie",
+      "title": "Деньги",
+      "original_title": "L'Argent",
+      "year": 1983,
+      "note_ru": "Брессон, которого публика не замечает",
+      "note_en": "Bresson, overlooked by the public"
+    }
+  ]
+}

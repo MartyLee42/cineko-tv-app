@@ -1,0 +1,287 @@
+{
+  "id": "scorsese-39-foreign",
+  "group": "directors",
+  "title_ru": "Скорсезе: 39 иностранных фильмов",
+  "title_en": "Scorsese's 39 Foreign Films",
+  "author": "Мартин Скорсезе / Martin Scorsese",
+  "source": "список, присланный молодому режиссёру Колину Леви (после встречи 2006 г.; опубликован Леви в 2014) / list sent to young filmmaker Colin Levy (after a 2006 meeting; published 2014)",
+  "source_url": "https://nofilmschool.com/scorsese-foreign-film-list",
+  "description_ru": "Скорсезе прислал этот список юному режиссёру, спросившему, с чего начать знакомство с мировым кино: немецкий экспрессионизм, неореализм, японская классика, новая волна и новое немецкое кино.",
+  "description_en": "Scorsese sent this list to a young filmmaker who asked where to start with world cinema: German Expressionism, Neorealism, Japanese classics, the New Wave and New German Cinema.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 19,
+      "kind": "movie",
+      "title": "Метрополис",
+      "original_title": "Metropolis",
+      "year": 1927
+    },
+    {
+      "tmdb_id": 653,
+      "kind": "movie",
+      "title": "Носферату, симфония ужаса",
+      "original_title": "Nosferatu, eine Symphonie des Grauens",
+      "year": 1922
+    },
+    {
+      "tmdb_id": 5998,
+      "kind": "movie",
+      "title": "Доктор Мабузе, игрок",
+      "original_title": "Dr. Mabuse, der Spieler",
+      "year": 1922
+    },
+    {
+      "tmdb_id": 42536,
+      "kind": "movie",
+      "title": "Наполеон",
+      "original_title": "Napoléon",
+      "year": 1927
+    },
+    {
+      "tmdb_id": 777,
+      "kind": "movie",
+      "title": "Великая иллюзия",
+      "original_title": "La Grande Illusion",
+      "year": 1937
+    },
+    {
+      "tmdb_id": 776,
+      "kind": "movie",
+      "title": "Правила игры",
+      "original_title": "La Règle du jeu",
+      "year": 1939
+    },
+    {
+      "tmdb_id": 2457,
+      "kind": "movie",
+      "title": "Дети райка",
+      "original_title": "Les Enfants du Paradis",
+      "year": 1945
+    },
+    {
+      "tmdb_id": 307,
+      "kind": "movie",
+      "title": "Рим, открытый город",
+      "original_title": "Roma città aperta",
+      "year": 1945
+    },
+    {
+      "tmdb_id": 8429,
+      "kind": "movie",
+      "title": "Земляк",
+      "original_title": "Paisà",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 43445,
+      "kind": "movie",
+      "title": "Земля дрожит",
+      "original_title": "La terra trema",
+      "year": 1949
+    },
+    {
+      "tmdb_id": 5156,
+      "kind": "movie",
+      "title": "Похитители велосипедов",
+      "original_title": "Ladri di biciclette",
+      "year": 1948
+    },
+    {
+      "tmdb_id": 833,
+      "kind": "movie",
+      "title": "Умберто Д.",
+      "original_title": "Umberto D.",
+      "year": 1952
+    },
+    {
+      "tmdb_id": 648,
+      "kind": "movie",
+      "title": "Красавица и чудовище",
+      "original_title": "La Belle et la Bête",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 18148,
+      "kind": "movie",
+      "title": "Токийская повесть",
+      "original_title": "東京物語",
+      "year": 1953
+    },
+    {
+      "tmdb_id": 3782,
+      "kind": "movie",
+      "title": "Жить",
+      "original_title": "生きる",
+      "year": 1952
+    },
+    {
+      "tmdb_id": 346,
+      "kind": "movie",
+      "title": "Семь Самураев",
+      "original_title": "七人の侍",
+      "year": 1954
+    },
+    {
+      "tmdb_id": 14696,
+      "kind": "movie",
+      "title": "Сказки туманной луны после дождя",
+      "original_title": "雨月物語",
+      "year": 1953
+    },
+    {
+      "tmdb_id": 20532,
+      "kind": "movie",
+      "title": "Управляющий Сансё",
+      "original_title": "山椒大夫",
+      "year": 1954
+    },
+    {
+      "tmdb_id": 12493,
+      "kind": "movie",
+      "title": "Рай и ад",
+      "original_title": "天国と地獄",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 24382,
+      "kind": "movie",
+      "title": "Злоумышленники, как всегда, остались неизвестны",
+      "original_title": "I soliti ignoti",
+      "year": 1958
+    },
+    {
+      "tmdb_id": 8422,
+      "kind": "movie",
+      "title": "Рокко и его братья",
+      "original_title": "Rocco e i suoi fratelli",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 147,
+      "kind": "movie",
+      "title": "Четыреста ударов",
+      "original_title": "Les Quatre Cents Coups",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 1818,
+      "kind": "movie",
+      "title": "Стреляйте в пианиста",
+      "original_title": "Tirez sur le pianiste",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 269,
+      "kind": "movie",
+      "title": "На последнем дыхании",
+      "original_title": "À bout de souffle",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 8073,
+      "kind": "movie",
+      "title": "Банда аутсайдеров",
+      "original_title": "Bande à part",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 24188,
+      "kind": "movie",
+      "title": "Обгон",
+      "original_title": "Il sorpasso",
+      "year": 1962
+    },
+    {
+      "tmdb_id": 5165,
+      "kind": "movie",
+      "title": "Приключение",
+      "original_title": "L'avventura",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 1052,
+      "kind": "movie",
+      "title": "Фотоувеличение",
+      "original_title": "Blow-Up",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 42788,
+      "kind": "movie",
+      "title": "Перед революцией",
+      "original_title": "Prima della rivoluzione",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 2912,
+      "kind": "movie",
+      "title": "Мясник",
+      "original_title": "Le Boucher",
+      "year": 1970
+    },
+    {
+      "tmdb_id": 8075,
+      "kind": "movie",
+      "title": "Уик-энд",
+      "original_title": "Week End",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 98193,
+      "kind": "movie",
+      "title": "Смертная казнь через повешение",
+      "original_title": "絞死刑",
+      "year": 1968
+    },
+    {
+      "tmdb_id": 10309,
+      "kind": "movie",
+      "title": "Продавец четырех времен года",
+      "original_title": "Händler der vier Jahreszeiten",
+      "year": 1972
+    },
+    {
+      "tmdb_id": 216,
+      "kind": "movie",
+      "title": "Страх съедает душу",
+      "original_title": "Angst essen Seele auf",
+      "year": 1974
+    },
+    {
+      "tmdb_id": 661,
+      "kind": "movie",
+      "title": "Замужество Марии Браун",
+      "original_title": "Die Ehe der Maria Braun",
+      "year": 1979
+    },
+    {
+      "tmdb_id": 10834,
+      "kind": "movie",
+      "title": "С течением времени",
+      "original_title": "Im Lauf der Zeit",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 11222,
+      "kind": "movie",
+      "title": "Американский друг",
+      "original_title": "Der amerikanische Freund",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 11710,
+      "kind": "movie",
+      "title": "Каждый за себя, а Бог против всех",
+      "original_title": "Jeder für sich und Gott gegen alle",
+      "year": 1974
+    },
+    {
+      "tmdb_id": 2000,
+      "kind": "movie",
+      "title": "Агирре, гнев божий",
+      "original_title": "Aguirre, der Zorn Gottes",
+      "year": 1972
+    }
+  ]
+}

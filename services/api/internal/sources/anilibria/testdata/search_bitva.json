@@ -1,0 +1,292 @@
+[
+ {
+  "id": 8789,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2020,
+  "name": {
+   "main": "Магическая битва",
+   "english": "Jujutsu Kaisen",
+   "alternative": null
+  },
+  "alias": "jujutsu-kaisen",
+  "season": {
+   "value": "autumn",
+   "description": "Осень"
+  },
+  "episodes_total": 24,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 24,
+  "shikimori": {
+   "id": 40748
+  },
+  "mal": {
+   "id": 40748
+  }
+ },
+ {
+  "id": 9313,
+  "type": {
+   "value": "MOVIE",
+   "description": "Фильм"
+  },
+  "year": 2021,
+  "name": {
+   "main": "Магическая битва 0 Фильм",
+   "english": "Jujutsu Kaisen 0 Movie",
+   "alternative": "Магическая, Битва, 0"
+  },
+  "alias": "jujutsu-kaisen-0-movie",
+  "season": {
+   "value": "winter",
+   "description": "Зима"
+  },
+  "episodes_total": 1,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 104,
+  "shikimori": {
+   "id": 48561
+  },
+  "mal": {
+   "id": 48561
+  }
+ },
+ {
+  "id": 9470,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2023,
+  "name": {
+   "main": "Магическая битва 2",
+   "english": "JUJUTSU KAISEN Season 2",
+   "alternative": null
+  },
+  "alias": "jujutsu-kaisen-season-2",
+  "season": {
+   "value": "summer",
+   "description": "Лето"
+  },
+  "episodes_total": 23,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 24,
+  "shikimori": {
+   "id": 51009
+  },
+  "mal": {
+   "id": 51009
+  }
+ },
+ {
+  "id": 10088,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2026,
+  "name": {
+   "main": "Магическая битва 3",
+   "english": "Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen",
+   "alternative": null
+  },
+  "alias": "jujutsu-kaisen-shimetsu-kaiyuu-zenpen",
+  "season": {
+   "value": "winter",
+   "description": "Зима"
+  },
+  "episodes_total": 12,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 24,
+  "shikimori": {
+   "id": 57658
+  },
+  "mal": {
+   "id": 57658
+  }
+ },
+ {
+  "id": 10234,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2026,
+  "name": {
+   "main": "Тайная битва за престол сильнейшего принца-дуралея",
+   "english": "Saikyou Degarashi Ouji no Anyaku Teii Arasoi",
+   "alternative": null
+  },
+  "alias": "saikyou-degarashi-ouji-no-anyaku-teii-arasoi",
+  "season": {
+   "value": "summer",
+   "description": "Лето"
+  },
+  "episodes_total": 12,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 24,
+  "shikimori": {
+   "id": 56736
+  },
+  "mal": {
+   "id": 56736
+  }
+ },
+ {
+  "id": 9331,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2023,
+  "name": {
+   "main": "Токийские мстители: Рождественская битва",
+   "english": "Tokyo Revengers: Seiya Kessen-hen",
+   "alternative": "Токийские мстители [ТВ-2] 2 сезон"
+  },
+  "alias": "tokyo-revengers-seiya-kessen-hen",
+  "season": {
+   "value": "winter",
+   "description": "Зима"
+  },
+  "episodes_total": 13,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 24,
+  "shikimori": {
+   "id": 50608
+  },
+  "mal": {
+   "id": 50608
+  }
+ },
+ {
+  "id": 394,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2014,
+  "name": {
+   "main": "Гроб принцессы Чайки 2: Битва во имя возмездия",
+   "english": "Hitsugi no Chaika: Avenging Battle",
+   "alternative": null
+  },
+  "alias": "hitsugi-no-chaika-avenging-battle-grob-printsessy-chayki-2-bitva-vo-imya-vozmezdiya",
+  "season": {
+   "value": null,
+   "description": null
+  },
+  "episodes_total": 10,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 25,
+  "shikimori": {
+   "id": 24231
+  },
+  "mal": {
+   "id": 24231
+  }
+ },
+ {
+  "id": 1211,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2015,
+  "name": {
+   "main": "Последний Серафим 2",
+   "english": "Owari no Seraph: Nagoya Kessen-hen",
+   "alternative": "Последний Серафим Битва в нагое"
+  },
+  "alias": "owari-no-seraph-nagoya-kessen-hen",
+  "season": {
+   "value": "autumn",
+   "description": "Осень"
+  },
+  "episodes_total": 12,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 25,
+  "shikimori": {
+   "id": 28927
+  },
+  "mal": {
+   "id": 28927
+  }
+ },
+ {
+  "id": 576,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2015,
+  "name": {
+   "main": "Рыцари Сидонии: Поход к девятой планете",
+   "english": "Sidonia no Kishi: Daikyuu Wakusei Seneki",
+   "alternative": "Рыцари Сидонии 2 Битва за девятую планету"
+  },
+  "alias": "sidonia-no-kishi-daikyuu-wakusei-seneki-rytsari-sidonii-tv-2",
+  "season": {
+   "value": "spring",
+   "description": "Весна"
+  },
+  "episodes_total": 12,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 25,
+  "shikimori": {
+   "id": 24893
+  },
+  "mal": {
+   "id": 24893
+  }
+ },
+ {
+  "id": 9024,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2021,
+  "name": {
+   "main": "Пять секунд до битвы",
+   "english": "Deatte 5-byou de Battle",
+   "alternative": null
+  },
+  "alias": "deatte-5-byou-de-battle",
+  "season": {
+   "value": "summer",
+   "description": "Лето"
+  },
+  "episodes_total": 12,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 24,
+  "shikimori": {
+   "id": 43814
+  },
+  "mal": {
+   "id": 43814
+  }
+ }
+]

@@ -1,0 +1,230 @@
+{
+  "id": "nika-best-film-2000s",
+  "group": "modern",
+  "title_ru": "«Ника» за лучший игровой фильм: 2000–2025",
+  "title_en": "Nika Award for Best Feature Film, 2000–2025",
+  "author": "Российская академия кинематографических искусств «Ника» / Russian Academy of Cinema Arts",
+  "source": "Премия «Ника», номинация «Лучший игровой фильм», 2000–2025 / Nika Award for Best Feature Film",
+  "source_url": "https://ru.wikipedia.org/wiki/%D0%9F%D1%80%D0%B5%D0%BC%D0%B8%D1%8F_%C2%AB%D0%9D%D0%B8%D0%BA%D0%B0%C2%BB_%D0%B7%D0%B0_%D0%BB%D1%83%D1%87%D1%88%D0%B8%D0%B9_%D0%B8%D0%B3%D1%80%D0%BE%D0%B2%D0%BE%D0%B9_%D1%84%D0%B8%D0%BB%D1%8C%D0%BC",
+  "description_ru": "Главная награда российской киноакадемии — от Германа и Сокурова до Звягинцева и Хлебникова. В 2021 году вручили сразу две премии: за 2019 и за 2020 год.",
+  "description_en": "The Russian film academy's top prize, from German and Sokurov to Zvyagintsev and Khlebnikov. In 2021 two awards were given at once, for 2019 and for 2020.",
+  "ordered": true,
+  "items": [
+    {
+      "tmdb_id": 100784,
+      "kind": "movie",
+      "title": "Хрусталёв, машину!",
+      "original_title": "Хрусталёв, машину!",
+      "year": 1998,
+      "note_ru": "«Ника» 2000",
+      "note_en": "Nika 2000"
+    },
+    {
+      "tmdb_id": 62729,
+      "kind": "movie",
+      "title": "Дневник его жены",
+      "original_title": "Дневник его жены",
+      "year": 2000,
+      "note_ru": "«Ника» 2001",
+      "note_en": "Nika 2001"
+    },
+    {
+      "tmdb_id": 45943,
+      "kind": "movie",
+      "title": "Телец",
+      "original_title": "Телец",
+      "year": 2001,
+      "note_ru": "«Ника» 2002",
+      "note_en": "Nika 2002"
+    },
+    {
+      "tmdb_id": 554,
+      "kind": "movie",
+      "title": "Кукушка",
+      "original_title": "Кукушка",
+      "year": 2002,
+      "note_ru": "«Ника» 2003",
+      "note_en": "Nika 2003"
+    },
+    {
+      "tmdb_id": 11190,
+      "kind": "movie",
+      "title": "Возвращение",
+      "original_title": "Возвращение",
+      "year": 2003,
+      "note_ru": "«Ника» 2004",
+      "note_en": "Nika 2004"
+    },
+    {
+      "tmdb_id": 63715,
+      "kind": "movie",
+      "title": "Свои",
+      "original_title": "Свои",
+      "year": 2004,
+      "note_ru": "«Ника» 2005",
+      "note_en": "Nika 2005"
+    },
+    {
+      "tmdb_id": 14097,
+      "kind": "movie",
+      "title": "9 рота",
+      "original_title": "9 рота",
+      "year": 2005,
+      "note_ru": "«Ника» 2006",
+      "note_en": "Nika 2006"
+    },
+    {
+      "tmdb_id": 22358,
+      "kind": "movie",
+      "title": "Остров",
+      "original_title": "Остров",
+      "year": 2006,
+      "note_ru": "«Ника» 2007",
+      "note_en": "Nika 2007"
+    },
+    {
+      "tmdb_id": 12246,
+      "kind": "movie",
+      "title": "Монгол",
+      "original_title": "Монгол",
+      "year": 2007,
+      "note_ru": "«Ника» 2008",
+      "note_en": "Nika 2008"
+    },
+    {
+      "tmdb_id": 38336,
+      "kind": "movie",
+      "title": "Стиляги",
+      "original_title": "Стиляги",
+      "year": 2008,
+      "note_ru": "«Ника» 2009",
+      "note_en": "Nika 2009"
+    },
+    {
+      "tmdb_id": 73905,
+      "kind": "movie",
+      "title": "Полторы комнаты, или Сентиментальное путешествие на Родину",
+      "original_title": "Полторы комнаты, или Сентиментальное путешествие на Родину",
+      "year": 2009,
+      "note_ru": "«Ника» 2010",
+      "note_en": "Nika 2010"
+    },
+    {
+      "tmdb_id": 47557,
+      "kind": "movie",
+      "title": "Край",
+      "original_title": "Край",
+      "year": 2010,
+      "note_ru": "«Ника» 2011",
+      "note_en": "Nika 2011"
+    },
+    {
+      "tmdb_id": 79345,
+      "kind": "movie",
+      "title": "Жила-была одна баба",
+      "original_title": "Жила-была одна баба",
+      "year": 2011,
+      "note_ru": "«Ника» 2012",
+      "note_en": "Nika 2012"
+    },
+    {
+      "tmdb_id": 77560,
+      "kind": "movie",
+      "title": "Фауст",
+      "original_title": "Faust",
+      "year": 2011,
+      "note_ru": "«Ника» 2013",
+      "note_en": "Nika 2013"
+    },
+    {
+      "tmdb_id": 225235,
+      "kind": "movie",
+      "title": "Географ глобус пропил",
+      "original_title": "Географ глобус пропил",
+      "year": 2013,
+      "note_ru": "«Ника» 2014",
+      "note_en": "Nika 2014"
+    },
+    {
+      "tmdb_id": 110402,
+      "kind": "movie",
+      "title": "Трудно быть богом",
+      "original_title": "Трудно быть богом",
+      "year": 2013,
+      "note_ru": "«Ника» 2015",
+      "note_en": "Nika 2015"
+    },
+    {
+      "tmdb_id": 352720,
+      "kind": "movie",
+      "title": "Милый Ханс, дорогой Петр",
+      "original_title": "Милый Ханс, дорогой Петр",
+      "year": 2015,
+      "note_ru": "«Ника» 2016",
+      "note_en": "Nika 2016"
+    },
+    {
+      "tmdb_id": 408539,
+      "kind": "movie",
+      "title": "Рай",
+      "original_title": "Рай",
+      "year": 2016,
+      "note_ru": "«Ника» 2017",
+      "note_en": "Nika 2017"
+    },
+    {
+      "tmdb_id": 457842,
+      "kind": "movie",
+      "title": "Аритмия",
+      "original_title": "Аритмия",
+      "year": 2017,
+      "note_ru": "«Ника» 2018",
+      "note_en": "Nika 2018"
+    },
+    {
+      "tmdb_id": 496916,
+      "kind": "movie",
+      "title": "Война Анны",
+      "original_title": "Война Анны",
+      "year": 2018,
+      "note_ru": "«Ника» 2019",
+      "note_en": "Nika 2019"
+    },
+    {
+      "tmdb_id": 585256,
+      "kind": "movie",
+      "title": "Француз",
+      "original_title": "Француз",
+      "year": 2019,
+      "note_ru": "«Ника» 2021 (за 2019)",
+      "note_en": "Nika 2021 (for 2019)"
+    },
+    {
+      "tmdb_id": 587609,
+      "kind": "movie",
+      "title": "Дорогие товарищи!",
+      "original_title": "Дорогие товарищи!",
+      "year": 2020,
+      "note_ru": "«Ника» 2021 (за 2020)",
+      "note_en": "Nika 2021 (for 2020)"
+    },
+    {
+      "tmdb_id": 864120,
+      "kind": "movie",
+      "title": "Праведник",
+      "original_title": "Праведник",
+      "year": 2023,
+      "note_ru": "«Ника» 2024",
+      "note_en": "Nika 2024"
+    },
+    {
+      "tmdb_id": 586353,
+      "kind": "movie",
+      "title": "Мастер и Маргарита",
+      "original_title": "Мастер и Маргарита",
+      "year": 2024,
+      "note_ru": "«Ника» 2025",
+      "note_en": "Nika 2025"
+    }
+  ]
+}

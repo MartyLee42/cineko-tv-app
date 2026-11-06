@@ -1,0 +1,84 @@
+{
+  "id": "tarkovsky-top-10",
+  "group": "directors",
+  "title_ru": "Тарковский: десять любимых фильмов",
+  "title_en": "Tarkovsky's Ten Favourite Films",
+  "author": "Андрей Тарковский / Andrei Tarkovsky",
+  "source": "список, продиктованный киноведу Леониду Козлову, 1972 / list given to film historian Leonid Kozlov, 1972",
+  "source_url": "https://en.wikipedia.org/wiki/Andrei_Tarkovsky",
+  "description_ru": "Десять картин, которые Тарковский в 1972 году назвал своими любимыми: Брессон, Бергман, Бунюэль, Чаплин и японские мастера — кино о совести, вере и одиночестве.",
+  "description_en": "The ten films Tarkovsky named as his favourites in 1972: Bresson, Bergman, Buñuel, Chaplin and the Japanese masters — cinema of conscience, faith and solitude.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 43376,
+      "kind": "movie",
+      "title": "Дневник сельского священника",
+      "original_title": "Journal d'un curé de campagne",
+      "year": 1951
+    },
+    {
+      "tmdb_id": 1561,
+      "kind": "movie",
+      "title": "Мушетт",
+      "original_title": "Mouchette",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 29455,
+      "kind": "movie",
+      "title": "Причастие",
+      "original_title": "Nattvardsgästerna",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 614,
+      "kind": "movie",
+      "title": "Земляничная поляна",
+      "original_title": "Smultronstället",
+      "year": 1957
+    },
+    {
+      "tmdb_id": 797,
+      "kind": "movie",
+      "title": "Персона",
+      "original_title": "Persona",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 35124,
+      "kind": "movie",
+      "title": "Назарин",
+      "original_title": "Nazarín",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 901,
+      "kind": "movie",
+      "title": "Огни большого города",
+      "original_title": "City Lights",
+      "year": 1931
+    },
+    {
+      "tmdb_id": 14696,
+      "kind": "movie",
+      "title": "Сказки туманной луны после дождя",
+      "original_title": "雨月物語",
+      "year": 1953
+    },
+    {
+      "tmdb_id": 346,
+      "kind": "movie",
+      "title": "Семь Самураев",
+      "original_title": "七人の侍",
+      "year": 1954
+    },
+    {
+      "tmdb_id": 16672,
+      "kind": "movie",
+      "title": "Женщина в песках",
+      "original_title": "砂の女",
+      "year": 1964
+    }
+  ]
+}

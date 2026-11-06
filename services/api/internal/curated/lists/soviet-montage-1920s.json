@@ -1,0 +1,230 @@
+{
+  "id": "soviet-montage-1920s",
+  "group": "ru",
+  "title_ru": "Советский монтаж 1920-х",
+  "title_en": "Soviet Montage of the 1920s",
+  "author": "Эйзенштейн, Вертов, Пудовкин, Довженко, Кулешов",
+  "source": "История кино: советская монтажная школа, 1924–1930",
+  "source_url": "https://en.wikipedia.org/wiki/Soviet_montage_theory",
+  "description_ru": "Фильмы, в которых советские режиссёры 1920-х доказали, что смысл рождается на стыке кадров: от опытов мастерской Кулешова до «кино-глаза» Вертова и интеллектуального монтажа Эйзенштейна. Подборка составлена по общим трудам по истории кино.",
+  "description_en": "Films in which 1920s Soviet directors showed that meaning arises where two shots meet — from the Kuleshov workshop to Vertov’s Kino-Eye and Eisenstein’s intellectual montage. Selected from standard film-history references.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 32928,
+      "kind": "movie",
+      "title": "Необычайные приключения мистера Веста в стране большевиков",
+      "original_title": "Необычайные приключения мистера Веста в стране большевиков",
+      "year": 1924,
+      "note_ru": "Кулешов: мастерская и «эффект Кулешова»",
+      "note_en": "Kuleshov workshop, the Kuleshov effect"
+    },
+    {
+      "tmdb_id": 126644,
+      "kind": "movie",
+      "title": "По закону",
+      "original_title": "По закону",
+      "year": 1926,
+      "note_ru": "Кулешов: камерная драма из монтажных кусков",
+      "note_en": "Kuleshov: chamber drama built in the cut"
+    },
+    {
+      "tmdb_id": 144611,
+      "kind": "movie",
+      "title": "Кино-глаз",
+      "original_title": "Киноглаз",
+      "year": 1924,
+      "note_ru": "Вертов: манифест «кино-глаза»",
+      "note_en": "Vertov's Kino-Eye manifesto on film"
+    },
+    {
+      "tmdb_id": 189505,
+      "kind": "movie",
+      "title": "Шагай, Совет!",
+      "original_title": "Шагай, Совет!",
+      "year": 1926,
+      "note_ru": "Вертов: город как монтажная симфония",
+      "note_en": "Vertov: the city as montage symphony"
+    },
+    {
+      "tmdb_id": 185579,
+      "kind": "movie",
+      "title": "Шестая часть мира",
+      "original_title": "Шестая часть мира",
+      "year": 1926,
+      "note_ru": "Вертов: монтаж интертитров и хроники",
+      "note_en": "Vertov: intertitles cut into newsreel"
+    },
+    {
+      "tmdb_id": 153845,
+      "kind": "movie",
+      "title": "Одиннадцатый",
+      "original_title": "Одиннадцатый",
+      "year": 1928,
+      "note_ru": "Вертов: индустриальный ритм",
+      "note_en": "Vertov: industrial rhythm"
+    },
+    {
+      "tmdb_id": 26317,
+      "kind": "movie",
+      "title": "Человек с киноаппаратом",
+      "original_title": "Человек с киноаппаратом",
+      "year": 1929,
+      "note_ru": "Вертов: кино без титров, «киноглаз»",
+      "note_en": "Vertov: film without intertitles"
+    },
+    {
+      "tmdb_id": 45176,
+      "kind": "movie",
+      "title": "Энтузиазм (Симфония Донбасса)",
+      "original_title": "Ентузіязм. Симфонія Донбасу",
+      "year": 1930,
+      "note_ru": "Вертов: звуковой монтаж",
+      "note_en": "Vertov: montage of sound"
+    },
+    {
+      "tmdb_id": 44967,
+      "kind": "movie",
+      "title": "Стачка",
+      "original_title": "Стачка",
+      "year": 1925,
+      "note_ru": "Эйзенштейн: «монтаж аттракционов»",
+      "note_en": "Eisenstein: montage of attractions"
+    },
+    {
+      "tmdb_id": 643,
+      "kind": "movie",
+      "title": "Броненосец «Потёмкин»",
+      "original_title": "Броненосец Потёмкин",
+      "year": 1925,
+      "note_ru": "Эйзенштейн: Одесская лестница",
+      "note_en": "Eisenstein: the Odessa Steps"
+    },
+    {
+      "tmdb_id": 697,
+      "kind": "movie",
+      "title": "Октябрь",
+      "original_title": "Октябрь",
+      "year": 1927,
+      "note_ru": "Эйзенштейн: интеллектуальный монтаж",
+      "note_en": "Eisenstein: intellectual montage"
+    },
+    {
+      "tmdb_id": 110741,
+      "kind": "movie",
+      "title": "Старое и новое",
+      "original_title": "Старое и новое",
+      "year": 1929,
+      "note_ru": "Эйзенштейн: обертонный монтаж",
+      "note_en": "Eisenstein: overtonal montage"
+    },
+    {
+      "tmdb_id": 98914,
+      "kind": "movie",
+      "title": "Мать",
+      "original_title": "Мать",
+      "year": 1926,
+      "note_ru": "Пудовкин: монтаж-«сцепление» кадров",
+      "note_en": "Pudovkin: linkage editing"
+    },
+    {
+      "tmdb_id": 106254,
+      "kind": "movie",
+      "title": "Конец Санкт-Петербурга",
+      "original_title": "Конец Санкт-Петербурга",
+      "year": 1927,
+      "note_ru": "Пудовкин: монтажный контраст",
+      "note_en": "Pudovkin: montage by contrast"
+    },
+    {
+      "tmdb_id": 84273,
+      "kind": "movie",
+      "title": "Потомок Чингисхана",
+      "original_title": "Потомок Чингисхана",
+      "year": 1928,
+      "note_ru": "Пудовкин: монтажная кульминация",
+      "note_en": "Pudovkin: montage climax"
+    },
+    {
+      "tmdb_id": 51892,
+      "kind": "movie",
+      "title": "Шахматная горячка",
+      "original_title": "Шахматная горячка",
+      "year": 1925,
+      "note_ru": "Пудовкин: монтажная комедия с хроникой",
+      "note_en": "Pudovkin: comedy cut with newsreel"
+    },
+    {
+      "tmdb_id": 82088,
+      "kind": "movie",
+      "title": "Звенигора",
+      "original_title": "Звенигора",
+      "year": 1928,
+      "note_ru": "Довженко: поэтический монтаж",
+      "note_en": "Dovzhenko: poetic montage"
+    },
+    {
+      "tmdb_id": 85715,
+      "kind": "movie",
+      "title": "Арсенал",
+      "original_title": "Арсенал",
+      "year": 1929,
+      "note_ru": "Довженко: монтажная метафора",
+      "note_en": "Dovzhenko: montage as metaphor"
+    },
+    {
+      "tmdb_id": 46594,
+      "kind": "movie",
+      "title": "Земля",
+      "original_title": "Земля",
+      "year": 1930,
+      "note_ru": "Довженко: лирический ритм",
+      "note_en": "Dovzhenko: lyrical rhythm"
+    },
+    {
+      "tmdb_id": 189828,
+      "kind": "movie",
+      "title": "Падение династии Романовых",
+      "original_title": "Падение династии Романовых",
+      "year": 1927,
+      "note_ru": "Шуб: компиляционный монтаж архива",
+      "note_en": "Shub: compilation film from archives"
+    },
+    {
+      "tmdb_id": 151068,
+      "kind": "movie",
+      "title": "Новый Вавилон",
+      "original_title": "Новый Вавилон",
+      "year": 1929,
+      "note_ru": "ФЭКС: эксцентрика и монтаж",
+      "note_en": "FEKS: eccentrism and montage"
+    },
+    {
+      "tmdb_id": 136141,
+      "kind": "movie",
+      "title": "Турксиб",
+      "original_title": "Турксиб",
+      "year": 1929,
+      "note_ru": "Турин: документальный монтаж",
+      "note_en": "Turin: documentary montage"
+    },
+    {
+      "tmdb_id": 167354,
+      "kind": "movie",
+      "title": "Обломок империи",
+      "original_title": "Обломок империи",
+      "year": 1929,
+      "note_ru": "Эрмлер: монтаж памяти",
+      "note_en": "Ermler: montage of memory"
+    },
+    {
+      "tmdb_id": 158968,
+      "kind": "movie",
+      "title": "Соль Сванетии",
+      "original_title": "ჯიმ შვანთე",
+      "year": 1930,
+      "note_ru": "Калатозов: этнография через монтаж",
+      "note_en": "Kalatozov: ethnography through editing"
+    }
+  ]
+}

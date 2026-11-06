@@ -1,0 +1,27 @@
+import type { healthEn } from "./health.en";
+
+export const healthRu: Record<keyof typeof healthEn, string> = {
+  "health.title": "Состояние",
+  "health.heap": "Память приложения {used} / {limit} МБ",
+  "health.heap_used": "Память приложения {used} МБ",
+  "health.ram": "ОЗУ ~{gb} ГБ",
+  "health.cores_one": "{n} ядро",
+  "health.cores_few": "{n} ядра",
+  "health.cores_many": "{n} ядер",
+  "health.fps": "{fps} к/с",
+  "health.lag": "задержка {ms} мс",
+  "health.dropped": "пропущено кадров {pct} %",
+  "health.long_tasks": "подвисаний {n} ({ms} мс)",
+  "health.range": "к/с {min}–{max} за {n} отчётов",
+  "health.none": "отчётов пока нет",
+  "health.not_sending": "не отправляет",
+  "health.last": "последний {when}",
+  "health.hint_slow": "ТВ не справляется — попробуйте «Спокойно» в анимациях или оформление попроще.",
+  "health.hint_memory": "Приложению не хватает памяти — перезапустите его на ТВ.",
+  "health.setting": "Отправлять состояние ТВ (память, плавность)",
+  "health.setting_hint": "Раз в 10 минут и после просмотра: память приложения, частота кадров, задержки, пропущенные кадры. Видно владельцу ТВ на странице «Устройства».",
+  "health.now": "Состояние сейчас",
+  "health.measuring": "Измеряю…",
+  "health.unavailable": "браузер этого ТВ не сообщает",
+  "health.reporting_off": "отправка выключена",
+};

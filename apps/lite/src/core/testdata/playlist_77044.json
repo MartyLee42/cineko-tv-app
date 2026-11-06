@@ -1,0 +1,143 @@
+{
+ "titleName": "Друзья",
+ "isSerial": true,
+ "items": [
+  {
+   "cvhId": "0196027a-9ca8-7c24-a7dc-488fa18d3ef7",
+   "name": "Друзья",
+   "vkId": "10088487017042",
+   "voiceStudio": "True Dubbing Studio",
+   "voiceType": "Многоголосый",
+   "season": 1,
+   "episode": 1
+  },
+  {
+   "cvhId": "019600f0-ea83-776d-bc11-b2abbf3421c9",
+   "name": "Друзья",
+   "vkId": "10087362812498",
+   "voiceStudio": "Нота",
+   "voiceType": "Многоголосый",
+   "season": 1,
+   "episode": 1
+  },
+  {
+   "cvhId": "0196027f-4090-7d5f-b3c5-36cedc7d9a88",
+   "name": "Друзья",
+   "vkId": "10088487082578",
+   "voiceStudio": "True Dubbing Studio",
+   "voiceType": "Многоголосый",
+   "season": 1,
+   "episode": 2
+  },
+  {
+   "cvhId": "019600f5-7c60-7620-81bf-b209668c82a1",
+   "name": "Друзья",
+   "vkId": "10087362878034",
+   "voiceStudio": "Нота",
+   "voiceType": "Многоголосый",
+   "season": 1,
+   "episode": 2
+  },
+  {
+   "cvhId": "0196027f-4237-73c4-a24e-d4ae194c8b59",
+   "name": "Друзья",
+   "vkId": "10088487148114",
+   "voiceStudio": "True Dubbing Studio",
+   "voiceType": "Многоголосый",
+   "season": 1,
+   "episode": 3
+  },
+  {
+   "cvhId": "019600f5-7cce-79ff-b7c3-0ccb6c7cc094",
+   "name": "Друзья",
+   "vkId": "10087362943570",
+   "voiceStudio": "Нота",
+   "voiceType": "Многоголосый",
+   "season": 1,
+   "episode": 3
+  },
+  {
+   "cvhId": "019603e8-cddb-747f-a90c-ac91395b416c",
+   "name": "Друзья",
+   "vkId": "10088959334994",
+   "voiceStudio": "True Dubbing Studio",
+   "voiceType": "Многоголосый",
+   "season": 7,
+   "episode": 1
+  },
+  {
+   "cvhId": "019601a8-09e7-7fc9-a4d2-30c4444bd755",
+   "name": "Друзья",
+   "vkId": "10087911742034",
+   "voiceStudio": "Нота",
+   "voiceType": "Многоголосый",
+   "season": 7,
+   "episode": 1
+  },
+  {
+   "cvhId": "019603e8-ce72-712f-ab29-e110774b5ac0",
+   "name": "Друзья",
+   "vkId": "10088959400530",
+   "voiceStudio": "True Dubbing Studio",
+   "voiceType": "Многоголосый",
+   "season": 7,
+   "episode": 2
+  },
+  {
+   "cvhId": "019601a8-0a5e-7820-9483-f6df871634ff",
+   "name": "Друзья",
+   "vkId": "10087911807570",
+   "voiceStudio": "Нота",
+   "voiceType": "Многоголосый",
+   "season": 7,
+   "episode": 2
+  },
+  {
+   "cvhId": "019603e8-cf0c-77c4-a871-899c0b5366af",
+   "name": "Друзья",
+   "vkId": "10088959466066",
+   "voiceStudio": "True Dubbing Studio",
+   "voiceType": "Многоголосый",
+   "season": 7,
+   "episode": 3
+  },
+  {
+   "cvhId": "019601a8-0ac1-7200-84ba-376e5500f931",
+   "name": "Друзья",
+   "vkId": "10087911873106",
+   "voiceStudio": "Нота",
+   "voiceType": "Многоголосый",
+   "season": 7,
+   "episode": 3
+  }
+ ],
+ "trailers": null,
+ "ads": {
+  "vast": {
+   "preroll": [
+    "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfmz&p2=juhq",
+    "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnc&p2=juhq"
+   ],
+   "prerolls": [
+    {
+     "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfmz&p2=juhq",
+     "priority": 0
+    },
+    {
+     "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnc&p2=juhq",
+     "priority": 1
+    }
+   ],
+   "pauseroll": [
+    "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnf&p2=juhq"
+   ],
+   "pauserolls": [
+    {
+     "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnf&p2=juhq",
+     "priority": 0
+    }
+   ],
+   "midroll": null
+  }
+ }
+}

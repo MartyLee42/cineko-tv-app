@@ -1,0 +1,105 @@
+# Tests on every push and pull request. Mirrors `make check` without Docker
+# Compose: Go tests (the API's integration tests against a Postgres service),
+# the transcoder and music tests, and the TypeScript typecheck + unit tests.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: Go — services/api
+    runs-on: ubuntu-24.04
+    container: golang:1.27-bookworm
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: martytv
+          POSTGRES_PASSWORD: martytv-ci
+          POSTGRES_DB: martytv_test
+        options: >-
+          --health-cmd "pg_isready -U martytv -d martytv_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgres://martytv:martytv-ci@postgres:5432/martytv_test?sslmode=disable
+      GOFLAGS: -buildvcs=false
+    defaults:
+      run:
+        working-directory: services/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            /go/pkg/mod
+            /root/.cache/go-build
+          key: go-api-${{ hashFiles('services/api/go.sum') }}
+          restore-keys: go-api-
+      - run: go vet ./...
+      - run: go test -count=1 ./...
+
+  music:
+    name: Go — services/music
+    runs-on: ubuntu-24.04
+    container: golang:1.27-bookworm
+    env:
+      GOFLAGS: -buildvcs=false
+    defaults:
+      run:
+        working-directory: services/music
+    steps:
+      - uses: actions/checkout@v4
+      - run: go vet ./...
+      - run: go test -count=1 ./...
+
+  transcoder:
+    name: Go — services/transcoder (real ffmpeg)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -q --target test -t cineko-transcoder:test services/transcoder
+      - run: docker run --rm -v "$PWD/services/transcoder:/src" -w /src cineko-transcoder:test
+
+  js:
+    name: TypeScript — typecheck + unit tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - name: pnpm store cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  compose:
+    name: Compose file + shell scripts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker compose config
+        run: |
+          cp deployments/env.example .env
+          printf '%s\n' POSTGRES_PASSWORD=ci TRANSCODER_SECRET=ci INVIDIOUS_DB_PASSWORD=ci \
+            INVIDIOUS_HMAC_KEY=ci INVIDIOUS_COMPANION_KEY=ci >> .env
+          docker compose -f deployments/compose.yaml --env-file .env config -q
+          docker compose -f deployments/compose.yaml --env-file .env --profile vpn config -q
+      - run: shellcheck -S warning install.sh scripts/*.sh

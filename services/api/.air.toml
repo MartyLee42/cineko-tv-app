@@ -1,0 +1,18 @@
+# Live reload for development (air). Rebuilds on Go or SQL changes.
+root = "."
+tmp_dir = "/tmp/air"
+
+[build]
+  cmd = "go build -buildvcs=false -o /tmp/air/martytv ./cmd/martytv"
+  entrypoint = ["/tmp/air/martytv", "serve"]
+  include_ext = ["go", "sql"]
+  exclude_dir = ["bin", "tmp"]
+  delay = 300
+  kill_delay = "2s"
+  send_interrupt = true
+
+[log]
+  time = false
+
+[misc]
+  clean_on_exit = true

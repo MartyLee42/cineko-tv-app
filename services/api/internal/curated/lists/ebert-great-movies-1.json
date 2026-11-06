@@ -1,0 +1,738 @@
+{
+  "id": "ebert-great-movies-1",
+  "group": "thinkers",
+  "title_ru": "Роджер Эберт: «Великие фильмы»",
+  "title_en": "Roger Ebert: The Great Movies",
+  "author": "Роджер Эберт / Roger Ebert",
+  "source": "The Great Movies (Broadway Books, 2002), vol. I — 100 essays",
+  "source_url": "https://www.maoxian.com/thoughts/roger-eberts-the-great-movies-sorted-chronologically",
+  "description_ru": "Первая книга из цикла эссе Эберта о фильмах, которые он пересматривал и считал вечными: сто картин от немого кино до «Фарго», без рейтинга — каждая просто достойна внимания.",
+  "description_en": "The first collection of Ebert's essays on films he revisited and held to be lasting: one hundred titles from the silent era to Fargo, unranked — each simply worth your time.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 899,
+      "kind": "movie",
+      "title": "Сломанные побеги",
+      "original_title": "Broken Blossoms or The Yellow Man and the Girl",
+      "year": 1919
+    },
+    {
+      "tmdb_id": 653,
+      "kind": "movie",
+      "title": "Носферату. Симфония ужаса",
+      "original_title": "Nosferatu, eine Symphonie des Grauens",
+      "year": 1922
+    },
+    {
+      "tmdb_id": 1405,
+      "kind": "movie",
+      "title": "Алчность",
+      "original_title": "Greed",
+      "year": 1924
+    },
+    {
+      "tmdb_id": 643,
+      "kind": "movie",
+      "title": "Броненосец «Потёмкин»",
+      "original_title": "Броненосец Потёмкин",
+      "year": 1925
+    },
+    {
+      "tmdb_id": 961,
+      "kind": "movie",
+      "title": "Генерал",
+      "original_title": "The General",
+      "year": 1926
+    },
+    {
+      "tmdb_id": 19,
+      "kind": "movie",
+      "title": "Метрополис",
+      "original_title": "Metropolis",
+      "year": 1927
+    },
+    {
+      "tmdb_id": 780,
+      "kind": "movie",
+      "title": "Страсти Жанны д’Арк",
+      "original_title": "La Passion de Jeanne d'Arc",
+      "year": 1928
+    },
+    {
+      "tmdb_id": 905,
+      "kind": "movie",
+      "title": "Ящик Пандоры",
+      "original_title": "Die Büchse der Pandora",
+      "year": 1929
+    },
+    {
+      "tmdb_id": 626,
+      "kind": "movie",
+      "title": "Андалузский пёс",
+      "original_title": "Un chien andalou",
+      "year": 1929
+    },
+    {
+      "tmdb_id": 901,
+      "kind": "movie",
+      "title": "Огни большого города",
+      "original_title": "City Lights",
+      "year": 1931
+    },
+    {
+      "tmdb_id": 138,
+      "kind": "movie",
+      "title": "Дракула",
+      "original_title": "Dracula",
+      "year": 1931
+    },
+    {
+      "tmdb_id": 832,
+      "kind": "movie",
+      "title": "М убийца",
+      "original_title": "M - Eine Stadt sucht einen Mörder",
+      "year": 1931
+    },
+    {
+      "tmdb_id": 195,
+      "kind": "movie",
+      "title": "Неприятности в раю",
+      "original_title": "Trouble in Paradise",
+      "year": 1932
+    },
+    {
+      "tmdb_id": 3063,
+      "kind": "movie",
+      "title": "Утиный суп",
+      "original_title": "Duck Soup",
+      "year": 1933
+    },
+    {
+      "tmdb_id": 43904,
+      "kind": "movie",
+      "title": "Аталанта",
+      "original_title": "L'Atalante",
+      "year": 1934
+    },
+    {
+      "tmdb_id": 229,
+      "kind": "movie",
+      "title": "Невеста Франкенштейна",
+      "original_title": "Bride of Frankenstein",
+      "year": 1935
+    },
+    {
+      "tmdb_id": 20325,
+      "kind": "movie",
+      "title": "Время свинга",
+      "original_title": "Swing Time",
+      "year": 1936
+    },
+    {
+      "tmdb_id": 777,
+      "kind": "movie",
+      "title": "Великая иллюзия",
+      "original_title": "La Grande Illusion",
+      "year": 1937
+    },
+    {
+      "tmdb_id": 770,
+      "kind": "movie",
+      "title": "Унесённые ветром",
+      "original_title": "Gone with the Wind",
+      "year": 1939
+    },
+    {
+      "tmdb_id": 630,
+      "kind": "movie",
+      "title": "Волшебник страны Оз",
+      "original_title": "The Wizard of Oz",
+      "year": 1939
+    },
+    {
+      "tmdb_id": 10895,
+      "kind": "movie",
+      "title": "Пиноккио",
+      "original_title": "Pinocchio",
+      "year": 1940
+    },
+    {
+      "tmdb_id": 15,
+      "kind": "movie",
+      "title": "Гражданин Кейн",
+      "original_title": "Citizen Kane",
+      "year": 1941
+    },
+    {
+      "tmdb_id": 3086,
+      "kind": "movie",
+      "title": "Леди Ева",
+      "original_title": "The Lady Eve",
+      "year": 1941
+    },
+    {
+      "tmdb_id": 963,
+      "kind": "movie",
+      "title": "Мальтийский сокол",
+      "original_title": "The Maltese Falcon",
+      "year": 1941
+    },
+    {
+      "tmdb_id": 289,
+      "kind": "movie",
+      "title": "Касабланка",
+      "original_title": "Casablanca",
+      "year": 1942
+    },
+    {
+      "tmdb_id": 996,
+      "kind": "movie",
+      "title": "Двойная страховка",
+      "original_title": "Double Indemnity",
+      "year": 1944
+    },
+    {
+      "tmdb_id": 20367,
+      "kind": "movie",
+      "title": "Объезд",
+      "original_title": "Detour",
+      "year": 1945
+    },
+    {
+      "tmdb_id": 648,
+      "kind": "movie",
+      "title": "Красавица и чудовище",
+      "original_title": "La Belle et la Bête",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 910,
+      "kind": "movie",
+      "title": "Глубокий сон",
+      "original_title": "The Big Sleep",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 1585,
+      "kind": "movie",
+      "title": "Эта прекрасная жизнь",
+      "original_title": "It's a Wonderful Life",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 3088,
+      "kind": "movie",
+      "title": "Моя дорогая Клементина",
+      "original_title": "My Darling Clementine",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 303,
+      "kind": "movie",
+      "title": "Дурная слава",
+      "original_title": "Notorious",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 5156,
+      "kind": "movie",
+      "title": "Похитители велосипедов",
+      "original_title": "Ladri di biciclette",
+      "year": 1948
+    },
+    {
+      "tmdb_id": 3089,
+      "kind": "movie",
+      "title": "Красная река",
+      "original_title": "Red River",
+      "year": 1948
+    },
+    {
+      "tmdb_id": 1092,
+      "kind": "movie",
+      "title": "Третий человек",
+      "original_title": "The Third Man",
+      "year": 1949
+    },
+    {
+      "tmdb_id": 705,
+      "kind": "movie",
+      "title": "Всё о Еве",
+      "original_title": "All About Eve",
+      "year": 1950
+    },
+    {
+      "tmdb_id": 599,
+      "kind": "movie",
+      "title": "Бульвар Сансет",
+      "original_title": "Sunset Boulevard",
+      "year": 1950
+    },
+    {
+      "tmdb_id": 3782,
+      "kind": "movie",
+      "title": "Жить",
+      "original_title": "生きる",
+      "year": 1952
+    },
+    {
+      "tmdb_id": 872,
+      "kind": "movie",
+      "title": "Поющие под дождём",
+      "original_title": "Singin' in the Rain",
+      "year": 1952
+    },
+    {
+      "tmdb_id": 778,
+      "kind": "movie",
+      "title": "Каникулы господина Юло",
+      "original_title": "Les vacances de Monsieur Hulot",
+      "year": 1953
+    },
+    {
+      "tmdb_id": 654,
+      "kind": "movie",
+      "title": "В порту",
+      "original_title": "On the Waterfront",
+      "year": 1954
+    },
+    {
+      "tmdb_id": 346,
+      "kind": "movie",
+      "title": "Семь самураев",
+      "original_title": "七人の侍",
+      "year": 1954
+    },
+    {
+      "tmdb_id": 3112,
+      "kind": "movie",
+      "title": "Ночь охотника",
+      "original_title": "The Night of the Hunter",
+      "year": 1955
+    },
+    {
+      "tmdb_id": 5801,
+      "kind": "movie",
+      "title": "Песнь дороги (Трилогия Апу, 1)",
+      "original_title": "পথের পাঁচালী",
+      "year": 1955,
+      "note_ru": "в книге — одно эссе о «Трилогии Апу»",
+      "note_en": "one essay in the book: The Apu Trilogy"
+    },
+    {
+      "tmdb_id": 897,
+      "kind": "movie",
+      "title": "Непокорённый (Трилогия Апу, 2)",
+      "original_title": "অপরাজিত",
+      "year": 1956,
+      "note_ru": "в книге — одно эссе о «Трилогии Апу»",
+      "note_en": "one essay in the book: The Apu Trilogy"
+    },
+    {
+      "tmdb_id": 896,
+      "kind": "movie",
+      "title": "Мир Апу (Трилогия Апу, 3)",
+      "original_title": "অপুর সংসার",
+      "year": 1959,
+      "note_ru": "в книге — одно эссе о «Трилогии Апу»",
+      "note_en": "one essay in the book: The Apu Trilogy"
+    },
+    {
+      "tmdb_id": 69605,
+      "kind": "movie",
+      "title": "Слова, написанные на ветру",
+      "original_title": "Written on the Wind",
+      "year": 1956
+    },
+    {
+      "tmdb_id": 490,
+      "kind": "movie",
+      "title": "Седьмая печать",
+      "original_title": "Det sjunde inseglet",
+      "year": 1957
+    },
+    {
+      "tmdb_id": 976,
+      "kind": "movie",
+      "title": "Сладкий запах успеха",
+      "original_title": "Sweet Smell of Success",
+      "year": 1957
+    },
+    {
+      "tmdb_id": 426,
+      "kind": "movie",
+      "title": "Головокружение",
+      "original_title": "Vertigo",
+      "year": 1958
+    },
+    {
+      "tmdb_id": 147,
+      "kind": "movie",
+      "title": "Четыреста ударов",
+      "original_title": "Les Quatre Cents Coups",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 46918,
+      "kind": "movie",
+      "title": "Плывущие водоросли",
+      "original_title": "浮草",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 690,
+      "kind": "movie",
+      "title": "Карманник",
+      "original_title": "Pickpocket",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 239,
+      "kind": "movie",
+      "title": "В джазе только девушки",
+      "original_title": "Some Like It Hot",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 284,
+      "kind": "movie",
+      "title": "Квартира",
+      "original_title": "The Apartment",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 439,
+      "kind": "movie",
+      "title": "Сладкая жизнь",
+      "original_title": "La dolce vita",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 5165,
+      "kind": "movie",
+      "title": "Приключение",
+      "original_title": "L'avventura",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 11167,
+      "kind": "movie",
+      "title": "Подглядывающий",
+      "original_title": "Peeping Tom",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 539,
+      "kind": "movie",
+      "title": "Психо",
+      "original_title": "Psycho",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 4024,
+      "kind": "movie",
+      "title": "В прошлом году в Мариенбаде",
+      "original_title": "L'Année dernière à Marienbad",
+      "year": 1961
+    },
+    {
+      "tmdb_id": 29264,
+      "kind": "movie",
+      "title": "Ангел-истребитель",
+      "original_title": "El ángel exterminador",
+      "year": 1962
+    },
+    {
+      "tmdb_id": 947,
+      "kind": "movie",
+      "title": "Лоуренс Аравийский",
+      "original_title": "Lawrence of Arabia",
+      "year": 1962
+    },
+    {
+      "tmdb_id": 1626,
+      "kind": "movie",
+      "title": "Жить своей жизнью",
+      "original_title": "Vivre sa vie: film en douze tableaux",
+      "year": 1962
+    },
+    {
+      "tmdb_id": 422,
+      "kind": "movie",
+      "title": "8½",
+      "original_title": "8½",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 935,
+      "kind": "movie",
+      "title": "Доктор Стрейнджлав",
+      "original_title": "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 704,
+      "kind": "movie",
+      "title": "Вечер трудного дня",
+      "original_title": "A Hard Day's Night",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 32350,
+      "kind": "series",
+      "title": "Документальный цикл «Up»",
+      "original_title": "The Up Series",
+      "year": 1964,
+      "note_ru": "«Семь лет» и продолжения через каждые 7 лет",
+      "note_en": "Seven Up! and its follow-ups every 7 years"
+    },
+    {
+      "tmdb_id": 16672,
+      "kind": "movie",
+      "title": "Женщина в песках",
+      "original_title": "砂の女",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 1052,
+      "kind": "movie",
+      "title": "Фотоувеличение",
+      "original_title": "Blow-Up",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 797,
+      "kind": "movie",
+      "title": "Персона",
+      "original_title": "Persona",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 649,
+      "kind": "movie",
+      "title": "Дневная красавица",
+      "original_title": "Belle de jour",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 475,
+      "kind": "movie",
+      "title": "Бонни и Клайд",
+      "original_title": "Bonnie and Clyde",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 5511,
+      "kind": "movie",
+      "title": "Самурай",
+      "original_title": "Le Samouraï",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 62,
+      "kind": "movie",
+      "title": "2001 год: Космическая одиссея",
+      "original_title": "2001: A Space Odyssey",
+      "year": 1968
+    },
+    {
+      "tmdb_id": 576,
+      "kind": "movie",
+      "title": "Дикая банда",
+      "original_title": "The Wild Bunch",
+      "year": 1969
+    },
+    {
+      "tmdb_id": 29005,
+      "kind": "movie",
+      "title": "Маккейб и миссис Миллер",
+      "original_title": "McCabe & Mrs. Miller",
+      "year": 1971
+    },
+    {
+      "tmdb_id": 2000,
+      "kind": "movie",
+      "title": "Агирре, гнев Божий",
+      "original_title": "Aguirre, der Zorn Gottes",
+      "year": 1972
+    },
+    {
+      "tmdb_id": 238,
+      "kind": "movie",
+      "title": "Крёстный отец",
+      "original_title": "The Godfather",
+      "year": 1972
+    },
+    {
+      "tmdb_id": 216,
+      "kind": "movie",
+      "title": "Страх съедает душу",
+      "original_title": "Angst essen Seele auf",
+      "year": 1974
+    },
+    {
+      "tmdb_id": 829,
+      "kind": "movie",
+      "title": "Китайский квартал",
+      "original_title": "Chinatown",
+      "year": 1974
+    },
+    {
+      "tmdb_id": 29845,
+      "kind": "movie",
+      "title": "Женщина не в себе",
+      "original_title": "A Woman Under the Influence",
+      "year": 1974
+    },
+    {
+      "tmdb_id": 3121,
+      "kind": "movie",
+      "title": "Нэшвилл",
+      "original_title": "Nashville",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 10774,
+      "kind": "movie",
+      "title": "Телесеть",
+      "original_title": "Network",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 103,
+      "kind": "movie",
+      "title": "Таксист",
+      "original_title": "Taxi Driver",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 11,
+      "kind": "movie",
+      "title": "Звёздные войны",
+      "original_title": "Star Wars",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 16642,
+      "kind": "movie",
+      "title": "Дни жатвы",
+      "original_title": "Days of Heaven",
+      "year": 1978
+    },
+    {
+      "tmdb_id": 24998,
+      "kind": "movie",
+      "title": "Врата рая",
+      "original_title": "Gates of Heaven",
+      "year": 1978
+    },
+    {
+      "tmdb_id": 28,
+      "kind": "movie",
+      "title": "Апокалипсис сегодня",
+      "original_title": "Apocalypse Now",
+      "year": 1979
+    },
+    {
+      "tmdb_id": 696,
+      "kind": "movie",
+      "title": "Манхэттен",
+      "original_title": "Manhattan",
+      "year": 1979
+    },
+    {
+      "tmdb_id": 1578,
+      "kind": "movie",
+      "title": "Бешеный бык",
+      "original_title": "Raging Bull",
+      "year": 1980
+    },
+    {
+      "tmdb_id": 14412,
+      "kind": "movie",
+      "title": "Жар тела",
+      "original_title": "Body Heat",
+      "year": 1981
+    },
+    {
+      "tmdb_id": 601,
+      "kind": "movie",
+      "title": "Инопланетянин",
+      "original_title": "E.T. the Extra-Terrestrial",
+      "year": 1982
+    },
+    {
+      "tmdb_id": 144,
+      "kind": "movie",
+      "title": "Небо над Берлином",
+      "original_title": "Der Himmel über Berlin",
+      "year": 1987
+    },
+    {
+      "tmdb_id": 42699,
+      "kind": "series",
+      "title": "Декалог",
+      "original_title": "Dekalog",
+      "year": 1989,
+      "note_ru": "мини-сериал из 10 фильмов",
+      "note_en": "ten-part series"
+    },
+    {
+      "tmdb_id": 925,
+      "kind": "movie",
+      "title": "Делай как надо",
+      "original_title": "Do the Right Thing",
+      "year": 1989
+    },
+    {
+      "tmdb_id": 820,
+      "kind": "movie",
+      "title": "Джон Ф. Кеннеди: Выстрелы в Далласе",
+      "original_title": "JFK",
+      "year": 1991
+    },
+    {
+      "tmdb_id": 274,
+      "kind": "movie",
+      "title": "Молчание ягнят",
+      "original_title": "The Silence of the Lambs",
+      "year": 1991
+    },
+    {
+      "tmdb_id": 424,
+      "kind": "movie",
+      "title": "Список Шиндлера",
+      "original_title": "Schindler's List",
+      "year": 1993
+    },
+    {
+      "tmdb_id": 14275,
+      "kind": "movie",
+      "title": "Баскетбольные мечты",
+      "original_title": "Hoop Dreams",
+      "year": 1994
+    },
+    {
+      "tmdb_id": 680,
+      "kind": "movie",
+      "title": "Криминальное чтиво",
+      "original_title": "Pulp Fiction",
+      "year": 1994
+    },
+    {
+      "tmdb_id": 278,
+      "kind": "movie",
+      "title": "Побег из Шоушенка",
+      "original_title": "The Shawshank Redemption",
+      "year": 1994
+    },
+    {
+      "tmdb_id": 275,
+      "kind": "movie",
+      "title": "Фарго",
+      "original_title": "Fargo",
+      "year": 1996
+    }
+  ]
+}

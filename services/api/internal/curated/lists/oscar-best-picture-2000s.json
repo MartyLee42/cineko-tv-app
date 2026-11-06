@@ -1,0 +1,248 @@
+{
+  "id": "oscar-best-picture-2000s",
+  "group": "modern",
+  "title_ru": "«Оскар» за лучший фильм: 2001–2026",
+  "title_en": "Academy Award for Best Picture, 2001–2026",
+  "author": "Американская киноакадемия / Academy of Motion Picture Arts and Sciences",
+  "source": "Academy Award for Best Picture, 73rd–98th ceremonies (2001–2026)",
+  "source_url": "https://en.wikipedia.org/wiki/Academy_Award_for_Best_Picture",
+  "description_ru": "Главный «Оскар» за двадцать шесть церемоний — от «Гладиатора» до «Битвы за битвой». Пометка у каждого фильма — год церемонии, сам фильм обычно вышел годом раньше.",
+  "description_en": "The top Oscar across twenty-six ceremonies, from Gladiator to One Battle After Another. Each note gives the ceremony year; the film itself usually came out a year earlier.",
+  "ordered": true,
+  "items": [
+    {
+      "tmdb_id": 98,
+      "kind": "movie",
+      "title": "Гладиатор",
+      "original_title": "Gladiator",
+      "year": 2000,
+      "note_ru": "«Оскар» 2001",
+      "note_en": "Oscars 2001"
+    },
+    {
+      "tmdb_id": 453,
+      "kind": "movie",
+      "title": "Игры разума",
+      "original_title": "A Beautiful Mind",
+      "year": 2001,
+      "note_ru": "«Оскар» 2002",
+      "note_en": "Oscars 2002"
+    },
+    {
+      "tmdb_id": 1574,
+      "kind": "movie",
+      "title": "Чикаго",
+      "original_title": "Chicago",
+      "year": 2002,
+      "note_ru": "«Оскар» 2003",
+      "note_en": "Oscars 2003"
+    },
+    {
+      "tmdb_id": 122,
+      "kind": "movie",
+      "title": "Властелин колец: Возвращение короля",
+      "original_title": "The Lord of the Rings: The Return of the King",
+      "year": 2003,
+      "note_ru": "«Оскар» 2004",
+      "note_en": "Oscars 2004"
+    },
+    {
+      "tmdb_id": 70,
+      "kind": "movie",
+      "title": "Малышка на миллион",
+      "original_title": "Million Dollar Baby",
+      "year": 2004,
+      "note_ru": "«Оскар» 2005",
+      "note_en": "Oscars 2005"
+    },
+    {
+      "tmdb_id": 1640,
+      "kind": "movie",
+      "title": "Столкновение",
+      "original_title": "Crash",
+      "year": 2004,
+      "note_ru": "«Оскар» 2006",
+      "note_en": "Oscars 2006"
+    },
+    {
+      "tmdb_id": 1422,
+      "kind": "movie",
+      "title": "Отступники",
+      "original_title": "The Departed",
+      "year": 2006,
+      "note_ru": "«Оскар» 2007",
+      "note_en": "Oscars 2007"
+    },
+    {
+      "tmdb_id": 6977,
+      "kind": "movie",
+      "title": "Старикам тут не место",
+      "original_title": "No Country for Old Men",
+      "year": 2007,
+      "note_ru": "«Оскар» 2008",
+      "note_en": "Oscars 2008"
+    },
+    {
+      "tmdb_id": 12405,
+      "kind": "movie",
+      "title": "Миллионер из трущоб",
+      "original_title": "Slumdog Millionaire",
+      "year": 2008,
+      "note_ru": "«Оскар» 2009",
+      "note_en": "Oscars 2009"
+    },
+    {
+      "tmdb_id": 12162,
+      "kind": "movie",
+      "title": "Повелитель бури",
+      "original_title": "The Hurt Locker",
+      "year": 2008,
+      "note_ru": "«Оскар» 2010",
+      "note_en": "Oscars 2010"
+    },
+    {
+      "tmdb_id": 45269,
+      "kind": "movie",
+      "title": "Король говорит!",
+      "original_title": "The King's Speech",
+      "year": 2010,
+      "note_ru": "«Оскар» 2011",
+      "note_en": "Oscars 2011"
+    },
+    {
+      "tmdb_id": 74643,
+      "kind": "movie",
+      "title": "Артист",
+      "original_title": "The Artist",
+      "year": 2011,
+      "note_ru": "«Оскар» 2012",
+      "note_en": "Oscars 2012"
+    },
+    {
+      "tmdb_id": 68734,
+      "kind": "movie",
+      "title": "Операция «Арго»",
+      "original_title": "Argo",
+      "year": 2012,
+      "note_ru": "«Оскар» 2013",
+      "note_en": "Oscars 2013"
+    },
+    {
+      "tmdb_id": 76203,
+      "kind": "movie",
+      "title": "12 лет рабства",
+      "original_title": "12 Years a Slave",
+      "year": 2013,
+      "note_ru": "«Оскар» 2014",
+      "note_en": "Oscars 2014"
+    },
+    {
+      "tmdb_id": 194662,
+      "kind": "movie",
+      "title": "Бёрдмэн",
+      "original_title": "Birdman or (The Unexpected Virtue of Ignorance)",
+      "year": 2014,
+      "note_ru": "«Оскар» 2015",
+      "note_en": "Oscars 2015"
+    },
+    {
+      "tmdb_id": 314365,
+      "kind": "movie",
+      "title": "В центре внимания",
+      "original_title": "Spotlight",
+      "year": 2015,
+      "note_ru": "«Оскар» 2016",
+      "note_en": "Oscars 2016"
+    },
+    {
+      "tmdb_id": 376867,
+      "kind": "movie",
+      "title": "Лунный свет",
+      "original_title": "Moonlight",
+      "year": 2016,
+      "note_ru": "«Оскар» 2017",
+      "note_en": "Oscars 2017"
+    },
+    {
+      "tmdb_id": 399055,
+      "kind": "movie",
+      "title": "Форма воды",
+      "original_title": "The Shape of Water",
+      "year": 2017,
+      "note_ru": "«Оскар» 2018",
+      "note_en": "Oscars 2018"
+    },
+    {
+      "tmdb_id": 490132,
+      "kind": "movie",
+      "title": "Зелёная книга",
+      "original_title": "Green Book",
+      "year": 2018,
+      "note_ru": "«Оскар» 2019",
+      "note_en": "Oscars 2019"
+    },
+    {
+      "tmdb_id": 496243,
+      "kind": "movie",
+      "title": "Паразиты",
+      "original_title": "기생충",
+      "year": 2019,
+      "note_ru": "«Оскар» 2020",
+      "note_en": "Oscars 2020"
+    },
+    {
+      "tmdb_id": 581734,
+      "kind": "movie",
+      "title": "Земля кочевников",
+      "original_title": "Nomadland",
+      "year": 2020,
+      "note_ru": "«Оскар» 2021",
+      "note_en": "Oscars 2021"
+    },
+    {
+      "tmdb_id": 776503,
+      "kind": "movie",
+      "title": "CODA: Ребенок глухих родителей",
+      "original_title": "CODA",
+      "year": 2021,
+      "note_ru": "«Оскар» 2022",
+      "note_en": "Oscars 2022"
+    },
+    {
+      "tmdb_id": 545611,
+      "kind": "movie",
+      "title": "Всё везде и сразу",
+      "original_title": "Everything Everywhere All at Once",
+      "year": 2022,
+      "note_ru": "«Оскар» 2023",
+      "note_en": "Oscars 2023"
+    },
+    {
+      "tmdb_id": 872585,
+      "kind": "movie",
+      "title": "Оппенгеймер",
+      "original_title": "Oppenheimer",
+      "year": 2023,
+      "note_ru": "«Оскар» 2024",
+      "note_en": "Oscars 2024"
+    },
+    {
+      "tmdb_id": 1064213,
+      "kind": "movie",
+      "title": "Анора",
+      "original_title": "Anora",
+      "year": 2024,
+      "note_ru": "«Оскар» 2025",
+      "note_en": "Oscars 2025"
+    },
+    {
+      "tmdb_id": 1054867,
+      "kind": "movie",
+      "title": "Битва за битвой",
+      "original_title": "One Battle After Another",
+      "year": 2025,
+      "note_ru": "«Оскар» 2026",
+      "note_en": "Oscars 2026"
+    }
+  ]
+}

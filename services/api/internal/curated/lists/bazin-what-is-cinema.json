@@ -1,0 +1,365 @@
+{
+  "id": "bazin-what-is-cinema",
+  "group": "thinkers",
+  "title_ru": "Базен: «Что такое кино?»",
+  "title_en": "Bazin: What Is Cinema?",
+  "author": "Андре Базен / André Bazin",
+  "source": "Qu'est-ce que le cinéma ?, 1958–1962 (4 тома / 4 vols.)",
+  "source_url": "https://en.wikipedia.org/wiki/Andr%C3%A9_Bazin",
+  "description_ru": "Фильмы из статей Базена, отца «Кайе дю синема»: глубинный кадр Уэллса и Уайлера, итальянский неореализм, Брессон, Чаплин, вестерн и «запрещённый монтаж» — кино как окно в реальность.",
+  "description_en": "Films from the essays of Bazin, the father of Cahiers du cinéma: Welles's and Wyler's deep focus, Italian neorealism, Bresson, Chaplin, the western and «forbidden montage» — cinema as a window onto reality.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 669,
+      "kind": "movie",
+      "title": "Нанук с Севера",
+      "original_title": "Nanook of the North",
+      "year": 1922,
+      "note_ru": "охота на тюленя — единство места без монтажа",
+      "note_en": "the seal hunt kept whole, without cutting"
+    },
+    {
+      "tmdb_id": 653,
+      "kind": "movie",
+      "title": "Носферату. Симфония ужаса",
+      "original_title": "Nosferatu, eine Symphonie des Grauens",
+      "year": 1922,
+      "note_ru": "Мурнау: реальность важнее монтажа",
+      "note_en": "Murnau: reality over montage"
+    },
+    {
+      "tmdb_id": 1405,
+      "kind": "movie",
+      "title": "Алчность",
+      "original_title": "Greed",
+      "year": 1924,
+      "note_ru": "Штрогейм: мир, раскрытый взглядом",
+      "note_en": "Stroheim: a world laid bare by the look"
+    },
+    {
+      "tmdb_id": 631,
+      "kind": "movie",
+      "title": "Восход солнца",
+      "original_title": "Sunrise: A Song of Two Humans",
+      "year": 1927,
+      "note_ru": "Мурнау: пространство вместо монтажа",
+      "note_en": "Murnau: space instead of montage"
+    },
+    {
+      "tmdb_id": 28978,
+      "kind": "movie",
+      "title": "Цирк",
+      "original_title": "The Circus",
+      "year": 1928,
+      "note_ru": "Чаплин в клетке со львом — «запрет монтажа»",
+      "note_en": "Chaplin in the lion's cage: montage forbidden"
+    },
+    {
+      "tmdb_id": 1976,
+      "kind": "movie",
+      "title": "Иезавель",
+      "original_title": "Jezebel",
+      "year": 1938,
+      "note_ru": "Уайлер: сдержанная мизансцена",
+      "note_en": "Wyler: restrained mise en scène"
+    },
+    {
+      "tmdb_id": 776,
+      "kind": "movie",
+      "title": "Правила игры",
+      "original_title": "La Règle du jeu",
+      "year": 1939,
+      "note_ru": "Ренуар: глубина и свобода кадра",
+      "note_en": "Renoir: depth and freedom in the frame"
+    },
+    {
+      "tmdb_id": 995,
+      "kind": "movie",
+      "title": "Дилижанс",
+      "original_title": "Stagecoach",
+      "year": 1939,
+      "note_ru": "классическое совершенство вестерна",
+      "note_en": "the western in classical perfection"
+    },
+    {
+      "tmdb_id": 43802,
+      "kind": "movie",
+      "title": "Лисички",
+      "original_title": "The Little Foxes",
+      "year": 1941,
+      "note_ru": "Уайлер: глубинный кадр",
+      "note_en": "Wyler: deep focus"
+    },
+    {
+      "tmdb_id": 15,
+      "kind": "movie",
+      "title": "Гражданин Кейн",
+      "original_title": "Citizen Kane",
+      "year": 1941,
+      "note_ru": "глубина резкости и длинный план",
+      "note_en": "depth of field and the long take"
+    },
+    {
+      "tmdb_id": 965,
+      "kind": "movie",
+      "title": "Великолепные Эмберсоны",
+      "original_title": "The Magnificent Ambersons",
+      "year": 1942,
+      "note_ru": "Уэллс: длительность кадра",
+      "note_en": "Welles: the duration of the shot"
+    },
+    {
+      "tmdb_id": 22638,
+      "kind": "movie",
+      "title": "Генрих V",
+      "original_title": "The Chronicle History of King Henry the Fifth with His Battell Fought at Agincourt in France",
+      "year": 1944,
+      "note_ru": "экранизация театра",
+      "note_en": "filming theatre"
+    },
+    {
+      "tmdb_id": 307,
+      "kind": "movie",
+      "title": "Рим, открытый город",
+      "original_title": "Roma città aperta",
+      "year": 1945,
+      "note_ru": "неореализм: реальность освобождения",
+      "note_en": "neorealism: the reality of liberation"
+    },
+    {
+      "tmdb_id": 8429,
+      "kind": "movie",
+      "title": "Пайза",
+      "original_title": "Paisà",
+      "year": 1946,
+      "note_ru": "эллипсис и факт-образ",
+      "note_en": "ellipsis and the fact-image"
+    },
+    {
+      "tmdb_id": 43469,
+      "kind": "movie",
+      "title": "Шуша",
+      "original_title": "Sciuscià",
+      "year": 1946,
+      "note_ru": "неореализм де Сики",
+      "note_en": "De Sica's neorealism"
+    },
+    {
+      "tmdb_id": 887,
+      "kind": "movie",
+      "title": "Лучшие годы нашей жизни",
+      "original_title": "The Best Years of Our Lives",
+      "year": 1946,
+      "note_ru": "Уайлер: глубина кадра и сдержанность",
+      "note_en": "Wyler: depth and reticence"
+    },
+    {
+      "tmdb_id": 110771,
+      "kind": "movie",
+      "title": "Фаррбик",
+      "original_title": "Farrebique ou les Quatre Saisons",
+      "year": 1946,
+      "note_ru": "документальный реализм деревни",
+      "note_en": "documentary realism of a farm"
+    },
+    {
+      "tmdb_id": 30588,
+      "kind": "movie",
+      "title": "Месье Верду",
+      "original_title": "Monsieur Verdoux",
+      "year": 1947,
+      "note_ru": "миф о Верду",
+      "note_en": "the myth of Verdoux"
+    },
+    {
+      "tmdb_id": 8016,
+      "kind": "movie",
+      "title": "Германия, год нулевой",
+      "original_title": "Germania anno zero",
+      "year": 1948,
+      "note_ru": "Росселлини: взгляд без комментария",
+      "note_en": "Rossellini: a look without comment"
+    },
+    {
+      "tmdb_id": 43445,
+      "kind": "movie",
+      "title": "Земля дрожит",
+      "original_title": "La terra trema",
+      "year": 1948,
+      "note_ru": "Висконти: эстетика и документ",
+      "note_en": "Visconti: aesthetics meets document"
+    },
+    {
+      "tmdb_id": 5156,
+      "kind": "movie",
+      "title": "Похитители велосипедов",
+      "original_title": "Ladri di biciclette",
+      "year": 1948,
+      "note_ru": "«чистое кино» без актёров и сюжета",
+      "note_en": "«pure cinema» without actors or story"
+    },
+    {
+      "tmdb_id": 23383,
+      "kind": "movie",
+      "title": "Гамлет",
+      "original_title": "Hamlet",
+      "year": 1948,
+      "note_ru": "Оливье: театр на экране",
+      "note_en": "Olivier: theatre on screen"
+    },
+    {
+      "tmdb_id": 63151,
+      "kind": "movie",
+      "title": "Ужасные родители",
+      "original_title": "Les Parents terribles",
+      "year": 1948,
+      "note_ru": "Кокто: театр, ставший кино",
+      "note_en": "Cocteau: theatre become cinema"
+    },
+    {
+      "tmdb_id": 20088,
+      "kind": "movie",
+      "title": "Кон-Тики",
+      "original_title": "Kon-Tiki",
+      "year": 1950,
+      "note_ru": "кино и экспедиция: след реальности",
+      "note_en": "cinema and exploration: reality's trace"
+    },
+    {
+      "tmdb_id": 106259,
+      "kind": "movie",
+      "title": "Падение Берлина",
+      "original_title": "Падение Берлина",
+      "year": 1950,
+      "note_ru": "миф о Сталине в советском кино",
+      "note_en": "the Stalin myth in Soviet film"
+    },
+    {
+      "tmdb_id": 43376,
+      "kind": "movie",
+      "title": "Дневник сельского священника",
+      "original_title": "Journal d'un curé de campagne",
+      "year": 1951,
+      "note_ru": "Брессон: «нечистое» кино и литература",
+      "note_en": "Bresson: «impure» cinema and literature"
+    },
+    {
+      "tmdb_id": 238343,
+      "kind": "movie",
+      "title": "Где не летают стервятники",
+      "original_title": "Where No Vultures Fly",
+      "year": 1951,
+      "note_ru": "лев и ребёнок в одном кадре",
+      "note_en": "lion and child in a single shot"
+    },
+    {
+      "tmdb_id": 833,
+      "kind": "movie",
+      "title": "Умберто Д.",
+      "original_title": "Umberto D.",
+      "year": 1952,
+      "note_ru": "кино длительности: утро служанки",
+      "note_en": "cinema of duration: the maid's morning"
+    },
+    {
+      "tmdb_id": 41464,
+      "kind": "movie",
+      "title": "Европа 51",
+      "original_title": "Europa '51",
+      "year": 1952,
+      "note_ru": "защита Росселлини",
+      "note_en": "a defence of Rossellini"
+    },
+    {
+      "tmdb_id": 28971,
+      "kind": "movie",
+      "title": "Огни рампы",
+      "original_title": "Limelight",
+      "year": 1952,
+      "note_ru": "Чаплин и смерть Мольера",
+      "note_en": "Chaplin and the death of Molière"
+    },
+    {
+      "tmdb_id": 778,
+      "kind": "movie",
+      "title": "Каникулы господина Юло",
+      "original_title": "Les vacances de Monsieur Hulot",
+      "year": 1953,
+      "note_ru": "Тати: время и комизм",
+      "note_en": "Tati: time and comedy"
+    },
+    {
+      "tmdb_id": 15382,
+      "kind": "movie",
+      "title": "Белая грива",
+      "original_title": "Crin Blanc : Le Cheval sauvage",
+      "year": 1953,
+      "note_ru": "«запрещённый монтаж»",
+      "note_en": "«montage forbidden»"
+    },
+    {
+      "tmdb_id": 3110,
+      "kind": "movie",
+      "title": "Шейн",
+      "original_title": "Shane",
+      "year": 1953,
+      "note_ru": "«сверхвестерн»",
+      "note_en": "the «superwestern»"
+    },
+    {
+      "tmdb_id": 2748,
+      "kind": "movie",
+      "title": "Путешествие в Италию",
+      "original_title": "Viaggio in Italia",
+      "year": 1954,
+      "note_ru": "Росселлини: мир как он есть",
+      "note_en": "Rossellini: the world as it is"
+    },
+    {
+      "tmdb_id": 405,
+      "kind": "movie",
+      "title": "Дорога",
+      "original_title": "La strada",
+      "year": 1954,
+      "note_ru": "Феллини: персонаж-явление",
+      "note_en": "Fellini: the character as presence"
+    },
+    {
+      "tmdb_id": 15265,
+      "kind": "movie",
+      "title": "Красный шар",
+      "original_title": "Le Ballon rouge",
+      "year": 1956,
+      "note_ru": "вымысел и пределы монтажа",
+      "note_en": "fiction and the limits of montage"
+    },
+    {
+      "tmdb_id": 71822,
+      "kind": "movie",
+      "title": "Тайна Пикассо",
+      "original_title": "Le Mystère Picasso",
+      "year": 1956,
+      "note_ru": "«бергсоновский фильм»: время творчества",
+      "note_en": "a «Bergsonian film»: time of creation"
+    },
+    {
+      "tmdb_id": 26502,
+      "kind": "movie",
+      "title": "Семеро из ниоткуда",
+      "original_title": "7 Men from Now",
+      "year": 1956,
+      "note_ru": "образцовый вестерн",
+      "note_en": "an exemplary western"
+    },
+    {
+      "tmdb_id": 19426,
+      "kind": "movie",
+      "title": "Ночи Кабирии",
+      "original_title": "Le notti di Cabiria",
+      "year": 1957,
+      "note_ru": "Феллини: путешествие на край неореализма",
+      "note_en": "Fellini: a journey to neorealism's edge"
+    }
+  ]
+}

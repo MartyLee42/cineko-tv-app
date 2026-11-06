@@ -1,0 +1,31 @@
+[
+ {
+  "id": 6826,
+  "type": {
+   "value": "MOVIE",
+   "description": "Фильм"
+  },
+  "year": 2016,
+  "name": {
+   "main": "Твоё имя",
+   "english": "Kimi no Na wa",
+   "alternative": null
+  },
+  "alias": "kimi-no-na-wa-tvoye-imya",
+  "season": {
+   "value": "summer",
+   "description": "Лето"
+  },
+  "episodes_total": null,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 107,
+  "shikimori": {
+   "id": 32281
+  },
+  "mal": {
+   "id": 32281
+  }
+ }
+]

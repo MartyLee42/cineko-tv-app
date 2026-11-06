@@ -1,0 +1,118 @@
+[
+ {
+  "id": 8789,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2020,
+  "name": {
+   "main": "Магическая битва",
+   "english": "Jujutsu Kaisen",
+   "alternative": null
+  },
+  "alias": "jujutsu-kaisen",
+  "season": {
+   "value": "autumn",
+   "description": "Осень"
+  },
+  "episodes_total": 24,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 24,
+  "shikimori": {
+   "id": 40748
+  },
+  "mal": {
+   "id": 40748
+  }
+ },
+ {
+  "id": 9313,
+  "type": {
+   "value": "MOVIE",
+   "description": "Фильм"
+  },
+  "year": 2021,
+  "name": {
+   "main": "Магическая битва 0 Фильм",
+   "english": "Jujutsu Kaisen 0 Movie",
+   "alternative": "Магическая, Битва, 0"
+  },
+  "alias": "jujutsu-kaisen-0-movie",
+  "season": {
+   "value": "winter",
+   "description": "Зима"
+  },
+  "episodes_total": 1,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 104,
+  "shikimori": {
+   "id": 48561
+  },
+  "mal": {
+   "id": 48561
+  }
+ },
+ {
+  "id": 9470,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2023,
+  "name": {
+   "main": "Магическая битва 2",
+   "english": "JUJUTSU KAISEN Season 2",
+   "alternative": null
+  },
+  "alias": "jujutsu-kaisen-season-2",
+  "season": {
+   "value": "summer",
+   "description": "Лето"
+  },
+  "episodes_total": 23,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 24,
+  "shikimori": {
+   "id": 51009
+  },
+  "mal": {
+   "id": 51009
+  }
+ },
+ {
+  "id": 10088,
+  "type": {
+   "value": "TV",
+   "description": "ТВ"
+  },
+  "year": 2026,
+  "name": {
+   "main": "Магическая битва 3",
+   "english": "Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen",
+   "alternative": null
+  },
+  "alias": "jujutsu-kaisen-shimetsu-kaiyuu-zenpen",
+  "season": {
+   "value": "winter",
+   "description": "Зима"
+  },
+  "episodes_total": 12,
+  "is_blocked_by_geo": false,
+  "is_blocked_by_copyrights": false,
+  "is_ongoing": false,
+  "average_duration_of_episode": 24,
+  "shikimori": {
+   "id": 57658
+  },
+  "mal": {
+   "id": 57658
+  }
+ }
+]

@@ -1,0 +1,914 @@
+{
+  "id": "cahiers-top-100",
+  "group": "polls",
+  "title_ru": "Cahiers du cinéma: 100 фильмов идеальной синематеки",
+  "title_en": "Cahiers du cinéma: 100 Films for an Ideal Cinematheque",
+  "author": "Cahiers du cinéma (опрос 78 критиков / poll of 78 critics)",
+  "source": "100 films pour une cinémathèque idéale, Cahiers du cinéma, 2008",
+  "source_url": "https://fr.wikipedia.org/wiki/100_films_pour_une_cin%C3%A9math%C3%A8que_id%C3%A9ale",
+  "description_ru": "Рейтинг 2008 года: 78 французских критиков и историков кино голосовали за фильмы, без которых не обойтись идеальной фильмотеке. Наверху — Уэллс, Лоутон и Ренуар.",
+  "description_en": "A 2008 ranking in which 78 mostly French critics and historians voted for the films an ideal film library cannot do without. Welles, Laughton and Renoir top it.",
+  "ordered": true,
+  "items": [
+    {
+      "tmdb_id": 15,
+      "kind": "movie",
+      "title": "Гражданин Кейн",
+      "original_title": "Citizen Kane",
+      "year": 1941,
+      "note_ru": "место 1 · 48 голосов",
+      "note_en": "rank 1 · 48 votes"
+    },
+    {
+      "tmdb_id": 3112,
+      "kind": "movie",
+      "title": "Ночь охотника",
+      "original_title": "The Night of the Hunter",
+      "year": 1955,
+      "note_ru": "место 2 (поровну) · 47 голосов",
+      "note_en": "rank 2 (tied) · 47 votes"
+    },
+    {
+      "tmdb_id": 776,
+      "kind": "movie",
+      "title": "Правила игры",
+      "original_title": "La Règle du jeu",
+      "year": 1939,
+      "note_ru": "место 2 (поровну) · 47 голосов",
+      "note_en": "rank 2 (tied) · 47 votes"
+    },
+    {
+      "tmdb_id": 631,
+      "kind": "movie",
+      "title": "Восход солнца",
+      "original_title": "Sunrise: A Song of Two Humans",
+      "year": 1927,
+      "note_ru": "место 4 · 46 голосов",
+      "note_en": "rank 4 · 46 votes"
+    },
+    {
+      "tmdb_id": 43904,
+      "kind": "movie",
+      "title": "Аталанта",
+      "original_title": "L'Atalante",
+      "year": 1934,
+      "note_ru": "место 5 · 43 голосов",
+      "note_en": "rank 5 · 43 votes"
+    },
+    {
+      "tmdb_id": 832,
+      "kind": "movie",
+      "title": "М убийца",
+      "original_title": "M - Eine Stadt sucht einen Mörder",
+      "year": 1931,
+      "note_ru": "место 6 · 40 голосов",
+      "note_en": "rank 6 · 40 votes"
+    },
+    {
+      "tmdb_id": 872,
+      "kind": "movie",
+      "title": "Поющие под дождём",
+      "original_title": "Singin' in the Rain",
+      "year": 1952,
+      "note_ru": "место 7 · 39 голосов",
+      "note_en": "rank 7 · 39 votes"
+    },
+    {
+      "tmdb_id": 426,
+      "kind": "movie",
+      "title": "Головокружение",
+      "original_title": "Vertigo",
+      "year": 1958,
+      "note_ru": "место 8 · 35 голосов",
+      "note_en": "rank 8 · 35 votes"
+    },
+    {
+      "tmdb_id": 2457,
+      "kind": "movie",
+      "title": "Дети райка",
+      "original_title": "Les Enfants du Paradis",
+      "year": 1945,
+      "note_ru": "место 9 (поровну) · 34 голосов",
+      "note_en": "rank 9 (tied) · 34 votes"
+    },
+    {
+      "tmdb_id": 3114,
+      "kind": "movie",
+      "title": "Искатели",
+      "original_title": "The Searchers",
+      "year": 1956,
+      "note_ru": "место 9 (поровну) · 34 голосов",
+      "note_en": "rank 9 (tied) · 34 votes"
+    },
+    {
+      "tmdb_id": 1405,
+      "kind": "movie",
+      "title": "Алчность",
+      "original_title": "Greed",
+      "year": 1924,
+      "note_ru": "место 9 (поровну) · 34 голосов",
+      "note_en": "rank 9 (tied) · 34 votes"
+    },
+    {
+      "tmdb_id": 301,
+      "kind": "movie",
+      "title": "Рио Браво",
+      "original_title": "Rio Bravo",
+      "year": 1959,
+      "note_ru": "место 12 (поровну) · 33 голосов",
+      "note_en": "rank 12 (tied) · 33 votes"
+    },
+    {
+      "tmdb_id": 198,
+      "kind": "movie",
+      "title": "Быть или не быть",
+      "original_title": "To Be or Not to Be",
+      "year": 1942,
+      "note_ru": "место 12 (поровну) · 33 голосов",
+      "note_en": "rank 12 (tied) · 33 votes"
+    },
+    {
+      "tmdb_id": 18148,
+      "kind": "movie",
+      "title": "Токийская повесть",
+      "original_title": "東京物語",
+      "year": 1953,
+      "note_ru": "место 14 · 29 голосов",
+      "note_en": "rank 14 · 29 votes"
+    },
+    {
+      "tmdb_id": 266,
+      "kind": "movie",
+      "title": "Презрение",
+      "original_title": "Le Mépris",
+      "year": 1963,
+      "note_ru": "место 15 · 28 голосов",
+      "note_en": "rank 15 · 28 votes"
+    },
+    {
+      "tmdb_id": 14696,
+      "kind": "movie",
+      "title": "Сказки туманной луны после дождя",
+      "original_title": "雨月物語",
+      "year": 1953,
+      "note_ru": "место 16 (поровну) · 27 голосов",
+      "note_en": "rank 16 (tied) · 27 votes"
+    },
+    {
+      "tmdb_id": 901,
+      "kind": "movie",
+      "title": "Огни большого города",
+      "original_title": "City Lights",
+      "year": 1931,
+      "note_ru": "место 16 (поровну) · 27 голосов",
+      "note_en": "rank 16 (tied) · 27 votes"
+    },
+    {
+      "tmdb_id": 961,
+      "kind": "movie",
+      "title": "Генерал",
+      "original_title": "The General",
+      "year": 1926,
+      "note_ru": "место 16 (поровну) · 27 голосов",
+      "note_en": "rank 16 (tied) · 27 votes"
+    },
+    {
+      "tmdb_id": 653,
+      "kind": "movie",
+      "title": "Носферату. Симфония ужаса",
+      "original_title": "Nosferatu, eine Symphonie des Grauens",
+      "year": 1922,
+      "note_ru": "место 16 (поровну) · 27 голосов",
+      "note_en": "rank 16 (tied) · 27 votes"
+    },
+    {
+      "tmdb_id": 822,
+      "kind": "movie",
+      "title": "Музыкальная комната",
+      "original_title": "জলসাঘর",
+      "year": 1958,
+      "note_ru": "место 16 (поровну) · 27 голосов",
+      "note_en": "rank 16 (tied) · 27 votes"
+    },
+    {
+      "tmdb_id": 136,
+      "kind": "movie",
+      "title": "Уродцы",
+      "original_title": "Freaks",
+      "year": 1932,
+      "note_ru": "место 21 (поровну) · 26 голосов",
+      "note_en": "rank 21 (tied) · 26 votes"
+    },
+    {
+      "tmdb_id": 26596,
+      "kind": "movie",
+      "title": "Джонни Гитара",
+      "original_title": "Johnny Guitar",
+      "year": 1954,
+      "note_ru": "место 21 (поровну) · 26 голосов",
+      "note_en": "rank 21 (tied) · 26 votes"
+    },
+    {
+      "tmdb_id": 48693,
+      "kind": "movie",
+      "title": "Мамочка и шлюха",
+      "original_title": "La Maman et la Putain",
+      "year": 1973,
+      "note_ru": "место 21 (поровну) · 26 голосов",
+      "note_en": "rank 21 (tied) · 26 votes"
+    },
+    {
+      "tmdb_id": 914,
+      "kind": "movie",
+      "title": "Великий диктатор",
+      "original_title": "The Great Dictator",
+      "year": 1940,
+      "note_ru": "место 24 (поровну) · 25 голосов",
+      "note_en": "rank 24 (tied) · 25 votes"
+    },
+    {
+      "tmdb_id": 1040,
+      "kind": "movie",
+      "title": "Леопард",
+      "original_title": "Il gattopardo",
+      "year": 1963,
+      "note_ru": "место 24 (поровну) · 25 голосов",
+      "note_en": "rank 24 (tied) · 25 votes"
+    },
+    {
+      "tmdb_id": 5544,
+      "kind": "movie",
+      "title": "Хиросима, любовь моя",
+      "original_title": "Hiroshima mon amour",
+      "year": 1959,
+      "note_ru": "место 24 (поровну) · 25 голосов",
+      "note_en": "rank 24 (tied) · 25 votes"
+    },
+    {
+      "tmdb_id": 905,
+      "kind": "movie",
+      "title": "Ящик Пандоры",
+      "original_title": "Die Büchse der Pandora",
+      "year": 1929,
+      "note_ru": "место 24 (поровну) · 25 голосов",
+      "note_en": "rank 24 (tied) · 25 votes"
+    },
+    {
+      "tmdb_id": 213,
+      "kind": "movie",
+      "title": "К северу через северо-запад",
+      "original_title": "North by Northwest",
+      "year": 1959,
+      "note_ru": "место 24 (поровну) · 25 голосов",
+      "note_en": "rank 24 (tied) · 25 votes"
+    },
+    {
+      "tmdb_id": 690,
+      "kind": "movie",
+      "title": "Карманник",
+      "original_title": "Pickpocket",
+      "year": 1959,
+      "note_ru": "место 24 (поровну) · 25 голосов",
+      "note_en": "rank 24 (tied) · 25 votes"
+    },
+    {
+      "tmdb_id": 68822,
+      "kind": "movie",
+      "title": "Золотая каска",
+      "original_title": "Casque d'Or",
+      "year": 1952,
+      "note_ru": "место 30 (поровну) · 24 голосов",
+      "note_en": "rank 30 (tied) · 24 votes"
+    },
+    {
+      "tmdb_id": 34689,
+      "kind": "movie",
+      "title": "Босоногая графиня",
+      "original_title": "The Barefoot Contessa",
+      "year": 1954,
+      "note_ru": "место 30 (поровну) · 24 голосов",
+      "note_en": "rank 30 (tied) · 24 votes"
+    },
+    {
+      "tmdb_id": 29967,
+      "kind": "movie",
+      "title": "Мунфлит",
+      "original_title": "Moonfleet",
+      "year": 1955,
+      "note_ru": "место 30 (поровну) · 24 голосов",
+      "note_en": "rank 30 (tied) · 24 votes"
+    },
+    {
+      "tmdb_id": 27030,
+      "kind": "movie",
+      "title": "Мадам де…",
+      "original_title": "Madame de…",
+      "year": 1953,
+      "note_ru": "место 30 (поровну) · 24 голосов",
+      "note_en": "rank 30 (tied) · 24 votes"
+    },
+    {
+      "tmdb_id": 43360,
+      "kind": "movie",
+      "title": "Наслаждение",
+      "original_title": "Le Plaisir",
+      "year": 1952,
+      "note_ru": "место 30 (поровну) · 24 голосов",
+      "note_en": "rank 30 (tied) · 24 votes"
+    },
+    {
+      "tmdb_id": 11778,
+      "kind": "movie",
+      "title": "Охотник на оленей",
+      "original_title": "The Deer Hunter",
+      "year": 1978,
+      "note_ru": "место 30 (поровну) · 24 голосов",
+      "note_en": "rank 30 (tied) · 24 votes"
+    },
+    {
+      "tmdb_id": 5165,
+      "kind": "movie",
+      "title": "Приключение",
+      "original_title": "L'avventura",
+      "year": 1960,
+      "note_ru": "место 36 (поровну) · 23 голосов",
+      "note_en": "rank 36 (tied) · 23 votes"
+    },
+    {
+      "tmdb_id": 643,
+      "kind": "movie",
+      "title": "Броненосец «Потёмкин»",
+      "original_title": "Броненосец Потёмкин",
+      "year": 1925,
+      "note_ru": "место 36 (поровну) · 23 голосов",
+      "note_en": "rank 36 (tied) · 23 votes"
+    },
+    {
+      "tmdb_id": 303,
+      "kind": "movie",
+      "title": "Дурная слава",
+      "original_title": "Notorious",
+      "year": 1946,
+      "note_ru": "место 36 (поровну) · 23 голосов",
+      "note_en": "rank 36 (tied) · 23 votes"
+    },
+    {
+      "tmdb_id": 9797,
+      "kind": "movie",
+      "title": "Иван Грозный",
+      "original_title": "Иван Грозный",
+      "year": 1944,
+      "note_ru": "место 36 (поровну) · 23 голосов",
+      "note_en": "rank 36 (tied) · 23 votes"
+    },
+    {
+      "tmdb_id": 238,
+      "kind": "movie",
+      "title": "Крёстный отец",
+      "original_title": "The Godfather",
+      "year": 1972,
+      "note_ru": "место 36 (поровну) · 23 голосов",
+      "note_en": "rank 36 (tied) · 23 votes"
+    },
+    {
+      "tmdb_id": 1480,
+      "kind": "movie",
+      "title": "Печать зла",
+      "original_title": "Touch of Evil",
+      "year": 1958,
+      "note_ru": "место 36 (поровну) · 23 голосов",
+      "note_en": "rank 36 (tied) · 23 votes"
+    },
+    {
+      "tmdb_id": 31416,
+      "kind": "movie",
+      "title": "Ветер",
+      "original_title": "The Wind",
+      "year": 1928,
+      "note_ru": "место 36 (поровну) · 23 голосов",
+      "note_en": "rank 36 (tied) · 23 votes"
+    },
+    {
+      "tmdb_id": 62,
+      "kind": "movie",
+      "title": "2001 год: Космическая одиссея",
+      "original_title": "2001: A Space Odyssey",
+      "year": 1968,
+      "note_ru": "место 43 (поровну) · 22 голосов",
+      "note_en": "rank 43 (tied) · 22 votes"
+    },
+    {
+      "tmdb_id": 5961,
+      "kind": "movie",
+      "title": "Фанни и Александр",
+      "original_title": "Fanny och Alexander",
+      "year": 1982,
+      "note_ru": "место 43 (поровну) · 22 голосов",
+      "note_en": "rank 43 (tied) · 22 votes"
+    },
+    {
+      "tmdb_id": 3061,
+      "kind": "movie",
+      "title": "Толпа",
+      "original_title": "The Crowd",
+      "year": 1928,
+      "note_ru": "место 45 (поровну) · 21 голосов",
+      "note_en": "rank 45 (tied) · 21 votes"
+    },
+    {
+      "tmdb_id": 422,
+      "kind": "movie",
+      "title": "8½",
+      "original_title": "8½",
+      "year": 1963,
+      "note_ru": "место 45 (поровну) · 21 голосов",
+      "note_en": "rank 45 (tied) · 21 votes"
+    },
+    {
+      "tmdb_id": 662,
+      "kind": "movie",
+      "title": "Взлётная полоса",
+      "original_title": "La Jetée",
+      "year": 1962,
+      "note_ru": "место 45 (поровну) · 21 голосов",
+      "note_en": "rank 45 (tied) · 21 votes"
+    },
+    {
+      "tmdb_id": 2786,
+      "kind": "movie",
+      "title": "Безумный Пьеро",
+      "original_title": "Pierrot le fou",
+      "year": 1965,
+      "note_ru": "место 45 (поровну) · 21 голосов",
+      "note_en": "rank 45 (tied) · 21 votes"
+    },
+    {
+      "tmdb_id": 65642,
+      "kind": "movie",
+      "title": "Роман шулера",
+      "original_title": "Le Roman d'un tricheur",
+      "year": 1936,
+      "note_ru": "место 45 (поровну) · 21 голосов",
+      "note_en": "rank 45 (tied) · 21 votes"
+    },
+    {
+      "tmdb_id": 7857,
+      "kind": "movie",
+      "title": "Амаркорд",
+      "original_title": "Amarcord",
+      "year": 1973,
+      "note_ru": "место 50 (поровну) · 20 голосов",
+      "note_en": "rank 50 (tied) · 20 votes"
+    },
+    {
+      "tmdb_id": 648,
+      "kind": "movie",
+      "title": "Красавица и чудовище",
+      "original_title": "La Belle et la Bête",
+      "year": 1946,
+      "note_ru": "место 50 (поровну) · 20 голосов",
+      "note_en": "rank 50 (tied) · 20 votes"
+    },
+    {
+      "tmdb_id": 239,
+      "kind": "movie",
+      "title": "В джазе только девушки",
+      "original_title": "Some Like It Hot",
+      "year": 1959,
+      "note_ru": "место 50 (поровну) · 20 голосов",
+      "note_en": "rank 50 (tied) · 20 votes"
+    },
+    {
+      "tmdb_id": 38724,
+      "kind": "movie",
+      "title": "И подбежали они",
+      "original_title": "Some Came Running",
+      "year": 1958,
+      "note_ru": "место 50 (поровну) · 20 голосов",
+      "note_en": "rank 50 (tied) · 20 votes"
+    },
+    {
+      "tmdb_id": 34181,
+      "kind": "movie",
+      "title": "Гертруда",
+      "original_title": "Gertrud",
+      "year": 1964,
+      "note_ru": "место 50 (поровну) · 20 голосов",
+      "note_en": "rank 50 (tied) · 20 votes"
+    },
+    {
+      "tmdb_id": 244,
+      "kind": "movie",
+      "title": "Кинг-Конг",
+      "original_title": "King Kong",
+      "year": 1933,
+      "note_ru": "место 50 (поровну) · 20 голосов",
+      "note_en": "rank 50 (tied) · 20 votes"
+    },
+    {
+      "tmdb_id": 1939,
+      "kind": "movie",
+      "title": "Лора",
+      "original_title": "Laura",
+      "year": 1944,
+      "note_ru": "место 50 (поровну) · 20 голосов",
+      "note_en": "rank 50 (tied) · 20 votes"
+    },
+    {
+      "tmdb_id": 346,
+      "kind": "movie",
+      "title": "Семь самураев",
+      "original_title": "七人の侍",
+      "year": 1954,
+      "note_ru": "место 50 (поровну) · 20 голосов",
+      "note_en": "rank 50 (tied) · 20 votes"
+    },
+    {
+      "tmdb_id": 147,
+      "kind": "movie",
+      "title": "Четыреста ударов",
+      "original_title": "Les Quatre Cents Coups",
+      "year": 1959,
+      "note_ru": "место 58 (поровну) · 19 голосов",
+      "note_en": "rank 58 (tied) · 19 votes"
+    },
+    {
+      "tmdb_id": 439,
+      "kind": "movie",
+      "title": "Сладкая жизнь",
+      "original_title": "La dolce vita",
+      "year": 1960,
+      "note_ru": "место 58 (поровну) · 19 голосов",
+      "note_en": "rank 58 (tied) · 19 votes"
+    },
+    {
+      "tmdb_id": 39507,
+      "kind": "movie",
+      "title": "Мёртвые",
+      "original_title": "The Dead",
+      "year": 1987,
+      "note_ru": "место 58 (поровну) · 19 голосов",
+      "note_en": "rank 58 (tied) · 19 votes"
+    },
+    {
+      "tmdb_id": 195,
+      "kind": "movie",
+      "title": "Неприятности в раю",
+      "original_title": "Trouble in Paradise",
+      "year": 1932,
+      "note_ru": "место 58 (поровну) · 19 голосов",
+      "note_en": "rank 58 (tied) · 19 votes"
+    },
+    {
+      "tmdb_id": 1585,
+      "kind": "movie",
+      "title": "Эта прекрасная жизнь",
+      "original_title": "It's a Wonderful Life",
+      "year": 1946,
+      "note_ru": "место 58 (поровну) · 19 голосов",
+      "note_en": "rank 58 (tied) · 19 votes"
+    },
+    {
+      "tmdb_id": 30588,
+      "kind": "movie",
+      "title": "Месье Верду",
+      "original_title": "Monsieur Verdoux",
+      "year": 1947,
+      "note_ru": "место 58 (поровну) · 19 голосов",
+      "note_en": "rank 58 (tied) · 19 votes"
+    },
+    {
+      "tmdb_id": 780,
+      "kind": "movie",
+      "title": "Страсти Жанны д’Арк",
+      "original_title": "La Passion de Jeanne d'Arc",
+      "year": 1928,
+      "note_ru": "место 58 (поровну) · 19 голосов",
+      "note_en": "rank 58 (tied) · 19 votes"
+    },
+    {
+      "tmdb_id": 269,
+      "kind": "movie",
+      "title": "На последнем дыхании",
+      "original_title": "À bout de souffle",
+      "year": 1960,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 28,
+      "kind": "movie",
+      "title": "Апокалипсис сегодня",
+      "original_title": "Apocalypse Now",
+      "year": 1979,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 3175,
+      "kind": "movie",
+      "title": "Барри Линдон",
+      "original_title": "Barry Lyndon",
+      "year": 1975,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 777,
+      "kind": "movie",
+      "title": "Великая иллюзия",
+      "original_title": "La Grande Illusion",
+      "year": 1937,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 3059,
+      "kind": "movie",
+      "title": "Нетерпимость",
+      "original_title": "Intolerance: Love's Struggle Throughout the Ages",
+      "year": 1916,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 43878,
+      "kind": "movie",
+      "title": "Загородная прогулка",
+      "original_title": "Partie de campagne",
+      "year": 1946,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 10227,
+      "kind": "movie",
+      "title": "Время развлечений",
+      "original_title": "PlayTime",
+      "year": 1967,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 307,
+      "kind": "movie",
+      "title": "Рим, открытый город",
+      "original_title": "Roma città aperta",
+      "year": 1945,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 43195,
+      "kind": "movie",
+      "title": "Чувство",
+      "original_title": "Senso",
+      "year": 1954,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 3082,
+      "kind": "movie",
+      "title": "Новые времена",
+      "original_title": "Modern Times",
+      "year": 1936,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 4734,
+      "kind": "movie",
+      "title": "Ван Гог",
+      "original_title": "Van Gogh",
+      "year": 1991,
+      "note_ru": "место 65 (поровну) · 18 голосов",
+      "note_en": "rank 65 (tied) · 18 votes"
+    },
+    {
+      "tmdb_id": 8356,
+      "kind": "movie",
+      "title": "Незабываемый роман",
+      "original_title": "An Affair to Remember",
+      "year": 1957,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 895,
+      "kind": "movie",
+      "title": "Андрей Рублёв",
+      "original_title": "Андрей Рублёв",
+      "year": 1966,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 31527,
+      "kind": "movie",
+      "title": "Красная императрица",
+      "original_title": "The Scarlet Empress",
+      "year": 1934,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 20532,
+      "kind": "movie",
+      "title": "Управляющий Сансё",
+      "original_title": "山椒大夫",
+      "year": 1954,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 64,
+      "kind": "movie",
+      "title": "Поговори с ней",
+      "original_title": "Hable con ella",
+      "year": 2002,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 10794,
+      "kind": "movie",
+      "title": "Вечеринка",
+      "original_title": "The Party",
+      "year": 1968,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 977,
+      "kind": "movie",
+      "title": "Табу",
+      "original_title": "Tabu: A Story of the South Seas",
+      "year": 1931,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 29376,
+      "kind": "movie",
+      "title": "Театральный фургон",
+      "original_title": "The Band Wagon",
+      "year": 1953,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 3111,
+      "kind": "movie",
+      "title": "Звезда родилась",
+      "original_title": "A Star Is Born",
+      "year": 1954,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 778,
+      "kind": "movie",
+      "title": "Каникулы господина Юло",
+      "original_title": "Les vacances de Monsieur Hulot",
+      "year": 1953,
+      "note_ru": "место 76 (поровну) · 17 голосов",
+      "note_en": "rank 76 (tied) · 17 votes"
+    },
+    {
+      "tmdb_id": 47249,
+      "kind": "movie",
+      "title": "Америка, Америка",
+      "original_title": "America America",
+      "year": 1963,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 43344,
+      "kind": "movie",
+      "title": "Он",
+      "original_title": "Él",
+      "year": 1953,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 18030,
+      "kind": "movie",
+      "title": "Целуй меня насмерть",
+      "original_title": "Kiss Me Deadly",
+      "year": 1955,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 311,
+      "kind": "movie",
+      "title": "Однажды в Америке",
+      "original_title": "Once Upon a Time in America",
+      "year": 1984,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 27053,
+      "kind": "movie",
+      "title": "День начинается",
+      "original_title": "Le jour se lève",
+      "year": 1939,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 946,
+      "kind": "movie",
+      "title": "Письмо незнакомки",
+      "original_title": "Letter from an Unknown Woman",
+      "year": 1948,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 40641,
+      "kind": "movie",
+      "title": "Лола",
+      "original_title": "Lola",
+      "year": 1961,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 696,
+      "kind": "movie",
+      "title": "Манхэттен",
+      "original_title": "Manhattan",
+      "year": 1979,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 1018,
+      "kind": "movie",
+      "title": "Малхолланд Драйв",
+      "original_title": "Mulholland Drive",
+      "year": 2001,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 48831,
+      "kind": "movie",
+      "title": "Моя ночь у Мод",
+      "original_title": "Ma nuit chez Maud",
+      "year": 1969,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 803,
+      "kind": "movie",
+      "title": "Ночь и туман",
+      "original_title": "Nuit et Brouillard",
+      "year": 1956,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 962,
+      "kind": "movie",
+      "title": "Золотая лихорадка",
+      "original_title": "The Gold Rush",
+      "year": 1925,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 877,
+      "kind": "movie",
+      "title": "Лицо со шрамом",
+      "original_title": "Scarface",
+      "year": 1932,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 5156,
+      "kind": "movie",
+      "title": "Похитители велосипедов",
+      "original_title": "Ladri di biciclette",
+      "year": 1948,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    },
+    {
+      "tmdb_id": 42536,
+      "kind": "movie",
+      "title": "Наполеон",
+      "original_title": "Napoléon",
+      "year": 1927,
+      "note_ru": "место 86 (поровну) · 16 голосов",
+      "note_en": "rank 86 (tied) · 16 votes"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru" class="design-kinozal skel-kinozal">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1920, initial-scale=1" />
+    <meta name="theme-color" content="#08090c" />
+    <title>Cineko Lite TV</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem("cineko.settings") || "{}");
+        if (s.design) document.documentElement.className = "design-" + s.design + (s.light && s.design === "kinozal" ? " theme-light" : "");
+      } catch (e) {}
+    </script>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #08090c; }
+      #root { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="../src/tv/main.tsx"></script>
+  </body>
+</html>

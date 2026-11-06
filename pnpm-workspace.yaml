@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - "!apps/lite" # standalone npm project (GitHub Pages build)
+  - packages/*
+  - e2e
+# core-js's postinstall only prints a banner; nothing needs to run.
+allowBuilds:
+  core-js: false

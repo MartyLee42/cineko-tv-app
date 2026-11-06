@@ -1,0 +1,33 @@
+{
+  "name": "@martytv/ui",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./theme.css": "./src/theme.css",
+    "./tailwind.preset.cjs": "./tailwind.preset.cjs",
+    "./fonts.css": "./src/fonts.css"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "19.3.1",
+    "vitest": "5.0.5"
+  },
+  "dependencies": {
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/onest": "5.3.1",
+    "@fontsource/oswald": "5.3.0",
+    "@fontsource/pixelify-sans": "5.3.0",
+    "@fontsource/playfair-display": "5.3.0",
+    "@fontsource/rubik-mono-one": "5.3.0",
+    "@fontsource/russo-one": "5.3.0",
+    "@fontsource/unbounded": "5.3.0"
+  }
+}

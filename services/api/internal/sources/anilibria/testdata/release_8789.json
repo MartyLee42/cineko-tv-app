@@ -1,0 +1,91 @@
+{
+ "id": 8789,
+ "type": {
+  "value": "TV",
+  "description": "ТВ"
+ },
+ "year": 2020,
+ "name": {
+  "main": "Магическая битва",
+  "english": "Jujutsu Kaisen",
+  "alternative": null
+ },
+ "alias": "jujutsu-kaisen",
+ "season": {
+  "value": "autumn",
+  "description": "Осень"
+ },
+ "episodes_total": 24,
+ "is_blocked_by_geo": false,
+ "is_blocked_by_copyrights": false,
+ "is_ongoing": false,
+ "average_duration_of_episode": 24,
+ "shikimori": {
+  "id": 40748
+ },
+ "mal": {
+  "id": 40748
+ },
+ "episodes": [
+  {
+   "id": "95d6e739-789e-11ec-ae92-0242ac120002",
+   "name": null,
+   "name_english": null,
+   "ordinal": 1,
+   "opening": {
+    "stop": 145,
+    "start": 56
+   },
+   "ending": {
+    "stop": null,
+    "start": null
+   },
+   "hls_480": "https://cache-rfn.libria.fun/videos/media/ts/8789/1/480/64c606451484062f918a81c46a56e534.m3u8?countryIso=KZ&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_720": "https://cache-rfn.libria.fun/videos/media/ts/8789/1/720/6673036bb2bf535a5e149abe4ed52af3.m3u8?countryIso=KZ&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_1080": "https://cache-rfn.libria.fun/videos/media/ts/8789/1/1080/93729431f273cc2c1b7891965a3deda6.m3u8?countryIso=KZ&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "duration": 1435,
+   "sort_order": 1,
+   "release_id": 8789
+  },
+  {
+   "id": "95d6e7cc-789e-11ec-ae92-0242ac120002",
+   "name": null,
+   "name_english": null,
+   "ordinal": 2,
+   "opening": {
+    "stop": 434,
+    "start": 345
+   },
+   "ending": {
+    "stop": null,
+    "start": null
+   },
+   "hls_480": "https://cache-rfn.libria.fun/videos/media/ts/8789/2/480/8c830211ddb83bc340fce621ec5fa40a.m3u8?countryIso=KZ&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_720": "https://cache-rfn.libria.fun/videos/media/ts/8789/2/720/2580e1bc9a9b85aebcc3d1b388e998a9.m3u8?countryIso=KZ&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_1080": "https://cache-rfn.libria.fun/videos/media/ts/8789/2/1080/a35c1b26b1ee8885558351f7d5838577.m3u8?countryIso=KZ&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "duration": 1435,
+   "sort_order": 2,
+   "release_id": 8789
+  },
+  {
+   "id": "95d6e851-789e-11ec-ae92-0242ac120002",
+   "name": null,
+   "name_english": null,
+   "ordinal": 3,
+   "opening": {
+    "stop": 281,
+    "start": 192
+   },
+   "ending": {
+    "stop": null,
+    "start": null
+   },
+   "hls_480": "https://cache-rfn.libria.fun/videos/media/ts/8789/3/480/f38d9477fa46e78a29f36cf0fe4e4f3f.m3u8?countryIso=KZ&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_720": "https://cache-rfn.libria.fun/videos/media/ts/8789/3/720/3fb53b7e8c96803d13ccc4b18ca8d748.m3u8?countryIso=KZ&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_1080": "https://cache-rfn.libria.fun/videos/media/ts/8789/3/1080/bcf7ba52686bdea53d1ccdf96450b415.m3u8?countryIso=KZ&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "duration": 1435,
+   "sort_order": 3,
+   "release_id": 8789
+  }
+ ]
+}

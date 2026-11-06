@@ -1,0 +1,77 @@
+{
+  "id": "lynch-favourites",
+  "group": "directors",
+  "title_ru": "Линч: любимые фильмы",
+  "title_en": "Lynch's Favourite Films",
+  "author": "Дэвид Линч / David Lynch",
+  "source": "книга «Поймать большую рыбу» (2006) и интервью Линча (видео 2013 г., Fandor) / Catching the Big Fish (2006) and Lynch interviews (2013 video clip, Fandor)",
+  "source_url": "https://openculture.com/2013/09/david-lynch-on-his-favorite-directors-including-fellini-wilder-tati-and-hitchcock.html",
+  "description_ru": "Короткий список фильмов, к которым Линч возвращался всю жизнь: Феллини, Уайлдер, Хичкок, Тати — и «Волшебник страны Оз», чьё эхо слышно во многих его работах.",
+  "description_en": "A short list of films Lynch kept returning to: Fellini, Wilder, Hitchcock, Tati — and The Wizard of Oz, which echoes through much of his own work.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 422,
+      "kind": "movie",
+      "title": "8 с половиной",
+      "original_title": "8½",
+      "year": 1963,
+      "note_ru": "«Поймать большую рыбу», 2006: «идеальный»",
+      "note_en": "Catching the Big Fish, 2006: “perfect”"
+    },
+    {
+      "tmdb_id": 599,
+      "kind": "movie",
+      "title": "Сансет бульвар",
+      "original_title": "Sunset Boulevard",
+      "year": 1950,
+      "note_ru": "пересматривал «снова и снова»",
+      "note_en": "watched it “over and over”"
+    },
+    {
+      "tmdb_id": 567,
+      "kind": "movie",
+      "title": "Окно во двор",
+      "original_title": "Rear Window",
+      "year": 1954,
+      "note_ru": "«Поймать большую рыбу», 2006: «идеальный»",
+      "note_en": "Catching the Big Fish, 2006: “perfect”"
+    },
+    {
+      "tmdb_id": 778,
+      "kind": "movie",
+      "title": "Каникулы господина Юло",
+      "original_title": "Les vacances de Monsieur Hulot",
+      "year": 1953,
+      "note_ru": "«Поймать большую рыбу», 2006: «идеальный»",
+      "note_en": "Catching the Big Fish, 2006: “perfect”"
+    },
+    {
+      "tmdb_id": 28001,
+      "kind": "movie",
+      "title": "Это подарок",
+      "original_title": "It's a Gift",
+      "year": 1934,
+      "note_ru": "интервью, 2013",
+      "note_en": "interview clip, 2013"
+    },
+    {
+      "tmdb_id": 802,
+      "kind": "movie",
+      "title": "Лолита",
+      "original_title": "Lolita",
+      "year": 1962,
+      "note_ru": "видео Fandor, 2017",
+      "note_en": "Fandor video, 2017"
+    },
+    {
+      "tmdb_id": 630,
+      "kind": "movie",
+      "title": "Волшебник страны Оз",
+      "original_title": "The Wizard of Oz",
+      "year": 1939,
+      "note_ru": "сквозной мотив его фильмов (док. «Линч/Оз»)",
+      "note_en": "recurring touchstone (see doc Lynch/Oz)"
+    }
+  ]
+}

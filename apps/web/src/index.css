@@ -1,0 +1,215 @@
+@import "@martytv/ui/fonts.css";
+@import "@martytv/ui/theme.css";
+@import "./constructivism.css";
+@import "./cvButtons.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reserve the scrollbar's width on every page, so switching between short
+   and long pages (tabs, filters, loading) never shifts the layout sideways.
+   Older browsers without scrollbar-gutter always show the scrollbar. */
+html {
+  scrollbar-gutter: stable;
+}
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Loading-animation previews on the Settings page (mirrors the TV styles). */
+@layer components {
+  .lp-fill-text {
+    background-image: linear-gradient(90deg, rgb(var(--mt-accent)) 0 50%, rgba(255, 255, 255, 0.35) 50% 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: lp-fill 2.8s ease-in-out infinite;
+  }
+  .lp-reveal {
+    animation: lp-reveal 2.8s ease-in-out infinite;
+  }
+  .lp-frame {
+    animation: lp-frame 2.5s linear infinite;
+  }
+  .lp-strip {
+    animation: lp-strip 1.2s linear infinite;
+  }
+  .lp-line {
+    animation: lp-line 2.8s ease-in-out infinite;
+  }
+}
+@keyframes lp-fill {
+  0% { background-position: 100% 0; }
+  80%, 100% { background-position: 0 0; }
+}
+@keyframes lp-reveal {
+  0% { filter: blur(6px) grayscale(1); opacity: 0.6; }
+  80%, 100% { filter: blur(0) grayscale(0); opacity: 1; }
+}
+@keyframes lp-frame {
+  0%, 15% { background: rgba(255, 255, 255, 0.12); }
+  20%, 100% { background: rgb(var(--mt-accent)); }
+}
+@keyframes lp-strip {
+  from { background-position: 0 0; }
+  to { background-position: 12px 0; }
+}
+@keyframes lp-line {
+  0% { width: 0; }
+  80%, 100% { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-fill-text, .lp-reveal, .lp-frame, .lp-strip, .lp-line { animation: none; }
+}
+
+/* In-browser player: double-tap seek ripple. */
+@keyframes mt-ripple {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---------------------------------------------------------------- later designs
+   Каркас / Киберпанк / Ар-деко: tokens come from theme.css; these few touches
+   (background, card frame, poster frame, focus ring) make the PWA reflect the
+   chosen look. The layout is the same in every design. */
+/* Pattern backgrounds sit on a fixed ::before layer (composited once), not
+   on body with background-attachment: fixed — that repainted the whole
+   window on every scroll step (≈15× raster work; scroll lag in the PC app). */
+html.design-wireframe body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-wireframe body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: linear-gradient(180deg, rgba(13, 4, 32, 0) 55%, rgba(76, 15, 99, 0.55) 78%, rgba(255, 79, 216, 0.25) 78.2%, rgba(13, 4, 32, 0) 80%),
+    linear-gradient(rgba(255, 79, 216, 0.07) 1px, rgba(255, 79, 216, 0) 1px),
+    linear-gradient(90deg, rgba(255, 79, 216, 0.07) 1px, rgba(255, 79, 216, 0) 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+}
+html.design-cyberpunk body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-cyberpunk body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse 70% 40% at 100% 0%, rgba(255, 46, 136, 0.16), rgba(255, 46, 136, 0)),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgba(0, 240, 255, 0.1), rgba(0, 240, 255, 0)),
+    linear-gradient(rgba(0, 240, 255, 0.04) 1px, rgba(0, 240, 255, 0) 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, rgba(0, 240, 255, 0) 1px);
+  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+}
+html.design-deco body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-deco body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse 80% 40% at 50% -5%, rgba(201, 165, 76, 0.13), rgba(201, 165, 76, 0)),
+    repeating-linear-gradient(90deg, rgba(201, 165, 76, 0.03) 0px, rgba(201, 165, 76, 0.03) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 40px);
+}
+html.design-retro80 body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-retro80 body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: linear-gradient(160deg, rgba(0, 0, 0, 0) 86%, rgba(255, 59, 92, 0.22) 86%, rgba(255, 59, 92, 0.22) 87.5%, rgba(255, 122, 26, 0.22) 87.5%, rgba(255, 122, 26, 0.22) 89%, rgba(255, 210, 58, 0.22) 89%, rgba(255, 210, 58, 0.22) 90.5%, rgba(22, 224, 208, 0.22) 90.5%, rgba(22, 224, 208, 0.22) 92%, rgba(0, 0, 0, 0) 92%),
+    radial-gradient(ellipse 80% 40% at 90% 100%, rgba(255, 59, 140, 0.2), rgba(255, 59, 140, 0)),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0px, rgba(0, 0, 0, 0.12) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 4px);
+}
+/* «Поп-арт»: Ben-Day dots on comic blue; «Конструктивизм»: a red circle and diagonals on black-brown. */
+html.design-popart body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-popart body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0px, rgba(255, 255, 255, 0.12) 2.4px, rgba(255, 255, 255, 0) 3px),
+    linear-gradient(160deg, rgba(10, 30, 90, 0) 55%, rgba(10, 30, 90, 0.55) 100%);
+  background-size: 16px 16px, 100% 100%;
+}
+/* (its background image — a red circle, diagonals — is in constructivism.css) */
+html.design-constructivism body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-retro90 body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-retro90 body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.035) 0px, rgba(0, 0, 0, 0.035) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 4px);
+}
+/* Cards and posters. */
+html.design-wireframe section.rounded-2xl.border { border-color: rgba(255, 79, 216, 0.45); box-shadow: 0 0 18px rgba(255, 79, 216, 0.12); }
+html.design-wireframe .aspect-\[2\/3\] { box-shadow: inset 0 0 0 1px rgba(255, 79, 216, 0.6); }
+html.design-cyberpunk section.rounded-2xl.border {
+  border-radius: 0;
+  border-color: rgba(0, 240, 255, 0.35);
+  -webkit-clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+html.design-cyberpunk h1 { text-shadow: 2px 0 rgba(255, 46, 136, 0.8), -2px 0 rgba(0, 240, 255, 0.75); text-transform: uppercase; letter-spacing: 0.04em; }
+html.design-cyberpunk .aspect-\[2\/3\] { border-radius: 0; }
+html.design-deco section.rounded-2xl.border { border-radius: 4px; border-color: rgba(201, 165, 76, 0.5); box-shadow: inset 0 0 0 3px rgb(var(--mt-surface)), inset 0 0 0 4px rgba(201, 165, 76, 0.25); }
+html.design-deco .aspect-\[2\/3\] { border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(201, 165, 76, 0.7); }
+/* Focus ring (keyboard). */
+html.design-retro80 section.rounded-2xl.border { border-color: rgba(22, 224, 208, 0.45); box-shadow: inset 0 3px 0 rgba(255, 122, 26, 0.6); }
+html.design-retro80 .aspect-\[2\/3\] { box-shadow: inset 0 0 0 2px rgba(22, 224, 208, 0.45); }
+html.design-retro80 h1 { background-image: linear-gradient(180deg, #ffffff 0%, #d8e6ff 38%, #6a7dff 50%, #ffb04a 53%, #ff7a1a 74%, #ffe7a0 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; padding-right: 0.12em; }
+html.design-retro90 section.rounded-2xl.border { border-radius: 0; border-color: #c0c0c0; box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.5), inset -2px -2px 0 rgba(0, 0, 0, 0.45); }
+html.design-retro90 .aspect-\[2\/3\] { border-radius: 0; box-shadow: inset 2px 2px 0 #ffffff, inset -2px -2px 0 #404040; }
+html.design-retro90 header.sticky { box-shadow: inset 0 -3px 0 #c0c0c0, inset 0 -5px 0 #404040; }
+html.design-popart section.rounded-2xl.border { border: 3px solid #000; box-shadow: 6px 6px 0 #000; }
+html.design-popart .aspect-\[2\/3\] { box-shadow: inset 0 0 0 3px #000, 4px 4px 0 #000; }
+html.design-popart h1 { color: rgb(255, 214, 0); text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000, 4px 4px 0 rgb(255, 45, 60); }
+html.design-popart header.sticky { box-shadow: 0 3px 0 #000; }
+html.design-constructivism section.rounded-2xl.border { border-radius: 0; border-color: rgba(243, 234, 214, 0.25); box-shadow: inset 5px 0 0 rgb(215, 38, 30); }
+html.design-constructivism .aspect-\[2\/3\] { border-radius: 0; }
+html.design-constructivism h1 { text-transform: uppercase; letter-spacing: 0.03em; }
+html.design-popart :focus-visible { outline: 3px solid #000; outline-offset: 2px; box-shadow: 0 0 0 5px rgb(255, 214, 0), 6px 6px 0 5px #000; }
+html.design-constructivism :focus-visible { outline: 2px solid rgb(243, 234, 214); outline-offset: 2px; box-shadow: 6px 6px 0 2px rgb(215, 38, 30); }
+html.design-retro80 :focus-visible { outline: 2px solid rgb(22, 224, 208); outline-offset: 2px; box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.8); }
+html.design-retro90 :focus-visible { outline: 2px dotted #ffffff; outline-offset: 3px; }
+html.design-wireframe :focus-visible { outline: 2px solid rgb(60, 232, 255); outline-offset: 2px; box-shadow: 0 0 14px rgba(60, 232, 255, 0.6); }
+html.design-cyberpunk :focus-visible { outline: 2px solid rgb(0, 240, 255); outline-offset: 2px; box-shadow: 4px 4px 0 rgba(255, 46, 136, 0.8); }
+html.design-deco :focus-visible { outline: 2px double rgb(232, 207, 138); outline-offset: 3px; }
+/* Picker swatches: each design's motif. */
+.design-swatch-wireframe { background-image: linear-gradient(180deg, #0d0420 0%, #4c0f63 55%, #ff4fd8 56%, #0d0420 60%) !important; }
+.design-swatch-cyberpunk { background-image: radial-gradient(ellipse at 90% 0%, rgba(255, 46, 136, 0.45), rgba(255, 46, 136, 0) 60%), linear-gradient(rgba(0, 240, 255, 0.14) 1px, rgba(0, 0, 0, 0) 1px), linear-gradient(90deg, rgba(0, 240, 255, 0.14) 1px, rgba(0, 0, 0, 0) 1px); background-size: 100% 100%, 8px 8px, 8px 8px; }
+.design-swatch-deco { background-image: radial-gradient(circle at 100% 0%, rgba(201, 165, 76, 0) 12px, rgba(201, 165, 76, 0.7) 13px, rgba(201, 165, 76, 0) 15px, rgba(201, 165, 76, 0) 22px, rgba(201, 165, 76, 0.55) 23px, rgba(201, 165, 76, 0) 25px); }
+.design-swatch-retro80 { background-image: radial-gradient(circle at 80% 110%, #ffd23a 0, #ff7a1a 22%, #ff3b8c 36%, rgba(255, 59, 140, 0) 38%), linear-gradient(160deg, rgba(0, 0, 0, 0) 66%, #ff3b5c 66%, #ff3b5c 71%, #ff7a1a 71%, #ff7a1a 76%, #ffd23a 76%, #ffd23a 81%, #16e0d0 81%, #16e0d0 86%, rgba(0, 0, 0, 0) 86%) !important; }
+.design-swatch-retro90 { box-shadow: inset 0 10px 0 #c0c0c0, inset 0 12px 0 #808080; }
+.design-swatch-popart { background-image: radial-gradient(circle, rgba(255, 255, 255, 0.22) 0px, rgba(255, 255, 255, 0.22) 1.6px, rgba(255, 255, 255, 0) 2px); background-size: 7px 7px; box-shadow: inset 0 0 0 2px #000; }
+.design-swatch-constructivism { background-image: radial-gradient(circle at 85% 25%, #d7261e 0, #d7261e 34%, rgba(215, 38, 30, 0) 35%), linear-gradient(155deg, rgba(0, 0, 0, 0) 62%, #efe4cc 62%, #efe4cc 68%, rgba(0, 0, 0, 0) 68%) !important; }

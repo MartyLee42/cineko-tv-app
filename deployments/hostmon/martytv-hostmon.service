@@ -1,0 +1,63 @@
+# MartyTV host monitor: host CPU/RAM/disk/network, top processes and Docker
+# container stats for the admin "Server" tab. Serves JSON on a unix socket
+# only (/run/martytv/hostmon.sock, 0660, owned by uid 65532 = the API
+# container's distroless "nonroot" user). No TCP listener.
+#
+# Installed by deployments/deploy.sh to /etc/systemd/system/.
+# Remove: systemctl disable --now martytv-hostmon && rm /etc/systemd/system/martytv-hostmon.service /usr/local/bin/martytv-hostmon
+[Unit]
+Description=MartyTV host monitor (admin Server tab)
+Documentation=https://github.com/MartyLee42/cineko-tv-app/blob/main/docs/deployment.md
+# Create /run/martytv before containers start so the API's bind mount
+# points at the directory systemd manages.
+Before=docker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/martytv-hostmon -socket /run/martytv/hostmon.sock -socket-uid 65532 -socket-gid 65532
+Restart=always
+RestartSec=5
+
+# /run/martytv: created by systemd and kept across restarts (the API container
+# bind-mounts the directory; recreating it would orphan that mount).
+RuntimeDirectory=martytv
+RuntimeDirectoryMode=0755
+RuntimeDirectoryPreserve=yes
+
+# Root is needed only to read every process's /proc entries and to use the
+# Docker socket (read-only GETs: container list + one-shot stats). CAP_CHOWN
+# hands the socket to the API's uid; nothing else is kept.
+CapabilityBoundingSet=CAP_CHOWN
+AmbientCapabilities=
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadOnlyPaths=/
+ReadWritePaths=/run/martytv
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+# Unix sockets only (its own + Docker's); no network access at all.
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any
+UMask=0077
+# Stays tiny: a few MB of RAM, well under 1% CPU.
+MemoryMax=64M
+CPUQuota=10%
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,158 @@
+{
+  "id": "bergman-favourites",
+  "group": "directors",
+  "title_ru": "Бергман: любимые фильмы",
+  "title_en": "Bergman's Favourite Films",
+  "author": "Ингмар Бергман / Ingmar Bergman",
+  "source": "список «Лучшие фильмы мира по Бергману», 1994 (Фонд Ингмара Бергмана) + отзывы Бергмана, собранные там же / Bergman’s 1994 list of the world’s greatest films + his recorded praise, via the Ingmar Bergman Foundation",
+  "source_url": "https://ingmarbergman.se/en/node/17454",
+  "description_ru": "Одиннадцать фильмов, которые Бергман в 1994 году назвал лучшими в мире, — от «Возницы» Шёстрёма до «Андрея Рублёва», — и ещё несколько картин, о которых он отзывался с восхищением.",
+  "description_en": "The eleven films Bergman named the world’s greatest in 1994 — from Sjöström’s The Phantom Carriage to Andrei Rublev — plus a few more he wrote about with admiration.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 895,
+      "kind": "movie",
+      "title": "Андрей Рублёв",
+      "original_title": "Андрей Рублёв",
+      "year": 1966,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 28978,
+      "kind": "movie",
+      "title": "Цирк",
+      "original_title": "The Circus",
+      "year": 1928,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 95269,
+      "kind": "movie",
+      "title": "Дирижер",
+      "original_title": "Dyrygent",
+      "year": 1980,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 42142,
+      "kind": "movie",
+      "title": "Свинцовые времена",
+      "original_title": "Die bleierne Zeit",
+      "year": 1981,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 780,
+      "kind": "movie",
+      "title": "Страсти Жанны д`Арк",
+      "original_title": "La Passion de Jeanne d'Arc",
+      "year": 1928,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 58129,
+      "kind": "movie",
+      "title": "Возница",
+      "original_title": "Körkarlen",
+      "year": 1921,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 46326,
+      "kind": "movie",
+      "title": "Набережная туманов",
+      "original_title": "Le quai des brumes",
+      "year": 1938,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 47206,
+      "kind": "movie",
+      "title": "Вороний квартал",
+      "original_title": "Kvarteret Korpen",
+      "year": 1963,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 548,
+      "kind": "movie",
+      "title": "Расёмон",
+      "original_title": "羅生門",
+      "year": 1950,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 405,
+      "kind": "movie",
+      "title": "Дорога",
+      "original_title": "La strada",
+      "year": 1954,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 599,
+      "kind": "movie",
+      "title": "Сансет бульвар",
+      "original_title": "Sunset Boulevard",
+      "year": 1950,
+      "note_ru": "список Бергмана, 1994",
+      "note_en": "Bergman’s 1994 list"
+    },
+    {
+      "tmdb_id": 147622,
+      "kind": "movie",
+      "title": "Ингеборг Хольм",
+      "original_title": "Ingeborg Holm",
+      "year": 1913,
+      "note_ru": "«по-прежнему правдив и трогателен»",
+      "note_en": "praised as still true and moving"
+    },
+    {
+      "tmdb_id": 43376,
+      "kind": "movie",
+      "title": "Дневник сельского священника",
+      "original_title": "Journal d'un curé de campagne",
+      "year": 1951,
+      "note_ru": "«одна из самых замечательных работ»",
+      "note_en": "called one of the most remarkable works"
+    },
+    {
+      "tmdb_id": 1561,
+      "kind": "movie",
+      "title": "Мушетт",
+      "original_title": "Mouchette",
+      "year": 1967,
+      "note_ru": "назвал «чистым произведением искусства»",
+      "note_en": "called a pure work of art"
+    },
+    {
+      "tmdb_id": 1052,
+      "kind": "movie",
+      "title": "Фотоувеличение",
+      "original_title": "Blow-Up",
+      "year": 1966,
+      "note_ru": "один из двух шедевров Антониони",
+      "note_en": "one of two Antonioni masterpieces"
+    },
+    {
+      "tmdb_id": 41050,
+      "kind": "movie",
+      "title": "Ночь",
+      "original_title": "La notte",
+      "year": 1961,
+      "note_ru": "один из двух шедевров Антониони",
+      "note_en": "one of two Antonioni masterpieces"
+    }
+  ]
+}

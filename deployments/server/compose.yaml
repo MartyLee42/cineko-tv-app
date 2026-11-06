@@ -1,0 +1,262 @@
+# MartyTV on the existing media server (next to TorrServer, Prowlarr, Jackett…).
+# Images are built elsewhere and loaded by deployments/deploy.sh, so nothing is
+# compiled on this small server. Existing containers are not touched.
+#
+# Lives at /opt/martytv/compose.yaml with /opt/martytv/.env (secrets, 0600).
+name: martytv
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: martytv
+      POSTGRES_DB: martytv
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?missing}
+    # Small instance: the box is shared with TorrServer.
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=40", "-c", "work_mem=4MB"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U martytv -d martytv"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    mem_limit: 512m
+    networks: [internal]
+
+  api:
+    image: martytv-api:${MARTYTV_VERSION:?missing}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://martytv:${POSTGRES_PASSWORD}@postgres:5432/martytv?sslmode=disable
+      LISTEN_ADDR: ":8080"
+      TRUSTED_PROXIES: 172.16.0.0/12,10.0.0.0/8,192.168.0.0/16
+      GOMEMLIMIT: 400MiB
+      # Browser compatibility streams (TRANSCODER_SECRET comes from .env).
+      TRANSCODER_URL: http://transcoder:8090
+      # Server downloads («Скачать на сервер»): the bind mount below. The
+      # transcoder reads downloaded files back through the API (internal net).
+      LIBRARY_DIR: /var/lib/martytv/library
+      INTERNAL_API_URL: http://api:8080
+      # YouTube «Видео» tab: the Invidious service below (internal network).
+      INVIDIOUS_URL: http://invidious:3000
+    extra_hosts:
+      # TorrServer runs with host networking.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - images:/var/cache/martytv
+      # Admin "Server" tab: the martytv-hostmon systemd service (installed by
+      # deploy.sh) answers on /run/martytv/hostmon.sock, owned by this
+      # container's uid 65532. Only that directory is shared — no host /proc,
+      # no host filesystem, no docker.sock. Read-only: connecting to a socket
+      # needs no write access to the mount.
+      - /run/martytv:/run/martytv:ro
+      # Server downloads, on the host disk (owned by uid 65532, created by
+      # deploy.sh). The DB volume shares this disk: Admin → «Хранилище» keeps
+      # a free-space reserve (default 15 GB) that downloads never cut into.
+      - /opt/martytv/library:/var/lib/martytv/library:rw
+    depends_on:
+      postgres:
+        condition: service_healthy
+    mem_limit: 512m
+    networks:
+      internal: {}
+      # Existing network with Prowlarr and the AmneziaWG SOCKS proxy (used to
+      # reach TMDB, which is blocked from this server). Joining doesn't change it.
+      media: {}
+
+  # Browser compatibility streams: ffmpeg remux, audio → AAC (video copied;
+  # XviD / MPEG-2 ≤ 1080p re-encoded to H.264 on request, 2 threads each).
+  # No published ports; only the API calls it (signed jobs). It reads
+  # TorrServer (host networking) like the API, via host.docker.internal.
+  transcoder:
+    image: martytv-transcoder:${MARTYTV_VERSION:?missing}
+    restart: unless-stopped
+    environment:
+      TRANSCODER_SECRET: ${TRANSCODER_SECRET:?missing}
+      TRANSCODER_MAX_JOBS: ${TRANSCODER_MAX_JOBS:-3}
+      # HLS compat sessions (Safari / iPad): segments on disk, ≤ 3 GB each,
+      # ≤ 2 × TRANSCODER_MAX_JOBS sessions; wiped on restart.
+      TRANSCODER_HLS_MAX_SESSION_MB: ${TRANSCODER_HLS_MAX_SESSION_MB:-3072}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    read_only: true
+    tmpfs: [/tmp]
+    # HLS segments: a disk volume (the tmpfs would count against mem_limit).
+    # The image's directory is owned by uid 65532, so the new volume is too.
+    volumes:
+      - transcoder-hls:/var/cache/martytv-hls
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 1536m
+    # Must not exceed the host's core count (TRANSCODER_CPUS in .env.server).
+    cpus: ${TRANSCODER_CPUS:-3}
+    networks: [internal]
+
+  # --- YouTube «Видео» tab: self-hosted Invidious + invidious-companion ------
+  # docs/architecture.md "Video (Invidious)". Nothing is published on the
+  # host: only the API talks to Invidious, on the internal network.
+  # YouTube is blocked from this server, so all their outbound traffic goes
+  # through the AmneziaWG SOCKS proxy (awg-socks:10809 on root_jackett_net,
+  # not ours, never modified): Invidious via its http_proxy (type socks5,
+  # names resolved by the proxy) and companion via PROXY=socks5h://….
+  # Secrets (INVIDIOUS_*) are generated once by deploy.sh into .env.
+  invidious-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: invidious
+      POSTGRES_DB: invidious
+      POSTGRES_PASSWORD: ${INVIDIOUS_DB_PASSWORD:?missing}
+    command: ["postgres", "-c", "shared_buffers=16MB", "-c", "max_connections=20", "-c", "work_mem=2MB"]
+    volumes:
+      - invidious-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invidious -d invidious"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    mem_limit: 128m
+    networks: [invidious]
+
+  invidious:
+    image: quay.io/invidious/invidious:2.20261022.0
+    restart: unless-stopped
+    environment:
+      # domain/external_port must match the API's INVIDIOUS_URL: stream URLs
+      # (local=true) carry this origin and the API only fetches from it.
+      INVIDIOUS_CONFIG: |
+        db:
+          dbname: invidious
+          user: invidious
+          password: ${INVIDIOUS_DB_PASSWORD:?missing}
+          host: invidious-db
+          port: 5432
+        check_tables: true
+        hmac_key: ${INVIDIOUS_HMAC_KEY:?missing}
+        invidious_companion:
+          - private_url: http://companion:8282/companion
+        invidious_companion_key: ${INVIDIOUS_COMPANION_KEY:?missing}
+        domain: invidious
+        external_port: 3000
+        https_only: false
+        http_proxy:
+          type: socks5
+          host: awg-socks
+          port: 10809
+        registration_enabled: false
+        login_enabled: false
+        captcha_enabled: false
+        statistics_enabled: false
+        popular_enabled: false
+        channel_threads: 0
+        feed_threads: 0
+        pool_size: 20
+        log_level: Warn
+    depends_on:
+      invidious-db:
+        condition: service_healthy
+      # started, not healthy: a slow companion start must never fail
+      # `docker compose up` (and with it a MartyTV deploy).
+      companion:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -nv --tries=1 --spider http://127.0.0.1:3000/api/v1/stats || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    mem_limit: 512m
+    networks:
+      internal: {}   # the API
+      invidious: {}  # its database and companion
+      media: {}      # awg-socks (outbound YouTube)
+
+  companion:
+    image: quay.io/invidious/invidious-companion:2026.10.18-fcb0456
+    restart: unless-stopped
+    environment:
+      SERVER_SECRET_KEY: ${INVIDIOUS_COMPANION_KEY:?missing}
+      PROXY: socks5h://awg-socks:10809
+    read_only: true
+    volumes:
+      # youtubei.js player cache (seeded from the image, owned by appuser).
+      - companion-cache:/var/tmp/youtubei.js:rw
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    # PO-token generation peaks at ~410 MB right after start, ~130 MB idle.
+    mem_limit: 512m
+    networks:
+      invidious: {}
+      media: {}
+
+  # --- Marty Music (/music): services/music --------------------------------
+  # Separate app and container. Catalog from Deezer's public API, audio from
+  # YouTube via the Invidious above (cached on disk in music-data), lossless
+  # albums via Prowlarr + TorrServer (same settings as the API, from .env).
+  # Accounts: the MartyTV session, checked against the API. Caddy proxies
+  # /music to it; nothing is published on the host.
+  music:
+    image: martytv-music:${MARTYTV_VERSION:?missing}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      LISTEN_ADDR: ":8080"
+      MARTYTV_API_URL: http://api:8080
+      INVIDIOUS_URL: http://invidious:3000
+      MUSIC_CACHE_GB: ${MUSIC_CACHE_GB:-10}
+      GOMEMLIMIT: 300MiB
+    extra_hosts:
+      # TorrServer runs with host networking.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # SQLite library + YouTube audio cache + cover cache.
+      - music-data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 512m
+    depends_on: [api]
+    networks:
+      internal: {}  # Caddy, the API (sessions), Invidious
+      media: {}     # Prowlarr
+
+  web:
+    image: martytv-web:${MARTYTV_VERSION:?missing}
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+      CADDY_TRUSTED_PROXIES: ${CADDY_TRUSTED_PROXIES:-private_ranges}
+      CADDY_CLIENT_IP_HEADER: ${CADDY_CLIENT_IP_HEADER:-X-Forwarded-For}
+    ports:
+      # 80: ACME HTTP-01 challenge + redirect to HTTPS. 443: HTTPS (TCP) and HTTP/3 (UDP).
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api, music]
+    mem_limit: 128m
+    networks: [internal]
+
+networks:
+  internal: {}
+  # Invidious, its database and companion (not reachable from the API).
+  invidious: {}
+  media:
+    external: true
+    name: root_jackett_net
+
+volumes:
+  pgdata:
+  images:
+  caddy_data:
+  caddy_config:
+  invidious-pgdata:
+  companion-cache:
+  transcoder-hls:
+  music-data:

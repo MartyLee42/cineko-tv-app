@@ -1,0 +1,320 @@
+// Phase 5 data: settings, progress, lists, ratings, history, messages.
+import { useEffect, useSyncExternalStore } from "react";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
+import {
+  unwrap,
+  type MediaDetail,
+  type MediaPage,
+  type MediaProgress,
+  type MediaSummary,
+  type MediaUserState,
+  type ProfileSettings,
+} from "@martytv/contracts";
+import { api } from "../api";
+import { useCatalogLang } from "../catalog/queries";
+import { useActiveProfile } from "./ActiveProfile";
+import { affectsCatalog, affectsForYou, mergeSettings, setLook, type Settings, type SettingsPatch } from "./settings";
+import { applyWatchedLocally } from "./format";
+
+export type ListName = "watchlist" | "favorites";
+
+export const settingsKey = (profileId: string | undefined) => ["profile-settings", profileId] as const;
+export const progressKey = (mediaId: string, profileId: string | undefined) => ["progress", mediaId, profileId] as const;
+
+// ---------------------------------------------------------------- settings
+
+export function useProfileSettings() {
+  const { profileId } = useActiveProfile();
+  return useQuery({
+    queryKey: settingsKey(profileId),
+    queryFn: async () => mergeSettings(await unwrap(api.GET("/profiles/{id}/settings", { params: { path: { id: profileId! } } }))),
+    enabled: !!profileId,
+    staleTime: 60_000,
+  });
+}
+
+/** Applies the active profile's design + theme once its settings load (and on switch). */
+export function useThemeSync() {
+  const data = useProfileSettings().data;
+  const theme = data?.theme;
+  const design = data?.design;
+  useEffect(() => {
+    if (theme && design) setLook({ theme, design });
+  }, [theme, design]);
+}
+
+/** Effective settings (defaults while loading / without a profile). */
+export function useSettings(): Settings {
+  return useProfileSettings().data ?? mergeSettings(undefined);
+}
+
+/** Partial PUT with an optimistic cache update; rolls back on failure. */
+export function useUpdateSettings() {
+  const qc = useQueryClient();
+  const { profileId } = useActiveProfile();
+  const key = settingsKey(profileId);
+  return useMutation({
+    mutationFn: (patch: SettingsPatch) =>
+      // Partial updates are allowed (omitted fields keep their value).
+      unwrap(api.PUT("/profiles/{id}/settings", { params: { path: { id: profileId! } }, body: patch as ProfileSettings })),
+    onMutate: async (patch) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<Settings>(key);
+      qc.setQueryData<Settings>(key, mergeSettings(prev, patch));
+      if (patch.theme || patch.design) setLook({ ...(patch.theme && { theme: patch.theme }), ...(patch.design && { design: patch.design }) });
+      return { prev };
+    },
+    onError: (_e, _patch, ctx) => {
+      if (ctx?.prev) {
+        qc.setQueryData(key, ctx.prev);
+        setLook({ theme: ctx.prev.theme, design: ctx.prev.design });
+      }
+    },
+    onSuccess: (saved, patch) => {
+      qc.setQueryData<Settings>(key, (cur) => mergeSettings(cur, saved));
+      if (affectsCatalog(patch)) invalidateCatalog(qc);
+      // The server rebuilds rows in the background (foryou.updated follows);
+      // Explore tile counts are per min_votes, so refetch now.
+      if (affectsForYou(patch)) void qc.invalidateQueries({ queryKey: ["foryou"] });
+      if (patch.show_family !== undefined) void qc.invalidateQueries({ queryKey: ["family"] });
+    },
+  });
+}
+
+export function invalidateCatalog(qc: QueryClient) {
+  void qc.invalidateQueries({ queryKey: ["catalog"] });
+  void qc.invalidateQueries({ queryKey: ["media"] });
+  void qc.invalidateQueries({ queryKey: ["lists"] });
+  void qc.invalidateQueries({ queryKey: ["continue"] });
+}
+
+// ---------------------------------------------------------------- hide-watched quick toggle
+
+let hideOverride: boolean | null = null;
+const hideListeners = new Set<() => void>();
+
+/** Session-only override of the hide_watched setting (Browse/Search toggle). */
+export function setHideWatchedOverride(v: boolean | null) {
+  hideOverride = v;
+  hideListeners.forEach((l) => l());
+}
+
+export function useHideWatchedOverride(): boolean | null {
+  return useSyncExternalStore(
+    (cb) => {
+      hideListeners.add(cb);
+      return () => hideListeners.delete(cb);
+    },
+    () => hideOverride,
+    () => null,
+  );
+}
+
+/** The value in effect: the session toggle, else the profile's setting. */
+export function useHideWatched(): boolean {
+  const override = useHideWatchedOverride();
+  const settings = useSettings();
+  return override ?? settings.hide_watched;
+}
+
+// ---------------------------------------------------------------- progress
+
+export function useMediaProgress(mediaId: string) {
+  const { profileId } = useActiveProfile();
+  const lang = useCatalogLang();
+  return useQuery({
+    queryKey: [...progressKey(mediaId, profileId), lang],
+    queryFn: () =>
+      unwrap(api.GET("/media/{id}/progress", { params: { path: { id: mediaId }, query: { profile_id: profileId!, lang } } })),
+    enabled: !!profileId,
+    staleTime: 15_000,
+  });
+}
+
+export interface WatchedChange {
+  watched: boolean;
+  episode_id?: string;
+  season_number?: number;
+  /** Episodes of the affected season, for the optimistic update. */
+  episodes?: { id: string; season_number: number; episode_number: number }[];
+}
+
+export function useSetWatched(mediaId: string) {
+  const qc = useQueryClient();
+  const { profileId } = useActiveProfile();
+  const lang = useCatalogLang();
+  const key = [...progressKey(mediaId, profileId), lang];
+  return useMutation({
+    mutationFn: ({ watched, episode_id, season_number }: WatchedChange) =>
+      unwrap(
+        api.PUT("/media/{id}/watched", {
+          params: { path: { id: mediaId }, query: { lang } },
+          body: {
+            profile_id: profileId!,
+            watched,
+            ...(episode_id && { episode_id }),
+            ...(season_number != null && { season_number }),
+          },
+        }),
+      ),
+    onMutate: async (change) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<MediaProgress>(key);
+      if (prev) qc.setQueryData(key, applyWatchedLocally(prev, change, change.episodes));
+      return { prev };
+    },
+    onError: (_e, _c, ctx) => {
+      if (ctx?.prev) qc.setQueryData(key, ctx.prev);
+    },
+    onSuccess: (progress) => {
+      qc.setQueryData(key, progress);
+      void qc.invalidateQueries({ queryKey: ["continue"] });
+      void qc.invalidateQueries({ queryKey: ["history"] });
+      void qc.invalidateQueries({ queryKey: ["catalog"] });
+      void qc.invalidateQueries({ queryKey: ["media", mediaId] });
+      void qc.invalidateQueries({ queryKey: ["foryou", "curated"] });
+    },
+  });
+}
+
+export function useContinueWatching() {
+  const { profileId } = useActiveProfile();
+  const lang = useCatalogLang();
+  return useQuery({
+    queryKey: ["continue", profileId, lang],
+    queryFn: async () =>
+      (await unwrap(api.GET("/profiles/{id}/continue-watching", { params: { path: { id: profileId! }, query: { lang } } }))).items,
+    enabled: !!profileId,
+    staleTime: 15_000,
+    refetchInterval: 60_000,
+  });
+}
+
+export function useHistory(limit = 30, enabled = true) {
+  const { profileId } = useActiveProfile();
+  const lang = useCatalogLang();
+  return useInfiniteQuery({
+    queryKey: ["history", profileId, lang, limit],
+    queryFn: ({ pageParam }) =>
+      unwrap(
+        api.GET("/profiles/{id}/history", {
+          params: { path: { id: profileId! }, query: { lang, limit, ...(pageParam && { cursor: pageParam }) } },
+        }),
+      ),
+    initialPageParam: "",
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    enabled: !!profileId && enabled,
+  });
+}
+
+// ---------------------------------------------------------------- lists & ratings
+
+export function useProfileList(list: ListName) {
+  const { profileId } = useActiveProfile();
+  const lang = useCatalogLang();
+  return useInfiniteQuery({
+    queryKey: ["lists", profileId, list, lang],
+    queryFn: ({ pageParam }) =>
+      unwrap(
+        api.GET("/profiles/{id}/lists/{list}", {
+          params: { path: { id: profileId!, list }, query: { lang, page: pageParam } },
+        }),
+      ),
+    initialPageParam: 1,
+    getNextPageParam: (last: MediaPage) => (last.page < last.total_pages ? last.page + 1 : undefined),
+    enabled: !!profileId,
+  });
+}
+
+const EMPTY_ME: MediaUserState = { progress_percent: null, completed: false, in_watchlist: false, favorite: false, rating: null };
+
+/** Patches `me` on every cached copy of a title (detail, rows, grids, lists). */
+export function patchMe(qc: QueryClient, mediaId: string, patch: Partial<MediaUserState>) {
+  const fix = <T extends MediaSummary>(m: T): T => (m.id === mediaId ? { ...m, me: { ...EMPTY_ME, ...m.me, ...patch } } : m);
+  const walk = (data: unknown): unknown => {
+    if (!data || typeof data !== "object") return data;
+    if (Array.isArray(data)) return data.map(walk);
+    const o = data as Record<string, unknown>;
+    if (typeof o.id === "string" && typeof o.kind === "string" && "tmdb_id" in o) return fix(o as unknown as MediaDetail);
+    let changed = false;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(o)) {
+      const nv = v && typeof v === "object" ? walk(v) : v;
+      if (nv !== v) changed = true;
+      out[k] = nv;
+    }
+    return changed ? out : data;
+  };
+  for (const prefix of [["media", mediaId], ["catalog"], ["lists"], ["continue"], ["history"]]) {
+    qc.setQueriesData({ queryKey: prefix }, (d: unknown) => walk(d));
+  }
+}
+
+export function useToggleList() {
+  const qc = useQueryClient();
+  const { profileId } = useActiveProfile();
+  return useMutation({
+    mutationFn: ({ list, mediaId, on }: { list: ListName; mediaId: string; on: boolean }) => {
+      const opts = { params: { path: { id: profileId!, list, mediaId } } };
+      return unwrap(on ? api.PUT("/profiles/{id}/lists/{list}/{mediaId}", opts) : api.DELETE("/profiles/{id}/lists/{list}/{mediaId}", opts));
+    },
+    onMutate: ({ list, mediaId, on }) => patchMe(qc, mediaId, list === "watchlist" ? { in_watchlist: on } : { favorite: on }),
+    onError: (_e, { list, mediaId, on }) => patchMe(qc, mediaId, list === "watchlist" ? { in_watchlist: !on } : { favorite: !on }),
+    onSettled: (_d, _e, { list }) => qc.invalidateQueries({ queryKey: ["lists", profileId, list] }),
+  });
+}
+
+export function useRate() {
+  const qc = useQueryClient();
+  const { profileId } = useActiveProfile();
+  return useMutation({
+    mutationFn: ({ mediaId, rating }: { mediaId: string; rating: number | null; prev?: number | null }) => {
+      const path = { id: profileId!, mediaId };
+      return unwrap(
+        rating == null
+          ? api.DELETE("/profiles/{id}/ratings/{mediaId}", { params: { path } })
+          : api.PUT("/profiles/{id}/ratings/{mediaId}", { params: { path }, body: { rating } }),
+      );
+    },
+    onMutate: ({ mediaId, rating }) => patchMe(qc, mediaId, { rating }),
+    onError: (_e, { mediaId, prev }) => patchMe(qc, mediaId, { rating: prev ?? null }),
+    // A rating counts as watched in «Подборки».
+    onSettled: () => qc.invalidateQueries({ queryKey: ["foryou", "curated"] }),
+  });
+}
+
+// ---------------------------------------------------------------- messages
+
+export function useInbox(enabled = true) {
+  return useQuery({
+    queryKey: ["messages"],
+    queryFn: () => unwrap(api.GET("/messages")),
+    enabled,
+    staleTime: 60_000,
+    refetchInterval: 5 * 60_000,
+  });
+}
+
+export function useMarkRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => unwrap(api.POST("/messages/{id}/read", { params: { path: { id } } })),
+    onMutate: (id) =>
+      qc.setQueryData<{ items: { id: string; read_at: string | null }[]; unread: number }>(["messages"], (d) =>
+        d
+          ? {
+              ...d,
+              items: d.items.map((m) => (m.id === id && !m.read_at ? { ...m, read_at: new Date().toISOString() } : m)),
+              unread: Math.max(0, d.unread - (d.items.some((m) => m.id === id && !m.read_at) ? 1 : 0)),
+            }
+          : d,
+      ),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["messages"] }),
+  });
+}

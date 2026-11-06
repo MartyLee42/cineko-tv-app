@@ -1,0 +1,830 @@
+{
+  "id": "bbc-100-21st-century",
+  "group": "modern",
+  "title_ru": "BBC Culture: 100 великих фильмов XXI века",
+  "title_en": "BBC Culture: The 21st Century's 100 Greatest Films",
+  "author": "BBC Culture",
+  "source": "опрос 177 кинокритиков, 2016 / poll of 177 film critics, 2016",
+  "source_url": "https://thefilmstage.com/news/the-21st-centurys-100-greatest-films-according-to-critics/",
+  "description_ru": "В 2016 году BBC Culture собрала голоса 177 критиков со всего мира о лучшем кино нового века. Первое место у «Малхолланд Драйв»; за сотое место делят три фильма, поэтому в списке 102 картины.",
+  "description_en": "In 2016 BBC Culture gathered votes from 177 critics worldwide on the best films of the new century. Mulholland Drive took first place; three films share 100th, so the list holds 102 titles.",
+  "ordered": true,
+  "items": [
+    {
+      "tmdb_id": 374475,
+      "kind": "movie",
+      "title": "Тони Эрдманн",
+      "original_title": "Toni Erdmann",
+      "year": 2016,
+      "rank": 100
+    },
+    {
+      "tmdb_id": 641,
+      "kind": "movie",
+      "title": "Реквием по мечте",
+      "original_title": "Requiem for a Dream",
+      "year": 2000,
+      "rank": 100
+    },
+    {
+      "tmdb_id": 43434,
+      "kind": "movie",
+      "title": "Карлос",
+      "original_title": "Carlos",
+      "year": 2010,
+      "rank": 100
+    },
+    {
+      "tmdb_id": 44379,
+      "kind": "movie",
+      "title": "Собиратели и собирательница",
+      "original_title": "Les Glaneurs et la Glaneuse",
+      "year": 2000,
+      "rank": 99
+    },
+    {
+      "tmdb_id": 14633,
+      "kind": "movie",
+      "title": "Десять",
+      "original_title": "ده",
+      "year": 2002,
+      "rank": 98
+    },
+    {
+      "tmdb_id": 46207,
+      "kind": "movie",
+      "title": "Белый материал",
+      "original_title": "White Material",
+      "year": 2009,
+      "rank": 97
+    },
+    {
+      "tmdb_id": 12,
+      "kind": "movie",
+      "title": "В поисках Немо",
+      "original_title": "Finding Nemo",
+      "year": 2003,
+      "rank": 96
+    },
+    {
+      "tmdb_id": 83666,
+      "kind": "movie",
+      "title": "Королевство полной луны",
+      "original_title": "Moonrise Kingdom",
+      "year": 2012,
+      "rank": 95
+    },
+    {
+      "tmdb_id": 13310,
+      "kind": "movie",
+      "title": "Впусти меня",
+      "original_title": "Låt den rätte komma in",
+      "year": 2008,
+      "rank": 94
+    },
+    {
+      "tmdb_id": 2062,
+      "kind": "movie",
+      "title": "Рататуй",
+      "original_title": "Ratatouille",
+      "year": 2007,
+      "rank": 93
+    },
+    {
+      "tmdb_id": 4512,
+      "kind": "movie",
+      "title": "Как трусливый Роберт Форд убил Джесси Джеймса",
+      "original_title": "The Assassination of Jesse James by the Coward Robert Ford",
+      "year": 2007,
+      "rank": 92
+    },
+    {
+      "tmdb_id": 25376,
+      "kind": "movie",
+      "title": "Тайна в его глазах",
+      "original_title": "El secreto de sus ojos",
+      "year": 2009,
+      "rank": 91
+    },
+    {
+      "tmdb_id": 423,
+      "kind": "movie",
+      "title": "Пианист",
+      "original_title": "The Pianist",
+      "year": 2002,
+      "rank": 90
+    },
+    {
+      "tmdb_id": 8898,
+      "kind": "movie",
+      "title": "Женщина без головы",
+      "original_title": "La mujer sin cabeza",
+      "year": 2008,
+      "rank": 89
+    },
+    {
+      "tmdb_id": 314365,
+      "kind": "movie",
+      "title": "В центре внимания",
+      "original_title": "Spotlight",
+      "year": 2015,
+      "rank": 88
+    },
+    {
+      "tmdb_id": 194,
+      "kind": "movie",
+      "title": "Амели",
+      "original_title": "Le Fabuleux Destin d'Amélie Poulain",
+      "year": 2001,
+      "rank": 87
+    },
+    {
+      "tmdb_id": 10712,
+      "kind": "movie",
+      "title": "Вдали от рая",
+      "original_title": "Far from Heaven",
+      "year": 2002,
+      "rank": 86
+    },
+    {
+      "tmdb_id": 21575,
+      "kind": "movie",
+      "title": "Пророк",
+      "original_title": "Un prophète",
+      "year": 2009,
+      "rank": 85
+    },
+    {
+      "tmdb_id": 152601,
+      "kind": "movie",
+      "title": "Она",
+      "original_title": "Her",
+      "year": 2013,
+      "rank": 84
+    },
+    {
+      "tmdb_id": 644,
+      "kind": "movie",
+      "title": "Искусственный разум",
+      "original_title": "A.I. Artificial Intelligence",
+      "year": 2001,
+      "rank": 83
+    },
+    {
+      "tmdb_id": 12573,
+      "kind": "movie",
+      "title": "Серьёзный человек",
+      "original_title": "A Serious Man",
+      "year": 2009,
+      "rank": 82
+    },
+    {
+      "tmdb_id": 76025,
+      "kind": "movie",
+      "title": "Стыд",
+      "original_title": "Shame",
+      "year": 2011,
+      "rank": 81
+    },
+    {
+      "tmdb_id": 11190,
+      "kind": "movie",
+      "title": "Возвращение",
+      "original_title": "Возвращение",
+      "year": 2003,
+      "rank": 80
+    },
+    {
+      "tmdb_id": 786,
+      "kind": "movie",
+      "title": "Почти знаменит",
+      "original_title": "Almost Famous",
+      "year": 2000,
+      "rank": 79
+    },
+    {
+      "tmdb_id": 106646,
+      "kind": "movie",
+      "title": "Волк с Уолл-стрит",
+      "original_title": "The Wolf of Wall Street",
+      "year": 2013,
+      "rank": 78
+    },
+    {
+      "tmdb_id": 2013,
+      "kind": "movie",
+      "title": "Скафандр и бабочка",
+      "original_title": "Le Scaphandre et le Papillon",
+      "year": 2007,
+      "rank": 77
+    },
+    {
+      "tmdb_id": 553,
+      "kind": "movie",
+      "title": "Догвилль",
+      "original_title": "Dogville",
+      "year": 2003,
+      "rank": 76
+    },
+    {
+      "tmdb_id": 171274,
+      "kind": "movie",
+      "title": "Врождённый порок",
+      "original_title": "Inherent Vice",
+      "year": 2014,
+      "rank": 75
+    },
+    {
+      "tmdb_id": 122081,
+      "kind": "movie",
+      "title": "Отвязные каникулы",
+      "original_title": "Spring Breakers",
+      "year": 2012,
+      "rank": 74
+    },
+    {
+      "tmdb_id": 80,
+      "kind": "movie",
+      "title": "Перед закатом",
+      "original_title": "Before Sunset",
+      "year": 2004,
+      "rank": 73
+    },
+    {
+      "tmdb_id": 152603,
+      "kind": "movie",
+      "title": "Выживут только любовники",
+      "original_title": "Only Lovers Left Alive",
+      "year": 2013,
+      "rank": 72
+    },
+    {
+      "tmdb_id": 93858,
+      "kind": "movie",
+      "title": "Табу",
+      "original_title": "Tabu",
+      "year": 2012,
+      "rank": 71
+    },
+    {
+      "tmdb_id": 128216,
+      "kind": "movie",
+      "title": "Истории, которые мы рассказываем",
+      "original_title": "Stories We Tell",
+      "year": 2012,
+      "rank": 70
+    },
+    {
+      "tmdb_id": 258480,
+      "kind": "movie",
+      "title": "Кэрол",
+      "original_title": "Carol",
+      "year": 2015,
+      "rank": 69
+    },
+    {
+      "tmdb_id": 9428,
+      "kind": "movie",
+      "title": "Семейка Тененбаум",
+      "original_title": "The Royal Tenenbaums",
+      "year": 2001,
+      "rank": 68
+    },
+    {
+      "tmdb_id": 12162,
+      "kind": "movie",
+      "title": "Повелитель бури",
+      "original_title": "The Hurt Locker",
+      "year": 2008,
+      "rank": 67
+    },
+    {
+      "tmdb_id": 113,
+      "kind": "movie",
+      "title": "Весна, лето, осень, зима... и снова весна",
+      "original_title": "봄 여름 가을 겨울 그리고 봄",
+      "year": 2003,
+      "rank": 66
+    },
+    {
+      "tmdb_id": 24469,
+      "kind": "movie",
+      "title": "Аквариум",
+      "original_title": "Fish Tank",
+      "year": 2009,
+      "rank": 65
+    },
+    {
+      "tmdb_id": 179144,
+      "kind": "movie",
+      "title": "Великая красота",
+      "original_title": "La grande bellezza",
+      "year": 2013,
+      "rank": 64
+    },
+    {
+      "tmdb_id": 81401,
+      "kind": "movie",
+      "title": "Туринская лошадь",
+      "original_title": "A torinói ló",
+      "year": 2011,
+      "rank": 63
+    },
+    {
+      "tmdb_id": 16869,
+      "kind": "movie",
+      "title": "Бесславные ублюдки",
+      "original_title": "Inglourious Basterds",
+      "year": 2009,
+      "rank": 62
+    },
+    {
+      "tmdb_id": 97370,
+      "kind": "movie",
+      "title": "Побудь в моей шкуре",
+      "original_title": "Under the Skin",
+      "year": 2013,
+      "rank": 61
+    },
+    {
+      "tmdb_id": 27904,
+      "kind": "movie",
+      "title": "Синдромы и столетие",
+      "original_title": "แสงศตวรรษ",
+      "year": 2006,
+      "rank": 60
+    },
+    {
+      "tmdb_id": 59,
+      "kind": "movie",
+      "title": "Оправданная жестокость",
+      "original_title": "A History of Violence",
+      "year": 2005,
+      "rank": 59
+    },
+    {
+      "tmdb_id": 39504,
+      "kind": "movie",
+      "title": "Убежище",
+      "original_title": "Moolaadé",
+      "year": 2004,
+      "rank": 58
+    },
+    {
+      "tmdb_id": 97630,
+      "kind": "movie",
+      "title": "Цель номер один",
+      "original_title": "Zero Dark Thirty",
+      "year": 2012,
+      "rank": 57
+    },
+    {
+      "tmdb_id": 23160,
+      "kind": "movie",
+      "title": "Гармонии Веркмейстера",
+      "original_title": "Werckmeister harmóniák",
+      "year": 2000,
+      "rank": 56
+    },
+    {
+      "tmdb_id": 209274,
+      "kind": "movie",
+      "title": "Ида",
+      "original_title": "Ida",
+      "year": 2013,
+      "rank": 55
+    },
+    {
+      "tmdb_id": 74879,
+      "kind": "movie",
+      "title": "Однажды в Анатолии",
+      "original_title": "Bir Zamanlar Anadolu'da",
+      "year": 2011,
+      "rank": 54
+    },
+    {
+      "tmdb_id": 824,
+      "kind": "movie",
+      "title": "Мулен Руж",
+      "original_title": "Moulin Rouge!",
+      "year": 2001,
+      "rank": 53
+    },
+    {
+      "tmdb_id": 11534,
+      "kind": "movie",
+      "title": "Тропическая болезнь",
+      "original_title": "สัตว์ประหลาด",
+      "year": 2004,
+      "rank": 52
+    },
+    {
+      "tmdb_id": 27205,
+      "kind": "movie",
+      "title": "Начало",
+      "original_title": "Inception",
+      "year": 2010,
+      "rank": 51
+    },
+    {
+      "tmdb_id": 253450,
+      "kind": "movie",
+      "title": "Убийца",
+      "original_title": "刺客聶隱娘",
+      "year": 2015,
+      "rank": 50
+    },
+    {
+      "tmdb_id": 114982,
+      "kind": "movie",
+      "title": "Прощай, речь",
+      "original_title": "Adieu au langage",
+      "year": 2014,
+      "rank": 49
+    },
+    {
+      "tmdb_id": 167073,
+      "kind": "movie",
+      "title": "Бруклин",
+      "original_title": "Brooklyn",
+      "year": 2015,
+      "rank": 48
+    },
+    {
+      "tmdb_id": 265180,
+      "kind": "movie",
+      "title": "Левиафан",
+      "original_title": "Левиафан",
+      "year": 2014,
+      "rank": 47
+    },
+    {
+      "tmdb_id": 48303,
+      "kind": "movie",
+      "title": "Копия верна",
+      "original_title": "Copie conforme",
+      "year": 2010,
+      "rank": 46
+    },
+    {
+      "tmdb_id": 152584,
+      "kind": "movie",
+      "title": "Жизнь Адель",
+      "original_title": "La Vie d'Adèle - Chapitres 1 et 2",
+      "year": 2013,
+      "rank": 45
+    },
+    {
+      "tmdb_id": 76203,
+      "kind": "movie",
+      "title": "12 лет рабства",
+      "original_title": "12 Years a Slave",
+      "year": 2013,
+      "rank": 44
+    },
+    {
+      "tmdb_id": 62215,
+      "kind": "movie",
+      "title": "Меланхолия",
+      "original_title": "Melancholia",
+      "year": 2011,
+      "rank": 43
+    },
+    {
+      "tmdb_id": 86837,
+      "kind": "movie",
+      "title": "Любовь",
+      "original_title": "Amour",
+      "year": 2012,
+      "rank": 42
+    },
+    {
+      "tmdb_id": 150540,
+      "kind": "movie",
+      "title": "Головоломка",
+      "original_title": "Inside Out",
+      "year": 2015,
+      "rank": 41
+    },
+    {
+      "tmdb_id": 142,
+      "kind": "movie",
+      "title": "Горбатая гора",
+      "original_title": "Brokeback Mountain",
+      "year": 2005,
+      "rank": 40
+    },
+    {
+      "tmdb_id": 11400,
+      "kind": "movie",
+      "title": "Новый Свет",
+      "original_title": "The New World",
+      "year": 2005,
+      "rank": 39
+    },
+    {
+      "tmdb_id": 598,
+      "kind": "movie",
+      "title": "Город бога",
+      "original_title": "Cidade de Deus",
+      "year": 2002,
+      "rank": 38
+    },
+    {
+      "tmdb_id": 38368,
+      "kind": "movie",
+      "title": "Дядюшка Бунми, который помнит свои прошлые жизни",
+      "original_title": "ลุงบุญมีระลึกชาติ",
+      "year": 2010,
+      "rank": 37
+    },
+    {
+      "tmdb_id": 265228,
+      "kind": "movie",
+      "title": "Тимбукту",
+      "original_title": "Timbuktu",
+      "year": 2014,
+      "rank": 36
+    },
+    {
+      "tmdb_id": 146,
+      "kind": "movie",
+      "title": "Крадущийся тигр, затаившийся дракон",
+      "original_title": "卧虎藏龍",
+      "year": 2000,
+      "rank": 35
+    },
+    {
+      "tmdb_id": 336050,
+      "kind": "movie",
+      "title": "Сын Саула",
+      "original_title": "Saul fia",
+      "year": 2015,
+      "rank": 34
+    },
+    {
+      "tmdb_id": 155,
+      "kind": "movie",
+      "title": "Тёмный рыцарь",
+      "original_title": "The Dark Knight",
+      "year": 2008,
+      "rank": 33
+    },
+    {
+      "tmdb_id": 582,
+      "kind": "movie",
+      "title": "Жизнь других",
+      "original_title": "Das Leben der Anderen",
+      "year": 2006,
+      "rank": 32
+    },
+    {
+      "tmdb_id": 44754,
+      "kind": "movie",
+      "title": "Маргарет",
+      "original_title": "Margaret",
+      "year": 2011,
+      "rank": 31
+    },
+    {
+      "tmdb_id": 670,
+      "kind": "movie",
+      "title": "Олдбой",
+      "original_title": "올드보이",
+      "year": 2003,
+      "rank": 30
+    },
+    {
+      "tmdb_id": 10681,
+      "kind": "movie",
+      "title": "ВАЛЛ·И",
+      "original_title": "WALL·E",
+      "year": 2008,
+      "rank": 29
+    },
+    {
+      "tmdb_id": 64,
+      "kind": "movie",
+      "title": "Поговори с ней",
+      "original_title": "Hable con ella",
+      "year": 2002,
+      "rank": 28
+    },
+    {
+      "tmdb_id": 37799,
+      "kind": "movie",
+      "title": "Социальная сеть",
+      "original_title": "The Social Network",
+      "year": 2010,
+      "rank": 27
+    },
+    {
+      "tmdb_id": 1429,
+      "kind": "movie",
+      "title": "25-й час",
+      "original_title": "25th Hour",
+      "year": 2002,
+      "rank": 26
+    },
+    {
+      "tmdb_id": 77,
+      "kind": "movie",
+      "title": "Мементо",
+      "original_title": "Memento",
+      "year": 2000,
+      "rank": 25
+    },
+    {
+      "tmdb_id": 68722,
+      "kind": "movie",
+      "title": "Мастер",
+      "original_title": "The Master",
+      "year": 2012,
+      "rank": 24
+    },
+    {
+      "tmdb_id": 445,
+      "kind": "movie",
+      "title": "Скрытое",
+      "original_title": "Caché",
+      "year": 2005,
+      "rank": 23
+    },
+    {
+      "tmdb_id": 153,
+      "kind": "movie",
+      "title": "Трудности перевода",
+      "original_title": "Lost in Translation",
+      "year": 2003,
+      "rank": 22
+    },
+    {
+      "tmdb_id": 120467,
+      "kind": "movie",
+      "title": "Отель «Гранд Будапешт»",
+      "original_title": "The Grand Budapest Hotel",
+      "year": 2014,
+      "rank": 21
+    },
+    {
+      "tmdb_id": 4960,
+      "kind": "movie",
+      "title": "Нью-Йорк, Нью-Йорк",
+      "original_title": "Synecdoche, New York",
+      "year": 2008,
+      "rank": 20
+    },
+    {
+      "tmdb_id": 76341,
+      "kind": "movie",
+      "title": "Безумный Макс: Дорога Ярости",
+      "original_title": "Mad Max: Fury Road",
+      "year": 2015,
+      "rank": 19
+    },
+    {
+      "tmdb_id": 37903,
+      "kind": "movie",
+      "title": "Белая лента",
+      "original_title": "Das weiße Band - Eine deutsche Kindergeschichte",
+      "year": 2009,
+      "rank": 18
+    },
+    {
+      "tmdb_id": 1417,
+      "kind": "movie",
+      "title": "Лабиринт Фавна",
+      "original_title": "El laberinto del fauno",
+      "year": 2006,
+      "rank": 17
+    },
+    {
+      "tmdb_id": 103328,
+      "kind": "movie",
+      "title": "Корпорация «Святые моторы»",
+      "original_title": "Holy Motors",
+      "year": 2012,
+      "rank": 16
+    },
+    {
+      "tmdb_id": 2009,
+      "kind": "movie",
+      "title": "4 месяца, 3 недели и 2 дня",
+      "original_title": "4 luni, 3 săptămâni și 2 zile",
+      "year": 2007,
+      "rank": 15
+    },
+    {
+      "tmdb_id": 123678,
+      "kind": "movie",
+      "title": "Акт убийства",
+      "original_title": "The Act of Killing",
+      "year": 2012,
+      "rank": 14
+    },
+    {
+      "tmdb_id": 9693,
+      "kind": "movie",
+      "title": "Дитя человеческое",
+      "original_title": "Children of Men",
+      "year": 2006,
+      "rank": 13
+    },
+    {
+      "tmdb_id": 1949,
+      "kind": "movie",
+      "title": "Зодиак",
+      "original_title": "Zodiac",
+      "year": 2007,
+      "rank": 12
+    },
+    {
+      "tmdb_id": 86829,
+      "kind": "movie",
+      "title": "Внутри Льюина Дэвиса",
+      "original_title": "Inside Llewyn Davis",
+      "year": 2013,
+      "rank": 11
+    },
+    {
+      "tmdb_id": 6977,
+      "kind": "movie",
+      "title": "Старикам тут не место",
+      "original_title": "No Country for Old Men",
+      "year": 2007,
+      "rank": 10
+    },
+    {
+      "tmdb_id": 60243,
+      "kind": "movie",
+      "title": "Развод Надера и Симин",
+      "original_title": "جدایی نادر از سیمین",
+      "year": 2011,
+      "rank": 9
+    },
+    {
+      "tmdb_id": 25538,
+      "kind": "movie",
+      "title": "Один и два",
+      "original_title": "一一",
+      "year": 2000,
+      "rank": 8
+    },
+    {
+      "tmdb_id": 8967,
+      "kind": "movie",
+      "title": "Древо жизни",
+      "original_title": "The Tree of Life",
+      "year": 2011,
+      "rank": 7
+    },
+    {
+      "tmdb_id": 38,
+      "kind": "movie",
+      "title": "Вечное сияние чистого разума",
+      "original_title": "Eternal Sunshine of the Spotless Mind",
+      "year": 2004,
+      "rank": 6
+    },
+    {
+      "tmdb_id": 85350,
+      "kind": "movie",
+      "title": "Отрочество",
+      "original_title": "Boyhood",
+      "year": 2014,
+      "rank": 5
+    },
+    {
+      "tmdb_id": 129,
+      "kind": "movie",
+      "title": "Унесённые призраками",
+      "original_title": "千と千尋の神隠し",
+      "year": 2001,
+      "rank": 4
+    },
+    {
+      "tmdb_id": 7345,
+      "kind": "movie",
+      "title": "Нефть",
+      "original_title": "There Will Be Blood",
+      "year": 2007,
+      "rank": 3
+    },
+    {
+      "tmdb_id": 843,
+      "kind": "movie",
+      "title": "Любовное настроение",
+      "original_title": "花樣年華",
+      "year": 2000,
+      "rank": 2
+    },
+    {
+      "tmdb_id": 1018,
+      "kind": "movie",
+      "title": "Малхолланд Драйв",
+      "original_title": "Mulholland Drive",
+      "year": 2001,
+      "rank": 1
+    }
+  ]
+}

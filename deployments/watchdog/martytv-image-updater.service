@@ -1,0 +1,14 @@
+# MartyTV image updater: upgrades Invidious / companion to the newest release
+# (rollback if unhealthy). See martytv-image-updater.sh. Runs from
+# martytv-image-updater.timer. Installed by deployments/deploy.sh.
+# Logs: journalctl -u martytv-image-updater
+# Remove: systemctl disable --now martytv-image-updater.timer && rm /etc/systemd/system/martytv-image-updater.* /usr/local/bin/martytv-image-updater
+[Unit]
+Description=MartyTV image updater (Invidious / companion)
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/martytv-image-updater check
+TimeoutStartSec=1200
+Nice=10

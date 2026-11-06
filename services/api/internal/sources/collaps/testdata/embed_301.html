@@ -1,0 +1,30 @@
+<!DOCTYPE html><html><body><script>
+		makePlayer({
+			blocked: false ,
+			title: "Матрица",
+			id: 858406 ,
+			poster: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+            
+			source: {
+				dash: "{{CDN}}/07_26/28/02/MEPSV2JK/1267297.mpd?fckz2=ec372e8a1c31ee0&ha=35d3058c5923c19&hc=424f6806f98ce5d&hi=f27d9f029a61056&ht=bd96cd1b8bee1c9&hu=794f98de74b86f5&hui=ccfd19aa44bbf17&t=1794126355",
+                dasha: "{{CDN}}/07_26/28/02/DVVYEBD2/1267297.mpd?fckz2=ec372e8a1c31ee0&ha=35d3058c5923c19&hc=424f6806f98ce5d&hi=f27d9f029a61056&ht=bd96cd1b8bee1c9&hu=794f98de74b86f5&hui=63f731756250380&t=1794126355",
+				hls: "{{CDN}}/07_28_26/07/28/02/FT5T432M/DMK26PCI.mp4/master.m3u8?fckz2=ec372e8a1c31ee0&ha=35d3058c5923c19&hc=424f6806f98ce5d&hi=f27d9f029a61056&ht=bd96cd1b8bee1c9&hu=794f98de74b86f5&hui=824781ba23b293e&t=1794126355",
+				audio: {"names":["Рус. Дублированный","Рус. Проф. многоголосый","НТВ","Рус. Проф. двухголосый","П.Гланц и И.Королёва","Рус. Одноголосый","C. Визгунов","А. Гаврилов","Рус. Одноголосый","А. Дольский","Д. Есарев","Ю. Живов","А.Кашкин","Дмитрий \"Goblin\" Пучков","Рус. Одноголосый","Укр. Проф. багатоголосий","Eng.Original"],"order":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},
+				cc: [{"url":"{{CDN}}/07_28_26/07/28/02/4CZVHDKJ/I5FV7HMM/6426cdddaa.vtt?ha=35d3058c5923c19&hc=424f6806f98ce5d&hi=f27d9f029a61056&ht=bd96cd1b8bee1c9&hu=794f98de74b86f5&t=1794126355","name":"Рус. полные gen. - 1"},{"url":"{{CDN}}/07_28_26/07/28/02/4CZVHDKJ/I5FV7HMM/15ce3dd8d1.vtt?ha=35d3058c5923c19&hc=424f6806f98ce5d&hi=f27d9f029a61056&ht=bd96cd1b8bee1c9&hu=794f98de74b86f5&t=1794126355","name":"Eng. full - 2"},{"url":"{{CDN}}/07_28_26/07/28/02/4CZVHDKJ/I5FV7HMM/4b3fafd0e1.vtt?ha=35d3058c5923c19&hc=424f6806f98ce5d&hi=f27d9f029a61056&ht=bd96cd1b8bee1c9&hu=794f98de74b86f5&t=1794126355","name":"Укр. повні - 3"}]
+
+			},
+			sections: [],
+			qualityByWidth: {"864":480},
+			p2p: {
+				geo: ["KZ","","AS43370"],
+				tolerance:  4 ,
+				tracker: function () {
+					var now = Date.now();
+					if (lastTracker + 3e5 < now) tracker = false; 
+					lastTracker = now;
+					return (tracker= !tracker) ?"wss://t3.zcvh.net/v1/ws" :"wss://t3.zcvh.net/v1/ws"
+				},
+				longDownload: 300 * 1000
+			}
+		});
+</script></body></html>

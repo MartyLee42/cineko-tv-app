@@ -1,0 +1,345 @@
+# Cineko — the complete self-hosted stack in one file.
+#
+#   ./install.sh                      # guided install (writes .env, starts, configures)
+#   scripts/cineko.sh up -d           # = docker compose -f deployments/compose.yaml --env-file .env up -d
+#   make prod                         # build from source and start
+#
+# Everything runs on private Docker networks. Only Caddy (`web`) is published
+# (80/443). The Prowlarr and TorrServer web UIs are published on 127.0.0.1
+# only, for setup through an SSH tunnel (docs/deployment.md).
+#
+# Our images: `docker compose pull` fetches prebuilt ones from GHCR;
+# `docker compose up -d --build` builds them from this checkout instead.
+# Third-party images are pinned; bump them deliberately.
+#
+# Settings come from the repository-root .env (see deployments/env.example).
+# Local changes go into deployments/compose.override.yaml (scripts/cineko.sh
+# and `make prod` load it when present), never into this file.
+name: cineko
+
+x-hardening: &hardening
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+
+x-env-file: &env-file
+  env_file:
+    - path: ../.env
+      required: true
+
+services:
+  # --- Cineko ---------------------------------------------------------------
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      # User and database names are what the API expects; keep them.
+      POSTGRES_USER: martytv
+      POSTGRES_DB: martytv
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (run ./install.sh)}
+    command: ["postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=60"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U martytv -d martytv"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    mem_limit: 512m
+    networks: [internal]
+
+  api:
+    image: ghcr.io/martylee42/cineko-tv-app-api:${CINEKO_VERSION:-latest}
+    build:
+      context: ../services/api
+      target: runtime
+      args:
+        VERSION: ${CINEKO_VERSION:-dev}
+    restart: unless-stopped
+    <<: [*env-file, *hardening]
+    environment:
+      DATABASE_URL: postgres://martytv:${POSTGRES_PASSWORD}@postgres:5432/martytv?sslmode=disable
+      LISTEN_ADDR: ":8080"
+      # Caddy's address on the compose network; X-Forwarded-For from it is trusted.
+      TRUSTED_PROXIES: 172.16.0.0/12,10.0.0.0/8,192.168.0.0/16
+      GOMEMLIMIT: 400MiB
+      PROWLARR_URL: ${PROWLARR_URL:-http://prowlarr:9696}
+      TORRSERVER_URL: ${TORRSERVER_URL:-http://torrserver:8090}
+      # Browser compatibility streams (same secret on both sides).
+      TRANSCODER_URL: http://transcoder:8090
+      TRANSCODER_SECRET: ${TRANSCODER_SECRET:?set TRANSCODER_SECRET in .env (run ./install.sh)}
+      # YouTube «Видео» tab.
+      INVIDIOUS_URL: ${INVIDIOUS_URL:-http://invidious:3000}
+      # TMDB image cache (IMAGE_PROXY=true) and server downloads, one volume.
+      IMAGE_CACHE_DIR: /var/cache/martytv/images
+      LIBRARY_DIR: ${LIBRARY_DIR:-/var/cache/martytv/library}
+      INTERNAL_API_URL: http://api:8080
+      # TMDB through the outbound proxy when one is configured (empty = direct).
+      TMDB_PROXY_URL: ${TMDB_PROXY_URL:-${OUTBOUND_PROXY_URL:-}}
+    volumes:
+      # Owned by the image's non-root user (uid 65532).
+      - cache:/var/cache/martytv
+    depends_on:
+      postgres:
+        condition: service_healthy
+    mem_limit: 768m
+    networks: [internal, media]
+
+  # Browser compatibility streams: ffmpeg remux, audio → AAC (XviD / MPEG-2
+  # re-encoded to H.264 on request). Only the API calls it (signed jobs); it
+  # reads TorrServer directly.
+  transcoder:
+    image: ghcr.io/martylee42/cineko-tv-app-transcoder:${CINEKO_VERSION:-latest}
+    build:
+      context: ../services/transcoder
+      target: runtime
+    restart: unless-stopped
+    environment:
+      TRANSCODER_SECRET: ${TRANSCODER_SECRET:?set TRANSCODER_SECRET in .env (run ./install.sh)}
+      TRANSCODER_MAX_JOBS: ${TRANSCODER_MAX_JOBS:-3}
+      TRANSCODER_HLS_MAX_SESSION_MB: ${TRANSCODER_HLS_MAX_SESSION_MB:-3072}
+    read_only: true
+    tmpfs: [/tmp]
+    volumes:
+      # HLS segments for Safari / iPad (wiped on restart).
+      - transcoder-hls:/var/cache/martytv-hls
+    <<: *hardening
+    mem_limit: 1536m
+    networks: [internal, media]
+
+  # Music at /music: its own app; reads the same .env (PROWLARR_*, TORRSERVER_*).
+  music:
+    image: ghcr.io/martylee42/cineko-tv-app-music:${CINEKO_VERSION:-latest}
+    build:
+      context: ../services/music
+      target: runtime
+    restart: unless-stopped
+    <<: [*env-file, *hardening]
+    environment:
+      LISTEN_ADDR: ":8080"
+      MARTYTV_API_URL: http://api:8080
+      INVIDIOUS_URL: ${INVIDIOUS_URL:-http://invidious:3000}
+      PROWLARR_URL: ${PROWLARR_URL:-http://prowlarr:9696}
+      TORRSERVER_URL: ${TORRSERVER_URL:-http://torrserver:8090}
+      MUSIC_CACHE_GB: ${MUSIC_CACHE_GB:-10}
+      MUSIC_PROXY_URL: ${MUSIC_PROXY_URL:-${OUTBOUND_PROXY_URL:-}}
+      GOMEMLIMIT: 300MiB
+    volumes:
+      # SQLite library + audio and cover caches.
+      - music-data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 512m
+    depends_on: [api]
+    networks: [internal, media]
+
+  # Caddy: the PWA at /, the TV app at /tv/, proxies /api, /msx, /music,
+  # /healthz. A domain in SITE_ADDRESS gets automatic HTTPS.
+  web:
+    image: ghcr.io/martylee42/cineko-tv-app-web:${CINEKO_VERSION:-latest}
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile.web
+      args:
+        VERSION: ${CINEKO_VERSION:-dev}
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+      CADDY_TRUSTED_PROXIES: ${CADDY_TRUSTED_PROXIES:-private_ranges}
+      CADDY_CLIENT_IP_HEADER: ${CADDY_CLIENT_IP_HEADER:-X-Forwarded-For}
+    ports:
+      # 80: HTTP (and the ACME HTTP-01 challenge). 443: HTTPS + HTTP/3.
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api, music]
+    mem_limit: 256m
+    networks: [internal]
+
+  # --- Torrents: Prowlarr (search) + FlareSolverr + TorrServer (streaming) ---
+  # Prowlarr's API key is generated on first start; install.sh copies it into
+  # .env (PROWLARR_API_KEY) and adds FlareSolverr and a few public indexers.
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:2.7.0.5723-ls167
+    restart: unless-stopped
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - prowlarr-config:/config
+    ports:
+      # Web UI for setup over an SSH tunnel (never public).
+      - "127.0.0.1:${PROWLARR_UI_PORT:-9696}:9696"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://127.0.0.1:9696/ping >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    mem_limit: 512m
+    networks: [media]
+
+  # Solves Cloudflare challenges for indexers that need it (Prowlarr indexer
+  # proxy, tag "flaresolverr").
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: info
+      TZ: ${TZ:-Etc/UTC}
+    mem_limit: 1g
+    networks: [media]
+
+  # Streams torrents over HTTP. Only Cineko (api, music, transcoder) talks to
+  # it; clients never see it.
+  torrserver:
+    image: ghcr.io/yourok/torrserver:MatriX.149
+    restart: unless-stopped
+    environment:
+      # Image defaults: config in /opt/ts/config, torrents in /opt/ts/torrents.
+      TS_PORT: "8090"
+      # TS_HTTPAUTH=1 + /opt/ts/config/accs.db enable basic auth; then set
+      # TORRSERVER_USERNAME / TORRSERVER_PASSWORD in .env (docs/deployment.md).
+      TS_HTTPAUTH: ${TS_HTTPAUTH:-0}
+      TS_DONTKILL: "1"
+    volumes:
+      - torrserver-data:/opt/ts
+    ports:
+      - "127.0.0.1:${TORRSERVER_UI_PORT:-8090}:8090"
+      # Optional incoming BitTorrent peers: set the port in TorrServer's
+      # settings and publish it in deployments/compose.override.yaml.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8090/echo || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    mem_limit: 2g
+    networks: [media]
+
+  # --- YouTube «Видео» tab (and music audio): Invidious + companion ---------
+  # Nothing published. Secrets INVIDIOUS_* are generated by install.sh.
+  invidious-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: invidious
+      POSTGRES_DB: invidious
+      POSTGRES_PASSWORD: ${INVIDIOUS_DB_PASSWORD:?set INVIDIOUS_DB_PASSWORD in .env (run ./install.sh)}
+    command: ["postgres", "-c", "shared_buffers=16MB", "-c", "max_connections=20", "-c", "work_mem=2MB"]
+    volumes:
+      - invidious-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invidious -d invidious"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    mem_limit: 128m
+    networks: [invidious]
+
+  invidious:
+    image: quay.io/invidious/invidious:2.20261022.0
+    restart: unless-stopped
+    environment:
+      # domain/external_port must match INVIDIOUS_URL (stream URLs carry it).
+      # INVIDIOUS_HTTP_PROXY: empty = direct, or a YAML flow map such as
+      # {type: socks5, host: proxy.example, port: 1080} (install.sh derives it
+      # from OUTBOUND_PROXY_URL).
+      INVIDIOUS_CONFIG: |
+        db:
+          dbname: invidious
+          user: invidious
+          password: ${INVIDIOUS_DB_PASSWORD:?missing}
+          host: invidious-db
+          port: 5432
+        check_tables: true
+        hmac_key: ${INVIDIOUS_HMAC_KEY:?set INVIDIOUS_HMAC_KEY in .env (run ./install.sh)}
+        invidious_companion:
+          - private_url: http://companion:8282/companion
+        invidious_companion_key: ${INVIDIOUS_COMPANION_KEY:?set INVIDIOUS_COMPANION_KEY in .env (run ./install.sh)}
+        domain: invidious
+        external_port: 3000
+        https_only: false
+        http_proxy: ${INVIDIOUS_HTTP_PROXY:-}
+        registration_enabled: false
+        login_enabled: false
+        captcha_enabled: false
+        statistics_enabled: false
+        popular_enabled: false
+        channel_threads: 0
+        feed_threads: 0
+        pool_size: 20
+        log_level: Warn
+    depends_on:
+      invidious-db:
+        condition: service_healthy
+      companion:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -nv --tries=1 --spider http://127.0.0.1:3000/api/v1/stats || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    mem_limit: 512m
+    networks: [internal, invidious]
+
+  companion:
+    image: quay.io/invidious/invidious-companion:2026.10.18-fcb0456
+    restart: unless-stopped
+    environment:
+      SERVER_SECRET_KEY: ${INVIDIOUS_COMPANION_KEY:?missing}
+      # Outbound proxy for YouTube (empty = direct). socks5h:// or http://.
+      PROXY: ${COMPANION_PROXY:-${OUTBOUND_PROXY_URL:-}}
+    read_only: true
+    volumes:
+      - companion-cache:/var/tmp/youtubei.js:rw
+    <<: *hardening
+    mem_limit: 512m
+    networks: [invidious]
+
+  # --- Optional: outbound VPN (profile "vpn") --------------------------------
+  # For countries where TMDB / YouTube are blocked. Gluetun connects to your
+  # VPN provider (settings in gluetun.env next to .env) and offers an HTTP
+  # proxy; set OUTBOUND_PROXY_URL=http://gluetun:8888 and
+  # COMPOSE_PROFILES=vpn in .env. Any other proxy works too: just set
+  # OUTBOUND_PROXY_URL to it and leave this profile off.
+  gluetun:
+    image: qmcgaw/gluetun:v3.41.3
+    profiles: [vpn]
+    restart: unless-stopped
+    cap_add: [NET_ADMIN]
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    env_file:
+      - path: ../gluetun.env
+        required: false
+    environment:
+      HTTPPROXY: "on"
+      HTTPPROXY_LISTENING_ADDRESS: ":8888"
+      HTTPPROXY_STEALTH: "on"
+    mem_limit: 256m
+    networks: [internal, media, invidious]
+
+networks:
+  # Caddy, API, music, transcoder, Invidious (front side), Postgres.
+  internal: {}
+  # Prowlarr, FlareSolverr, TorrServer and their Cineko clients.
+  media: {}
+  # Invidious, its database and companion.
+  invidious: {}
+
+volumes:
+  pgdata:
+  cache:
+  music-data:
+  transcoder-hls:
+  caddy_data:
+  caddy_config:
+  prowlarr-config:
+  torrserver-data:
+  invidious-pgdata:
+  companion-cache:

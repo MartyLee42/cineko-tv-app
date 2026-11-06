@@ -1,0 +1,419 @@
+{
+  "id": "deleuze-cinema-1",
+  "group": "thinkers",
+  "title_ru": "Делёз: «Кино 1. Образ-движение»",
+  "title_en": "Deleuze: Cinema 1. The Movement-Image",
+  "author": "Жиль Делёз / Gilles Deleuze",
+  "source": "Cinéma 1. L'image-mouvement, 1983",
+  "source_url": "https://en.wikipedia.org/wiki/Cinema_1:_The_Movement_Image",
+  "description_ru": "Классическое кино, где образ строится вокруг движения и действия: монтажные школы Гриффита и Эйзенштейна, экспрессионизм, лицо в крупном плане, вестерн и бурлеск — вплоть до кризиса образа-действия у Хичкока и нового американского кино.",
+  "description_en": "Classical cinema built on movement and action: Griffith's and Eisenstein's montage schools, expressionism, the face in close-up, the western and slapstick — up to the crisis of the action-image in Hitchcock and New Hollywood.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 618,
+      "kind": "movie",
+      "title": "Рождение нации",
+      "original_title": "The Birth of a Nation",
+      "year": 1915,
+      "note_ru": "американский монтаж: большая форма",
+      "note_en": "American montage: the large form"
+    },
+    {
+      "tmdb_id": 3059,
+      "kind": "movie",
+      "title": "Нетерпимость",
+      "original_title": "Intolerance: Love's Struggle Throughout the Ages",
+      "year": 1916,
+      "note_ru": "органический параллельный монтаж",
+      "note_en": "organic parallel montage"
+    },
+    {
+      "tmdb_id": 899,
+      "kind": "movie",
+      "title": "Сломанные побеги",
+      "original_title": "Broken Blossoms or The Yellow Man and the Girl",
+      "year": 1919,
+      "note_ru": "крупный план лица (Лиллиан Гиш)",
+      "note_en": "the close-up of a face (Lillian Gish)"
+    },
+    {
+      "tmdb_id": 643,
+      "kind": "movie",
+      "title": "Броненосец «Потёмкин»",
+      "original_title": "Броненосец Потёмкин",
+      "year": 1925,
+      "note_ru": "диалектический монтаж, пафос",
+      "note_en": "dialectical montage, pathos"
+    },
+    {
+      "tmdb_id": 110741,
+      "kind": "movie",
+      "title": "Старое и новое (Генеральная линия)",
+      "original_title": "Старое и новое",
+      "year": 1929,
+      "note_ru": "качественный скачок: сцена с сепаратором",
+      "note_en": "qualitative leap: the cream separator"
+    },
+    {
+      "tmdb_id": 9797,
+      "kind": "movie",
+      "title": "Иван Грозный",
+      "original_title": "Иван Грозный",
+      "year": 1944,
+      "note_ru": "крупный план и лицо у Эйзенштейна",
+      "note_en": "Eisenstein's close-up and the face"
+    },
+    {
+      "tmdb_id": 98914,
+      "kind": "movie",
+      "title": "Мать",
+      "original_title": "Мать",
+      "year": 1926,
+      "note_ru": "Пудовкин: монтаж как осознание",
+      "note_en": "Pudovkin: montage as awakening"
+    },
+    {
+      "tmdb_id": 46594,
+      "kind": "movie",
+      "title": "Земля",
+      "original_title": "Земля",
+      "year": 1930,
+      "note_ru": "Довженко: целое и природа",
+      "note_en": "Dovzhenko: the whole and nature"
+    },
+    {
+      "tmdb_id": 144611,
+      "kind": "movie",
+      "title": "Кино-глаз",
+      "original_title": "Киноглаз",
+      "year": 1924,
+      "note_ru": "образ-перцепция: «газообразное» восприятие",
+      "note_en": "perception-image: «gaseous» perception"
+    },
+    {
+      "tmdb_id": 26317,
+      "kind": "movie",
+      "title": "Человек с киноаппаратом",
+      "original_title": "Человек с киноаппаратом",
+      "year": 1929,
+      "note_ru": "глаз-машина, интервалы",
+      "note_en": "the machine eye and the interval"
+    },
+    {
+      "tmdb_id": 50182,
+      "kind": "movie",
+      "title": "Колесо",
+      "original_title": "La Roue",
+      "year": 1923,
+      "note_ru": "французская школа: количественный монтаж",
+      "note_en": "French school: quantitative montage"
+    },
+    {
+      "tmdb_id": 67440,
+      "kind": "movie",
+      "title": "Верное сердце",
+      "original_title": "Cœur fidèle",
+      "year": 1923,
+      "note_ru": "Эпштейн: карусель, ритмический монтаж",
+      "note_en": "Epstein: the merry-go-round, rhythm"
+    },
+    {
+      "tmdb_id": 42536,
+      "kind": "movie",
+      "title": "Наполеон",
+      "original_title": "Napoléon",
+      "year": 1927,
+      "note_ru": "поливидение, математическое возвышенное",
+      "note_en": "polyvision, the mathematical sublime"
+    },
+    {
+      "tmdb_id": 234,
+      "kind": "movie",
+      "title": "Кабинет доктора Калигари",
+      "original_title": "Das Cabinet des Dr. Caligari",
+      "year": 1920,
+      "note_ru": "экспрессионизм: неорганическая жизнь",
+      "note_en": "expressionism: non-organic life"
+    },
+    {
+      "tmdb_id": 653,
+      "kind": "movie",
+      "title": "Носферату. Симфония ужаса",
+      "original_title": "Nosferatu, eine Symphonie des Grauens",
+      "year": 1922,
+      "note_ru": "экспрессионизм: свет и тьма",
+      "note_en": "expressionism: light against dark"
+    },
+    {
+      "tmdb_id": 10728,
+      "kind": "movie",
+      "title": "Фауст",
+      "original_title": "Faust - Eine deutsche Volkssage",
+      "year": 1926,
+      "note_ru": "динамическое возвышенное",
+      "note_en": "the dynamic sublime"
+    },
+    {
+      "tmdb_id": 19,
+      "kind": "movie",
+      "title": "Метрополис",
+      "original_title": "Metropolis",
+      "year": 1927,
+      "note_ru": "геометрия масс и света",
+      "note_en": "geometry of masses and light"
+    },
+    {
+      "tmdb_id": 780,
+      "kind": "movie",
+      "title": "Страсти Жанны д’Арк",
+      "original_title": "La Passion de Jeanne d'Arc",
+      "year": 1928,
+      "note_ru": "образ-аффект: лицо и крупный план",
+      "note_en": "affection-image: face and close-up"
+    },
+    {
+      "tmdb_id": 905,
+      "kind": "movie",
+      "title": "Ящик Пандоры",
+      "original_title": "Die Büchse der Pandora",
+      "year": 1929,
+      "note_ru": "свет, нож и лицо Лулу",
+      "note_en": "light, the knife and Lulu's face"
+    },
+    {
+      "tmdb_id": 31527,
+      "kind": "movie",
+      "title": "Красная императрица",
+      "original_title": "The Scarlet Empress",
+      "year": 1934,
+      "note_ru": "Штернберг: белое на белом",
+      "note_en": "Sternberg: white on white"
+    },
+    {
+      "tmdb_id": 797,
+      "kind": "movie",
+      "title": "Персона",
+      "original_title": "Persona",
+      "year": 1966,
+      "note_ru": "лицо на пределе: стирание индивидуации",
+      "note_en": "the face at its limit, effaced"
+    },
+    {
+      "tmdb_id": 690,
+      "kind": "movie",
+      "title": "Карманник",
+      "original_title": "Pickpocket",
+      "year": 1959,
+      "note_ru": "какое-угодно-пространство, руки",
+      "note_en": "any-space-whatever, hands"
+    },
+    {
+      "tmdb_id": 48764,
+      "kind": "movie",
+      "title": "Процесс Жанны д’Арк",
+      "original_title": "Procès de Jeanne d'Arc",
+      "year": 1962,
+      "note_ru": "Брессон: фрагментированное пространство",
+      "note_en": "Bresson: fragmented space"
+    },
+    {
+      "tmdb_id": 43904,
+      "kind": "movie",
+      "title": "Аталанта",
+      "original_title": "L'Atalante",
+      "year": 1934,
+      "note_ru": "«жидкое» восприятие: вода",
+      "note_en": "«liquid» perception: water"
+    },
+    {
+      "tmdb_id": 26638,
+      "kind": "movie",
+      "title": "Красная пустыня",
+      "original_title": "Il deserto rosso",
+      "year": 1964,
+      "note_ru": "несобственно-прямая субъективность",
+      "note_en": "free indirect subjectivity"
+    },
+    {
+      "tmdb_id": 1405,
+      "kind": "movie",
+      "title": "Алчность",
+      "original_title": "Greed",
+      "year": 1924,
+      "note_ru": "импульс-образ: изначальный мир",
+      "note_en": "impulse-image: the originary world"
+    },
+    {
+      "tmdb_id": 29264,
+      "kind": "movie",
+      "title": "Ангел-истребитель",
+      "original_title": "El ángel exterminador",
+      "year": 1962,
+      "note_ru": "Бунюэль: повторение, энтропия",
+      "note_en": "Buñuel: repetition and entropy"
+    },
+    {
+      "tmdb_id": 42987,
+      "kind": "movie",
+      "title": "Слуга",
+      "original_title": "The Servant",
+      "year": 1963,
+      "note_ru": "Лоузи: импульс и деградация",
+      "note_en": "Losey: impulse and degradation"
+    },
+    {
+      "tmdb_id": 11697,
+      "kind": "movie",
+      "title": "Человек, который застрелил Либерти Вэланса",
+      "original_title": "The Man Who Shot Liberty Valance",
+      "year": 1962,
+      "note_ru": "большая форма: легенда сильнее факта",
+      "note_en": "large form: legend over fact"
+    },
+    {
+      "tmdb_id": 961,
+      "kind": "movie",
+      "title": "Генерал",
+      "original_title": "The General",
+      "year": 1926,
+      "note_ru": "Китон: бурлеск и машина",
+      "note_en": "Keaton: burlesque and the machine"
+    },
+    {
+      "tmdb_id": 32318,
+      "kind": "movie",
+      "title": "Навигатор",
+      "original_title": "The Navigator",
+      "year": 1924,
+      "note_ru": "Китон: человек-машина",
+      "note_en": "Keaton: man and machine"
+    },
+    {
+      "tmdb_id": 914,
+      "kind": "movie",
+      "title": "Великий диктатор",
+      "original_title": "The Great Dictator",
+      "year": 1940,
+      "note_ru": "Чаплин: малая форма и речь",
+      "note_en": "Chaplin: small form and speech"
+    },
+    {
+      "tmdb_id": 30588,
+      "kind": "movie",
+      "title": "Месье Верду",
+      "original_title": "Monsieur Verdoux",
+      "year": 1947,
+      "note_ru": "Чаплин: двойная жизнь",
+      "note_en": "Chaplin: the double life"
+    },
+    {
+      "tmdb_id": 28971,
+      "kind": "movie",
+      "title": "Огни рампы",
+      "original_title": "Limelight",
+      "year": 1952,
+      "note_ru": "Чаплин: старение комика",
+      "note_en": "Chaplin: the ageing clown"
+    },
+    {
+      "tmdb_id": 346,
+      "kind": "movie",
+      "title": "Семь самураев",
+      "original_title": "七人の侍",
+      "year": 1954,
+      "note_ru": "Куросава: вопрос, скрытый в ситуации",
+      "note_en": "Kurosawa: the question within a situation"
+    },
+    {
+      "tmdb_id": 3782,
+      "kind": "movie",
+      "title": "Жить",
+      "original_title": "生きる",
+      "year": 1952,
+      "note_ru": "Куросава: поиск вопроса",
+      "note_en": "Kurosawa: searching for the question"
+    },
+    {
+      "tmdb_id": 14696,
+      "kind": "movie",
+      "title": "Сказки туманной луны после дождя",
+      "original_title": "雨月物語",
+      "year": 1953,
+      "note_ru": "Мидзогути: линия вселенной",
+      "note_en": "Mizoguchi: the line of the universe"
+    },
+    {
+      "tmdb_id": 2000,
+      "kind": "movie",
+      "title": "Агирре, гнев Божий",
+      "original_title": "Aguirre, der Zorn Gottes",
+      "year": 1972,
+      "note_ru": "Херцог: возвышенное, безумный замысел",
+      "note_en": "Herzog: the sublime, mad project"
+    },
+    {
+      "tmdb_id": 845,
+      "kind": "movie",
+      "title": "Незнакомцы в поезде",
+      "original_title": "Strangers on a Train",
+      "year": 1951,
+      "note_ru": "Хичкок: образ-отношение (зажигалка)",
+      "note_en": "Hitchcock: relation-image (the lighter)"
+    },
+    {
+      "tmdb_id": 567,
+      "kind": "movie",
+      "title": "Окно во двор",
+      "original_title": "Rear Window",
+      "year": 1954,
+      "note_ru": "ментальный образ, зритель внутри фильма",
+      "note_en": "mental-image, a spectator inside the film"
+    },
+    {
+      "tmdb_id": 571,
+      "kind": "movie",
+      "title": "Птицы",
+      "original_title": "The Birds",
+      "year": 1963,
+      "note_ru": "нарушение естественного порядка",
+      "note_en": "breaking the natural order"
+    },
+    {
+      "tmdb_id": 573,
+      "kind": "movie",
+      "title": "Исступление",
+      "original_title": "Frenzy",
+      "year": 1972,
+      "note_ru": "движение камеры, связанное с целым",
+      "note_en": "a camera move tied to the whole"
+    },
+    {
+      "tmdb_id": 3121,
+      "kind": "movie",
+      "title": "Нэшвилл",
+      "original_title": "Nashville",
+      "year": 1975,
+      "note_ru": "кризис образа-действия: рассеяние",
+      "note_en": "crisis of action-image: dispersal"
+    },
+    {
+      "tmdb_id": 968,
+      "kind": "movie",
+      "title": "Собачий полдень",
+      "original_title": "Dog Day Afternoon",
+      "year": 1975,
+      "note_ru": "кризис: герой без ясной ситуации",
+      "note_en": "crisis: a hero without a clear situation"
+    },
+    {
+      "tmdb_id": 103,
+      "kind": "movie",
+      "title": "Таксист",
+      "original_title": "Taxi Driver",
+      "year": 1976,
+      "note_ru": "прогулка-блуждание вместо действия",
+      "note_en": "the aimless ride instead of action"
+    }
+  ]
+}

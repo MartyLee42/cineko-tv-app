@@ -1,0 +1,227 @@
+/* Generated from packages/ui/src/theme.css (Cineko designs): the same palettes,
+   corners and display fonts, mapped onto Cineko Music's tokens. */
+
+:root,
+html.design-kinozal {
+  --bg: rgb(8, 9, 12);
+  --panel: rgb(29, 31, 32);
+  --panel-2: rgb(38, 40, 41);
+  --panel-3: color-mix(in srgb, rgb(38, 40, 41) 70%, rgb(62, 62, 62));
+  --line: rgb(62, 62, 62);
+  --text: rgb(242, 244, 248);
+  --muted: rgb(154, 160, 170);
+  --dim: color-mix(in srgb, rgb(154, 160, 170) 60%, rgb(8, 9, 12));
+  --accent: rgb(200, 255, 61);
+  --accent-2: rgb(222, 255, 130);
+  --on-accent: rgb(10, 12, 6);
+  --radius: 14px;
+  --radius-ctl: 14px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+html.design-terminal {
+  --bg: rgb(7, 7, 8);
+  --panel: rgb(16, 16, 17);
+  --panel-2: rgb(26, 26, 28);
+  --panel-3: color-mix(in srgb, rgb(26, 26, 28) 70%, rgb(52, 52, 56));
+  --line: rgb(52, 52, 56);
+  --text: rgb(236, 236, 232);
+  --muted: rgb(150, 150, 146);
+  --dim: color-mix(in srgb, rgb(150, 150, 146) 60%, rgb(7, 7, 8));
+  --accent: rgb(255, 107, 61);
+  --accent-2: rgb(255, 140, 100);
+  --on-accent: rgb(12, 7, 5);
+  --radius: 2px;
+  --radius-ctl: 0px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "JetBrains Mono", ui-monospace, monospace;
+  --round: 0;
+}
+
+html.design-projector {
+  --bg: rgb(5, 9, 11);
+  --panel: rgb(18, 26, 29);
+  --panel-2: rgb(28, 38, 42);
+  --panel-3: color-mix(in srgb, rgb(28, 38, 42) 70%, rgb(46, 60, 64));
+  --line: rgb(46, 60, 64);
+  --text: rgb(244, 248, 248);
+  --muted: rgb(160, 176, 178);
+  --dim: color-mix(in srgb, rgb(160, 176, 178) 60%, rgb(5, 9, 11));
+  --accent: rgb(95, 214, 200);
+  --accent-2: rgb(150, 236, 226);
+  --on-accent: rgb(4, 16, 14);
+  --radius: 18px;
+  --radius-ctl: 999px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+html.design-wireframe {
+  --bg: rgb(13, 4, 32);
+  --panel: rgb(30, 15, 61);
+  --panel-2: rgb(46, 24, 88);
+  --panel-3: color-mix(in srgb, rgb(46, 24, 88) 70%, rgb(92, 54, 156));
+  --line: rgb(92, 54, 156);
+  --text: rgb(248, 242, 255);
+  --muted: rgb(196, 178, 230);
+  --dim: color-mix(in srgb, rgb(196, 178, 230) 60%, rgb(13, 4, 32));
+  --accent: rgb(255, 79, 216);
+  --accent-2: rgb(60, 232, 255);
+  --on-accent: rgb(22, 4, 32);
+  --radius: 6px;
+  --radius-ctl: 8px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "JetBrains Mono", ui-monospace, monospace;
+  --round: 50%;
+}
+
+html.design-cyberpunk {
+  --bg: rgb(6, 6, 10);
+  --panel: rgb(20, 20, 30);
+  --panel-2: rgb(32, 32, 46);
+  --panel-3: color-mix(in srgb, rgb(32, 32, 46) 70%, rgb(64, 64, 90));
+  --line: rgb(64, 64, 90);
+  --text: rgb(238, 246, 255);
+  --muted: rgb(162, 174, 196);
+  --dim: color-mix(in srgb, rgb(162, 174, 196) 60%, rgb(6, 6, 10));
+  --accent: rgb(245, 240, 60);
+  --accent-2: rgb(0, 240, 255);
+  --on-accent: rgb(10, 10, 4);
+  --radius: 0px;
+  --radius-ctl: 0px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "JetBrains Mono", ui-monospace, monospace;
+  --round: 0;
+}
+
+html.design-deco {
+  --bg: rgb(11, 10, 8);
+  --panel: rgb(27, 24, 18);
+  --panel-2: rgb(40, 35, 26);
+  --panel-3: color-mix(in srgb, rgb(40, 35, 26) 70%, rgb(96, 80, 46));
+  --line: rgb(96, 80, 46);
+  --text: rgb(244, 236, 216);
+  --muted: rgb(184, 170, 142);
+  --dim: color-mix(in srgb, rgb(184, 170, 142) 60%, rgb(11, 10, 8));
+  --accent: rgb(201, 165, 76);
+  --accent-2: rgb(232, 207, 138);
+  --on-accent: rgb(16, 12, 4);
+  --radius: 2px;
+  --radius-ctl: 3px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+html.design-retro80 {
+  --bg: rgb(11, 14, 42);
+  --panel: rgb(27, 32, 78);
+  --panel-2: rgb(42, 48, 108);
+  --panel-3: color-mix(in srgb, rgb(42, 48, 108) 70%, rgb(80, 88, 170));
+  --line: rgb(80, 88, 170);
+  --text: rgb(255, 244, 230);
+  --muted: rgb(190, 186, 218);
+  --dim: color-mix(in srgb, rgb(190, 186, 218) 60%, rgb(11, 14, 42));
+  --accent: rgb(255, 122, 26);
+  --accent-2: rgb(22, 224, 208);
+  --on-accent: rgb(24, 8, 0);
+  --radius: 6px;
+  --radius-ctl: 8px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Russo One", "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+html.design-retro90 {
+  --bg: rgb(0, 110, 110);
+  --panel: rgb(16, 24, 112);
+  --panel-2: rgb(32, 48, 160);
+  --panel-3: color-mix(in srgb, rgb(32, 48, 160) 70%, rgb(192, 192, 192));
+  --line: rgb(192, 192, 192);
+  --text: rgb(255, 255, 255);
+  --muted: rgb(204, 228, 228);
+  --dim: color-mix(in srgb, rgb(204, 228, 228) 60%, rgb(0, 110, 110));
+  --accent: rgb(255, 232, 92);
+  --accent-2: rgb(255, 255, 255);
+  --on-accent: rgb(0, 0, 0);
+  --radius: 0px;
+  --radius-ctl: 0px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "JetBrains Mono", ui-monospace, monospace;
+  --round: 0;
+}
+
+html.design-popart {
+  --bg: rgb(20, 58, 150);
+  --panel: rgb(14, 34, 98);
+  --panel-2: rgb(30, 74, 178);
+  --panel-3: color-mix(in srgb, rgb(30, 74, 178) 70%, rgb(0, 0, 0));
+  --line: rgb(0, 0, 0);
+  --text: rgb(255, 255, 255);
+  --muted: rgb(206, 220, 250);
+  --dim: color-mix(in srgb, rgb(206, 220, 250) 60%, rgb(20, 58, 150));
+  --accent: rgb(255, 214, 0);
+  --accent-2: rgb(255, 45, 60);
+  --on-accent: rgb(0, 0, 0);
+  --radius: 4px;
+  --radius-ctl: 10px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Rubik Mono One", "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+html.design-constructivism {
+  --bg: rgb(24, 20, 18);
+  --panel: rgb(40, 34, 30);
+  --panel-2: rgb(60, 51, 45);
+  --panel-3: color-mix(in srgb, rgb(60, 51, 45) 70%, rgb(112, 98, 84));
+  --line: rgb(112, 98, 84);
+  --text: rgb(243, 234, 214);
+  --muted: rgb(190, 178, 156);
+  --dim: color-mix(in srgb, rgb(190, 178, 156) 60%, rgb(24, 20, 18));
+  --accent: rgb(215, 38, 30);
+  --accent-2: rgb(239, 228, 204);
+  --on-accent: rgb(248, 240, 222);
+  --radius: 0px;
+  --radius-ctl: 0px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Oswald", "Russo One", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Oswald", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 0;
+}
+
+/* Headings use each design's display face, like Cineko. */
+html.design-deco h1, html.design-deco h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: .01em; }
+html.design-wireframe h1, html.design-wireframe h2,
+html.design-cyberpunk h1, html.design-cyberpunk h2 { font-family: var(--font-display); }
+html.design-retro80 h1, html.design-retro80 h2 { font-family: var(--font-display); font-weight: 400; font-style: italic; }
+html.design-popart h1, html.design-popart h2 { font-family: var(--font-display); font-weight: 400; word-spacing: -.35em; }
+html.design-constructivism h1, html.design-constructivism h2 { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+html.design-kinozal h1, html.design-terminal h1, html.design-projector h1 { font-family: var(--font-display); }
+html.design-terminal .hero-kind, html.design-cyberpunk .hero-kind, html.design-wireframe .hero-kind,
+html.design-retro90 .hero-kind, html.design-constructivism .hero-kind,
+html.design-terminal .chip, html.design-cyberpunk .chip { font-family: var(--font-label); text-transform: uppercase; letter-spacing: .06em; }
+/* Pop-art: ink outlines and hard offset shadows. */
+html.design-popart .card-art .cover, html.design-popart .big-play, html.design-popart .card-play,
+html.design-popart .wave, html.design-popart .quick-tile { outline: 3px solid #000; box-shadow: 5px 5px 0 #000; }
+/* Retro 90s: grey bevels. */
+html.design-retro90 .btn, html.design-retro90 .chip, html.design-retro90 .big-play, html.design-retro90 .play-btn {
+  box-shadow: inset -2px -2px 0 #404040, inset 2px 2px 0 #fff; }
+/* Constructivism: red diagonal accent on the hero. */
+html.design-constructivism .hero::before { content: ""; position: absolute; right: -60px; top: 20px; width: 260px; height: 26px;
+  background: var(--accent); transform: rotate(-24deg); z-index: 1; opacity: .9; }
+/* Cyberpunk: clipped corners. */
+html.design-cyberpunk .card-art .cover, html.design-cyberpunk .hero-art .cover, html.design-cyberpunk .wave {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }

@@ -1,0 +1,116 @@
+/* ================================================================
+   «Конструктивизм» buttons: one style. Flat rectangular slabs, no
+   rounded corners, heavy condensed capitals. Primary (and selected) = a
+   red slab with cream text; secondary = a cream slab with black text and
+   a 2px black rule; both on a black offset block. Hover / keyboard focus:
+   the slab lifts up-left and the red offset slab shifts out; disabled =
+   muted and flat. Poster/card links (anything with an image) and the
+   header / tab-bar navigation keep their own look (constructivism.css).
+   Imported by index.css after constructivism.css.
+   ================================================================ */
+
+/* Square corners on every control. */
+html.design-constructivism :is(button, [role="button"], [role="radio"], [role="tab"], [role="switch"], [role="radiogroup"], [role="tablist"], select, textarea, a[class*="rounded"]),
+html.design-constructivism input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.design-constructivism :is(button, [role="button"], [role="radio"], [role="tab"], [role="switch"], a) [class*="rounded-full"]:empty {
+  border-radius: 0 !important;
+}
+
+/* Content blocks with arbitrary radii (the title hero…): square too (circles stay). */
+html.design-constructivism main [class*="rounded-["]:not([class*="rounded-full"]) { border-radius: 0 !important; }
+
+/* Sheets, dialogs, toasts, banners (outside <main> too): square, on a black offset block. */
+html.design-constructivism :is([role="dialog"], [role="alertdialog"], [role="status"], [role="alert"], [role="menu"], [role="listbox"]),
+html.design-constructivism :is([role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]) :is(.rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl),
+html.design-constructivism body > div > :is(.fixed, .sticky) :is(.rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl),
+html.design-constructivism body > div > :is(.fixed, .sticky):is(.rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl),
+html.design-constructivism .fixed :is(.rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl),
+html.design-constructivism .fixed:is(.rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl) {
+  border-radius: 0 !important;
+}
+html.design-constructivism :is([role="dialog"], [role="alertdialog"]):is(.bg-surface, .bg-bg),
+html.design-constructivism :is([role="dialog"], [role="alertdialog"]) > :is(.bg-surface, .bg-bg) {
+  box-shadow: 8px 8px 0 rgb(215, 38, 30);
+}
+
+/* Type: condensed capitals on every slab. */
+html.design-constructivism :is(button, a, [role="button"], [role="radio"], [role="tab"]):is(.bg-accent, .bg-text, .bg-danger):not(:has(img)):not(header.sticky *):not(nav.fixed *),
+html.design-constructivism :is(button, [role="button"], [role="radio"], [role="tab"], a.flex, a.inline-flex, a.block, a.inline-block):is(.bg-surface, .bg-surface-2, .bg-border, .border, .border-2, [class*="bg-accent/"], [class*="bg-danger/"], [class*="bg-white/"], [class*="bg-text/"]):not(:has(img)):not(header.sticky *):not(nav.fixed *):not([role="switch"]) {
+  font-family: var(--mt-font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  /* Capitals run wider: wrap rather than overflow a narrow slot. */
+  white-space: normal;
+  line-height: 1.15;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+/* Primary / selected: the red slab. */
+html.design-constructivism :is(button, a, [role="button"], [role="radio"], [role="tab"]):is(.bg-accent, .bg-text):not(:has(img)):not(header.sticky *):not(nav.fixed *) {
+  background: rgb(215, 38, 30);
+  color: rgb(248, 240, 222);
+  box-shadow: 4px 4px 0 #000;
+  --cv-ic-a: #1a1512;
+}
+html.design-constructivism :is(button, a, [role="button"]).bg-danger:not(:has(img)) {
+  background: #1a1512;
+  color: rgb(248, 240, 222);
+  box-shadow: inset 0 0 0 2px rgb(215, 38, 30), 4px 4px 0 rgb(215, 38, 30);
+}
+
+/* Secondary: the cream slab with a black rule. */
+html.design-constructivism :is(button, [role="button"], [role="radio"], [role="tab"], a.flex, a.inline-flex, a.block, a.inline-block):is(.bg-surface, .bg-surface-2, .bg-border, .border, .border-2, [class*="bg-accent/"], [class*="bg-danger/"], [class*="bg-white/"], [class*="bg-text/"]):not(.bg-accent):not(.bg-text):not(:has(img)):not(header.sticky *):not(nav.fixed *):not([role="switch"]) {
+  background: rgb(239, 228, 204);
+  color: #1a1512;
+  border-color: #1a1512;
+  box-shadow: inset 0 0 0 2px #1a1512, 4px 4px 0 #000;
+}
+html.design-constructivism :is(button, [role="button"], [role="radio"], a):is(.bg-surface, .bg-surface-2, .border, [class*="bg-accent/"], [class*="bg-danger/"]):not(.bg-accent):not(.bg-text):not(:has(img)):not(header.sticky *):not(nav.fixed *) :is(.text-muted, .text-text, .text-accent) {
+  color: #4a3f36;
+}
+html.design-constructivism :is(button, [role="button"], a)[class*="bg-danger/"]:not(:has(img)) {
+  color: rgb(180, 20, 14);
+}
+
+/* Hover (pointer) / keyboard focus: lift up-left, the red offset slab shifts out. */
+@media (hover: hover) {
+  html.design-constructivism :is(button, a, [role="button"], [role="radio"], [role="tab"]):is(.bg-surface, .bg-surface-2, .bg-border, .border, .border-2, [class*="bg-accent/"], [class*="bg-danger/"], [class*="bg-white/"], [class*="bg-text/"]):not(.bg-accent):not(.bg-text):not(:has(img)):not(header.sticky *):not(nav.fixed *):not([role="switch"]):not(:disabled):hover {
+    background: rgb(239, 228, 204);
+    transform: translate(-2px, -2px);
+    box-shadow: inset 0 0 0 2px #1a1512, 7px 7px 0 rgb(215, 38, 30);
+  }
+  html.design-constructivism :is(button, a, [role="button"], [role="radio"], [role="tab"]):is(.bg-accent, .bg-text):not(:has(img)):not(header.sticky *):not(nav.fixed *):not(:disabled):hover {
+    background: rgb(215, 38, 30);
+    transform: translate(-2px, -2px);
+    box-shadow: 0 0 0 2px #1a1512, 7px 7px 0 rgb(239, 228, 204);
+  }
+}
+html.design-constructivism :is(button, a, [role="button"], [role="radio"], [role="tab"], [role="switch"], input, select, textarea):focus-visible {
+  outline: 3px solid rgb(243, 234, 214);
+  outline-offset: 3px;
+}
+html.design-constructivism :is(button, a, [role="button"], [role="radio"], [role="tab"]):is(.bg-surface, .bg-surface-2, .bg-border, .border, .border-2, [class*="bg-accent/"], [class*="bg-danger/"], [class*="bg-white/"], [class*="bg-text/"]):not(.bg-accent):not(.bg-text):not(:has(img)):not(header.sticky *):not(nav.fixed *):not([role="switch"]):focus-visible {
+  transform: translate(-2px, -2px);
+  box-shadow: inset 0 0 0 2px #1a1512, 7px 7px 0 rgb(215, 38, 30);
+}
+html.design-constructivism :is(button, a, [role="button"], [role="radio"], [role="tab"]):is(.bg-accent, .bg-text):not(:has(img)):not(header.sticky *):not(nav.fixed *):focus-visible {
+  transform: translate(-2px, -2px);
+  box-shadow: 0 0 0 2px #1a1512, 7px 7px 0 rgb(239, 228, 204);
+}
+
+/* Disabled: muted and flat. */
+html.design-constructivism :is(button, [role="button"], input[type="submit"]):is(:disabled, [aria-disabled="true"]) {
+  box-shadow: none !important;
+  transform: none !important;
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+/* Switches: a square track with a black rule; on = red, the knob a cream square. */
+html.design-constructivism [role="switch"] { box-shadow: inset 0 0 0 2px #1a1512; }
+html.design-constructivism [role="switch"] span { border-radius: 0 !important; }
+html.design-constructivism [role="switch"][aria-checked="true"] { background: rgb(215, 38, 30); }
+
+/* Icon-only round buttons (player overlay, close ✕, carousel arrows): square. */
+html.design-constructivism :is(button, a).rounded-full { border-radius: 0 !important; }

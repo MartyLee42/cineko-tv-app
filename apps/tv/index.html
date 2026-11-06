@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, initial-scale=1" />
+    <link rel="icon" href="/tv/favicon.png" type="image/png" />
+    <title>Cineko</title>
+    <!-- Dark from the first frame: no white flash while the bundle loads on a slow link. -->
+    <style>
+      html{background:#08090c;color:#f2f2f2}
+      body{margin:0}
+    </style>
+    <script>
+      // The last design/theme (cached by the app) from the first frame, so a
+      // light «Кинозал» doesn't flash dark while the bundle loads. ES5: old TVs.
+      try {
+        var d = localStorage.getItem("martytv.design") || "kinozal", t = localStorage.getItem("martytv.theme") || "dark";
+        var m = { terminal: "#070708", projector: "#05090b", wireframe: "#0d0420", cyberpunk: "#06060a", deco: "#0b0a08", retro80: "#0b0e2a", retro90: "#006e6e" };
+        var bg = m[d] || "#08090c", fg = "#f2f2f2";
+        var light = d === "kinozal" && (t === "light" || (t === "system" && !!window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches));
+        if (light) { bg = "#f4f5f0"; fg = "#0e100c"; }
+        // The same classes the app sets (applyDesign/applyTheme), so its CSS is right as soon as it arrives.
+        document.documentElement.className += " design-" + d + " theme-" + (light ? "light" : "dark");
+        document.documentElement.style.background = bg;
+        document.documentElement.style.color = fg;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

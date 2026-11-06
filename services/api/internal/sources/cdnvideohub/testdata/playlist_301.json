@@ -1,0 +1,84 @@
+{
+ "titleName": "Матрица (1999)",
+ "isSerial": false,
+ "items": [
+  {
+   "cvhId": "01a16a25-4f97-7dea-b0d3-2a5247b39d94",
+   "vkId": "19023318440670",
+   "voiceType": "Дубляж"
+  },
+  {
+   "cvhId": "01a16a29-0f0b-7dea-bf6c-d8c2edeb7aa8",
+   "vkId": "19023318375134",
+   "voiceStudio": "SDI Media",
+   "voiceType": "Многоголосый"
+  },
+  {
+   "cvhId": "01a17766-0b5e-7b5b-98c2-526f62ba3f9c",
+   "vkId": "19062624049886",
+   "voiceStudio": "Гланц и Королёва",
+   "voiceType": "Многоголосый"
+  },
+  {
+   "cvhId": "01a17781-ba54-78e4-852b-1f2533d6ac15",
+   "vkId": "19058489842398",
+   "voiceStudio": "Андрей Гаврилов",
+   "voiceType": "Авторская"
+  }
+ ],
+ "trailers": null,
+ "ads": {
+  "vast": {
+   "preroll": [
+    "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfmz&p2=juhq",
+    "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnc&p2=juhq"
+   ],
+   "prerolls": [
+    {
+     "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfmz&p2=juhq",
+     "priority": 0
+    },
+    {
+     "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnc&p2=juhq",
+     "priority": 1
+    }
+   ],
+   "pauseroll": [
+    "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnf&p2=juhq"
+   ],
+   "pauserolls": [
+    {
+     "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnf&p2=juhq",
+     "priority": 0
+    }
+   ],
+   "midroll": null
+  }
+ },
+ "vast": {
+  "preroll": [
+   "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfmz&p2=juhq",
+   "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnc&p2=juhq"
+  ],
+  "prerolls": [
+   {
+    "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfmz&p2=juhq",
+    "priority": 0
+   },
+   {
+    "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnc&p2=juhq",
+    "priority": 1
+   }
+  ],
+  "pauseroll": [
+   "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnf&p2=juhq"
+  ],
+  "pauserolls": [
+   {
+    "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpfnf&p2=juhq",
+    "priority": 0
+   }
+  ],
+  "midroll": null
+ }
+}

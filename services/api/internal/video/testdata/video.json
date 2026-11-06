@@ -1,0 +1,392 @@
+{
+ "type": "video",
+ "title": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
+ "videoId": "dQw4w9WgXcQ",
+ "videoThumbnails": [
+  {
+   "quality": "maxres",
+   "url": "http://invidious:3000/vi/dQw4w9WgXcQ/maxres.jpg",
+   "width": 1280,
+   "height": 720
+  },
+  {
+   "quality": "high",
+   "url": "http://invidious:3000/vi/dQw4w9WgXcQ/hqdefault.jpg",
+   "width": 480,
+   "height": 360
+  },
+  {
+   "quality": "medium",
+   "url": "http://invidious:3000/vi/dQw4w9WgXcQ/mqdefault.jpg",
+   "width": 320,
+   "height": 180
+  }
+ ],
+ "storyboards": [],
+ "description": "The official video for “Never Gonna Give You Up” by Rick Astley. \n\nNever: The Autobiography 📚 OUT NOW! \nFollow this link to get your copy and listen to Rick’s ‘Never’ playlist ❤️ #RickAstleyNever\nhttps://linktr.ee/rickastleynever\n\n“Never Gonna Give You Up” was a global smash on its release in July 1",
+ "published": 1256342400,
+ "publishedText": "17 years ago",
+ "keywords": [
+  "rick astley",
+  "Never Gonna Give You Up",
+  "nggyu"
+ ],
+ "viewCount": 1831602198,
+ "likeCount": 19489486,
+ "dislikeCount": 0,
+ "paid": false,
+ "premium": false,
+ "isFamilyFriendly": true,
+ "allowedRegions": [
+  "RU",
+  "KZ"
+ ],
+ "genre": "Music",
+ "genreUrl": null,
+ "author": "Rick Astley",
+ "authorId": "UCuAXFkgsw1L7xaCfnd5JJOw",
+ "authorUrl": "/channel/UCuAXFkgsw1L7xaCfnd5JJOw",
+ "authorVerified": true,
+ "authorThumbnails": [
+  {
+   "url": "https://yt3.ggpht.com/_ShEGOdg-t5YGJse14Ooq6FYBZqX_QSlhaTNjG06miYusm5lWm1UroLyVxnYtahADfRTVLtuVQ=s176-c-k-c0x00ffffff-no-rj",
+   "width": 176,
+   "height": 176
+  },
+  {
+   "url": "https://yt3.ggpht.com/_ShEGOdg-t5YGJse14Ooq6FYBZqX_QSlhaTNjG06miYusm5lWm1UroLyVxnYtahADfRTVLtuVQ=s512-c-k-c0x00ffffff-no-rj",
+   "width": 512,
+   "height": 512
+  }
+ ],
+ "subCountText": "4.55M",
+ "lengthSeconds": 214,
+ "allowRatings": true,
+ "rating": 0,
+ "isListed": true,
+ "liveNow": false,
+ "isPostLiveDvr": false,
+ "isUpcoming": false,
+ "dashUrl": "http://invidious:3000/api/manifest/dash/id/dQw4w9WgXcQ",
+ "adaptiveFormats": [
+  {
+   "init": "0-722",
+   "index": "723-1018",
+   "bitrate": "130677",
+   "url": "http://invidious:3000/videoplayback?expire=1793302946&id=o-ACuqYD9wCYN41EY-fMx0piKpVGCaagvBpnau7qOHhMmr&itag=140&source=youtube&sig=TESTSIG&host=rr5---sn-35153iuxa-5a5z.googlevideo.com",
+   "itag": "140",
+   "type": "audio/mp4; codecs=\"mp4a.40.2\"",
+   "clen": "3449447",
+   "lmt": "1766955925572207",
+   "projectionType": "RECTANGULAR",
+   "container": "m4a",
+   "encoding": "aac",
+   "audioQuality": "AUDIO_QUALITY_MEDIUM",
+   "audioSampleRate": 44100,
+   "audioChannels": 2
+  },
+  {
+   "init": "0-258",
+   "index": "259-629",
+   "bitrate": "136544",
+   "url": "http://invidious:3000/videoplayback?expire=1793302946&id=o-ACuqYD9wCYN41EY-fMx0piKpVGCaagvBpnau7qOHhMmr&itag=251&source=youtube&sig=TESTSIG&host=rr5---sn-35153iuxa-5a5z.googlevideo.com",
+   "itag": "251",
+   "type": "audio/webm; codecs=\"opus\"",
+   "clen": "3433755",
+   "lmt": "1766955883819090",
+   "projectionType": "RECTANGULAR",
+   "container": "webm",
+   "encoding": "opus",
+   "audioQuality": "AUDIO_QUALITY_MEDIUM",
+   "audioSampleRate": 48000,
+   "audioChannels": 2
+  },
+  {
+   "init": "0-740",
+   "index": "741-1228",
+   "bitrate": "450863",
+   "url": "http://invidious:3000/videoplayback?expire=1793302946&id=o-ACuqYD9wCYN41EY-fMx0piKpVGCaagvBpnau7qOHhMmr&itag=134&source=youtube&sig=TESTSIG&host=rr5---sn-35153iuxa-5a5z.googlevideo.com",
+   "itag": "134",
+   "type": "video/mp4; codecs=\"avc1.4D401E\"",
+   "clen": "8390921",
+   "lmt": "1766960771651324",
+   "projectionType": "RECTANGULAR",
+   "fps": 25,
+   "size": "640x360",
+   "resolution": "360p",
+   "qualityLabel": "360p",
+   "container": "mp4",
+   "encoding": "h264"
+  },
+  {
+   "init": "0-740",
+   "index": "741-1228",
+   "bitrate": "690764",
+   "url": "http://invidious:3000/videoplayback?expire=1793302946&id=o-ACuqYD9wCYN41EY-fMx0piKpVGCaagvBpnau7qOHhMmr&itag=135&source=youtube&sig=TESTSIG&host=rr5---sn-35153iuxa-5a5z.googlevideo.com",
+   "itag": "135",
+   "type": "video/mp4; codecs=\"avc1.4D401E\"",
+   "clen": "14103519",
+   "lmt": "1766958212394312",
+   "projectionType": "RECTANGULAR",
+   "fps": 25,
+   "size": "854x480",
+   "resolution": "480p",
+   "qualityLabel": "480p",
+   "container": "mp4",
+   "encoding": "h264"
+  },
+  {
+   "init": "0-739",
+   "index": "740-1227",
+   "bitrate": "1058310",
+   "url": "http://invidious:3000/videoplayback?expire=1793302946&id=o-ACuqYD9wCYN41EY-fMx0piKpVGCaagvBpnau7qOHhMmr&itag=136&source=youtube&sig=TESTSIG&host=rr5---sn-35153iuxa-5a5z.googlevideo.com",
+   "itag": "136",
+   "type": "video/mp4; codecs=\"avc1.4D401F\"",
+   "clen": "26455880",
+   "lmt": "1766958204135500",
+   "projectionType": "RECTANGULAR",
+   "fps": 25,
+   "size": "1280x720",
+   "resolution": "720p",
+   "qualityLabel": "720p",
+   "container": "mp4",
+   "encoding": "h264"
+  },
+  {
+   "init": "0-741",
+   "index": "742-1229",
+   "bitrate": "4334157",
+   "url": "http://invidious:3000/videoplayback?expire=1793302946&id=o-ACuqYD9wCYN41EY-fMx0piKpVGCaagvBpnau7qOHhMmr&itag=137&source=youtube&sig=TESTSIG&host=rr5---sn-35153iuxa-5a5z.googlevideo.com",
+   "itag": "137",
+   "type": "video/mp4; codecs=\"avc1.640028\"",
+   "clen": "80911999",
+   "lmt": "1766957926174250",
+   "projectionType": "RECTANGULAR",
+   "fps": 25,
+   "size": "1920x1080",
+   "resolution": "1080p",
+   "qualityLabel": "1080p",
+   "container": "mp4",
+   "encoding": "h264"
+  },
+  {
+   "init": "0-219",
+   "index": "220-874",
+   "bitrate": "1549172",
+   "url": "http://invidious:3000/videoplayback?expire=1793302946&id=o-ACuqYD9wCYN41EY-fMx0piKpVGCaagvBpnau7qOHhMmr&itag=248&source=youtube&sig=TESTSIG&host=rr5---sn-35153iuxa-5a5z.googlevideo.com",
+   "itag": "248",
+   "type": "video/webm; codecs=\"vp9\"",
+   "clen": "30846580",
+   "lmt": "1766963494258902",
+   "projectionType": "RECTANGULAR",
+   "fps": 25,
+   "size": "1920x1080",
+   "resolution": "1080p",
+   "qualityLabel": "1080p",
+   "container": "webm",
+   "encoding": "vp9",
+   "colorInfo": {
+    "primaries": "COLOR_PRIMARIES_BT709",
+    "transferCharacteristics": "COLOR_TRANSFER_CHARACTERISTICS_BT709",
+    "matrixCoefficients": "COLOR_MATRIX_COEFFICIENTS_BT709"
+   }
+  },
+  {
+   "init": "0-699",
+   "index": "700-1187",
+   "bitrate": "1594543",
+   "url": "http://invidious:3000/videoplayback?expire=1793302946&id=o-ACuqYD9wCYN41EY-fMx0piKpVGCaagvBpnau7qOHhMmr&itag=399&source=youtube&sig=TESTSIG&host=rr5---sn-35153iuxa-5a5z.googlevideo.com",
+   "itag": "399",
+   "type": "video/mp4; codecs=\"av01.0.08M.08\"",
+   "clen": "30415996",
+   "lmt": "1766970905427393",
+   "projectionType": "RECTANGULAR",
+   "fps": 25,
+   "size": "1920x1080",
+   "resolution": "1080p",
+   "qualityLabel": "1080p",
+   "colorInfo": {
+    "primaries": "COLOR_PRIMARIES_BT709",
+    "transferCharacteristics": "COLOR_TRANSFER_CHARACTERISTICS_BT709",
+    "matrixCoefficients": "COLOR_MATRIX_COEFFICIENTS_BT709"
+   }
+  }
+ ],
+ "formatStreams": [
+  {
+   "url": "http://invidious:3000/videoplayback?expire=1793302946&id=o-ACuqYD9wCYN41EY-fMx0piKpVGCaagvBpnau7qOHhMmr&itag=18&source=youtube&sig=TESTSIG&host=rr5---sn-35153iuxa-5a5z.googlevideo.com",
+   "itag": "18",
+   "type": "video/mp4; codecs=\"avc1.42001E, mp4a.40.2\"",
+   "quality": "medium",
+   "bitrate": "444226",
+   "fps": 25,
+   "size": "640x360",
+   "resolution": "360p",
+   "qualityLabel": "360p",
+   "container": "mp4",
+   "encoding": "h264"
+  }
+ ],
+ "captions": [
+  {
+   "label": "English",
+   "language_code": "en",
+   "url": "/api/v1/captions/dQw4w9WgXcQ?label=English"
+  },
+  {
+   "label": "English (auto-generated)",
+   "language_code": "en",
+   "url": "/api/v1/captions/dQw4w9WgXcQ?label=English+%28auto-generated%29"
+  },
+  {
+   "label": "German (Germany)",
+   "language_code": "de-DE",
+   "url": "/api/v1/captions/dQw4w9WgXcQ?label=German+%28Germany%29"
+  },
+  {
+   "label": "Japanese",
+   "language_code": "ja",
+   "url": "/api/v1/captions/dQw4w9WgXcQ?label=Japanese"
+  },
+  {
+   "label": "Portuguese (Brazil)",
+   "language_code": "pt-BR",
+   "url": "/api/v1/captions/dQw4w9WgXcQ?label=Portuguese+%28Brazil%29"
+  },
+  {
+   "label": "Spanish (Latin America)",
+   "language_code": "es-419",
+   "url": "/api/v1/captions/dQw4w9WgXcQ?label=Spanish+%28Latin+America%29"
+  }
+ ],
+ "recommendedVideos": [
+  {
+   "videoId": "jKUVkviceuo",
+   "title": "ONE LIFE to Beat Roblox’s Most POPULAR Game…",
+   "videoThumbnails": [
+    {
+     "quality": "maxres",
+     "url": "http://invidious:3000/vi/jKUVkviceuo/maxres.jpg",
+     "width": 1280,
+     "height": 720
+    },
+    {
+     "quality": "high",
+     "url": "http://invidious:3000/vi/jKUVkviceuo/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    },
+    {
+     "quality": "medium",
+     "url": "http://invidious:3000/vi/jKUVkviceuo/mqdefault.jpg",
+     "width": 320,
+     "height": 180
+    }
+   ],
+   "author": "luvjin",
+   "authorUrl": "/channel/UCxYhT2hLrZvSsk1sRg2ytAg",
+   "authorId": "UCxYhT2hLrZvSsk1sRg2ytAg",
+   "authorVerified": false,
+   "lengthSeconds": 580,
+   "viewCountText": "448K",
+   "published": "2026-10-27T13:42:28Z",
+   "publishedText": "2 days ago"
+  },
+  {
+   "videoId": "h_D3VFfhvs4",
+   "title": "Michael Jackson - Smooth Criminal (Official Video)",
+   "videoThumbnails": [
+    {
+     "quality": "maxres",
+     "url": "http://invidious:3000/vi/h_D3VFfhvs4/maxres.jpg",
+     "width": 1280,
+     "height": 720
+    },
+    {
+     "quality": "high",
+     "url": "http://invidious:3000/vi/h_D3VFfhvs4/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    },
+    {
+     "quality": "medium",
+     "url": "http://invidious:3000/vi/h_D3VFfhvs4/mqdefault.jpg",
+     "width": 320,
+     "height": 180
+    }
+   ],
+   "author": "Michael Jackson",
+   "authorUrl": "/channel/UC5OrDvL9DscpcAstz7JnQGA",
+   "authorId": "UC5OrDvL9DscpcAstz7JnQGA",
+   "authorVerified": false,
+   "lengthSeconds": 566,
+   "viewCountText": "1.3B",
+   "published": "2011-10-29T13:42:28Z",
+   "publishedText": "15 years ago"
+  },
+  {
+   "videoId": "E8gmARGvPlI",
+   "title": "Wham! - Last Christmas (Official Video)",
+   "videoThumbnails": [
+    {
+     "quality": "maxres",
+     "url": "http://invidious:3000/vi/E8gmARGvPlI/maxres.jpg",
+     "width": 1280,
+     "height": 720
+    },
+    {
+     "quality": "high",
+     "url": "http://invidious:3000/vi/E8gmARGvPlI/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    },
+    {
+     "quality": "medium",
+     "url": "http://invidious:3000/vi/E8gmARGvPlI/mqdefault.jpg",
+     "width": 320,
+     "height": 180
+    }
+   ],
+   "author": "WHAM!",
+   "authorUrl": "/channel/UCT41vlFeZ_asAUCY7BOiJVQ",
+   "authorId": "UCT41vlFeZ_asAUCY7BOiJVQ",
+   "authorVerified": false,
+   "lengthSeconds": 279,
+   "viewCountText": "1.1B",
+   "published": "2009-10-29T13:42:28Z",
+   "publishedText": "17 years ago"
+  },
+  {
+   "videoId": "oEDzhaMs0Iw",
+   "title": "I Beat Minecraft Without Breaking the Laws of 1940's Germany",
+   "videoThumbnails": [
+    {
+     "quality": "maxres",
+     "url": "http://invidious:3000/vi/oEDzhaMs0Iw/maxres.jpg",
+     "width": 1280,
+     "height": 720
+    },
+    {
+     "quality": "high",
+     "url": "http://invidious:3000/vi/oEDzhaMs0Iw/hqdefault.jpg",
+     "width": 480,
+     "height": 360
+    },
+    {
+     "quality": "medium",
+     "url": "http://invidious:3000/vi/oEDzhaMs0Iw/mqdefault.jpg",
+     "width": 320,
+     "height": 180
+    }
+   ],
+   "author": "GuyBordo",
+   "authorUrl": "/channel/UC0x6YqJCFe1DTUpgSPiCa4g",
+   "authorId": "UC0x6YqJCFe1DTUpgSPiCa4g",
+   "authorVerified": false,
+   "lengthSeconds": 1108,
+   "viewCountText": "2.9M",
+   "published": "2026-09-29T13:42:28Z",
+   "publishedText": "1 month ago"
+  }
+ ]
+}

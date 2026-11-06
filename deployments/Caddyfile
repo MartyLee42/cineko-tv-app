@@ -1,0 +1,84 @@
+# Production reverse proxy and static file server.
+#
+# SITE_ADDRESS: a domain (e.g. tv.example.com) gets automatic HTTPS from
+# Let's Encrypt; ":80" serves plain HTTP on the LAN.
+{
+	admin off
+	servers {
+		# Behind Cloudflare (or another CDN): trust only its ranges and take the
+		# client IP from its header, so X-Forwarded-For can't be spoofed by
+		# requests that bypass the CDN. Defaults suit a LAN or a plain proxy.
+		trusted_proxies static {$CADDY_TRUSTED_PROXIES:private_ranges}
+		client_ip_headers {$CADDY_CLIENT_IP_HEADER:X-Forwarded-For}
+	}
+}
+
+{$SITE_ADDRESS::80} {
+	# Never compress the video stream proxy (it would break Range requests)
+	# nor the speed test (random bytes; it must time the raw link).
+	@compressible not path /api/v1/stream/* /api/v1/vstream/* /api/v1/speedtest /music/api/play/* /music/api/stream/* /music/api/yt/*
+	encode @compressible zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	# Video stream proxy: flush immediately, no buffering, no timeouts
+	# (a film can stream for hours; Range requests pass through).
+	# /api/v1/vstream: YouTube videos («Видео», byte-range fMP4).
+	# /api/v1/speedtest: background speed tests time the bytes as they arrive.
+	@stream path /api/v1/stream/* /api/v1/vstream/* /api/v1/speedtest
+	handle @stream {
+		reverse_proxy api:8080 {
+			header_up X-Forwarded-For {client_ip}
+			flush_interval -1
+		}
+	}
+
+	# API, realtime WebSocket, liveness and the Media Station X launch files.
+	# /readyz stays internal (it reports integration status).
+	@api path /api/* /healthz /msx/*
+	handle @api {
+		reverse_proxy api:8080 {
+			# Pass the real client IP (rate limits, audit log).
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
+
+	# Marty Music (services/music): its own app, API and audio streams.
+	# Audio is flushed immediately and never buffered (Range requests pass
+	# through; a track or a transcode can stream for a long time).
+	@music path /music /music/*
+	handle @music {
+		reverse_proxy music:8080 {
+			header_up X-Forwarded-For {client_ip}
+			flush_interval -1
+		}
+	}
+
+	# TV app (built with base /tv/).
+	handle_path /tv/* {
+		root * /srv/tv
+		@tvassets path /assets/*
+		header @tvassets Cache-Control "public, max-age=31536000, immutable"
+		# The start page must always be re-checked, or TV browsers keep
+		# running an old build after a deploy.
+		@tvhtml not path /assets/*
+		header @tvhtml Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+
+	# PWA.
+	handle {
+		root * /srv/web
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		@sw path /sw.js /registerSW.js /manifest.webmanifest /index.html
+		header @sw Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}

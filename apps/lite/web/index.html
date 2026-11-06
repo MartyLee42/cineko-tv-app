@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru" class="design-kinozal skel-kinozal">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#08090c" />
+    <meta name="description" content="Cineko Lite — фильмы и сериалы онлайн прямо в браузере: каталог TMDB, озвучки, продолжение просмотра." />
+    <title>Cineko Lite</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" href="icon-512.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <script>
+      // Paint the saved design before the bundle loads (no flash of the wrong colours).
+      try {
+        var s = JSON.parse(localStorage.getItem("cineko.settings") || "{}");
+        if (s.design) document.documentElement.className = "design-" + s.design + (s.light && s.design === "kinozal" ? " theme-light" : "");
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Cineko Lite needs JavaScript.</noscript>
+    <script type="module" src="../src/web/main.tsx"></script>
+  </body>
+</html>

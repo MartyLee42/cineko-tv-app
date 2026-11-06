@@ -1,0 +1,338 @@
+{
+  "id": "kubrick-favourites",
+  "group": "directors",
+  "title_ru": "Кубрик: любимые фильмы",
+  "title_en": "Kubrick's Favourite Films",
+  "author": "Стэнли Кубрик / Stanley Kubrick",
+  "source": "единственный личный топ-10 Кубрика (журнал Cinema, 1963) + задокументированные позднее отзывы (интервью, родные, коллеги), по сводке Sight & Sound «Stanley Kubrick, cinephile» / Cinema magazine top 10 (1963) + later documented mentions compiled by BFI Sight & Sound",
+  "source_url": "https://www.bfi.org.uk/sight-and-sound/stanley-kubrick-cinephile",
+  "description_ru": "Первые десять — единственный топ, который Кубрик составил сам (1963); остальные он хвалил в интервью или о них рассказывали близкие. Источник у каждого фильма — в заметке.",
+  "description_en": "The first ten are the only top-ten list Kubrick ever made (1963); the rest he praised in interviews or are vouched for by family and colleagues. Each film notes its source.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 12548,
+      "kind": "movie",
+      "title": "Маменькины сынки",
+      "original_title": "I vitelloni",
+      "year": 1953,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№1)",
+      "note_en": "Cinema magazine top 10, 1963 (#1)"
+    },
+    {
+      "tmdb_id": 614,
+      "kind": "movie",
+      "title": "Земляничная поляна",
+      "original_title": "Smultronstället",
+      "year": 1957,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№2)",
+      "note_en": "Cinema magazine top 10, 1963 (#2)"
+    },
+    {
+      "tmdb_id": 15,
+      "kind": "movie",
+      "title": "Гражданин Кейн",
+      "original_title": "Citizen Kane",
+      "year": 1941,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№3)",
+      "note_en": "Cinema magazine top 10, 1963 (#3)"
+    },
+    {
+      "tmdb_id": 3090,
+      "kind": "movie",
+      "title": "Сокровища Сьерра Мадре",
+      "original_title": "The Treasure of the Sierra Madre",
+      "year": 1948,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№4)",
+      "note_en": "Cinema magazine top 10, 1963 (#4)"
+    },
+    {
+      "tmdb_id": 901,
+      "kind": "movie",
+      "title": "Огни большого города",
+      "original_title": "City Lights",
+      "year": 1931,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№5)",
+      "note_en": "Cinema magazine top 10, 1963 (#5)"
+    },
+    {
+      "tmdb_id": 22638,
+      "kind": "movie",
+      "title": "Король Генрих V",
+      "original_title": "The Chronicle History of King Henry the Fifth with His Battell Fought at Agincourt in France",
+      "year": 1944,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№6)",
+      "note_en": "Cinema magazine top 10, 1963 (#6)"
+    },
+    {
+      "tmdb_id": 41050,
+      "kind": "movie",
+      "title": "Ночь",
+      "original_title": "La notte",
+      "year": 1961,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№7)",
+      "note_en": "Cinema magazine top 10, 1963 (#7)"
+    },
+    {
+      "tmdb_id": 911,
+      "kind": "movie",
+      "title": "Банковский сыщик",
+      "original_title": "The Bank Dick",
+      "year": 1940,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№8)",
+      "note_en": "Cinema magazine top 10, 1963 (#8)"
+    },
+    {
+      "tmdb_id": 57684,
+      "kind": "movie",
+      "title": "Рокси Харт",
+      "original_title": "Roxie Hart",
+      "year": 1942,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№9)",
+      "note_en": "Cinema magazine top 10, 1963 (#9)"
+    },
+    {
+      "tmdb_id": 22301,
+      "kind": "movie",
+      "title": "Ангелы ада",
+      "original_title": "Hell's Angels",
+      "year": 1930,
+      "note_ru": "топ-10 журнала Cinema, 1963 (№10)",
+      "note_en": "Cinema magazine top 10, 1963 (#10)"
+    },
+    {
+      "tmdb_id": 238,
+      "kind": "movie",
+      "title": "Крёстный отец",
+      "original_title": "The Godfather",
+      "year": 1972,
+      "note_ru": "со слов Майкла Герра, Vanity Fair, 1999",
+      "note_en": "per Michael Herr, Vanity Fair, 1999"
+    },
+    {
+      "tmdb_id": 17295,
+      "kind": "movie",
+      "title": "Битва за Алжир",
+      "original_title": "La battaglia di Algeri",
+      "year": 1966,
+      "note_ru": "интервью Positif, 1968; Энтони Фрюин",
+      "note_en": "Positif interview, 1968; Anthony Frewin"
+    },
+    {
+      "tmdb_id": 4202,
+      "kind": "movie",
+      "title": "Дантон",
+      "original_title": "Danton",
+      "year": 1983,
+      "note_ru": "со слов Энтони Фрюина",
+      "note_en": "per Anthony Frewin"
+    },
+    {
+      "tmdb_id": 43059,
+      "kind": "series",
+      "title": "Родной край: хроники Германии",
+      "original_title": "Heimat",
+      "year": 1984,
+      "note_ru": "со слов Яна Харлана (сериал)",
+      "note_en": "per Jan Harlan (TV series)"
+    },
+    {
+      "tmdb_id": 8740,
+      "kind": "movie",
+      "title": "Исчезновение",
+      "original_title": "Spoorloos",
+      "year": 1988,
+      "note_ru": "со слов Жоржа Слёйзера",
+      "note_en": "per George Sluizer"
+    },
+    {
+      "tmdb_id": 792,
+      "kind": "movie",
+      "title": "Взвод",
+      "original_title": "Platoon",
+      "year": 1986,
+      "note_ru": "интервью Джину Сискелу, 1987",
+      "note_en": "interview with Gene Siskel, 1987"
+    },
+    {
+      "tmdb_id": 228,
+      "kind": "movie",
+      "title": "Голубой ангел",
+      "original_title": "Der blaue Engel",
+      "year": 1930,
+      "note_ru": "Ян Харлан; Sight & Sound, 1972",
+      "note_en": "Jan Harlan; Sight & Sound, 1972"
+    },
+    {
+      "tmdb_id": 27030,
+      "kind": "movie",
+      "title": "Мадам де…",
+      "original_title": "Madame de…",
+      "year": 1953,
+      "note_ru": "со слов Яна Харлана",
+      "note_en": "per Jan Harlan"
+    },
+    {
+      "tmdb_id": 11700,
+      "kind": "movie",
+      "title": "Улыбки летней ночи",
+      "original_title": "Sommarnattens leende",
+      "year": 1955,
+      "note_ru": "интервью Cahiers du cinéma, 1957",
+      "note_en": "Cahiers du cinéma interview, 1957"
+    },
+    {
+      "tmdb_id": 68822,
+      "kind": "movie",
+      "title": "Золотая Каска",
+      "original_title": "Casque d'Or",
+      "year": 1952,
+      "note_ru": "интервью Cahiers du cinéma, 1957",
+      "note_en": "Cahiers du cinéma interview, 1957"
+    },
+    {
+      "tmdb_id": 4495,
+      "kind": "movie",
+      "title": "Дух улья",
+      "original_title": "El espíritu de la colmena",
+      "year": 1973,
+      "note_ru": "El País, 1980; список Катарины, 1999",
+      "note_en": "El País, 1980; Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 40732,
+      "kind": "movie",
+      "title": "Эмигранты",
+      "original_title": "Utvandrarna",
+      "year": 1971,
+      "note_ru": "со слов Яна Харлана",
+      "note_en": "per Jan Harlan"
+    },
+    {
+      "tmdb_id": 789,
+      "kind": "movie",
+      "title": "Поезда под пристальным наблюдением",
+      "original_title": "Ostře sledované vlaky",
+      "year": 1966,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 38442,
+      "kind": "movie",
+      "title": "Бал пожарных",
+      "original_title": "Hoří, má panenko",
+      "year": 1967,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 30497,
+      "kind": "movie",
+      "title": "Техасская резня бензопилой",
+      "original_title": "The Texas Chain Saw Massacre",
+      "year": 1974,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 968,
+      "kind": "movie",
+      "title": "Собачий полдень",
+      "original_title": "Dog Day Afternoon",
+      "year": 1975,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 510,
+      "kind": "movie",
+      "title": "Пролетая над гнездом кукушки",
+      "original_title": "One Flew Over the Cuckoo's Nest",
+      "year": 1975,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 23999,
+      "kind": "movie",
+      "title": "Вечеринка Эбигейл",
+      "original_title": "Abigail's Party",
+      "year": 1977,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 814,
+      "kind": "movie",
+      "title": "Американский оборотень в Лондоне",
+      "original_title": "An American Werewolf in London",
+      "year": 1981,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 274,
+      "kind": "movie",
+      "title": "Молчание ягнят",
+      "original_title": "The Silence of the Lambs",
+      "year": 1991,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 10158,
+      "kind": "movie",
+      "title": "Белые люди не умеют прыгать",
+      "original_title": "White Men Can't Jump",
+      "year": 1992,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 648,
+      "kind": "movie",
+      "title": "Красавица и чудовище",
+      "original_title": "La Belle et la Bête",
+      "year": 1946,
+      "note_ru": "список дочери Катарины, 1999",
+      "note_en": "daughter Katharina’s list, 1999"
+    },
+    {
+      "tmdb_id": 985,
+      "kind": "movie",
+      "title": "Голова-ластик",
+      "original_title": "Eraserhead",
+      "year": 1977,
+      "note_ru": "со слов Дэвида Линча",
+      "note_en": "per David Lynch"
+    },
+    {
+      "tmdb_id": 4995,
+      "kind": "movie",
+      "title": "Ночи в стиле буги",
+      "original_title": "Boogie Nights",
+      "year": 1997,
+      "note_ru": "со слов П. Т. Андерсона",
+      "note_en": "per P. T. Anderson"
+    },
+    {
+      "tmdb_id": 30890,
+      "kind": "movie",
+      "title": "Эпоха радио",
+      "original_title": "Radio Days",
+      "year": 1987,
+      "note_ru": "со слов Яна Харлана",
+      "note_en": "per Jan Harlan"
+    },
+    {
+      "tmdb_id": 343,
+      "kind": "movie",
+      "title": "Гарольд и Мод",
+      "original_title": "Harold and Maude",
+      "year": 1971,
+      "note_ru": "со слов Яна Харлана",
+      "note_en": "per Jan Harlan"
+    }
+  ]
+}

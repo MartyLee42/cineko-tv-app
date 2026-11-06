@@ -1,0 +1,384 @@
+{
+  "id": "bfi-50-by-14",
+  "group": "polls",
+  "title_ru": "BFI: 50 фильмов, которые стоит увидеть до 14 лет",
+  "title_en": "BFI: 50 Films to See by the Age of 14",
+  "author": "British Film Institute",
+  "source": "«50 films you should see by the age of 14», BFI Education, 2005",
+  "source_url": "https://web.archive.org/web/2010/http://en.wikipedia.org/wiki/BFI_list_of_the_50_films_you_should_see_by_the_age_of_14",
+  "description_ru": "Список, который BFI собрал в 2005 году из «десяток» более чем 70 критиков, педагогов и кинематографистов, — чтобы к кино для детей относились так же серьёзно, как к книгам. Десять самых упоминаемых фильмов идут первыми (по алфавиту), затем остальные сорок.",
+  "description_en": "Compiled by the BFI in 2005 from the top-ten picks of 70+ critics, teachers and filmmakers, to argue that children’s viewing deserves the care given to their reading. The ten most-named films come first (alphabetically), then the other forty.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 5156,
+      "kind": "movie",
+      "title": "Похитители велосипедов",
+      "original_title": "Ladri di biciclette",
+      "year": 1948,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 601,
+      "kind": "movie",
+      "title": "Инопланетянин",
+      "original_title": "E.T. the Extra-Terrestrial",
+      "year": 1982,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 13384,
+      "kind": "movie",
+      "title": "Кес",
+      "original_title": "Kes",
+      "year": 1969,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 3112,
+      "kind": "movie",
+      "title": "Ночь охотника",
+      "original_title": "The Night of the Hunter",
+      "year": 1955,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 147,
+      "kind": "movie",
+      "title": "Четыреста ударов",
+      "original_title": "Les Quatre Cents Coups",
+      "year": 1959,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 11634,
+      "kind": "movie",
+      "title": "Покажи мне любовь",
+      "original_title": "Fucking Åmål",
+      "year": 1998,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 129,
+      "kind": "movie",
+      "title": "Унесённые призраками",
+      "original_title": "千と千尋の神隠し",
+      "year": 2001,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 862,
+      "kind": "movie",
+      "title": "История игрушек",
+      "original_title": "Toy Story",
+      "year": 1995,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 49964,
+      "kind": "movie",
+      "title": "Где дом друга?",
+      "original_title": "خانه‌ی دوست کجاست؟",
+      "year": 1987,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 630,
+      "kind": "movie",
+      "title": "Волшебник страны Оз",
+      "original_title": "The Wizard of Oz",
+      "year": 1939,
+      "note_ru": "первая десятка",
+      "note_en": "top ten"
+    },
+    {
+      "tmdb_id": 11939,
+      "kind": "movie",
+      "title": "День на скачках",
+      "original_title": "A Day at the Races",
+      "year": 1937
+    },
+    {
+      "tmdb_id": 10907,
+      "kind": "movie",
+      "title": "Приключения Робин Гуда",
+      "original_title": "The Adventures of Robin Hood",
+      "year": 1938
+    },
+    {
+      "tmdb_id": 1786,
+      "kind": "movie",
+      "title": "До свидания, дети",
+      "original_title": "Au revoir les enfants",
+      "year": 1987
+    },
+    {
+      "tmdb_id": 105,
+      "kind": "movie",
+      "title": "Назад в будущее",
+      "original_title": "Back to the Future",
+      "year": 1985
+    },
+    {
+      "tmdb_id": 648,
+      "kind": "movie",
+      "title": "Красавица и чудовище",
+      "original_title": "La Belle et la Bête",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 10020,
+      "kind": "movie",
+      "title": "Красавица и Чудовище",
+      "original_title": "Beauty and the Beast",
+      "year": 1991
+    },
+    {
+      "tmdb_id": 71,
+      "kind": "movie",
+      "title": "Билли Эллиот",
+      "original_title": "Billy Elliot",
+      "year": 2000
+    },
+    {
+      "tmdb_id": 162,
+      "kind": "movie",
+      "title": "Эдвард руки-ножницы",
+      "original_title": "Edward Scissorhands",
+      "year": 1990
+    },
+    {
+      "tmdb_id": 12,
+      "kind": "movie",
+      "title": "В поисках Немо",
+      "original_title": "Finding Nemo",
+      "year": 2003
+    },
+    {
+      "tmdb_id": 1585,
+      "kind": "movie",
+      "title": "Эта замечательная жизнь",
+      "original_title": "It's a Wonderful Life",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 11533,
+      "kind": "movie",
+      "title": "Язон И Аргонавты",
+      "original_title": "Jason and the Argonauts",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 10098,
+      "kind": "movie",
+      "title": "Малыш",
+      "original_title": "The Kid",
+      "year": 1921
+    },
+    {
+      "tmdb_id": 244,
+      "kind": "movie",
+      "title": "Кинг Конг",
+      "original_title": "King Kong",
+      "year": 1933
+    },
+    {
+      "tmdb_id": 21348,
+      "kind": "movie",
+      "title": "Кирику и Колдунья",
+      "original_title": "Kirikou et la Sorcière",
+      "year": 1998
+    },
+    {
+      "tmdb_id": 778,
+      "kind": "movie",
+      "title": "Каникулы господина Юло",
+      "original_title": "Les vacances de Monsieur Hulot",
+      "year": 1953
+    },
+    {
+      "tmdb_id": 8816,
+      "kind": "movie",
+      "title": "Моя собачья жизнь",
+      "original_title": "Mitt liv som hund",
+      "year": 1985
+    },
+    {
+      "tmdb_id": 8392,
+      "kind": "movie",
+      "title": "Мой сосед Тоторо",
+      "original_title": "となりのトトロ",
+      "year": 1988
+    },
+    {
+      "tmdb_id": 10949,
+      "kind": "movie",
+      "title": "Оливер Твист",
+      "original_title": "Oliver Twist",
+      "year": 1948
+    },
+    {
+      "tmdb_id": 227,
+      "kind": "movie",
+      "title": "Изгои",
+      "original_title": "The Outsiders",
+      "year": 1983
+    },
+    {
+      "tmdb_id": 5801,
+      "kind": "movie",
+      "title": "Песнь дороги",
+      "original_title": "পথের পাঁচালী",
+      "year": 1955
+    },
+    {
+      "tmdb_id": 10227,
+      "kind": "movie",
+      "title": "Время развлечений",
+      "original_title": "PlayTime",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 2493,
+      "kind": "movie",
+      "title": "Принцесса-невеста",
+      "original_title": "The Princess Bride",
+      "year": 1987
+    },
+    {
+      "tmdb_id": 9555,
+      "kind": "movie",
+      "title": "Клетка для кроликов",
+      "original_title": "Rabbit-Proof Fence",
+      "year": 2002
+    },
+    {
+      "tmdb_id": 85,
+      "kind": "movie",
+      "title": "Индиана Джонс: В поисках утраченного ковчега",
+      "original_title": "Raiders of the Lost Ark",
+      "year": 1981
+    },
+    {
+      "tmdb_id": 37662,
+      "kind": "movie",
+      "title": "The Railway Children",
+      "original_title": "The Railway Children",
+      "year": 1970
+    },
+    {
+      "tmdb_id": 15265,
+      "kind": "movie",
+      "title": "Красный шар",
+      "original_title": "Le Ballon rouge",
+      "year": 1956
+    },
+    {
+      "tmdb_id": 454,
+      "kind": "movie",
+      "title": "Ромео + Джульетта",
+      "original_title": "Romeo + Juliet",
+      "year": 1996
+    },
+    {
+      "tmdb_id": 11236,
+      "kind": "movie",
+      "title": "Таинственный сад",
+      "original_title": "The Secret Garden",
+      "year": 1993
+    },
+    {
+      "tmdb_id": 872,
+      "kind": "movie",
+      "title": "Поющие под дождём",
+      "original_title": "Singin' in the Rain",
+      "year": 1952
+    },
+    {
+      "tmdb_id": 408,
+      "kind": "movie",
+      "title": "Белоснежка и Семь Гномов",
+      "original_title": "Snow White and the Seven Dwarfs",
+      "year": 1937
+    },
+    {
+      "tmdb_id": 239,
+      "kind": "movie",
+      "title": "В джазе только девушки",
+      "original_title": "Some Like It Hot",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 4495,
+      "kind": "movie",
+      "title": "Дух улья",
+      "original_title": "El espíritu de la colmena",
+      "year": 1973
+    },
+    {
+      "tmdb_id": 11,
+      "kind": "movie",
+      "title": "Звёздные войны: Эпизод 4 - Новая надежда",
+      "original_title": "Star Wars",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 5168,
+      "kind": "movie",
+      "title": "Être et avoir",
+      "original_title": "Être et avoir",
+      "year": 2002
+    },
+    {
+      "tmdb_id": 595,
+      "kind": "movie",
+      "title": "Убить пересмешника",
+      "original_title": "To Kill a Mockingbird",
+      "year": 1962
+    },
+    {
+      "tmdb_id": 775,
+      "kind": "movie",
+      "title": "Путешествие на Луну",
+      "original_title": "Le Voyage dans la Lune",
+      "year": 1902
+    },
+    {
+      "tmdb_id": 36040,
+      "kind": "movie",
+      "title": "Обход",
+      "original_title": "Walkabout",
+      "year": 1971
+    },
+    {
+      "tmdb_id": 1088,
+      "kind": "movie",
+      "title": "Оседлавший кита",
+      "original_title": "Whale Rider",
+      "year": 2002
+    },
+    {
+      "tmdb_id": 34282,
+      "kind": "movie",
+      "title": "Свистни по ветру",
+      "original_title": "Whistle Down the Wind",
+      "year": 1961
+    },
+    {
+      "tmdb_id": 46785,
+      "kind": "movie",
+      "title": "Белый шар",
+      "original_title": "بادکنک سفید",
+      "year": 1995
+    }
+  ]
+}

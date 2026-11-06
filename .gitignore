@@ -1,0 +1,36 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+!deployments/env.example
+services/api/bin/
+playwright-report/
+test-results/
+.DS_Store
+secrets/
+.cache/
+.remote_server
+deployments/server/.env.server
+e2e/scripts/out/
+.cloudflare_token
+*.token
+*_token
+!**/*token*.go
+!**/*token*.ts
+get-docker.sh
+.deepseek_api_key
+*_api_key
+.claude/
+# Household-only material (kept locally, not published)
+docs/private/
+docs/guide/
+docs/research/
+e2e/scripts/guide-shots.mjs
+e2e/scripts/install-guide.mjs
+
+# Self-hosting (install.sh / scripts/)
+gluetun.env
+backups/
+deployments/compose.override.yaml

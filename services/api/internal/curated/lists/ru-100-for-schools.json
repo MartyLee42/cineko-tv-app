@@ -1,0 +1,738 @@
+{
+  "id": "ru-100-for-schools",
+  "group": "ru",
+  "title_ru": "100 фильмов для школьников",
+  "title_en": "100 Films for Schoolchildren",
+  "author": "Министерство культуры РФ / Russian Ministry of Culture",
+  "source": "«100 лучших фильмов» для школьного факультатива, Минкультуры РФ, январь 2013 (голосование — осень 2012)",
+  "source_url": "https://culturolog.ru/content/view/1453/",
+  "description_ru": "Перечень отечественных фильмов, который Минкультуры подготовило для школьного факультатива по кино: от «Понизовой вольницы» 1908 года до «Утомлённых солнцем». Отбирали эксперты ВГИКа, Госфильмофонда и других институтов с учётом народного голосования; порядок — алфавитный, как в публикации.",
+  "description_en": "The Russian Culture Ministry’s list of domestic films for an optional school film course, from the 1908 «Stenka Razin» to «Burnt by the Sun». Chosen by experts from VGIK, Gosfilmofond and others after a public vote; alphabetical, as published.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 63568,
+      "kind": "movie",
+      "title": "А если это любовь?",
+      "original_title": "А если это любовь?",
+      "year": 1961
+    },
+    {
+      "tmdb_id": 49106,
+      "kind": "movie",
+      "title": "А зори здесь тихие",
+      "original_title": "...А зори здесь тихие",
+      "year": 1972
+    },
+    {
+      "tmdb_id": 157962,
+      "kind": "movie",
+      "title": "Адмирал Нахимов",
+      "original_title": "Адмирал Нахимов",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 63569,
+      "kind": "movie",
+      "title": "Айболит-66",
+      "original_title": "Айболит-66",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 10235,
+      "kind": "movie",
+      "title": "Александр Невский",
+      "original_title": "Александр Невский",
+      "year": 1938
+    },
+    {
+      "tmdb_id": 895,
+      "kind": "movie",
+      "title": "Андрей Рублёв",
+      "original_title": "Андрей Рублёв",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 2973,
+      "kind": "movie",
+      "title": "Аэлита",
+      "original_title": "Аэлита",
+      "year": 1924
+    },
+    {
+      "tmdb_id": 46592,
+      "kind": "movie",
+      "title": "Баллада о солдате",
+      "original_title": "Баллада о солдате",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 95431,
+      "kind": "movie",
+      "title": "Бег",
+      "original_title": "Бег",
+      "year": 1970
+    },
+    {
+      "tmdb_id": 157966,
+      "kind": "movie",
+      "title": "Белеет парус одинокий",
+      "original_title": "Белеет парус одинокий",
+      "year": 1937
+    },
+    {
+      "tmdb_id": 20848,
+      "kind": "movie",
+      "title": "Белое солнце пустыни",
+      "original_title": "Белое солнце пустыни",
+      "year": 1969
+    },
+    {
+      "tmdb_id": 107705,
+      "kind": "movie",
+      "title": "Белорусский вокзал",
+      "original_title": "Белорусский вокзал",
+      "year": 1970
+    },
+    {
+      "tmdb_id": 39768,
+      "kind": "movie",
+      "title": "Берегись автомобиля",
+      "original_title": "Берегись автомобиля",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 157967,
+      "kind": "movie",
+      "title": "Бесприданница",
+      "original_title": "Бесприданница",
+      "year": 1936
+    },
+    {
+      "tmdb_id": 20873,
+      "kind": "movie",
+      "title": "Бриллиантовая рука",
+      "original_title": "Бриллиантовая рука",
+      "year": 1968
+    },
+    {
+      "tmdb_id": 643,
+      "kind": "movie",
+      "title": "Броненосец «Потёмкин»",
+      "original_title": "Броненосец Потёмкин",
+      "year": 1925
+    },
+    {
+      "tmdb_id": 37129,
+      "kind": "movie",
+      "title": "В бой идут одни «старики»",
+      "original_title": "В бой идут одни старики",
+      "year": 1973
+    },
+    {
+      "tmdb_id": 83444,
+      "kind": "movie",
+      "title": "В огне брода нет",
+      "original_title": "В огне брода нет",
+      "year": 1968
+    },
+    {
+      "tmdb_id": 37128,
+      "kind": "movie",
+      "title": "Весёлые ребята",
+      "original_title": "Весёлые ребята",
+      "year": 1934
+    },
+    {
+      "tmdb_id": 141066,
+      "kind": "movie",
+      "title": "Внимание, черепаха!",
+      "original_title": "Внимание, черепаха!",
+      "year": 1969
+    },
+    {
+      "tmdb_id": 29266,
+      "kind": "movie",
+      "title": "Война и мир",
+      "original_title": "Война и мир",
+      "year": 1968,
+      "note_ru": "4 серии, на TMDB одной записью · снят в 1965",
+      "note_en": "4 parts, one TMDB entry · made 1965"
+    },
+    {
+      "tmdb_id": 37133,
+      "kind": "movie",
+      "title": "Волга-Волга",
+      "original_title": "Волга-Волга",
+      "year": 1938
+    },
+    {
+      "tmdb_id": 50183,
+      "kind": "movie",
+      "title": "Восхождение",
+      "original_title": "Восхождение",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 71317,
+      "kind": "movie",
+      "title": "Гамлет",
+      "original_title": "Гамлет",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 38831,
+      "kind": "movie",
+      "title": "Дама с собачкой",
+      "original_title": "Дама с собачкой",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 149170,
+      "kind": "movie",
+      "title": "Дворянское гнездо",
+      "original_title": "Дворянское гнездо",
+      "year": 1969
+    },
+    {
+      "tmdb_id": 131045,
+      "kind": "movie",
+      "title": "Девять дней одного года",
+      "original_title": "Девять дней одного года",
+      "year": 1961
+    },
+    {
+      "tmdb_id": 20886,
+      "kind": "movie",
+      "title": "Добро пожаловать, или Посторонним вход воспрещён",
+      "original_title": "Добро пожаловать, или Посторонним вход воспрещен",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 109774,
+      "kind": "movie",
+      "title": "Доживём до понедельника",
+      "original_title": "Доживем до понедельника",
+      "year": 1968
+    },
+    {
+      "tmdb_id": 157969,
+      "kind": "movie",
+      "title": "Друг мой, Колька!",
+      "original_title": "Друг мой, Колька!..",
+      "year": 1961
+    },
+    {
+      "tmdb_id": 143887,
+      "kind": "movie",
+      "title": "Дядя Ваня",
+      "original_title": "Дядя Ваня",
+      "year": 1970,
+      "note_ru": "в перечне Минкульта указан 1977",
+      "note_en": "the ministry list gives 1977"
+    },
+    {
+      "tmdb_id": 36129,
+      "kind": "movie",
+      "title": "Ёжик в тумане",
+      "original_title": "Ёжик в тумане",
+      "year": 1975,
+      "note_ru": "мультфильм",
+      "note_en": "animated short"
+    },
+    {
+      "tmdb_id": 49578,
+      "kind": "movie",
+      "title": "Живые и мёртвые",
+      "original_title": "Живые и мертвые",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 148782,
+      "kind": "movie",
+      "title": "Застава Ильича",
+      "original_title": "Мне двадцать лет",
+      "year": 1964,
+      "note_ru": "в прокате — «Мне двадцать лет»",
+      "note_en": "released as «I Am Twenty»"
+    },
+    {
+      "tmdb_id": 158124,
+      "kind": "movie",
+      "title": "Звезда",
+      "original_title": "Звезда",
+      "year": 1949
+    },
+    {
+      "tmdb_id": 46594,
+      "kind": "movie",
+      "title": "Земля",
+      "original_title": "Земля",
+      "year": 1930
+    },
+    {
+      "tmdb_id": 1396,
+      "kind": "movie",
+      "title": "Зеркало",
+      "original_title": "Зеркало",
+      "year": 1974
+    },
+    {
+      "tmdb_id": 42651,
+      "kind": "movie",
+      "title": "Золушка",
+      "original_title": "Золушка",
+      "year": 1947
+    },
+    {
+      "tmdb_id": 9797,
+      "kind": "movie",
+      "title": "Иван Грозный",
+      "original_title": "Иван Грозный",
+      "year": 1944,
+      "note_ru": "в списке обе серии; здесь 1-я",
+      "note_en": "both parts listed; part 1 here"
+    },
+    {
+      "tmdb_id": 31442,
+      "kind": "movie",
+      "title": "Иваново детство",
+      "original_title": "Иваново детство",
+      "year": 1962
+    },
+    {
+      "tmdb_id": 25237,
+      "kind": "movie",
+      "title": "Иди и смотри",
+      "original_title": "Иди и смотри",
+      "year": 1985
+    },
+    {
+      "tmdb_id": 118153,
+      "kind": "movie",
+      "title": "Илья Муромец",
+      "original_title": "Илья Муромец",
+      "year": 1956
+    },
+    {
+      "tmdb_id": 91261,
+      "kind": "movie",
+      "title": "История Аси Клячиной, которая любила, да не вышла замуж",
+      "original_title": "История Аси Клячиной, которая любила, да не вышла замуж",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 38359,
+      "kind": "movie",
+      "title": "Калина красная",
+      "original_title": "Калина красная",
+      "year": 1973
+    },
+    {
+      "tmdb_id": 158133,
+      "kind": "movie",
+      "title": "Ключ без права передачи",
+      "original_title": "Ключ без права передачи",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 20891,
+      "kind": "movie",
+      "title": "Королевство кривых зеркал",
+      "original_title": "Королевство кривых зеркал",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 158136,
+      "kind": "movie",
+      "title": "Красные дьяволята",
+      "original_title": "Красные дьяволята",
+      "year": 1923
+    },
+    {
+      "tmdb_id": 50013,
+      "kind": "movie",
+      "title": "Крылья",
+      "original_title": "Крылья",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 70966,
+      "kind": "movie",
+      "title": "Курьер",
+      "original_title": "Курьер",
+      "year": 1986
+    },
+    {
+      "tmdb_id": 38360,
+      "kind": "movie",
+      "title": "Летят журавли",
+      "original_title": "Летят журавли",
+      "year": 1957
+    },
+    {
+      "tmdb_id": 41961,
+      "kind": "movie",
+      "title": "Маленькая Вера",
+      "original_title": "Маленькая Вера",
+      "year": 1987
+    },
+    {
+      "tmdb_id": 20935,
+      "kind": "movie",
+      "title": "Марья-искусница",
+      "original_title": "Марья-искусница",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 98914,
+      "kind": "movie",
+      "title": "Мать",
+      "original_title": "Мать",
+      "year": 1926
+    },
+    {
+      "tmdb_id": 158155,
+      "kind": "movie",
+      "title": "Машенька",
+      "original_title": "Машенька",
+      "year": 1942
+    },
+    {
+      "tmdb_id": 90056,
+      "kind": "movie",
+      "title": "Месть кинематографического оператора",
+      "original_title": "Месть кинематографического оператора",
+      "year": 1912
+    },
+    {
+      "tmdb_id": 68271,
+      "kind": "movie",
+      "title": "Мечта",
+      "original_title": "Мечта",
+      "year": 1943,
+      "note_ru": "снят в 1941",
+      "note_en": "made 1941"
+    },
+    {
+      "tmdb_id": 106248,
+      "kind": "movie",
+      "title": "Молодая гвардия",
+      "original_title": "Молодая гвардия",
+      "year": 1948
+    },
+    {
+      "tmdb_id": 83461,
+      "kind": "movie",
+      "title": "Монолог",
+      "original_title": "Монолог",
+      "year": 1972
+    },
+    {
+      "tmdb_id": 20932,
+      "kind": "movie",
+      "title": "Морозко",
+      "original_title": "Морозко",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 83475,
+      "kind": "movie",
+      "title": "Начало",
+      "original_title": "Начало",
+      "year": 1970
+    },
+    {
+      "tmdb_id": 27922,
+      "kind": "movie",
+      "title": "Не горюй!",
+      "original_title": "Не горюй!",
+      "year": 1969
+    },
+    {
+      "tmdb_id": 32928,
+      "kind": "movie",
+      "title": "Необычайные приключения мистера Веста в стране большевиков",
+      "original_title": "Необычайные приключения мистера Веста в стране большевиков",
+      "year": 1924
+    },
+    {
+      "tmdb_id": 38837,
+      "kind": "movie",
+      "title": "Неоконченная пьеса для механического пианино",
+      "original_title": "Неоконченная пьеса для механического пианино",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 83446,
+      "kind": "movie",
+      "title": "Несколько дней из жизни И. И. Обломова",
+      "original_title": "Несколько дней из жизни И.И. Обломова",
+      "year": 1979
+    },
+    {
+      "tmdb_id": 41979,
+      "kind": "movie",
+      "title": "Неуловимые мстители",
+      "original_title": "Неуловимые мстители",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 152948,
+      "kind": "movie",
+      "title": "Новый Гулливер",
+      "original_title": "Новый Гулливер",
+      "year": 1935
+    },
+    {
+      "tmdb_id": 53194,
+      "kind": "movie",
+      "title": "Обыкновенный фашизм",
+      "original_title": "Обыкновенный фашизм",
+      "year": 1965
+    },
+    {
+      "tmdb_id": 86382,
+      "kind": "movie",
+      "title": "Они сражались за Родину",
+      "original_title": "Они сражались за Родину",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 335735,
+      "kind": "movie",
+      "title": "Освобождение",
+      "original_title": "Освобождение: Огненная Дуга",
+      "year": 1970,
+      "note_ru": "эпопея из 5 фильмов; здесь 1-й",
+      "note_en": "five-film epic; film 1 here"
+    },
+    {
+      "tmdb_id": 158714,
+      "kind": "movie",
+      "title": "Охота на лис",
+      "original_title": "Охота на лис",
+      "year": 1980
+    },
+    {
+      "tmdb_id": 87786,
+      "kind": "movie",
+      "title": "Пацаны",
+      "original_title": "Пацаны",
+      "year": 1983
+    },
+    {
+      "tmdb_id": 139461,
+      "kind": "movie",
+      "title": "Пётр Первый",
+      "original_title": "Пётр Первый",
+      "year": 1937
+    },
+    {
+      "tmdb_id": 105483,
+      "kind": "movie",
+      "title": "Печки-лавочки",
+      "original_title": "Печки-лавочки",
+      "year": 1972
+    },
+    {
+      "tmdb_id": 158718,
+      "kind": "movie",
+      "title": "Пиковая дама",
+      "original_title": "Пиковая дама",
+      "year": 1916
+    },
+    {
+      "tmdb_id": 75383,
+      "kind": "movie",
+      "title": "Плохой хороший человек",
+      "original_title": "Плохой хороший человек",
+      "year": 1973
+    },
+    {
+      "tmdb_id": 158719,
+      "kind": "movie",
+      "title": "Подвиг разведчика",
+      "original_title": "Подвиг разведчика",
+      "year": 1947
+    },
+    {
+      "tmdb_id": 96920,
+      "kind": "movie",
+      "title": "Покаяние",
+      "original_title": "მონანიება",
+      "year": 1987,
+      "note_ru": "снят в 1984, вышел в 1987 · снят в 1984",
+      "note_en": "made 1984, released 1987 · made 1984"
+    },
+    {
+      "tmdb_id": 48882,
+      "kind": "movie",
+      "title": "Подранки",
+      "original_title": "Подранки",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 71762,
+      "kind": "movie",
+      "title": "Проверка на дорогах",
+      "original_title": "Проверка на дорогах",
+      "year": 1986,
+      "note_ru": "снят в 1971, вышел в 1985 · снят в 1971",
+      "note_en": "made 1971, released 1985 · made 1971"
+    },
+    {
+      "tmdb_id": 156316,
+      "kind": "movie",
+      "title": "Путёвка в жизнь",
+      "original_title": "Путёвка в жизнь",
+      "year": 1931
+    },
+    {
+      "tmdb_id": 76271,
+      "kind": "movie",
+      "title": "Радуга",
+      "original_title": "Радуга",
+      "year": 1943
+    },
+    {
+      "tmdb_id": 20885,
+      "kind": "movie",
+      "title": "Республика ШКИД",
+      "original_title": "Республика ШКИД",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 158725,
+      "kind": "movie",
+      "title": "Семеро смелых",
+      "original_title": "Семеро смелых",
+      "year": 1936
+    },
+    {
+      "tmdb_id": 158726,
+      "kind": "movie",
+      "title": "Смелые люди",
+      "original_title": "Смелые люди",
+      "year": 1950
+    },
+    {
+      "tmdb_id": 158727,
+      "kind": "movie",
+      "title": "Понизовая вольница",
+      "original_title": "Стенька Разин",
+      "year": 1908,
+      "note_ru": "первый русский игровой фильм",
+      "note_en": "first Russian fiction film"
+    },
+    {
+      "tmdb_id": 48623,
+      "kind": "movie",
+      "title": "Сто дней после детства",
+      "original_title": "Сто дней после детства",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 43680,
+      "kind": "movie",
+      "title": "Собачье сердце",
+      "original_title": "Собачье сердце",
+      "year": 1988
+    },
+    {
+      "tmdb_id": 88564,
+      "kind": "movie",
+      "title": "Судьба человека",
+      "original_title": "Судьба человека",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 109991,
+      "kind": "movie",
+      "title": "Тихий Дон",
+      "original_title": "Тихий Дон",
+      "year": 1957,
+      "note_ru": "три серии, 1957–1958",
+      "note_en": "three parts, 1957–1958"
+    },
+    {
+      "tmdb_id": 50797,
+      "kind": "movie",
+      "title": "Утомлённые солнцем",
+      "original_title": "Утомлённые солнцем",
+      "year": 1994
+    },
+    {
+      "tmdb_id": 71393,
+      "kind": "movie",
+      "title": "Холодное лето пятьдесят третьего…",
+      "original_title": "Холодное лето пятьдесят третьего",
+      "year": 1987
+    },
+    {
+      "tmdb_id": 46774,
+      "kind": "movie",
+      "title": "Чапаев",
+      "original_title": "Чапаев",
+      "year": 1934
+    },
+    {
+      "tmdb_id": 26317,
+      "kind": "movie",
+      "title": "Человек с киноаппаратом",
+      "original_title": "Человек с киноаппаратом",
+      "year": 1929
+    },
+    {
+      "tmdb_id": 74500,
+      "kind": "movie",
+      "title": "Чужие письма",
+      "original_title": "Чужие письма",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 148412,
+      "kind": "movie",
+      "title": "Чук и Гек",
+      "original_title": "Чук и Гек",
+      "year": 1953
+    },
+    {
+      "tmdb_id": 63573,
+      "kind": "movie",
+      "title": "Чучело",
+      "original_title": "Чучело",
+      "year": 1983
+    },
+    {
+      "tmdb_id": 149887,
+      "kind": "movie",
+      "title": "Школьный вальс",
+      "original_title": "Школьный вальс",
+      "year": 1979,
+      "note_ru": "снят в 1977",
+      "note_en": "made 1977"
+    },
+    {
+      "tmdb_id": 1708106,
+      "kind": "movie",
+      "title": "Щит и меч",
+      "original_title": "Щит и меч",
+      "year": 1968
+    },
+    {
+      "tmdb_id": 173995,
+      "kind": "movie",
+      "title": "Юность Максима",
+      "original_title": "Юность Максима",
+      "year": 1934
+    },
+    {
+      "tmdb_id": 27862,
+      "kind": "movie",
+      "title": "Я шагаю по Москве",
+      "original_title": "Я шагаю по Москве",
+      "year": 1963
+    }
+  ]
+}

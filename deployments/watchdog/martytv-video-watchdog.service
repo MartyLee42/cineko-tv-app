@@ -1,0 +1,19 @@
+# MartyTV «Видео» watchdog: restarts our Invidious / companion containers when
+# they are stuck while the VPN works (see martytv-video-watchdog.sh). Runs from
+# martytv-video-watchdog.timer. Installed by deployments/deploy.sh.
+# Logs: journalctl -u martytv-video-watchdog
+# Remove: systemctl disable --now martytv-video-watchdog.timer && rm /etc/systemd/system/martytv-video-watchdog.* /usr/local/bin/martytv-video-watchdog
+[Unit]
+Description=MartyTV «Видео» + VPN watchdog (Invidious / companion / awg-socks self-heal)
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/martytv-video-watchdog
+StateDirectory=martytv-video-watchdog
+TimeoutStartSec=180
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+Nice=10

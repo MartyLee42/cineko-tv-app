@@ -1,0 +1,31 @@
+// «Новые серии»: new episodes of the profile's series found by the nightly
+// check (TV tab, Home row, PWA page, admin card). ru must mirror en.
+export const newEpisodesEn = {
+  "newep.title": "New episodes",
+  "newep.short": "New",
+  "newep.empty": "No new episodes yet. Every night the server checks the series you watch and the ones in My list.",
+  "newep.badge_new": "New",
+  "newep.aired_today": "aired today",
+  "newep.aired_yesterday": "aired yesterday",
+  "newep.aired_days.one": "aired {n} day ago",
+  "newep.aired_days.few": "aired {n} days ago",
+  "newep.aired_days.many": "aired {n} days ago",
+  "newep.mark_all": "Mark all as seen",
+  "newep.watch": "Watch",
+  "newep.details": "About the series",
+  "newep.mark_watched": "Mark as watched",
+  "newep.hide": "Hide",
+  "newep.hint": "OK — watch · hold OK — more",
+  "newep.earlier": "Seen",
+  "newep.from_kinopoisk": "Kinopoisk",
+  "newep.count": "{n} new",
+  // ---- admin
+  "newep.admin.title": "New episodes check",
+  "newep.admin.schedule": "Every night at {at} ({tz})",
+  "newep.admin.off": "Nightly check is off (NEW_EPISODES_AT=off)",
+  "newep.admin.next": "Next run: {at}",
+  "newep.admin.run": "Check now",
+  "newep.admin.running": "Checking…",
+  "newep.admin.last": "{at} · {trigger} · {status}: {series} series, {found} new, {errors} refresh errors",
+  "newep.admin.never": "No checks yet",
+};

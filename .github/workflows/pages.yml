@@ -1,0 +1,67 @@
+# Cineko Lite → GitHub Pages: the serverless web build at the site root, the
+# TV (Media Station X) build at /tv/, and the MSX start files at /msx/.
+# The base path comes from the Pages config (the repository name for project
+# sites), so forks deploy as-is (https://<owner>.github.io/<repo>/). Enable Pages once in the repo:
+# Settings → Pages → Source: "GitHub Actions".
+name: Pages (Cineko Lite)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/lite/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/lite
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/lite/package-lock.json
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build web + tv + MSX files
+        env:
+          # "/<repo>" for project sites (forks too), "" for <owner>.github.io or a custom domain.
+          LITE_BASE: ${{ steps.pages.outputs.base_path }}/
+          SITE_URL: ${{ steps.pages.outputs.base_url }}/
+        run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/lite/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

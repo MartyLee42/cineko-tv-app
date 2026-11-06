@@ -1,0 +1,11 @@
+﻿kp_id,type,title_ru,title_original,year,my_rating,kp_rating,kp_votes,duration_min,date_rated,url
+1001,film,Альфа,Alpha,1999,9,8.123,1500,120,2026-01-02 21:30,https://www.kinopoisk.ru/film/1001/
+1002,film,"Браво, Чарли","Bravo, Charlie",2005,7,7.5,900,95,2025-12-31 23:59,https://www.kinopoisk.ru/film/1002/
+1003,film,Дельта,,2010,6,6.9,300,100,2025-11-11 10:00,https://www.kinopoisk.ru/film/1003/
+1004,series,Эхо,Echo Show,2013–2014,8,8.0,700,45,2025-10-01 12:00,https://www.kinopoisk.ru/series/1004/
+1005,miniseries,Фокстрот,Foxtrot,2024,10,,,,2025-09-09 09:09,https://www.kinopoisk.ru/series/1005/
+abc,film,Битая строка,Broken,2001,5,5,5,90,2025-08-08 08:08,https://www.kinopoisk.ru/film/0/
+1007,film,Гольф,Golf,2002,11,7.0,100,90,2025-07-07 07:07,https://www.kinopoisk.ru/film/1007/
+1008,film,Отель,"Hotel ""Grand""",2003,4,6.1,250,110,2025-06-06 06:06,https://www.kinopoisk.ru/film/1008/
+1009,series,Индия,India,2024–...,3,5.5,50,30,2025-05-05 05:05,https://www.kinopoisk.ru/series/1009/
+1010,cartoon,Джульетта,Juliet,2015,2,6.0,80,85,2025-04-04 04:04,https://www.kinopoisk.ru/film/1010/

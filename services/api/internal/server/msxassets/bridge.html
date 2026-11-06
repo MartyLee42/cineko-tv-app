@@ -1,0 +1,167 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Cineko MSX bridge</title>
+<!-- Media Station X interaction plugin. Loaded invisibly by MSX (start
+     parameter content:request:interaction:init@…/msx/bridge.html). It serves
+     the launcher menu and lets the Cineko TV app (same origin, /tv/) hand a
+     stream to MSX's player, or (Android/Fire TV, MSX ≥ 0.1.136) to an
+     external Android app (VLC, MX Player…) with the documented
+     system:tvx:launch[:{package}] action and its launch data
+     (msx.benzac.de/wiki/index.php?title=Android_Player). The TV app can't
+     do that itself: the MSX WebView rejects intent:// URLs. ES5 only. -->
+<script type="text/javascript" src="//msx.benzac.de/js/tvx-plugin.min.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+(function () {
+  var HEARTBEAT = "martytv.msx_bridge";
+  var CMD = "martytv.msx_cmd";
+  var ACK = "martytv.msx_ack";
+  var STREAM_PREFIX = location.protocol + "//" + location.host + "/api/v1/stream/";
+  var LAUNCH_MIN = [0, 1, 136];
+  // Known apps: package + the activity/extras MSX's own Android plugin uses.
+  var APPS = {
+    vlc: { pkg: "org.videolan.vlc", component: { "package": "org.videolan.vlc", "class": "org.videolan.vlc.gui.video.VideoPlayerActivity" } },
+    mx: { pkg: "com.mxtech.videoplayer.ad", component: null },
+    system: { pkg: null, component: null }
+  };
+  var platform = "unknown";
+  var version = "unknown";
+  var channel = null;
+  try { if (window.BroadcastChannel) channel = new BroadcastChannel("martytv-msx"); } catch (e) {}
+
+  function versionAtLeast(v, min) {
+    var parts = String(v).split(".");
+    for (var i = 0; i < min.length; i++) {
+      var n = parseInt(parts[i], 10);
+      if (isNaN(n)) return false;
+      if (n !== min[i]) return n > min[i];
+    }
+    return true;
+  }
+
+  function canLaunch() {
+    return (platform === "android" || platform === "firetv") && versionAtLeast(version, LAUNCH_MIN);
+  }
+
+  function beat() {
+    try {
+      localStorage.setItem(HEARTBEAT, JSON.stringify({
+        alive_at: new Date().getTime(), platform: platform, version: version, launch: canLaunch()
+      }));
+    } catch (e) {}
+  }
+
+  // MSX's info (platform, application version), as its Android plugin reads it.
+  function loadInfo() {
+    try {
+      TVXInteractionPlugin.requestData("info", function (data) {
+        var info = data && data.info ? data.info : data;
+        if (info && typeof info.platform === "string") platform = info.platform;
+        if (info && info.application && typeof info.application.version === "string") version = info.application.version;
+        beat();
+      });
+    } catch (e) {}
+  }
+
+  function launch(msg) {
+    var app = APPS[msg.app] || APPS.system;
+    if (!canLaunch()) {
+      reply({ type: "ack", id: msg.id, ok: false, error: "launch_unsupported" });
+      return;
+    }
+    var pos = typeof msg.position_seconds === "number" && msg.position_seconds > 0 ? Math.floor(msg.position_seconds * 1000) : 0;
+    var extra = { title: String(msg.title || "") };
+    if (msg.app === "vlc") {
+      if (pos > 0) extra.position = { type: "long", value: pos };
+      extra.from_start = pos <= 0;
+    } else if (msg.app === "mx") {
+      if (pos > 0) extra.position = { type: "int", value: pos };
+      extra.return_result = true;
+    }
+    var data = { id: "martytv-" + msg.id, uri: msg.url, type: "video/*", extra: extra };
+    if (app.component) data.component = app.component;
+    try {
+      TVXInteractionPlugin.executeAction(app.pkg ? "system:tvx:launch:" + app.pkg : "system:tvx:launch", data);
+      reply({ type: "ack", id: msg.id, ok: true });
+    } catch (e) {
+      reply({ type: "ack", id: msg.id, ok: false, error: "msx_error" });
+    }
+  }
+
+  function reply(msg) {
+    if (channel) { try { channel.postMessage(msg); } catch (e) {} }
+    try { localStorage.setItem(ACK, JSON.stringify(msg)); } catch (e) {}
+  }
+
+  // Only Cineko's own token-gated stream URLs may be played.
+  function handle(msg) {
+    if (!msg || (msg.type !== "play" && msg.type !== "launch")) return;
+    if (typeof msg.url !== "string" || msg.url.indexOf(STREAM_PREFIX) !== 0) {
+      reply({ type: "ack", id: msg.id, ok: false, error: "bad_url" });
+      return;
+    }
+    if (msg.type === "launch") {
+      launch(msg);
+      return;
+    }
+    try {
+      TVXInteractionPlugin.executeAction("video:" + msg.url);
+      reply({ type: "ack", id: msg.id, ok: true });
+    } catch (e) {
+      reply({ type: "ack", id: msg.id, ok: false, error: "msx_error" });
+    }
+  }
+
+  if (channel) channel.onmessage = function (e) { handle(e.data); };
+  window.addEventListener("storage", function (e) {
+    if (e.key === CMD && e.newValue) {
+      try { handle(JSON.parse(e.newValue)); } catch (x) {}
+    }
+  });
+
+  function loadMenu(callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "/msx/menu.json", true);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return;
+      var data = null;
+      try { data = JSON.parse(xhr.responseText); } catch (e) {}
+      callback(data || {
+        type: "pages",
+        headline: "Cineko",
+        pages: [{ items: [{ type: "button", layout: "4,1,4,4", label: "Cineko", icon: "play-circle-outline", action: "link:" + location.protocol + "//" + location.host + "/tv/" }] }]
+      });
+    };
+    xhr.send();
+  }
+
+  function Handler() {
+    this.init = function () {};
+    this.ready = function () {
+      beat();
+      loadInfo();
+      setInterval(beat, 5000);
+    };
+    // app:result after a launched app closes (or fails to launch: -2/-3).
+    this.handleEvent = function (data) {
+      if (!data || data.event !== "app:result" || typeof data.id !== "string" || data.id.indexOf("martytv-") !== 0) return;
+      reply({ type: "result", id: data.id.substring(8), code: typeof data.code === "number" ? data.code : null });
+    };
+    this.handleData = function () {};
+    this.handleRequest = function (dataId, data, callback) {
+      if (dataId === "init") loadMenu(callback);
+      else callback(null);
+    };
+  }
+
+  TVXPluginTools.onReady(function () {
+    TVXInteractionPlugin.setupHandler(new Handler());
+    TVXInteractionPlugin.init();
+  });
+})();
+</script>
+</body>
+</html>

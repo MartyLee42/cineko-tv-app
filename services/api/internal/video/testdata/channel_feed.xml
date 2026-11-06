@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom" xml:lang="en-US">
+  <link rel="self" href="http://invidious:3000/feed/channel/UC_WdeoiTXMr-c_jMSP7PLmQ"/>
+  <id>yt:channel:UC_WdeoiTXMr-c_jMSP7PLmQ</id>
+  <yt:channelId>UC_WdeoiTXMr-c_jMSP7PLmQ</yt:channelId>
+  <title>Едим ТВ</title>
+  <link rel="alternate" href="http://invidious:3000/channel/UC_WdeoiTXMr-c_jMSP7PLmQ"/>
+  <author>
+    <name>Едим ТВ</name>
+    <uri>http://invidious:3000/channel/UC_WdeoiTXMr-c_jMSP7PLmQ</uri>
+  </author>
+  <image>
+    <url></url>
+    <title>Едим ТВ</title>
+    <link rel="self" href="http://invidious:3000/feed/channel/UC_WdeoiTXMr-c_jMSP7PLmQ"/>
+  </image>
+  <entry>
+    <id>yt:video:8JOzrxNMnDA</id>
+    <yt:videoId>8JOzrxNMnDA</yt:videoId>
+    <yt:channelId>UC_WdeoiTXMr-c_jMSP7PLmQ</yt:channelId>
+    <title>ХЭЛЛОУИН 🎃 5 простых рецептов, включая пунш</title>
+    <link rel="alternate" href="http://invidious:3000/watch?v=8JOzrxNMnDA"/>
+    <author>
+      <name>Едим ТВ</name>
+      <uri>http://invidious:3000/channel/UC_WdeoiTXMr-c_jMSP7PLmQ</uri>
+    </author>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">
+        <a href="http://invidious:3000/watch?v=8JOzrxNMnDA"><img src="http://invidious:3000/vi/8JOzrxNMnDA/mqdefault.jpg"/></a>
+        <p style="word-break:break-word;white-space:pre-wrap">Готовим 5 коктейлей на Хэллоуин.</p>
+      </div>
+    </content>
+    <published>2026-10-27T15:00:00+00:00</published>
+    <media:group>
+      <media:title>ХЭЛЛОУИН 🎃 5 простых рецептов, включая пунш</media:title>
+      <media:thumbnail url="http://invidious:3000/vi/8JOzrxNMnDA/mqdefault.jpg" width="320" height="180"/>
+    </media:group>
+  </entry>
+  <entry>
+    <id>yt:video:abcdefghijk</id>
+    <yt:videoId>abcdefghijk</yt:videoId>
+    <yt:channelId>UC_WdeoiTXMr-c_jMSP7PLmQ</yt:channelId>
+    <title>НАЛИВКИ — 3 лучших рецепта</title>
+    <author><name>Едим ТВ</name></author>
+    <published>2026-10-20T15:00:00+00:00</published>
+  </entry>
+</feed>

@@ -1,0 +1,260 @@
+/* Vendored from packages/ui/src/theme.css (the main Cineko app's design tokens),
+   trimmed to the tokens + base styles. Keep in sync by hand when designs change. */
+/* Design tokens shared by the web and TV apps. Import before the @tailwind
+   directives. Colours are "r, g, b" triplets (see tailwind.preset.cjs).
+
+   Designs (html class, from ProfileSettings.design):
+     (default) design-kinozal  — А «Кинозал»: near-black + lime «Сигнал», Lampa density
+     design-terminal           — B «Терминал»: HUD, signal orange, mono labels, square
+     design-projector          — C «Проектор»: immersive artwork, teal, soft & round
+     design-wireframe          — «Каркас»: synthwave neon grid (projector skeleton)
+     design-cyberpunk          — «Киберпанк»: neon HUD, clipped corners (terminal skeleton)
+     design-deco               — «Ар-деко»: gold on black lacquer, display serif (kinozal skeleton)
+     design-retro80            — «Ретро 80-е»: VHS/arcade sunset chrome on navy (kinozal skeleton)
+     design-retro90            — «Ретро 90-е»: Windows 95 teal desktop, navy windows, grey bevels (terminal skeleton)
+     design-popart             — «Поп-арт»: comic blue, Ben-Day dots, yellow/red, black ink outlines (projector skeleton)
+     design-constructivism     — «Конструктивизм»: 20s–30s poster graphics: red/black/cream, diagonals (terminal skeleton)
+   html.skel-* names the layout skeleton (see designs.ts).
+   Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
+:root {
+  --mt-bg: 8, 9, 12;
+  --mt-surface: 29, 31, 32;
+  --mt-surface-2: 38, 40, 41;
+  --mt-border: 62, 62, 62;
+  --mt-text: 242, 244, 248;
+  --mt-muted: 154, 160, 170;
+  --mt-accent: 200, 255, 61;
+  --mt-accent-strong: 222, 255, 130;
+  --mt-on-accent: 10, 12, 6;
+  --mt-focus: 255, 255, 255;
+  --mt-danger: 239, 68, 68;
+  --mt-ok: 74, 222, 128;
+  --mt-warn: 251, 191, 36;
+  --mt-font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 14px;
+  --mt-radius-control: 14px;
+  color-scheme: dark;
+}
+
+html.design-kinozal.theme-light {
+  --mt-bg: 244, 245, 240;
+  --mt-surface: 255, 255, 255;
+  --mt-surface-2: 232, 235, 226;
+  --mt-border: 210, 214, 204;
+  --mt-text: 14, 16, 12;
+  --mt-muted: 86, 92, 80;
+  --mt-accent: 120, 170, 0;
+  --mt-accent-strong: 200, 255, 61;
+  --mt-on-accent: 10, 12, 6;
+  --mt-focus: 14, 16, 12;
+  --mt-danger: 220, 38, 38;
+  --mt-ok: 22, 163, 74;
+  --mt-warn: 180, 83, 9;
+  color-scheme: light;
+}
+
+html.design-terminal {
+  --mt-bg: 7, 7, 8;
+  --mt-surface: 16, 16, 17;
+  --mt-surface-2: 26, 26, 28;
+  --mt-border: 52, 52, 56;
+  --mt-text: 236, 236, 232;
+  --mt-muted: 150, 150, 146;
+  --mt-accent: 255, 107, 61;
+  --mt-accent-strong: 255, 140, 100;
+  --mt-on-accent: 12, 7, 5;
+  --mt-focus: 255, 255, 255;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 2px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+html.design-projector {
+  --mt-bg: 5, 9, 11;
+  --mt-surface: 18, 26, 29;
+  --mt-surface-2: 28, 38, 42;
+  --mt-border: 46, 60, 64;
+  --mt-text: 244, 248, 248;
+  --mt-muted: 160, 176, 178;
+  --mt-accent: 95, 214, 200;
+  --mt-accent-strong: 150, 236, 226;
+  --mt-on-accent: 4, 16, 14;
+  --mt-focus: 255, 255, 255;
+  --mt-radius-card: 18px;
+  --mt-radius-control: 999px;
+  color-scheme: dark;
+}
+
+/* «Каркас»: deep purple-black, magenta + cyan neon. */
+html.design-wireframe {
+  --mt-bg: 13, 4, 32;
+  --mt-surface: 30, 15, 61;
+  --mt-surface-2: 46, 24, 88;
+  --mt-border: 92, 54, 156;
+  --mt-text: 248, 242, 255;
+  --mt-muted: 196, 178, 230;
+  --mt-accent: 255, 79, 216;
+  --mt-accent-strong: 60, 232, 255;
+  --mt-on-accent: 22, 4, 32;
+  --mt-focus: 60, 232, 255;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 6px;
+  --mt-radius-control: 8px;
+  color-scheme: dark;
+}
+
+/* «Киберпанк»: near-black, acid yellow, cyan and magenta. */
+html.design-cyberpunk {
+  --mt-bg: 6, 6, 10;
+  --mt-surface: 20, 20, 30;
+  --mt-surface-2: 32, 32, 46;
+  --mt-border: 64, 64, 90;
+  --mt-text: 238, 246, 255;
+  --mt-muted: 162, 174, 196;
+  --mt-accent: 245, 240, 60;
+  --mt-accent-strong: 0, 240, 255;
+  --mt-on-accent: 10, 10, 4;
+  --mt-focus: 0, 240, 255;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* «Ар-деко»: black lacquer, gold, ivory; Playfair Display headings. */
+html.design-deco {
+  --mt-bg: 11, 10, 8;
+  --mt-surface: 27, 24, 18;
+  --mt-surface-2: 40, 35, 26;
+  --mt-border: 96, 80, 46;
+  --mt-text: 244, 236, 216;
+  --mt-muted: 184, 170, 142;
+  --mt-accent: 201, 165, 76;
+  --mt-accent-strong: 232, 207, 138;
+  --mt-on-accent: 16, 12, 4;
+  --mt-focus: 232, 207, 138;
+  --mt-font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 2px;
+  --mt-radius-control: 3px;
+  color-scheme: dark;
+}
+
+/* «Ретро 80-е»: VHS night: navy, sunset orange, tape teal; Russo One headings. */
+html.design-retro80 {
+  --mt-bg: 11, 14, 42;
+  --mt-surface: 27, 32, 78;
+  --mt-surface-2: 42, 48, 108;
+  --mt-border: 80, 88, 170;
+  --mt-text: 255, 244, 230;
+  --mt-muted: 190, 186, 218;
+  --mt-accent: 255, 122, 26;
+  --mt-accent-strong: 22, 224, 208;
+  --mt-on-accent: 24, 8, 0;
+  --mt-focus: 22, 224, 208;
+  --mt-font-display: "Russo One", "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 6px;
+  --mt-radius-control: 8px;
+  color-scheme: dark;
+}
+
+/* «Ретро 90-е»: a Windows 95 desktop: teal, navy windows, grey bevels, white text. Headings in a
+   plain bold sans like MS Sans Serif; the pixel face (Pixelify Sans) only for the logo and intro:
+   its Cyrillic reads poorly at TV distance. */
+html.design-retro90 {
+  --mt-bg: 0, 110, 110;
+  --mt-surface: 16, 24, 112;
+  --mt-surface-2: 32, 48, 160;
+  --mt-border: 192, 192, 192;
+  --mt-text: 255, 255, 255;
+  --mt-muted: 204, 228, 228;
+  --mt-accent: 255, 232, 92;
+  --mt-accent-strong: 255, 255, 255;
+  --mt-on-accent: 0, 0, 0;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* «Поп-арт»: a comic page: process blue with Ben-Day dots, yellow + red, black ink outlines and hard
+   offset shadows. Headings in Rubik Mono One (heavy comic «БАМ!» lettering, has Cyrillic). */
+html.design-popart {
+  --mt-bg: 20, 58, 150;
+  --mt-surface: 14, 34, 98;
+  --mt-surface-2: 30, 74, 178;
+  --mt-border: 0, 0, 0;
+  --mt-text: 255, 255, 255;
+  --mt-muted: 206, 220, 250;
+  --mt-accent: 255, 214, 0;
+  --mt-accent-strong: 255, 45, 60;
+  --mt-on-accent: 0, 0, 0;
+  --mt-focus: 255, 214, 0;
+  --mt-font-display: "Rubik Mono One", "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 4px;
+  --mt-radius-control: 10px;
+  color-scheme: dark;
+}
+
+/* «Конструктивизм»: a 1920s–30s avant-garde poster: black-brown ground, signal red, cream paper;
+   heavy condensed sans (Oswald) in capitals, square corners. Graphic style only. */
+html.design-constructivism {
+  --mt-bg: 24, 20, 18;
+  --mt-surface: 40, 34, 30;
+  --mt-surface-2: 60, 51, 45;
+  --mt-border: 112, 98, 84;
+  --mt-text: 243, 234, 214;
+  --mt-muted: 190, 178, 156;
+  --mt-accent: 215, 38, 30;
+  --mt-accent-strong: 239, 228, 204;
+  --mt-on-accent: 248, 240, 222;
+  --mt-focus: 243, 234, 214;
+  --mt-font-display: "Oswald", "Russo One", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "Oswald", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* Headings in the later designs use their display face (web and TV). */
+html.design-deco h1, html.design-deco h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
+html.design-wireframe h1, html.design-wireframe h2 { font-family: var(--mt-font-display); }
+html.design-cyberpunk h1, html.design-cyberpunk h2 { font-family: var(--mt-font-display); }
+html.design-retro80 h1, html.design-retro80 h2 { font-family: var(--mt-font-display); font-weight: 400; font-style: italic; letter-spacing: .01em; }
+html.design-retro90 h1, html.design-retro90 h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: 0; }
+html.design-popart h1, html.design-popart h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; word-spacing: -.35em; }
+html.design-constructivism h1, html.design-constructivism h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: rgb(var(--mt-bg));
+  color: rgb(var(--mt-text));
+  font-family: var(--mt-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Slim, theme-coloured scrollbars (the browser default is a bright grey bar
+   that clashes with every design). Firefox uses scrollbar-*, WebKit/Blink the
+   pseudo-elements (also on old TV engines). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--mt-border), 1) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--mt-border), 1);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--mt-muted), 0.7); }
+::-webkit-scrollbar-corner { background: transparent; }
+html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb { border-radius: 0; }
+

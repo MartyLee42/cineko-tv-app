@@ -1,0 +1,20 @@
+// Marty's mood line on Home (time of day, weekday, holidays).
+export const martyEn = {
+  "marty.night_series": "Another episode at this hour?",
+  "marty.night_owl": "Can't sleep? Me neither.",
+  "marty.night_quiet": "Shh… everyone's asleep. Headphones on?",
+  "marty.late": "Just one more episode… sure.",
+  "marty.late_cozy": "Late-night movie time.",
+  "marty.weekend_morning": "Good morning! Weekend — cartoons and pancakes?",
+  "marty.weekend_morning2": "Good morning! No rush today.",
+  "marty.morning": "Good morning, {name}!",
+  "marty.morning2": "Coffee first, then a trailer?",
+  "marty.day": "Hi, {name}! What are we watching?",
+  "marty.day2": "A movie for lunch break?",
+  "marty.friday": "It's Friday! Popcorn ready?",
+  "marty.weekend_evening": "Weekend evening — perfect for a long movie.",
+  "marty.evening": "Good evening, {name}!",
+  "marty.evening2": "Blanket, tea, a good movie?",
+  "marty.new_year": "Happy New Year! 🎄",
+  "marty.halloween": "Spooky night… something scary?",
+} as const;

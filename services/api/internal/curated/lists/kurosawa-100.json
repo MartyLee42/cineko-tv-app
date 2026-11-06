@@ -1,0 +1,718 @@
+{
+  "id": "kurosawa-100",
+  "group": "directors",
+  "title_ru": "Куросава: 100 любимых фильмов",
+  "title_en": "Kurosawa's 100 Favourite Films",
+  "author": "Акира Куросава / Akira Kurosawa",
+  "source": "книга «Мечта — это гений» (Yume wa tensai de aru), 1999; список составила дочь Кадзуко Куросава / Yume wa tensai de aru (A Dream Is a Genius), 1999, compiled by Kazuko Kurosawa",
+  "source_url": "https://www.openculture.com/2018/10/akira-kurosawas-100-favorite-movies.html",
+  "description_ru": "Сто фильмов, которые любил Куросава, — по одному на режиссёра, от Гриффита до Китано. Много японской классики, неизвестной у нас, рядом с Голливудом и европейским авторским кино.",
+  "description_en": "A hundred films Kurosawa loved, one per director, from Griffith to Kitano — lesser-known Japanese classics next to Hollywood and European art cinema. Chronological, not ranked.",
+  "ordered": false,
+  "items": [
+    {
+      "tmdb_id": 899,
+      "kind": "movie",
+      "title": "Сломанные побеги",
+      "original_title": "Broken Blossoms or The Yellow Man and the Girl",
+      "year": 1919
+    },
+    {
+      "tmdb_id": 234,
+      "kind": "movie",
+      "title": "Кабинет доктора Калигари",
+      "original_title": "Das Cabinet des Dr. Caligari",
+      "year": 1920
+    },
+    {
+      "tmdb_id": 5998,
+      "kind": "movie",
+      "title": "Доктор Мабузе, игрок",
+      "original_title": "Dr. Mabuse, der Spieler",
+      "year": 1922
+    },
+    {
+      "tmdb_id": 962,
+      "kind": "movie",
+      "title": "Золотая лихорадка",
+      "original_title": "The Gold Rush",
+      "year": 1925
+    },
+    {
+      "tmdb_id": 28189,
+      "kind": "movie",
+      "title": "Падение дома Ашеров",
+      "original_title": "La Chute de la maison Usher",
+      "year": 1928
+    },
+    {
+      "tmdb_id": 626,
+      "kind": "movie",
+      "title": "Андалузский пёс",
+      "original_title": "Un chien andalou",
+      "year": 1929
+    },
+    {
+      "tmdb_id": 42641,
+      "kind": "movie",
+      "title": "Марокко",
+      "original_title": "Morocco",
+      "year": 1930
+    },
+    {
+      "tmdb_id": 95759,
+      "kind": "movie",
+      "title": "Веселый конгресс",
+      "original_title": "Der Kongress tanzt",
+      "year": 1931
+    },
+    {
+      "tmdb_id": 42837,
+      "kind": "movie",
+      "title": "Трёхгрошовая опера",
+      "original_title": "Die 3 Groschen-Oper",
+      "year": 1931
+    },
+    {
+      "tmdb_id": 80952,
+      "kind": "movie",
+      "title": "Неоконченная симфония",
+      "original_title": "Leise flehen meine Lieder",
+      "year": 1933
+    },
+    {
+      "tmdb_id": 3529,
+      "kind": "movie",
+      "title": "Тонкий человек",
+      "original_title": "The Thin Man",
+      "year": 1934
+    },
+    {
+      "tmdb_id": 95762,
+      "kind": "movie",
+      "title": "Соседка Яэ-тян",
+      "original_title": "隣の八重ちゃん",
+      "year": 1934
+    },
+    {
+      "tmdb_id": 112501,
+      "kind": "movie",
+      "title": "丹下左膳餘話 百萬兩の壺",
+      "original_title": "丹下左膳餘話 百萬兩の壺",
+      "year": 1935
+    },
+    {
+      "tmdb_id": 112504,
+      "kind": "movie",
+      "title": "赤西蠣太",
+      "original_title": "赤西蠣太",
+      "year": 1936
+    },
+    {
+      "tmdb_id": 777,
+      "kind": "movie",
+      "title": "Великая иллюзия",
+      "original_title": "La Grande Illusion",
+      "year": 1937
+    },
+    {
+      "tmdb_id": 43865,
+      "kind": "movie",
+      "title": "Стелла Даллас",
+      "original_title": "Stella Dallas",
+      "year": 1937
+    },
+    {
+      "tmdb_id": 131771,
+      "kind": "movie",
+      "title": "Уроки литературы",
+      "original_title": "綴方教室",
+      "year": 1938
+    },
+    {
+      "tmdb_id": 123168,
+      "kind": "movie",
+      "title": "Земля",
+      "original_title": "土",
+      "year": 1939
+    },
+    {
+      "tmdb_id": 1859,
+      "kind": "movie",
+      "title": "Ниночка",
+      "original_title": "Ninotchka",
+      "year": 1939
+    },
+    {
+      "tmdb_id": 9797,
+      "kind": "movie",
+      "title": "Иван Грозный",
+      "original_title": "Иван Грозный",
+      "year": 1944,
+      "note_ru": "в списке обе серии",
+      "note_en": "the list names Parts I and II"
+    },
+    {
+      "tmdb_id": 3088,
+      "kind": "movie",
+      "title": "Моя дорогая Клементина",
+      "original_title": "My Darling Clementine",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 1585,
+      "kind": "movie",
+      "title": "Эта замечательная жизнь",
+      "original_title": "It's a Wonderful Life",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 910,
+      "kind": "movie",
+      "title": "Глубокий сон",
+      "original_title": "The Big Sleep",
+      "year": 1946
+    },
+    {
+      "tmdb_id": 5156,
+      "kind": "movie",
+      "title": "Похитители велосипедов",
+      "original_title": "Ladri di biciclette",
+      "year": 1948
+    },
+    {
+      "tmdb_id": 131833,
+      "kind": "movie",
+      "title": "Голубые горы. Часть 1",
+      "original_title": "青い山脈",
+      "year": 1949,
+      "note_ru": "в списке обе серии",
+      "note_en": "the list names both parts"
+    },
+    {
+      "tmdb_id": 1092,
+      "kind": "movie",
+      "title": "Третий человек",
+      "original_title": "The Third Man",
+      "year": 1949
+    },
+    {
+      "tmdb_id": 20530,
+      "kind": "movie",
+      "title": "Поздняя весна",
+      "original_title": "晩春",
+      "year": 1949
+    },
+    {
+      "tmdb_id": 4558,
+      "kind": "movie",
+      "title": "Орфей",
+      "original_title": "Orphée",
+      "year": 1950
+    },
+    {
+      "tmdb_id": 125264,
+      "kind": "movie",
+      "title": "Кармен возвращается домой",
+      "original_title": "カルメン故郷に帰る",
+      "year": 1951
+    },
+    {
+      "tmdb_id": 702,
+      "kind": "movie",
+      "title": "Трамвай «Желание»",
+      "original_title": "A Streetcar Named Desire",
+      "year": 1951
+    },
+    {
+      "tmdb_id": 67736,
+      "kind": "movie",
+      "title": "Тереза Ракен",
+      "original_title": "Thérèse Raquin",
+      "year": 1953
+    },
+    {
+      "tmdb_id": 43364,
+      "kind": "movie",
+      "title": "Жизнь О'хару, куртизанки",
+      "original_title": "西鶴一代女",
+      "year": 1952
+    },
+    {
+      "tmdb_id": 2748,
+      "kind": "movie",
+      "title": "Путешествие в Италию",
+      "original_title": "Viaggio in Italia",
+      "year": 1954
+    },
+    {
+      "tmdb_id": 1678,
+      "kind": "movie",
+      "title": "Годзилла",
+      "original_title": "ゴジラ",
+      "year": 1954
+    },
+    {
+      "tmdb_id": 405,
+      "kind": "movie",
+      "title": "Дорога",
+      "original_title": "La strada",
+      "year": 1954
+    },
+    {
+      "tmdb_id": 77285,
+      "kind": "movie",
+      "title": "Плывущие облака",
+      "original_title": "浮雲",
+      "year": 1955
+    },
+    {
+      "tmdb_id": 5801,
+      "kind": "movie",
+      "title": "Песнь дороги",
+      "original_title": "পথের পাঁচালী",
+      "year": 1955
+    },
+    {
+      "tmdb_id": 33218,
+      "kind": "movie",
+      "title": "Длинноногий папочка",
+      "original_title": "Daddy Long Legs",
+      "year": 1955
+    },
+    {
+      "tmdb_id": 107625,
+      "kind": "movie",
+      "title": "The Proud Ones",
+      "original_title": "The Proud Ones",
+      "year": 1956
+    },
+    {
+      "tmdb_id": 125217,
+      "kind": "movie",
+      "title": "Солнце в последние дни сёгуната",
+      "original_title": "幕末太陽傳",
+      "year": 1957
+    },
+    {
+      "tmdb_id": 40739,
+      "kind": "movie",
+      "title": "Молодые львы",
+      "original_title": "The Young Lions",
+      "year": 1958
+    },
+    {
+      "tmdb_id": 2363,
+      "kind": "movie",
+      "title": "Кузены",
+      "original_title": "Les Cousins",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 147,
+      "kind": "movie",
+      "title": "Четыреста ударов",
+      "original_title": "Les Quatre Cents Coups",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 269,
+      "kind": "movie",
+      "title": "На последнем дыхании",
+      "original_title": "À bout de souffle",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 665,
+      "kind": "movie",
+      "title": "Бен-Гур",
+      "original_title": "Ben-Hur",
+      "year": 1959
+    },
+    {
+      "tmdb_id": 125251,
+      "kind": "movie",
+      "title": "Младший брат",
+      "original_title": "おとうと",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 131836,
+      "kind": "movie",
+      "title": "Столь долгое отсутствие",
+      "original_title": "Une aussi longue absence",
+      "year": 1961
+    },
+    {
+      "tmdb_id": 204199,
+      "kind": "movie",
+      "title": "Путешествие на воздушном шаре",
+      "original_title": "Le Voyage en ballon",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 10363,
+      "kind": "movie",
+      "title": "На ярком солнце",
+      "original_title": "Plein soleil",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 2546,
+      "kind": "movie",
+      "title": "Зази в метро",
+      "original_title": "Zazie dans le métro",
+      "year": 1960
+    },
+    {
+      "tmdb_id": 4024,
+      "kind": "movie",
+      "title": "В прошлом году в Мариенбаде",
+      "original_title": "L'Année dernière à Marienbad",
+      "year": 1961
+    },
+    {
+      "tmdb_id": 10242,
+      "kind": "movie",
+      "title": "Что случилось с Бэби Джейн?",
+      "original_title": "What Ever Happened to Baby Jane?",
+      "year": 1962
+    },
+    {
+      "tmdb_id": 947,
+      "kind": "movie",
+      "title": "Лоуренс Аравийский",
+      "original_title": "Lawrence of Arabia",
+      "year": 1962
+    },
+    {
+      "tmdb_id": 22650,
+      "kind": "movie",
+      "title": "Мелодия из подвала",
+      "original_title": "Mélodie en sous-sol",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 571,
+      "kind": "movie",
+      "title": "Птицы",
+      "original_title": "The Birds",
+      "year": 1963
+    },
+    {
+      "tmdb_id": 26638,
+      "kind": "movie",
+      "title": "Красная пустыня",
+      "original_title": "Il deserto rosso",
+      "year": 1964
+    },
+    {
+      "tmdb_id": 396,
+      "kind": "movie",
+      "title": "Кто боится Вирджинии Вульф?",
+      "original_title": "Who's Afraid of Virginia Woolf?",
+      "year": 1966
+    },
+    {
+      "tmdb_id": 475,
+      "kind": "movie",
+      "title": "Бонни и Клайд",
+      "original_title": "Bonnie and Clyde",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 10633,
+      "kind": "movie",
+      "title": "Полуночная жара",
+      "original_title": "In the Heat of the Night",
+      "year": 1967
+    },
+    {
+      "tmdb_id": 42193,
+      "kind": "movie",
+      "title": "Атака легкой кавалерии",
+      "original_title": "The Charge of the Light Brigade",
+      "year": 1968
+    },
+    {
+      "tmdb_id": 3116,
+      "kind": "movie",
+      "title": "Полуночный ковбой",
+      "original_title": "Midnight Cowboy",
+      "year": 1969
+    },
+    {
+      "tmdb_id": 651,
+      "kind": "movie",
+      "title": "Военно-полевой госпиталь М.Э.Ш.",
+      "original_title": "M*A*S*H",
+      "year": 1970
+    },
+    {
+      "tmdb_id": 16328,
+      "kind": "movie",
+      "title": "Джонни взял ружье",
+      "original_title": "Johnny Got His Gun",
+      "year": 1971
+    },
+    {
+      "tmdb_id": 1051,
+      "kind": "movie",
+      "title": "Французский связной",
+      "original_title": "The French Connection",
+      "year": 1971
+    },
+    {
+      "tmdb_id": 4495,
+      "kind": "movie",
+      "title": "Дух улья",
+      "original_title": "El espíritu de la colmena",
+      "year": 1973
+    },
+    {
+      "tmdb_id": 593,
+      "kind": "movie",
+      "title": "Солярис",
+      "original_title": "Солярис",
+      "year": 1972
+    },
+    {
+      "tmdb_id": 4909,
+      "kind": "movie",
+      "title": "День Шакала",
+      "original_title": "The Day of the Jackal",
+      "year": 1973
+    },
+    {
+      "tmdb_id": 56142,
+      "kind": "movie",
+      "title": "Семейный портрет в интерьере",
+      "original_title": "Gruppo di Famiglia in un Interno",
+      "year": 1974
+    },
+    {
+      "tmdb_id": 240,
+      "kind": "movie",
+      "title": "Крёстный отец 2",
+      "original_title": "The Godfather Part II",
+      "year": 1974
+    },
+    {
+      "tmdb_id": 12470,
+      "kind": "movie",
+      "title": "Сандакан № 8",
+      "original_title": "サンダカン八番娼館　望郷",
+      "year": 1974
+    },
+    {
+      "tmdb_id": 510,
+      "kind": "movie",
+      "title": "Пролетая над гнездом кукушки",
+      "original_title": "One Flew Over the Cuckoo's Nest",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 689,
+      "kind": "movie",
+      "title": "Комедианты",
+      "original_title": "Ο θίασος",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 3175,
+      "kind": "movie",
+      "title": "Барри Линдон",
+      "original_title": "Barry Lyndon",
+      "year": 1975
+    },
+    {
+      "tmdb_id": 129377,
+      "kind": "movie",
+      "title": "Колыбельная земли",
+      "original_title": "大地の子守歌",
+      "year": 1976
+    },
+    {
+      "tmdb_id": 703,
+      "kind": "movie",
+      "title": "Энни Холл",
+      "original_title": "Annie Hall",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 38837,
+      "kind": "movie",
+      "title": "Неоконченная пьеса для механического пианино",
+      "original_title": "Неоконченная пьеса для механического пианино",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 42225,
+      "kind": "movie",
+      "title": "Отец-хозяин",
+      "original_title": "Padre padrone",
+      "year": 1977
+    },
+    {
+      "tmdb_id": 10889,
+      "kind": "movie",
+      "title": "Глория",
+      "original_title": "Gloria",
+      "year": 1980
+    },
+    {
+      "tmdb_id": 73324,
+      "kind": "movie",
+      "title": "Зов далеких гор",
+      "original_title": "遙かなる山の呼び声",
+      "year": 1980
+    },
+    {
+      "tmdb_id": 48561,
+      "kind": "movie",
+      "title": "Травиата",
+      "original_title": "La traviata",
+      "year": 1982
+    },
+    {
+      "tmdb_id": 5961,
+      "kind": "movie",
+      "title": "Фанни и Александр",
+      "original_title": "Fanny och Alexander",
+      "year": 1982
+    },
+    {
+      "tmdb_id": 9343,
+      "kind": "movie",
+      "title": "Фицкарральдо",
+      "original_title": "Fitzcarraldo",
+      "year": 1982
+    },
+    {
+      "tmdb_id": 262,
+      "kind": "movie",
+      "title": "Король комедии",
+      "original_title": "The King of Comedy",
+      "year": 1982
+    },
+    {
+      "tmdb_id": 11948,
+      "kind": "movie",
+      "title": "Счастливого рождества, мистер Лоуренс",
+      "original_title": "戦場のメリークリスマス",
+      "year": 1983
+    },
+    {
+      "tmdb_id": 625,
+      "kind": "movie",
+      "title": "Поля смерти",
+      "original_title": "The Killing Fields",
+      "year": 1984
+    },
+    {
+      "tmdb_id": 469,
+      "kind": "movie",
+      "title": "Более странно, чем в раю",
+      "original_title": "Stranger Than Paradise",
+      "year": 1984
+    },
+    {
+      "tmdb_id": 92989,
+      "kind": "movie",
+      "title": "Лето у дедушки",
+      "original_title": "冬冬的假期",
+      "year": 1984
+    },
+    {
+      "tmdb_id": 655,
+      "kind": "movie",
+      "title": "Париж, Техас",
+      "original_title": "Paris, Texas",
+      "year": 1984
+    },
+    {
+      "tmdb_id": 9281,
+      "kind": "movie",
+      "title": "Свидетель",
+      "original_title": "Witness",
+      "year": 1985
+    },
+    {
+      "tmdb_id": 47908,
+      "kind": "movie",
+      "title": "Поездка в Баунтифул",
+      "original_title": "The Trip to Bountiful",
+      "year": 1985
+    },
+    {
+      "tmdb_id": 21042,
+      "kind": "movie",
+      "title": "Папа в командировке",
+      "original_title": "Otac na službenom putu",
+      "year": 1985
+    },
+    {
+      "tmdb_id": 39507,
+      "kind": "movie",
+      "title": "Умершие",
+      "original_title": "The Dead",
+      "year": 1987
+    },
+    {
+      "tmdb_id": 49964,
+      "kind": "movie",
+      "title": "Где дом друга?",
+      "original_title": "خانه‌ی دوست کجاست؟",
+      "year": 1987
+    },
+    {
+      "tmdb_id": 3543,
+      "kind": "movie",
+      "title": "Кафе «Багдад»",
+      "original_title": "Out of Rosenheim",
+      "year": 1987
+    },
+    {
+      "tmdb_id": 49815,
+      "kind": "movie",
+      "title": "Августовские киты",
+      "original_title": "The Whales of August",
+      "year": 1987
+    },
+    {
+      "tmdb_id": 18197,
+      "kind": "movie",
+      "title": "На холостом ходу",
+      "original_title": "Running on Empty",
+      "year": 1988
+    },
+    {
+      "tmdb_id": 8392,
+      "kind": "movie",
+      "title": "Мой сосед Тоторо",
+      "original_title": "となりのトトロ",
+      "year": 1988
+    },
+    {
+      "tmdb_id": 131870,
+      "kind": "movie",
+      "title": "А-Ун",
+      "original_title": "あ・うん",
+      "year": 1989
+    },
+    {
+      "tmdb_id": 12627,
+      "kind": "movie",
+      "title": "Очаровательная проказница",
+      "original_title": "La Belle Noiseuse",
+      "year": 1991
+    },
+    {
+      "tmdb_id": 5910,
+      "kind": "movie",
+      "title": "Фейерверк",
+      "original_title": "HANA-BI",
+      "year": 1997
+    }
+  ]
+}
