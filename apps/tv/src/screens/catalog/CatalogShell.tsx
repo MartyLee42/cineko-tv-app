@@ -12,6 +12,7 @@ import { SkinBackground } from "../../design/skins";
 import { useInbox, useWatchlist } from "../../design/data";
 import { KinozalRail, ProjectorBar, TerminalBar, TerminalTicker, type MenuId, type NavProps } from "../../design/shell";
 import { HomeCatalog } from "./HomeCatalog";
+import { TvIdleLayer } from "../../idle/IdleLayer";
 import { CvQueue } from "../../design/cvHome";
 import { useNewEpisodesUnseen, type NewEpisodeItem } from "../../newepisodes/data";
 import { QuizInvite } from "../../taste/QuizInvite";
@@ -438,6 +439,8 @@ export function CatalogShell({
       </FocusRecorderProvider>
       {/* «Уютный режим»: palette while the catalog is up, the ambience on Home only (under the holiday layer). */}
       <TvCozyLayer onHome={route.name === "home" && !settings && !guide} />
+      {/* Idle Home: the déjà-vu cat, the screensaver; the secret remote code (idle/). */}
+      <TvIdleLayer onHome={route.name === "home" && !settings && !guide && !quiz} />
       {/* Holiday animations: over the content, under the menu and overlays; menu screens only. */}
       {chrome && !settings && !guide && <TvSeasonLayer />}
       {/* «Конструктивизм»: «очередь за дефицитом» over a popular title opened in the catalog (not from the phone). */}

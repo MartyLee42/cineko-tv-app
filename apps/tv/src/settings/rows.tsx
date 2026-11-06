@@ -12,6 +12,7 @@ import { DESIGNS, LOADING_STYLES, POSTER_RATINGS, THEMES, useSaveSettings, useSe
 import { useActiveProfileId } from "../profile/active";
 import { calmMotion, useCalmMotion } from "../design/skins";
 import { introPref } from "../intro/logic";
+import { SAVER_STYLES, saverPref, type SaverStyle } from "../idle/logic";
 import type { Choice, Row } from "./OptionList";
 import { DEFAULT_MIN_VOTES, MIN_VOTES_CHOICES, truncateNote } from "./taste";
 
@@ -33,6 +34,7 @@ export function useSettingRows() {
   const [player, setPlayer] = useState(() => defaultPlayerStore.get());
   const calm = useCalmMotion();
   const [intro, setIntro] = useState(() => introPref.get());
+  const [saver, setSaver] = useState(() => saverPref.get());
   const available = useMemo(() => currentPlayers(), []);
 
   const set = (patch: Partial<Settings>) => {
@@ -93,6 +95,19 @@ export function useSettingRows() {
       onChange: (v) => {
         introPref.set(v === true);
         setIntro(v === true);
+      },
+    } as Row,
+    // This TV's screensaver on idle Home (device-local, idle/logic.ts).
+    saver: {
+      kind: "choice",
+      key: "screensaver",
+      label: t("idle.saver"),
+      hint: t("idle.saver_hint"),
+      choices: SAVER_STYLES.map((v) => ({ value: v, label: t(`idle.saver.${v}`) })),
+      value: saver,
+      onChange: (v) => {
+        saverPref.set(v as SaverStyle);
+        setSaver(v as SaverStyle);
       },
     } as Row,
     theme: {

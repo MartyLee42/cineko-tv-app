@@ -1,0 +1,57 @@
+/* Home's idle extras (IdleLayer.tsx). Transform / opacity animations only;
+   filters are static (rasterised once) — cheap on old TV engines. */
+
+/* ---- the déjà-vu cat: one walk, then the very same walk again (2 iterations) */
+.idle-cat { position: absolute; left: 0; top: 0; width: 120px; height: 120px; -webkit-animation: idle-walk 8s linear 2 both; animation: idle-walk 8s linear 2 both; }
+.idle-cat-img img { -webkit-filter: brightness(0) drop-shadow(0 0 2px rgb(var(--mt-accent))); filter: brightness(0) drop-shadow(0 0 2px rgb(var(--mt-accent))); }
+@-webkit-keyframes idle-walk {
+  0% { -webkit-transform: translate3d(-160px, 0, 0); opacity: 0; }
+  2% { opacity: 1; }
+  25% { -webkit-transform: translate3d(400px, -6px, 0); }
+  50% { -webkit-transform: translate3d(960px, 0, 0); }
+  75% { -webkit-transform: translate3d(1520px, -6px, 0); }
+  98% { opacity: 1; }
+  100% { -webkit-transform: translate3d(2080px, 0, 0); opacity: 0; }
+}
+@keyframes idle-walk {
+  0% { transform: translate3d(-160px, 0, 0); opacity: 0; }
+  2% { opacity: 1; }
+  25% { transform: translate3d(400px, -6px, 0); }
+  50% { transform: translate3d(960px, 0, 0); }
+  75% { transform: translate3d(1520px, -6px, 0); }
+  98% { opacity: 1; }
+  100% { transform: translate3d(2080px, 0, 0); opacity: 0; }
+}
+
+/* ---- the secret code: Cineko dances */
+.idle-dance { -webkit-animation: idle-dance .5s ease-in-out 6 alternate both; animation: idle-dance .5s ease-in-out 6 alternate both; -webkit-transform-origin: 50% 100%; transform-origin: 50% 100%; }
+@-webkit-keyframes idle-dance { from { -webkit-transform: translate3d(-30px, 0, 0) rotate(-10deg); } to { -webkit-transform: translate3d(30px, -50px, 0) rotate(10deg); } }
+@keyframes idle-dance { from { transform: translate3d(-30px, 0, 0) rotate(-10deg); } to { transform: translate3d(30px, -50px, 0) rotate(10deg); } }
+
+/* ---- screensaver: near-black (OLED), the content slowly drifts */
+.idle-saver { background: rgba(0, 0, 0, .94); -webkit-animation: idle-fade 1.2s ease-out both; animation: idle-fade 1.2s ease-out both; }
+@-webkit-keyframes idle-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes idle-fade { from { opacity: 0; } to { opacity: 1; } }
+.idle-drift { -webkit-animation: idle-drift 90s ease-in-out infinite alternate; animation: idle-drift 90s ease-in-out infinite alternate; }
+@-webkit-keyframes idle-drift {
+  0% { -webkit-transform: translate3d(-520px, -240px, 0); }
+  33% { -webkit-transform: translate3d(480px, -120px, 0); }
+  66% { -webkit-transform: translate3d(-260px, 240px, 0); }
+  100% { -webkit-transform: translate3d(560px, 220px, 0); }
+}
+@keyframes idle-drift {
+  0% { transform: translate3d(-520px, -240px, 0); }
+  33% { transform: translate3d(480px, -120px, 0); }
+  66% { transform: translate3d(-260px, 240px, 0); }
+  100% { transform: translate3d(560px, 220px, 0); }
+}
+.idle-saver .idle-drift { opacity: .75; }
+.idle-zzz { opacity: 0; font-weight: 700; -webkit-animation: idle-zzz 3.6s ease-out infinite; animation: idle-zzz 3.6s ease-out infinite; }
+.idle-zzz-1 { -webkit-animation-delay: 1.2s; animation-delay: 1.2s; }
+.idle-zzz-2 { -webkit-animation-delay: 2.4s; animation-delay: 2.4s; }
+@-webkit-keyframes idle-zzz { 0% { -webkit-transform: translate3d(0, 20px, 0); opacity: 0; } 20% { opacity: .9; } 100% { -webkit-transform: translate3d(30px, -90px, 0); opacity: 0; } }
+@keyframes idle-zzz { 0% { transform: translate3d(0, 20px, 0); opacity: 0; } 20% { opacity: .9; } 100% { transform: translate3d(30px, -90px, 0); opacity: 0; } }
+
+/* ---- DVD: the wordmark (and its «tv» pill) in the bounce colour */
+.idle-dvd .mt-logo { color: var(--idle-dvd); }
+.idle-dvd .mt-logo .bg-accent { background: var(--idle-dvd); color: #000; }

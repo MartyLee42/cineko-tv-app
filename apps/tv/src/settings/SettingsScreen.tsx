@@ -65,6 +65,7 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
     { kind: "header", key: "h-device", label: t("settings.device_section"), hint: t("tv.settings.device_hint") },
     r.player,
     r.intro,
+    r.saver,
     r.language,
     ...playback.rows,
     {
