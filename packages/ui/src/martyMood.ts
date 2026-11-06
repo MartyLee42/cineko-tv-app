@@ -1,4 +1,4 @@
-// Marty's mood line on Home: what he says and which sticker he shows,
+// Cineko's mood line on Home: what he says and which sticker he shows,
 // by local time, weekday and a few dates. Pure: pass the date in.
 import type { MascotMood } from "./marty";
 import type { martyEn } from "./locales/marty.en";

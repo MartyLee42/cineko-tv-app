@@ -4599,8 +4599,8 @@ export interface components {
              *     poster_reveal = a blurred greyscale poster sharpens into full colour with progress;
              *     film_reel = film-strip frames light up one by one along a running reel;
              *     minimal = backdrop with a thin progress line and status text;
-             *     marty = Marty the mascot's loading loop with a progress bar; he cheers at 100%;
-             *     marty_popcorn = the same with Marty munching popcorn while it loads.
+             *     marty = Cineko the mascot's loading loop with a progress bar; he cheers at 100%;
+             *     marty_popcorn = the same with Cineko munching popcorn while it loads.
              * @default popcorn
              * @enum {string}
              */

@@ -4,7 +4,7 @@ const USER = process.env.E2E_USER ?? "e2e-admin";
 const PASS = process.env.E2E_PASS ?? "e2e-password-123";
 
 /**
- * «Конструктивизм» on the web (phone, iPad, desktop): no Marty — Mayakovsky
+ * «Конструктивизм» on the web (phone, iPad, desktop): no Cineko — Mayakovsky
  * stands in ([data-mascot="mayakovsky"]); monumental headings; the
  * «Ленин в Октябре» card (opens the title, cannot be dismissed); the
  * news strip, the five-year plan and «Рекомендовано Госкино»; «VOICE OF
@@ -14,7 +14,7 @@ const PASS = process.env.E2E_PASS ?? "e2e-password-123";
  */
 
 const json = (body: unknown, status = 200) => ({ status, contentType: "application/json", body: JSON.stringify(body) });
-/** Marty's sticker files (idle, happy…): none may load in this design. */
+/** Cineko's sticker files (idle, happy…): none may load in this design. */
 const MARTY_IMG = /\/(idle|happy|excited|love|music|sleepy|thinking|surprised|error|loading|popcorn|laptop|rain|run|sly)(-anim)?[-.][\w-]*\.webp/;
 
 async function loginState(browser: Browser) {
@@ -59,7 +59,7 @@ async function noMarty(page: Page, where: string) {
   const mascots = await page.locator("[data-mascot]").evaluateAll((els) => els.map((e) => e.getAttribute("data-mascot")));
   expect(mascots.filter((m) => m !== "mayakovsky"), `${where}: only Mayakovsky`).toEqual([]);
   const srcs = await page.locator("img").evaluateAll((els) => els.map((e) => (e as HTMLImageElement).currentSrc || (e as HTMLImageElement).src));
-  expect(srcs.filter((s) => MARTY_IMG.test(s)), `${where}: no Marty images`).toEqual([]);
+  expect(srcs.filter((s) => MARTY_IMG.test(s)), `${where}: no Cineko images`).toEqual([]);
 }
 
 const noSideScroll = (page: Page) => page.evaluate(() => document.scrollingElement!.scrollWidth <= window.innerWidth + 1);
@@ -78,7 +78,7 @@ for (const [tag, viewport] of [
       await page.goto("/");
       await expect(page.locator("html")).toHaveClass(/design-constructivism/);
       await expect(page.getByTestId("marty-hello")).toBeVisible({ timeout: 20_000 });
-      // Mayakovsky in the greeting and the header wordmark; no Marty anywhere.
+      // Mayakovsky in the greeting and the header wordmark; no Cineko anywhere.
       await expect(page.getByTestId("marty-hello").locator('[data-mascot="mayakovsky"]')).toBeVisible();
       await expect(page.locator('header [data-mascot="mayakovsky"]')).toBeVisible();
       await noMarty(page, `${tag} home`);
@@ -194,7 +194,7 @@ for (const [tag, viewport] of [
       expect(h1.font).toMatch(/Oswald/);
       expect(h1.size).toBeGreaterThanOrEqual(36);
 
-      // Player loader: whatever the style («Марти» here), the hammer and sickle and changing slogans; no mascot.
+      // Player loader: whatever the style («Cineko» here), the hammer and sickle and changing slogans; no mascot.
       await page.goto("/watch/00000000-0000-4000-8000-000000000000");
       const loader = page.getByTestId("player-loader");
       await expect(loader).toBeVisible({ timeout: 15_000 });

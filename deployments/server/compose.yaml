@@ -192,7 +192,7 @@ services:
       invidious: {}
       media: {}
 
-  # --- Marty Music (/music): services/music --------------------------------
+  # --- Cineko Music (/music): services/music --------------------------------
   # Separate app and container. Catalog from Deezer's public API, audio from
   # YouTube via the Invidious above (cached on disk in music-data), lossless
   # albums via Prowlarr + TorrServer (same settings as the API, from .env).

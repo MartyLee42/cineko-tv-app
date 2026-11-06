@@ -83,7 +83,7 @@ services:
     cpus: 3
     mem_limit: 1g
 
-  # Marty Music (/music, services/music): built image (web app + Go + ffmpeg).
+  # Cineko Music (/music, services/music): built image (web app + Go + ffmpeg).
   # Rebuild after changes: docker compose -f deployments/compose.dev.yaml up -d --build music
   # For live UI work use `npm run dev` in services/music/web instead.
   music:

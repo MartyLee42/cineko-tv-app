@@ -174,7 +174,7 @@ export function Empty({ mood = "sleepy", animated, text, children }: { mood?: Mo
   );
 }
 
-/** Loading: Marty's animated loader; `small` = a plain ring (inline / over video). */
+/** Loading: Cineko's animated loader; `small` = a plain ring (inline / over video). */
 export function Spinner({ label, small }: { label?: string; small?: boolean }) {
   return (
     <div className={`spinner-wrap ${small ? "small" : ""}`}>

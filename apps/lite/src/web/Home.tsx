@@ -97,7 +97,7 @@ function ContinueRow() {
   );
 }
 
-/** Marty's line for the time of day. */
+/** Cineko's line for the time of day. */
 function Greeting() {
   const t = useT();
   const [now, setNow] = useState(() => new Date());

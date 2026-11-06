@@ -57,7 +57,7 @@ function item(n: number, o: Record<string, unknown> = {}) {
     id: vid(n),
     title: TITLES[n] ?? `Видео ${n}`,
     channel_id: CHANNEL,
-    channel_name: n % 2 ? "Наука и техника" : "Марти Влог",
+    channel_name: n % 2 ? "Наука и техника" : "Cineko Влог",
     channel_verified: n % 3 === 0,
     duration_seconds: 80,
     views: [1_234_567, 15_400, 980, 3_100_000][n % 4],
@@ -423,7 +423,7 @@ test("TV: «Видео» tab, search, player and video.play in every design", as
     await tv.keyboard.up("Enter");
     await expect(menu).toBeVisible();
     await expect(menu).toContainText("Смотреть позже");
-    await expect(menu).toContainText("Канал: Марти Влог");
+    await expect(menu).toContainText("Канал: Cineko Влог");
     await press(tv, "ArrowDown", 2);
     await press(tv, "Enter");
     const channel = tv.getByTestId("video-channel");

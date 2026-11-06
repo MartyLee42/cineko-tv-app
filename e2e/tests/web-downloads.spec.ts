@@ -196,7 +196,7 @@ async function mockAll(page: Page, movie: Movie, opts: { initial?: Record<string
     const all = url.searchParams.get("all") === "true";
     const items = m.downloads
       .filter((d) => !mediaId || d.media_id === mediaId)
-      .map((d) => (all ? { ...d, users: [{ id: "u1", username: "marty", display_name: "Марти" }] } : d));
+      .map((d) => (all ? { ...d, users: [{ id: "u1", username: "marty", display_name: "Cineko" }] } : d));
     return json(route, { items });
   });
 
@@ -365,7 +365,7 @@ test.describe("phone", () => {
     const tab = page.getByTestId("storage-tab");
     await expect(tab.getByTestId("disk-bar")).toBeVisible();
     await expect(tab.getByTestId("admin-download-row")).toHaveCount(1);
-    await expect(tab.getByTestId("admin-download-row")).toContainText("Запросили: Марти");
+    await expect(tab.getByTestId("admin-download-row")).toContainText("Запросили: Cineko");
     await shot(page, "phone-admin-storage");
     await tab.getByTestId("torrents").scrollIntoViewIfNeeded();
     await shot(page, "phone-admin-torrents");

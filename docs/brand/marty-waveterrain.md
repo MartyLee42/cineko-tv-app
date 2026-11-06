@@ -1,13 +1,13 @@
-# Marty in the «Каркас» wave-terrain style — art instructions
+# Cineko in the «Каркас» wave-terrain style — art instructions
 
-How to make Marty art (stickers, animations, wallpapers) that matches the
+How to make Cineko art (stickers, animations, wallpapers) that matches the
 **«Каркас» (wireframe)** design: the synthwave **wave terrain** — neon wireframe
 ridges rolling toward the viewer under a glowing horizon. Use it with any image
 generator (Midjourney, DALL·E, Ideogram, Kling/Runway for animation…), then hand
 the files over as described in [Delivery](#delivery) so they drop straight into
 the app.
 
-The existing cyberpunk pack (`packages/ui/src/marty/`) stays the default Marty;
+The existing cyberpunk pack (`packages/ui/src/marty/`) stays the default Cineko;
 wave-terrain art is a themed variant for «Каркас» (and anything synthwave).
 
 ---
@@ -47,7 +47,7 @@ No lime (that's «Кинозал»), no yellow (that's «Киберпанк»), 
   magenta pill with dark ink. Labels in JetBrains Mono.
 - **Shapes:** small corner radii (6–8 px); thin 1–2 px lines; glow, not blur.
 
-## 4. Marty — character sheet (keep him consistent)
+## 4. Cineko — character sheet (keep him consistent)
 
 Always the same character as the cyberpunk pack; only the lighting changes.
 
@@ -68,7 +68,7 @@ Always the same character as the cyberpunk pack; only the lighting changes.
 **Base character (single sticker, transparent background)**
 
 ```
-cute chibi robot cat mascot named Marty, small black quilted plush body in a hood with two cat ears,
+cute chibi robot cat mascot named Cineko, small black quilted plush body in a hood with two cat ears,
 dark visor face with two tall glowing magenta oval eyes, no mouth, small side box with a glowing play
 triangle icon, sitting, round paws, thin cyan rim light on hood and ears, magenta glow from below,
 synthwave retro-futuristic style, clean vector-like 3D render, high contrast, centered, full body,
@@ -124,7 +124,7 @@ So the files work in the app without manual fixing:
 | Mood sticker | PNG or WebP with **transparent** background | ≥ 512 px on the long side | one mood per file, named by mood (`happy.png`…) or one sheet |
 | Mood animation | animated WebP (or GIF/MP4 — converted) | ~480 px, 8–14 frames, ~150–200 ms per frame, **seamless loop** | transparent background; first and last frame match |
 | Wallpaper | PNG/JPG | 3840×2160 (16:9) | keep the right ⅔ calm for the UI |
-| App icon | PNG | 1024×1024, square, full-bleed | the app rounds the corners itself; keep Marty inside the central 80% |
+| App icon | PNG | 1024×1024, square, full-bleed | the app rounds the corners itself; keep Cineko inside the central 80% |
 
 Mood names the app understands: `idle, happy, excited, love, music, sleepy, thinking, surprised, error,
 loading, popcorn, laptop, rain, run, sly` (see `packages/ui/src/marty/index.ts`).
@@ -132,4 +132,4 @@ loading, popcorn, laptop, rain, run, sly` (see `packages/ui/src/marty/index.ts`)
 Drop the files anywhere (e.g. `~/Downloads`) and ask Claude to add them:
 they're trimmed to their visible area, resized (stickers ≤ 320 px, loops ≤ 200–256 px,
 ≈ 100–180 KB each) and wired to the moods. Animated loops are shown only where
-Marty is big (≥ 80 px) or explicitly animated, and never with «reduce motion».
+Cineko is big (≥ 80 px) or explicitly animated, and never with «reduce motion».

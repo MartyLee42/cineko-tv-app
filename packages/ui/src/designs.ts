@@ -73,7 +73,7 @@ function applyFavicon(design: DesignSetting): void {
     link.rel = "icon";
     document.head.appendChild(link);
   }
-  // One icon for every design since the neon Marty — except «Конструктивизм», which has no mascot at all.
+  // One icon for every design since the neon Cineko — except «Конструктивизм», which has no mascot at all.
   const svg = design === "constructivism";
   link.type = svg ? "image/svg+xml" : "image/png";
   link.href = svg ? EMBLEM_FAVICON : MARTY_FAVICON;

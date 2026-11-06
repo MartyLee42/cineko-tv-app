@@ -71,7 +71,7 @@ else
     echo "compose.yaml references the transcoder but services/transcoder is missing from the source" >&2; exit 1
   fi
 fi
-# Marty Music (/music): ships when this source has it, like the transcoder.
+# Cineko Music (/music): ships when this source has it, like the transcoder.
 if [ -f "$SRC/services/music/Dockerfile" ]; then
   dk build -q --target runtime -t "martytv-music:$VERSION" "$SRC/services/music" >/dev/null
   IMAGES+=("martytv-music:$VERSION")

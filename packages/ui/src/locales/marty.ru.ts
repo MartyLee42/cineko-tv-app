@@ -1,4 +1,4 @@
-// Настроение Марти на главной (зеркало marty.en.ts).
+// Настроение Cineko на главной (зеркало marty.en.ts).
 import type { martyEn } from "./marty.en";
 
 export const martyRu: Record<keyof typeof martyEn, string> = {

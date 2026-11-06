@@ -69,7 +69,7 @@ export function App() {
   const s = useSettings();
   const [stack, setStack] = useState<Entry[]>([{ screen: { name: "home" }, id: 0 }]);
   const [toast, setToast] = useState("");
-  // Startup screen: Marty waves while the first rows load (at least ~1 s, at most 5 s).
+  // Startup screen: Cineko waves while the first rows load (at least ~1 s, at most 5 s).
   const [splash, setSplash] = useState(true);
   useEffect(() => {
     const started = Date.now();

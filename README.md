@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="packages/ui/src/marty/happy.webp" width="140" alt="Marty, the Cineko robot-cat" />
+  <img src="packages/ui/src/marty/happy.webp" width="140" alt="Cineko, the Cineko robot-cat" />
 </p>
 
 <h1 align="center">Cineko</h1>

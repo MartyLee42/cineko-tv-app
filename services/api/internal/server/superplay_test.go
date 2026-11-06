@@ -117,7 +117,7 @@ func TestDevicesScopeAll(t *testing.T) {
 	admin, _ := env.NewUserClient("adam", "admin")
 	alice, aliceUser := env.NewUserClient("alice", "user")
 	bob, _ := env.NewUserClient("bob", "user")
-	mine, _ := env.Pair(super, "Marty TV")
+	mine, _ := env.Pair(super, "Cineko TV")
 	aliceTV, _ := env.Pair(alice, "Alice TV")
 	bobTV, _ := env.Pair(bob, "Bob TV")
 	bob.Do("PUT", "/api/v1/devices/"+bobTV+"/permissions", map[string]string{"username": "marty", "permission": "use"}).Expect(200)

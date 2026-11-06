@@ -51,7 +51,7 @@ export function StatusDot({ online }: { online: boolean }) {
 }
 
 /**
- * Marty, the Cineko mascot: a neon robot-cat (brand refresh, Oct 2026).
+ * Cineko, the Cineko mascot: a neon robot-cat (brand refresh, Oct 2026).
  * `mood` picks a sticker (idle, happy, sleepy, popcorn…). Moods with a loop
  * (idle, happy, sleepy, popcorn, thinking, loading) animate when big (≥ 80 px)
  * or with `animated`, unless the user prefers reduced motion. `color` / `screen` / `cheeks` are from the old
@@ -81,7 +81,7 @@ export function Mascot({
 }) {
   const live = useSeasonHat();
   const design = useAppliedDesign();
-  // «Конструктивизм»: Mayakovsky (a poster tile, slightly tilted) stands in for Marty — same box, so layouts keep their shape.
+  // «Конструктивизм»: Mayakovsky (a poster tile, slightly tilted) stands in for Cineko — same box, so layouts keep their shape.
   if (design === "constructivism") {
     return (
       <span

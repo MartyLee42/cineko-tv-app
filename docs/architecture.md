@@ -2341,7 +2341,7 @@ subscribe, uploads with continuation paging. Settings → profile:
   outlines, hard offset shadows, Rubik Mono One), `constructivism` =
   «Конструктивизм» 1920s–30s avant-garde poster graphics (red/black/cream,
   diagonals, a red-black duotone backdrop, Oswald). At the owner's request
-  (2026-11) it is played for laughs, in this design only: Marty is replaced
+  (2026-11) it is played for laughs, in this design only: Cineko is replaced
   by a Rodchenko-style Mayakovsky portrait (`MAYAKOVSKY`,
   `[data-mascot="mayakovsky"]` — `Mascot` reads the applied design from
   `useAppliedDesign()`, the store `applyDesign` fills); every player loader
@@ -2356,8 +2356,8 @@ subscribe, uploads with continuation paging. Settings → profile:
   lines; «VOICE OF AMERICA» over «Видео»; the web gets monumental type,
   header and hero (`apps/web/src/constructivism.css`). Shared logic:
   `packages/ui/src/{constructivism,cvExtras,cvSearch,emblem}.ts(x)`.
-  `applyDesign` also sets the favicon — one Marty icon for every design
-  since 2026-10-31 (see [Marty](#marty-mascot-and-branding)); «Конструктивизм»
+  `applyDesign` also sets the favicon — one Cineko icon for every design
+  since 2026-10-31 (see [Cineko](#marty-mascot-and-branding)); «Конструктивизм»
   uses the emblem.
 - **Startup intro** (`apps/tv/src/intro/`): a ~3 s animation in the
   design's style (kinozal = the wave terrain) on every launch; any key skips.
@@ -2379,8 +2379,8 @@ subscribe, uploads with continuation paging. Settings → profile:
   for a moment (the loader preview used to restart twice).
 - **Loading animation** (`loading_style`, TV and web player): «Попкорн»,
   «Заполняющееся название», «Проявление постера», «Киноплёнка»,
-  «Минимальная», «Марти» (`marty`: Marty's loading loop + a progress bar,
-  he cheers at 100 %) and «Марти с попкорном» (`marty_popcorn`).
+  «Минимальная», «Cineko» (`marty`: Cineko's loading loop + a progress bar,
+  he cheers at 100 %) and «Cineko с попкорном» (`marty_popcorn`).
 - **Web header**: Главная, ТВ, Видео, Обзор, Новые серии, История, Спросить
   ИИ; below `xl` the tail moves into «Ещё ▾» (Новые серии/История below
   `lg`). Search is an icon; Devices, Settings and Admin live in the avatar
@@ -2391,9 +2391,9 @@ subscribe, uploads with continuation paging. Settings → profile:
   with the TV menu ids; the TV app doesn't apply them yet).
 - The web title page no longer has «Где смотреть» (streaming providers).
 
-## Marty (mascot) and branding
+## Cineko (mascot) and branding
 
-**Marty** is a small black neon robot-cat (brand refresh 2026-10-31; it
+**Cineko** is a small black neon robot-cat (brand refresh 2026-10-31; it
 replaced the lime TV-shaped SVG mascot). The art lives in
 `packages/ui/src/marty/`: static mood stickers (WebP — idle, happy,
 excited, love, music, sleepy, thinking, surprised, error, loading, popcorn,
@@ -2403,7 +2403,7 @@ only when shown: idle, happy, sleepy, popcorn, thinking, loading).
 picks the sticker; loops play when the mascot is big (≥ 80 px) or
 `animated`, never with `prefers-reduced-motion`; the seasonal hat is drawn
 on top. Used by the web Home greeting, Ask AI (thinking / error), the
-loaders («Марти» styles), the TV intro, the install banner and Settings.
+loaders («Cineko» styles), the TV intro, the install banner and Settings.
 
 **Mood line on web Home** (`packages/ui/src/martyMood.ts`, pure, tested;
 texts in `locales/marty.*.ts`): by local time, weekday and a few dates —
@@ -2414,14 +2414,14 @@ mornings «Доброе утро! Выходной — мультики и бл�
 New Year's Eve/Day and Halloween night have their own lines. A variant is
 picked stably per day, not per render.
 
-**App icon / favicon**: Marty in front of a neon sunset
+**App icon / favicon**: Cineko in front of a neon sunset
 (`apps/web/public/{favicon,apple-touch-icon,icon-192,icon-512}.png`,
 `apps/tv/public/favicon.png`; `MARTY_FAVICON`, the same tab icon for every
 design). Installed PWAs keep the old icon until re-added — on iOS remove the
 Home Screen icon and add it again («На экран „Домой“»).
 
 **Brand art**: [docs/brand/marty-waveterrain.md](brand/marty-waveterrain.md) —
-instructions (palette, motifs, prompts, delivery format) for Marty art in
+instructions (palette, motifs, prompts, delivery format) for Cineko art in
 the «Каркас» wave-terrain style; the cyberpunk pack above stays the default.
 
 ## Cozy mode and poster wobble

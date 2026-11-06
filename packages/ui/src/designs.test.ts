@@ -44,7 +44,7 @@ describe("design registry", () => {
 });
 
 describe("design tab icon", () => {
-  it("every design uses the Marty favicon", () => {
+  it("every design uses the Cineko favicon", () => {
     if (typeof document === "undefined") return;
     applyDesign("cyberpunk");
     const link = document.head.querySelector<HTMLLinkElement>('link[rel="icon"]');

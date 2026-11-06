@@ -420,7 +420,7 @@ html.design-terminal .person-img, html.design-cyberpunk .person-img, html.design
   .player-bottom { padding-left: 10px; padding-right: 10px; }
 }
 
-/* ---------------------------------------------------------------- Marty */
+/* ---------------------------------------------------------------- Cineko */
 .mascot { display: inline-flex; align-items: flex-end; justify-content: center; flex: none; }
 .mascot img { display: block; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 8px 24px rgba(255, 60, 140, .22)); user-select: none; -webkit-user-drag: none; }
 .mascot-mk img { transform: rotate(-3deg); box-shadow: 3px 3px 0 #1a1512; outline: 2px solid #efe4cc; outline-offset: -2px; filter: none; }

@@ -179,7 +179,7 @@ const VIDEO: VideoPlaybackState = {
   video_id: "dQw4w9WgXcQ",
   title: "Рецепт борща",
   channel_id: "UCabcdefghijklmnopqrstuv",
-  channel_name: "Марти Влог",
+  channel_name: "Cineko Влог",
   thumbnail: "/api/v1/video/thumbs/vi/dQw4w9WgXcQ/mqdefault.jpg",
   position_seconds: 42.6,
   duration_seconds: 300,

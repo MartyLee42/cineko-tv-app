@@ -161,7 +161,7 @@ async function mockWatch(ctx: BrowserContext, media: () => { id: string; title: 
   );
   await ctx.route(/\/api\/v1\/messages(\?.*)?$/, (route) =>
     json(route, {
-      items: [{ id: MESSAGE_ID, title: "Movie night", body: "Friday at 8, bring snacks.", from_name: "Marty", created_at: new Date().toISOString(), read_at: null }],
+      items: [{ id: MESSAGE_ID, title: "Movie night", body: "Friday at 8, bring snacks.", from_name: "Cineko", created_at: new Date().toISOString(), read_at: null }],
       unread: 1,
     }),
   );
@@ -226,7 +226,7 @@ test("TV watch progress: reports, resume, continue watching, messages", async ({
     // --- An unread admin message is shown once; OK marks it read.
     const message = tv.getByTestId("tv-message");
     await expect(message).toContainText("Movie night", { timeout: 30_000 });
-    await expect(message).toContainText("From Marty");
+    await expect(message).toContainText("From Cineko");
     await press(tv, "Enter");
     await expect(message).toHaveCount(0);
     expect(watch.reads.some((u) => u.includes(MESSAGE_ID))).toBe(true);

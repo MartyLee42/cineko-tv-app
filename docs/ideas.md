@@ -22,7 +22,7 @@ Status as of November 2026: catalogue, torrents via TorrServer, TV app (MSX/Tize
 - ★ **Time-aware suggestions.** «Есть 1,5 часа» → only films that end before bedtime; at 23:00 suggest shorter titles or an episode; weekend afternoons → family films for Carina.
 - **Mood + occasion in one sentence** («что-то тёплое на вечер с мамой») via «Спросить ИИ», returning playable releases only (pre-checked as in §1).
 - **«Подборки» 2.0.**
-  - Progress badges and «завершённые подборки» achievements per profile (finish Tarkovsky's 10 → a sticker for Marty the cat).
+  - Progress badges and «завершённые подборки» achievements per profile (finish Tarkovsky's 10 → a sticker for Cineko the cat).
   - **Course mode**: Deleuze/Bazin lists in the book's order with a 2-line explainer before each film (what to notice), and a short AI discussion afterwards.
   - User-made lists that the family can share and subscribe to; import a Letterboxd/Kinopoisk list by URL.
   - More sources worth adding: Criterion Closet picks, Pauline Kael's «5001 Nights» (selection), Kinopoisk «250 лучших» snapshot each New Year, «Золотой орёл»/Венеция/Берлинале winners, BFI TV 100 for series.
@@ -43,7 +43,7 @@ Status as of November 2026: catalogue, torrents via TorrServer, TV app (MSX/Tize
 
 - **Offline downloads for trips**: transcode to a phone-friendly 720p MP4 on the server, download to the iPad/phone PWA storage, sync progress back when online.
 - **«Смотрим вместе» on two devices**: synced playback between TV and a phone in another city (watch party) with a small chat/emoji overlay.
-- **Share card**: a nice image card «Марти рекомендует» with poster, rating, one-line why — to send in Telegram to friends.
+- **Share card**: a nice image card «Cineko рекомендует» with poster, rating, one-line why — to send in Telegram to friends.
 - **Widgets/shortcuts**: iOS/Android home-screen shortcuts «Продолжить на ТВ», «Пульт».
 
 ## 5. Family and personal

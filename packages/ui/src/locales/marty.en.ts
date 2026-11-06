@@ -1,4 +1,4 @@
-// Marty's mood line on Home (time of day, weekday, holidays).
+// Cineko's mood line on Home (time of day, weekday, holidays).
 export const martyEn = {
   "marty.night_series": "Another episode at this hour?",
   "marty.night_owl": "Can't sleep? Me neither.",

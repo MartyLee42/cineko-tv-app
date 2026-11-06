@@ -248,7 +248,7 @@ describe("video.play", () => {
 
   it("reports the player screen with the video's title while it plays; the tab as Home", () => {
     const video = videoPlaybackState({ id: VID, title: "Rick" }, null);
-    const st = buildDeviceState({ screen: "catalog", route: { name: "video" }, profile: { id: "p", name: "Марти" }, video });
+    const st = buildDeviceState({ screen: "catalog", route: { name: "video" }, profile: { id: "p", name: "Cineko" }, video });
     expect(st).toEqual(expect.objectContaining({ screen: "player", media_id: null, playback: null, title: "Rick", profile_id: "p", video }));
     for (const route of [{ name: "video" as const }, { name: "video-search" as const }, { name: "video-channel" as const, id: "UC1", title: "C" }]) {
       expect(buildDeviceState({ screen: "catalog", route, profile: { id: "p", name: "M" } }).screen).toBe("home");

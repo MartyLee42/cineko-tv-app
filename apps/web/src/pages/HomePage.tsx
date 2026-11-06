@@ -167,7 +167,7 @@ function Household({ name }: { name: string }) {
   );
 }
 
-/** Marty's mood: a sticker and a line that follow the time of day («Опять сериальчик?» at 2 am). */
+/** Cineko's mood: a sticker and a line that follow the time of day («Опять сериальчик?» at 2 am). */
 function MartyHello({ name }: { name: string }) {
   const { t } = useI18n();
   const [now, setNow] = useState(() => new Date());

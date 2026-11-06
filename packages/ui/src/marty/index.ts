@@ -1,4 +1,4 @@
-// Marty: the neon robot-cat mascot (brand refresh, Oct 2026). Static moods
+// Cineko: the neon robot-cat mascot (brand refresh, Oct 2026). Static moods
 // cut from the sticker pack, plus the idle loop (animated WebP, ~170 KB —
 // only used where the mascot is big).
 import idle from "./idle.webp";

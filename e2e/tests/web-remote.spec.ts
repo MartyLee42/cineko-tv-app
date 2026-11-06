@@ -131,7 +131,7 @@ const vItem = (id: string, title: string) => ({
   id,
   title,
   channel_id: "UCabcdefghijklmnopqrstuv",
-  channel_name: "Марти Влог",
+  channel_name: "Cineko Влог",
   channel_verified: false,
   duration_seconds: 80,
   views: 1000,
@@ -169,7 +169,7 @@ async function mockVideo(ctx: BrowserContext) {
         description: "",
         likes: 1,
         genre: null,
-        channel: { id: "UCabcdefghijklmnopqrstuv", name: "Марти Влог", avatar: null, subscribers: 1, video_count: 1, verified: false, subscribed: false },
+        channel: { id: "UCabcdefghijklmnopqrstuv", name: "Cineko Влог", avatar: null, subscribers: 1, video_count: 1, verified: false, subscribed: false },
         related: [vItem("remotevid02", "Похожее видео"), vItem("remotevid03", "Ещё одно")],
         in_watch_later: false,
         qualities: [1080, 720, 480, 360],
@@ -267,7 +267,7 @@ test("remote: a YouTube video on the TV — title, live position, pause/seek/qua
     const now = phone.getByTestId("now-on-tv");
     await expect(now).toHaveAttribute("data-video-id", VID, { timeout: 15_000 });
     await expect(phone.getByTestId("now-on-tv-title")).toHaveText("Пульт для YouTube");
-    await expect(now).toContainText("Марти Влог");
+    await expect(now).toContainText("Cineko Влог");
     const pb = phone.getByTestId("remote-playback");
     await expect(pb).toHaveAttribute("data-kind", "video");
     await expect(phone.getByTestId("playback-soon")).toHaveCount(0);

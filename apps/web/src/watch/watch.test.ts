@@ -232,8 +232,8 @@ describe("onboarding", () => {
     };
     const skip = buildSavePlan({
       settings: {},
-      profile: { name: "Marty", avatar: "", color: "#6366f1" },
-      initialProfile: { name: "Marty", avatar: "", color: "#6366f1" },
+      profile: { name: "Cineko", avatar: "", color: "#6366f1" },
+      initialProfile: { name: "Cineko", avatar: "", color: "#6366f1" },
       prefs: { preferred_audio_languages: ["ru"], preferred_voiceovers: [], preferred_resolution: "1080p", max_size_gb: null },
       initialPrefs,
     });
@@ -241,13 +241,13 @@ describe("onboarding", () => {
 
     const full = buildSavePlan({
       settings: { theme: "light", hide_anime: true },
-      profile: { name: " Marty Jr ", avatar: "🦊", color: "#6366f1" },
-      initialProfile: { name: "Marty", avatar: "", color: "#6366f1" },
+      profile: { name: " Cineko Jr ", avatar: "🦊", color: "#6366f1" },
+      initialProfile: { name: "Cineko", avatar: "", color: "#6366f1" },
       prefs: { preferred_audio_languages: ["ru", "en"], preferred_voiceovers: ["LostFilm"], preferred_resolution: "2160p", max_size_gb: 40 },
       initialPrefs,
     });
     expect(full.settings).toEqual({ theme: "light", hide_anime: true, onboarding_completed: true });
-    expect(full.profile).toEqual({ name: "Marty Jr", avatar: "🦊" });
+    expect(full.profile).toEqual({ name: "Cineko Jr", avatar: "🦊" });
     expect(full.prefs).toEqual({ ...initialPrefs, preferred_audio_languages: ["ru", "en"], preferred_voiceovers: ["LostFilm"], preferred_resolution: "2160p", max_size_gb: 40 });
   });
   it("offers the right install hint", () => {

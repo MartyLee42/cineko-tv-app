@@ -4,7 +4,7 @@ const USER = process.env.E2E_USER ?? "e2e-admin";
 const PASS = process.env.E2E_PASS ?? "e2e-password-123";
 
 /**
- * «Конструктивизм» on TV: no Marty anywhere (Mayakovsky is the mascot), the
+ * «Конструктивизм» on TV: no Cineko anywhere (Mayakovsky is the mascot), the
  * «Ленин в Октябре» card first on Home (opens the title), «Рекомендовано
  * Госкино», the red news strip, the five-year plan, renamed tabs, «VOICE OF
  * AMERICA» over «Видео» (not focusable), and the player loader with the
@@ -35,7 +35,7 @@ async function mockBackend(ctx: BrowserContext, design: string) {
     if (route.request().method() !== "GET") return json(route, {});
     const res = await route.fetch().catch(() => null);
     const body = res && res.ok() ? await res.json() : {};
-    // «Марти» loading style: the design must replace it with its poster loader.
+    // «Cineko» loading style: the design must replace it with its poster loader.
     return json(route, { ...body, design, theme: "dark", onboarding_completed: true, loading_style: "marty" });
   });
   await ctx.route(/\/api\/v1\/profiles\/[^/]+\/continue-watching/, (route) => json(route, { items: [] }));
@@ -51,10 +51,10 @@ async function noMarty(tv: Page, where: string) {
   const mascots = await tv.locator("[data-mascot]").evaluateAll((els) => els.map((e) => e.getAttribute("data-mascot")));
   expect(mascots.filter((m) => m !== "mayakovsky"), `${where}: only Mayakovsky`).toEqual([]);
   const srcs = await tv.locator("img").evaluateAll((els) => els.map((e) => (e as HTMLImageElement).currentSrc || (e as HTMLImageElement).src));
-  expect(srcs.filter((s) => MARTY_IMG.test(s)), `${where}: no Marty images`).toEqual([]);
+  expect(srcs.filter((s) => MARTY_IMG.test(s)), `${where}: no Cineko images`).toEqual([]);
 }
 
-test("TV constructivism: Lenin card, Госкино, news, plan, tabs, VOA, poster loader — no Marty", async ({ browser }) => {
+test("TV constructivism: Lenin card, Госкино, news, plan, tabs, VOA, poster loader — no Cineko", async ({ browser }) => {
   test.setTimeout(240_000);
   const phoneCtx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const tvCtx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, locale: "ru-RU" });
@@ -167,7 +167,7 @@ test("TV constructivism: Lenin card, Госкино, news, plan, tabs, VOA, post
     expect(more.tf).toBe("none");
     expect(more.icon).toBe("more");
 
-    // Play: the poster loader (style «Марти» is replaced), the emblem, a slogan that changes.
+    // Play: the poster loader (style «Cineko» is replaced), the emblem, a slogan that changes.
     await press(tv, "Enter");
     const loader = tv.getByTestId("player-preparing");
     await expect(loader).toBeVisible({ timeout: 20_000 });
@@ -219,7 +219,7 @@ test("TV constructivism: Lenin card, Госкино, news, plan, tabs, VOA, post
   }
 });
 
-test("TV constructivism intro: Mayakovsky, the emblem, «Говорит Москва…», a slogan — no Marty", async ({ page }) => {
+test("TV constructivism intro: Mayakovsky, the emblem, «Говорит Москва…», a slogan — no Cineko", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.addInitScript(() => localStorage.setItem("martytv.design", "constructivism"));
   await page.goto("/tv/?intro=1");

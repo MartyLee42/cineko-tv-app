@@ -65,8 +65,8 @@ describe("translations", () => {
   });
 
   it("formats placeholders", () => {
-    expect(format("Hi, {name}", { name: "Marty" })).toBe("Hi, Marty");
+    expect(format("Hi, {name}", { name: "Cineko" })).toBe("Hi, Cineko");
     expect(format("{missing}", {})).toBe("{missing}");
-    expect(translate("ru", "home.welcome", { name: "Марти" })).toBe("Привет, Марти");
+    expect(translate("ru", "home.welcome", { name: "Cineko" })).toBe("Привет, Cineko");
   });
 });

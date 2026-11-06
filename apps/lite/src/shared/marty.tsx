@@ -1,4 +1,4 @@
-// Marty, the neon robot-cat mascot (assets copied from packages/ui/src/marty).
+// Cineko, the neon robot-cat mascot (assets copied from packages/ui/src/marty).
 // Static moods are ~10–20 KB WebPs; the looping animations (~100–180 KB) are
 // separate files fetched only when an animated mascot is actually rendered.
 // «Конструктивизм» shows Mayakovsky instead, like the main app.
@@ -47,7 +47,7 @@ export function Mascot({ mood = "idle", size = 120, animated, className = "", al
   );
 }
 
-/** The wordmark: Marty's icon + «cineko» + a Lite badge. */
+/** The wordmark: Cineko's icon + «cineko» + a Lite badge. */
 export function Logo({ size = 34 }: { size?: number }) {
   return (
     <span className="brand">
@@ -70,7 +70,7 @@ function daily<T>(options: readonly T[], d: Date): T {
   return options[day % options.length];
 }
 
-/** Marty's line on Home by local time, weekday and a couple of dates (ported from packages/ui/src/martyMood.ts). */
+/** Cineko's line on Home by local time, weekday and a couple of dates (ported from packages/ui/src/martyMood.ts). */
 export function martyMood(d: Date): { key: GreetKey; mood: Mood } {
   const h = d.getHours();
   const dow = d.getDay();

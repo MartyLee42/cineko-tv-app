@@ -47,7 +47,7 @@
 		}
 	}
 
-	# Marty Music (services/music): its own app, API and audio streams.
+	# Cineko Music (services/music): its own app, API and audio streams.
 	# Audio is flushed immediately and never buffered (Range requests pass
 	# through; a track or a transcode can stream for a long time).
 	@music path /music /music/*

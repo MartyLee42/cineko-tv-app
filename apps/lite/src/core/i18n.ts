@@ -137,7 +137,7 @@ const ru = {
   "greet.evening2": "Плед, чай и хорошее кино?",
   "greet.newYear": "С Новым годом! 🎄",
   "greet.halloween": "Жуткая ночка… посмотрим что-нибудь страшное?",
-  marty: "Марти",
+  marty: "Cineko",
 };
 
 export type MsgKey = keyof typeof ru;
@@ -278,7 +278,7 @@ const en: Record<MsgKey, string> = {
   "greet.evening2": "Blanket, tea, a good movie?",
   "greet.newYear": "Happy New Year! 🎄",
   "greet.halloween": "Spooky night… something scary?",
-  marty: "Marty",
+  marty: "Cineko",
 };
 
 const kk: Record<MsgKey, string> = {
@@ -417,7 +417,7 @@ const kk: Record<MsgKey, string> = {
   "greet.evening2": "Жылы плед, шай және жақсы кино ма?",
   "greet.newYear": "Жаңа жылыңызбен! 🎄",
   "greet.halloween": "Үрейлі түн… қорқынышты бірдеңе көрейік пе?",
-  marty: "Марти",
+  marty: "Cineko",
 };
 
 const DICT: Record<Lang, Record<MsgKey, string>> = { ru, kk, en };

@@ -56,7 +56,7 @@ describe("device state while live", () => {
     const st = buildDeviceState({
       screen: "catalog",
       route: { name: "tv" },
-      profile: { id: "p", name: "Марти" },
+      profile: { id: "p", name: "Cineko" },
       playback: null,
       live: { channel_id: CH, name: "Первый", number: 1, programme: "Новости" },
     });

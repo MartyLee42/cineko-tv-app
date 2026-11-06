@@ -233,7 +233,7 @@ html.theme-light .ttitle-bg img { opacity: .3; }
 html, body { height: 100%; overflow: hidden; }
 #root { position: absolute; left: 0; top: 0; width: 1920px !important; height: 1080px !important; transform-origin: 0 0; overflow: hidden; }
 
-/* ---------------------------------------------------------------- Marty */
+/* ---------------------------------------------------------------- Cineko */
 .mascot { display: inline-flex; align-items: flex-end; justify-content: center; flex: none; }
 .mascot img { display: block; width: auto; height: auto; filter: drop-shadow(0 12px 34px rgba(255, 60, 140, .25)); }
 .mascot-mk img { transform: rotate(-3deg); box-shadow: 4px 4px 0 #1a1512; outline: 3px solid #efe4cc; outline-offset: -3px; filter: none; }

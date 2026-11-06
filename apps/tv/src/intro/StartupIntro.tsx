@@ -43,7 +43,7 @@ export function StartupIntro({ design, onDone }: { design: DesignSetting; onDone
 
 const delay = (s: number): CSSProperties => ({ animationDelay: `${s}s` });
 
-/** Marty (the neon robot-cat) in the intro; the old per-design colours no longer apply. */
+/** Cineko (the neon robot-cat) in the intro; the old per-design colours no longer apply. */
 function Mascot({ size = 150 }: { color: string; ink: string; size?: number; cheeks?: boolean }) {
   return <MartyMascot size={size} hat={null} animated />;
 }
@@ -502,7 +502,7 @@ function burst(cx: number, cy: number, r1: number, r2: number, n: number): strin
 
 const POP_BURST = burst(640, 372, 178, 262, 16);
 
-/** Comic page: Ben-Day dots, panels slide in, speed lines, a white burst, the logo drops in, Marty says «ВАУ!». */
+/** Comic page: Ben-Day dots, panels slide in, speed lines, a white burst, the logo drops in, Cineko says «ВАУ!». */
 function ComicPop() {
   const sw = DESIGN_SWATCH.popart;
   const comic = "'Rubik Mono One', Unbounded, sans-serif";
@@ -530,7 +530,7 @@ function ComicPop() {
       <div className="in-abs in-pop" style={{ left: 120, top: 150, ...delay(0.85) }}>
         <Mascot color={sw.accent} ink="#000" size={175} />
       </div>
-      {/* Speech balloon from Marty. */}
+      {/* Speech balloon from Cineko. */}
       <div className="in-abs pai-bubble" style={{ left: 290, top: 70, width: 220, height: 130, ...delay(1.75) }}>
         <svg viewBox="0 0 220 130" width="220" height="130" aria-hidden="true" style={{ position: "absolute", left: 0, top: 0 }}>
           <path d="M110 6 C 168 6 214 30 214 58 C 214 86 168 108 110 108 C 98 108 88 107 78 105 L 40 126 L 52 98 C 22 89 6 74 6 58 C 6 30 52 6 110 6 Z" fill="#fff" stroke="#000" strokeWidth="6" strokeLinejoin="round" />

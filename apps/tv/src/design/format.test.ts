@@ -116,11 +116,11 @@ describe("status", () => {
   };
   it("builds the ticker", () => {
     const status = { torrserver: { ok: true, latency_ms: 12 }, prowlarr: { ok: true }, active_streams: 2 };
-    expect(tickerItems({ device: "Гостиная", status, profile: "Марти", unread: 1, labels })).toEqual([
+    expect(tickerItems({ device: "Гостиная", status, profile: "Cineko", unread: 1, labels })).toEqual([
       "● ГОСТИНАЯ ONLINE",
       "TORRSERVER 12 MS",
       "2 STREAMS NOW",
-      "PROFILE: МАРТИ",
+      "PROFILE: CINEKO",
       "1 NEW MESSAGES",
     ]);
     const down = { torrserver: { ok: false, latency_ms: null }, prowlarr: { ok: false }, active_streams: 0 };

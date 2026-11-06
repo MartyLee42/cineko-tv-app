@@ -14,7 +14,7 @@ There is no backend: nothing to install, nothing to pay for.
 ## What it does
 
 - Home with rows: Продолжить просмотр, В тренде, popular / top movies and
-  series, genres; Marty (the mascot) greets you depending on the time of day.
+  series, genres; Cineko (the mascot) greets you depending on the time of day.
 - Search (movies and series), title pages (backdrop, poster, rating, genres,
   cast, «Похожие», «Вам может понравиться»), seasons and episodes.
 - «Смотреть» appears only when CDNVideoHub has the title (checked when you
@@ -104,7 +104,7 @@ settings, so a fork deploys to `https://<owner>.github.io/<repo>/` as is
 ```
 src/core/    tmdb.ts (client + mirror fallback), cvh.ts (CDNVideoHub), store.ts
              (localStorage, export/import), i18n.ts (ru/kk/en), designs.ts
-src/shared/  playback hook, source lookup, catalog rows, Marty, theme tokens
+src/shared/  playback hook, source lookup, catalog rows, Cineko, theme tokens
              (vendored from packages/ui/src/theme.css), fonts, icons
 src/web/     PC + phone UI (hash routes, PWA service worker in web/public/sw.js)
 src/tv/      TV UI: spatial navigation (nav.ts), Back trap for MSX/webOS,

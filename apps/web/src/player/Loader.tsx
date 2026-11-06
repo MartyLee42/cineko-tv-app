@@ -234,7 +234,7 @@ function Minimal({ m }: { m: LoaderModel }) {
   );
 }
 
-/** «Марти»: the mascot's loading loop, a bar; he cheers at 100%. */
+/** «Cineko»: the mascot's loading loop, a bar; he cheers at 100%. */
 function MartyLoader({ m, mood }: { m: LoaderModel; mood: "loading" | "popcorn" }) {
   const done = m.p >= 0.999 || m.stage === "done";
   return (
