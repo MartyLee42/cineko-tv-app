@@ -64,7 +64,13 @@ import { looksOffline } from "./offline/device";
 function ScrollToTop() {
   const { pathname } = useLocation();
   const type = useNavigationType();
+  // Only a new path scrolls. A query change on the same page (picking a
+  // season replaces ?season=…) flips the type PUSH → REPLACE, which used to
+  // re-run this and jump to the top.
+  const last = useRef(pathname);
   useEffect(() => {
+    if (last.current === pathname) return;
+    last.current = pathname;
     if (type !== "POP") window.scrollTo(0, 0);
   }, [pathname, type]);
   return null;
