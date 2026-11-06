@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { PlaybackSource, Release } from "@martytv/contracts";
@@ -11,7 +11,7 @@ import { useActiveProfile } from "../watch/ActiveProfile";
 import { chooseDevice, errorMessage, errorOutcome, ackOutcome, focusDevice } from "../remote/logic";
 import { sendCommand, setLastUsedDevice, useDeviceStates, useLastUsedDevice, type LiveState } from "../remote/state";
 import { BusyDialog, DevicePicker, Sheet } from "../remote/SendToTv";
-import { createPlayController, isBusy, PLAY_IDLE, playPayload, tvProgress, type PlayFlow, type PlayRequest } from "./flow";
+import { createPlayController, holdTvProgress, isBusy, PLAY_IDLE, playPayload, tvProgress, type PlayFlow, type PlayRequest, type TvPeak } from "./flow";
 import { usePlaybackSource } from "./queries";
 import { ReleaseList } from "./ReleaseList";
 import { PlayerPicker } from "./PlayerPicker";
@@ -444,7 +444,10 @@ function PlayToast({
 
   // Follow the TV: its device state says searching / loading x% / playing / failed.
   const [seen, setSeen] = useState(false);
-  const progress = tvProgress(flow.req, sent ? live?.state : null, seen);
+  // Never back on the phone (per request: a new play starts at 0).
+  const peak = useRef<{ req: unknown; v: TvPeak }>({ req: null, v: { pct: 0, buffered: 0 } });
+  if (peak.current.req !== flow.req) peak.current = { req: flow.req, v: { pct: 0, buffered: 0 } };
+  const progress = holdTvProgress(tvProgress(flow.req, sent ? live?.state : null, seen), peak.current.v);
   if (!seen && (progress.kind === "searching" || progress.kind === "loading" || progress.kind === "playing")) setSeen(true);
   const offline = sent && live?.online === false;
   const tvFailed = sent && progress.kind === "failed" ? progress.code : null;

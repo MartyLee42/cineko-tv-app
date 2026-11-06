@@ -192,6 +192,35 @@ export class LoadTracker {
   }
 }
 
+/**
+ * The loading screen's torrent numbers, never going back within one source:
+ * TorrServer's preloaded bytes drop when the TV opens another read position
+ * (the index at the end of the file), and two feeds (the screen's poll and
+ * the controller's) alternate. The file size — the «of N MB» target — only
+ * grows too (release size first, then the file's).
+ */
+export class TorrentHold {
+  private id: string | null = null;
+  private pre = 0;
+  private size = 0;
+
+  hold<T extends { preloaded_bytes?: number | null } | null>(
+    sourceId: string | null,
+    torrent: T,
+    fileBytes: number | null,
+  ): { torrent: T; fileBytes: number | null } {
+    if (sourceId !== this.id) {
+      this.id = sourceId;
+      this.pre = 0;
+      this.size = 0;
+    }
+    this.pre = Math.max(this.pre, torrent?.preloaded_bytes ?? 0);
+    this.size = Math.max(this.size, fileBytes ?? 0);
+    const t = torrent && this.pre > (torrent.preloaded_bytes ?? 0) ? { ...torrent, preloaded_bytes: this.pre } : torrent;
+    return { torrent: t, fileBytes: this.size > 0 ? this.size : fileBytes };
+  }
+}
+
 const STORE_KEY = "martytv.loadProgress";
 
 /** The app's one tracker (only one load shows at a time), kept in localStorage across page restarts. */

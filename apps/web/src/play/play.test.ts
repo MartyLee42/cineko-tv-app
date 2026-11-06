@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { DeviceState, Release } from "@martytv/contracts";
 import { translate, type MessageKey } from "@martytv/ui";
-import { createPlayController, isBusy, PLAY_IDLE, playPayload, playReducer, tvProgress, type PlayAction, type PlayFlow, type PlayRequest } from "./flow";
+import { createPlayController, holdTvProgress, isBusy, PLAY_IDLE, playPayload, playReducer, tvProgress, type PlayAction, type PlayFlow, type PlayRequest } from "./flow";
 import {
   applyFilters,
   audioCodecsLabel,
@@ -282,5 +282,17 @@ describe("preferences helpers", () => {
       other: "too many",
     });
     expect(prefsFieldErrors({})).toEqual({});
+  });
+});
+
+describe("holdTvProgress", () => {
+  const loading = (pct: number, buffered: number | null) =>
+    ({ kind: "loading", stage: "preloading", pct, peers: 3, seeders: 1, speed: 0, buffered, release: null }) as const;
+  it("never shows less than before for the same request", () => {
+    const peak = { pct: 0, buffered: 0 };
+    expect(holdTvProgress(loading(40, 10), peak)).toMatchObject({ pct: 40, buffered: 10 });
+    expect(holdTvProgress(loading(0, 2), peak)).toMatchObject({ pct: 40, buffered: 10 });
+    expect(holdTvProgress({ kind: "playing" }, peak)).toEqual({ kind: "playing" });
+    expect(holdTvProgress(loading(55, null), peak)).toMatchObject({ pct: 55, buffered: 10 });
   });
 });

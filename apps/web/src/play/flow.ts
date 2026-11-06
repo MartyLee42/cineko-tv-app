@@ -198,3 +198,22 @@ export function tvProgress(req: Pick<PlayRequest, "media_id" | "episode_id">, st
   if (st.screen === "player" && st.media_id === req.media_id && st.player_error) return { kind: "failed", code: st.player_error };
   return seen ? { kind: "gone" } : { kind: "opening" };
 }
+
+/** The most the phone has shown for one play request (see holdTvProgress). */
+export interface TvPeak {
+  pct: number;
+  buffered: number;
+}
+
+/**
+ * The TV's loading percentage and buffered bytes never go back on the phone:
+ * a stall right after the first frame reports «buffering» with no loading
+ * block (pct 0), and TorrServer's preloaded bytes drop when the TV reads
+ * from another position. `peak` (per request) is updated in place.
+ */
+export function holdTvProgress(p: TvProgress, peak: TvPeak): TvProgress {
+  if (p.kind !== "loading") return p;
+  peak.pct = Math.max(peak.pct, p.pct);
+  peak.buffered = Math.max(peak.buffered, p.buffered ?? 0);
+  return { ...p, pct: peak.pct, buffered: p.buffered == null && peak.buffered === 0 ? null : peak.buffered };
+}

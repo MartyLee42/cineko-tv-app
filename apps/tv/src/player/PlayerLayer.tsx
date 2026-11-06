@@ -17,7 +17,7 @@ import { mbit, prebufferPref } from "./rebuffer";
 import { bufferStripe, netStats } from "./stats";
 import { formatBytes, formatSpeed } from "./format";
 import { useServerStatus } from "../design/data";
-import { stageOf, type LoadStage } from "./loading";
+import { stageOf, TorrentHold, type LoadStage } from "./loading";
 import { useSettings } from "../profile/settings";
 import { accumulateSeek, playerKey, registerMediaKeys, type SeekPreview } from "./keys";
 import { ReleasePicker } from "./ReleasePicker";
@@ -239,6 +239,9 @@ function bufferLabel(t: ReturnType<typeof useI18n>["t"], locale: string, ahead: 
 
 // ------------------------------------------------------------------ preparing
 
+/** One for the app, like the progress tracker (a remount keeps the numbers). */
+const torrentHold = new TorrentHold();
+
 /** The first-load screen: preparing the source, then until the first frame. */
 function PreparingOverlay({ flow }: { flow: Extract<Flow, { phase: "preparing" | "playing" }> }) {
   const { locale } = useI18n();
@@ -248,8 +251,11 @@ function PreparingOverlay({ flow }: { flow: Extract<Flow, { phase: "preparing" |
   const stage: LoadStage = flow.phase === "preparing" ? stageOf(flow.step, flow.source) : "starting";
   const source = flow.source;
   const p = useLoadProgress(player.loadKey(), stage, source, player.metadata, `${ctx.media_id}|${ctx.episode_id ?? ""}`);
-  // While the first seconds buffer (source ready), keep the numbers live.
-  const torrent = useLiveTorrent(source, flow.phase === "playing");
+  // While the first seconds buffer (source ready), keep the numbers live —
+  // held so «загружено N МБ из M» never goes back.
+  const live = useLiveTorrent(source, flow.phase === "playing");
+  const held = torrentHold.hold(source?.id ?? null, live, source?.file?.size_bytes ?? source?.release?.size_bytes ?? null);
+  const torrent = held.torrent;
   const cs = flow.phase === "playing" ? player.compatState() : null;
   // Tell phones following this load (device state) what the screen shows.
   const loadKey = player.loadKey();
@@ -267,7 +273,7 @@ function PreparingOverlay({ flow }: { flow: Extract<Flow, { phase: "preparing" |
         seed: ctx.media_id,
         torrent,
         quality: loadingQuality(flow.release ?? source?.release ?? null, source, locale),
-        fileBytes: source?.file?.size_bytes ?? source?.release?.size_bytes ?? null,
+        fileBytes: held.fileBytes,
         compat: cs?.active ? (cs.video ? "video" : "audio") : null,
         online: source?.kind === "online" || (!!flow.release?.provider && flow.release.provider.kind !== "torrent"),
       }}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LoadMeter, LoadTracker, preloadTarget, rawProgress, RESUME_MS, STAGE_RANGE, stageOf, type LoadStage } from "./loading";
+import { LoadMeter, LoadTracker, preloadTarget, rawProgress, RESUME_MS, STAGE_RANGE, stageOf, TorrentHold, type LoadStage } from "./loading";
 
 const MB = 1024 * 1024;
 const tor = (preloaded: number, peers = 5) => ({ peers, seeders: 3, download_speed_bps: 1, preloaded_bytes: preloaded });
@@ -150,5 +150,19 @@ describe("load progress across a page restart", () => {
     expect(new LoadTracker(store).update("m1||0", { stage: "resolving", title: "m1|" }, 8000 + RESUME_MS + 1)).toBeLessThan(0.05);
     t.forget();
     expect(new LoadTracker(store).update("m1||1", { stage: "resolving", title: "m1|" }, 9000)).toBeLessThan(0.05);
+  });
+});
+
+describe("torrent numbers on the loading screen (TorrentHold)", () => {
+  it("preloaded bytes and the file size never go back within a source", () => {
+    const h = new TorrentHold();
+    expect(h.hold("s1", { preloaded_bytes: 10 * MB }, 1000 * MB).torrent?.preloaded_bytes).toBe(10 * MB);
+    // TorrServer restarted its preload at another position: still 10 MB shown.
+    expect(h.hold("s1", { preloaded_bytes: 2 * MB }, 1000 * MB).torrent?.preloaded_bytes).toBe(10 * MB);
+    expect(h.hold("s1", { preloaded_bytes: 14 * MB }, 1000 * MB).torrent?.preloaded_bytes).toBe(14 * MB);
+    // The other feed has no torrent block yet / a smaller size: held too.
+    expect(h.hold("s1", null, 900 * MB).fileBytes).toBe(1000 * MB);
+    // Another source: its own numbers.
+    expect(h.hold("s2", { preloaded_bytes: 1 * MB }, 500 * MB)).toEqual({ torrent: { preloaded_bytes: 1 * MB }, fileBytes: 500 * MB });
   });
 });
