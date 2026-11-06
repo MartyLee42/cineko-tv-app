@@ -29,7 +29,7 @@ p { margin: 0; }
   font-family: var(--mt-font-label); font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
   padding: 3px 7px; border-radius: 999px; color: rgb(var(--mt-accent)); border: 1px solid rgba(var(--mt-accent), .45);
 }
-html.design-terminal .brand-sub, html.design-cyberpunk .brand-sub, html.design-retro90 .brand-sub, html.design-constructivism .brand-sub { border-radius: 0; }
+html.design-terminal .brand-sub, html.design-cyberpunk .brand-sub, html.design-retro90 .brand-sub, html.design-constructivism .brand-sub, html.design-matrix .brand-sub { border-radius: 0; }
 
 /* ---------------------------------------------------------------- header */
 .top {
@@ -293,7 +293,7 @@ html.theme-light .backdrop img { opacity: .35; }
 
 .person { width: 128px; flex: none; text-align: center; }
 .person-img { width: 112px; height: 112px; margin: 0 auto 10px; border-radius: 999px; overflow: hidden; background: rgb(var(--mt-surface)); display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700; color: rgb(var(--mt-muted)); }
-html.design-terminal .person-img, html.design-cyberpunk .person-img, html.design-retro90 .person-img, html.design-constructivism .person-img { border-radius: var(--mt-radius-card); }
+html.design-terminal .person-img, html.design-cyberpunk .person-img, html.design-retro90 .person-img, html.design-constructivism .person-img, html.design-matrix .person-img { border-radius: var(--mt-radius-card); }
 .person-img img { width: 100%; height: 100%; object-fit: cover; }
 .person-name { font-weight: 600; font-size: 13.5px; }
 .person-role { font-size: 12px; color: rgb(var(--mt-muted)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -425,7 +425,7 @@ html.design-terminal .person-img, html.design-cyberpunk .person-img, html.design
 .mascot img { display: block; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 8px 24px rgba(255, 60, 140, .22)); user-select: none; -webkit-user-drag: none; }
 .mascot-mk img { transform: rotate(-3deg); box-shadow: 3px 3px 0 #1a1512; outline: 2px solid #efe4cc; outline-offset: -2px; filter: none; }
 .brand-icon { display: block; border-radius: 9px; box-shadow: 0 0 0 1px rgba(var(--mt-text), .08); }
-html.design-terminal .brand-icon, html.design-cyberpunk .brand-icon, html.design-retro90 .brand-icon, html.design-constructivism .brand-icon { border-radius: 2px; }
+html.design-terminal .brand-icon, html.design-cyberpunk .brand-icon, html.design-retro90 .brand-icon, html.design-constructivism .brand-icon, html.design-matrix .brand-icon { border-radius: 2px; }
 .brand-name { text-transform: lowercase; }
 .spinner-wrap.small { min-height: 0; padding: 24px; }
 .greet { display: flex; align-items: flex-end; gap: 12px; padding: 0 var(--gutter); margin: 0 0 26px; }
@@ -434,6 +434,6 @@ html.design-terminal .brand-icon, html.design-cyberpunk .brand-icon, html.design
   background: rgba(var(--mt-surface-2), .92); border: 1px solid rgba(var(--mt-border), .8); margin-bottom: 8px;
 }
 .greet-name { display: block; font-family: var(--mt-font-label); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--mt-accent)); margin-bottom: 2px; }
-html.design-terminal .greet-bubble, html.design-cyberpunk .greet-bubble, html.design-retro90 .greet-bubble, html.design-constructivism .greet-bubble { border-radius: 0; }
+html.design-terminal .greet-bubble, html.design-cyberpunk .greet-bubble, html.design-retro90 .greet-bubble, html.design-constructivism .greet-bubble, html.design-matrix .greet-bubble { border-radius: 0; }
 @media (max-width: 720px) { .greet .mascot { width: 52px !important; height: 52px !important; } .greet .mascot img { max-width: 52px !important; max-height: 52px !important; } .greet-bubble { font-size: 13.5px; } }
 .player-center.msg .mascot { margin-bottom: 8px; }

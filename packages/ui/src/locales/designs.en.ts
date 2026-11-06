@@ -15,6 +15,8 @@ export const designsEn = {
   "settings.design.popart_hint": "A comic-book page: Ben-Day dots, yellow and red, black ink outlines, hard shadows and «BAM!» bursts.",
   "settings.design.constructivism": "Constructivism",
   "settings.design.constructivism_hint": "A 1920s–30s film poster: red, black and cream paper, bold diagonals, wedges, circles and heavy block type.",
+  "settings.design.matrix": "Matrix",
+  "settings.design.matrix_hint": "Green phosphor on black: digital rain, glowing mono type and a terminal prompt.",
   "designs.motion": "Background motion",
   "designs.motion_hint": "The neon grid slowly runs towards you. Calm keeps it still (easier on older TVs).",
   "designs.motion.on": "Moving",

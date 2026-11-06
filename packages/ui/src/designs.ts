@@ -9,12 +9,13 @@ import { EMBLEM_FAVICON } from "./emblem";
 //   cyberpunk → terminal skeleton             deco      → kinozal skeleton
 //   retro80   → kinozal skeleton (VHS/arcade)  retro90   → terminal skeleton (Win95)
 //   popart    → projector skeleton (comic)     constructivism → terminal skeleton (20s–30s poster)
+//   matrix    → terminal skeleton (green digital rain)
 // <html> gets `design-<id>` (tokens, skin CSS) and `skel-<skeleton>` (layout CSS).
-export type DesignSetting = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism";
+export type DesignSetting = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix";
 export type Skeleton = "kinozal" | "terminal" | "projector";
 
 /** All designs, in the order pickers show them (the contract's enum order). */
-export const DESIGNS: DesignSetting[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism"];
+export const DESIGNS: DesignSetting[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix"];
 export const SKELETONS: Skeleton[] = ["kinozal", "terminal", "projector"];
 
 export const DESIGN_SKELETON: Record<DesignSetting, Skeleton> = {
@@ -28,6 +29,7 @@ export const DESIGN_SKELETON: Record<DesignSetting, Skeleton> = {
   retro90: "terminal",
   popart: "projector",
   constructivism: "terminal",
+  matrix: "terminal",
 };
 
 /** The layout skeleton a design is drawn on (unknown values → Кинозал). */
@@ -52,6 +54,7 @@ export const DESIGN_SWATCH: Record<DesignSetting, { bg: string; surface: string;
   retro90: { bg: "#006e6e", surface: "#101870", accent: "#ffe85c", accent2: "#c0c0c0", text: "#ffffff" },
   popart: { bg: "#143a96", surface: "#0e2262", accent: "#ffd600", accent2: "#ff2d3c", text: "#ffffff" },
   constructivism: { bg: "#181412", surface: "#28221e", accent: "#d7261e", accent2: "#efe4cc", text: "#f3ead6" },
+  matrix: { bg: "#000602", surface: "#04140a", accent: "#00ff41", accent2: "#c8ffd2", text: "#b4ffc4" },
 };
 
 /** Applies a visual design: html.design-<id>, html.skel-<skeleton> and the tab icon. */

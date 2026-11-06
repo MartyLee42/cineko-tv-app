@@ -63,6 +63,7 @@ export function SkinBackground({ dim = false }: { dim?: boolean }) {
   else if (skin.background === "desktop") bg = <DesktopBackground />;
   else if (skin.background === "comic") bg = <ComicBackground />;
   else if (skin.background === "poster") bg = <PosterBackground />;
+  else if (skin.background === "rain") bg = <RainBackground />;
   if (!bg) return null;
   return (
     <>
@@ -526,6 +527,50 @@ export function DesignPreviews({ current, width = 196 }: { current: DesignSettin
       {DESIGNS.map((d) => (
         <DesignTile key={d} id={d} active={d === current} width={width} />
       ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------- Матрица
+
+const RAIN_GLYPHS = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ0123456789Z:.=*+<>";
+export const RAIN_COLUMNS = 64;
+
+/** Columns of falling code, fixed once (deterministic): x, start row, tail glyphs, head glyph, brightness. */
+const RAIN = (() => {
+  const r = rand(1999);
+  const cols: { x: number; top: number; tail: string; head: string; o: number }[] = [];
+  for (let i = 0; i < RAIN_COLUMNS; i++) {
+    const len = 6 + Math.floor(r() * 18);
+    let tail = "";
+    for (let k = 0; k < len; k++) tail += RAIN_GLYPHS[Math.floor(r() * RAIN_GLYPHS.length)];
+    cols.push({
+      x: Math.round(i * 30 + r() * 10),
+      top: Math.round(-200 + r() * 900),
+      tail,
+      head: RAIN_GLYPHS[Math.floor(r() * RAIN_GLYPHS.length)]!,
+      o: 0.18 + r() * 0.5,
+    });
+  }
+  return cols;
+})();
+
+/**
+ * Static digital rain: green glyph columns with a bright head, a dark veil
+ * over the lower half and scanlines. Plain text in a few dozen divs — cheap
+ * on old TV engines (nothing animates).
+ */
+function RainBackground() {
+  return (
+    <div data-skin-bg="rain" className={`mx-rain ${layer}`}>
+      {RAIN.map((c) => (
+        <div key={c.x} className="mx-col" style={{ left: c.x, top: c.top, opacity: c.o }}>
+          {c.tail}
+          <span className="mx-head">{c.head}</span>
+        </div>
+      ))}
+      <div className="mx-veil absolute left-0 top-0 h-full w-full" />
+      <div className="cp-scan absolute left-0 top-0 h-full w-full" />
     </div>
   );
 }

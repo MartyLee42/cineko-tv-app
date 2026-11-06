@@ -4556,11 +4556,11 @@ export interface components {
              */
             theme: "system" | "dark" | "light";
             /**
-             * @description Visual direction (Cineko-directions, Oct 2026): kinozal = «Кинозал» (Lampa evolution, lime «Сигнал», recommended); terminal = «Терминал» (HUD, orange, mono labels); projector = «Проектор» (immersive artwork, teal); wireframe = «Каркас» (synthwave neon grid, on the projector layout); cyberpunk = «Киберпанк» (neon HUD, clipped corners, on the terminal layout); deco = «Ар-деко» (gold-on-black movie palace, on the kinozal layout); retro80 = «Ретро 80-е» (VHS/arcade sunset chrome, on the kinozal layout); retro90 = «Ретро 90-е» (Windows 95 bevels on a teal desktop, on the terminal layout); popart = «Поп-арт» (comic Ben-Day dots, black outlines and hard shadows, on the projector layout); constructivism = «Конструктивизм» (1920s–30s poster graphics, red/black/cream diagonals, on the terminal layout). Only kinozal has a light variant.
+             * @description Visual direction (Cineko-directions, Oct 2026): kinozal = «Кинозал» (Lampa evolution, lime «Сигнал», recommended); terminal = «Терминал» (HUD, orange, mono labels); projector = «Проектор» (immersive artwork, teal); wireframe = «Каркас» (synthwave neon grid, on the projector layout); cyberpunk = «Киберпанк» (neon HUD, clipped corners, on the terminal layout); deco = «Ар-деко» (gold-on-black movie palace, on the kinozal layout); retro80 = «Ретро 80-е» (VHS/arcade sunset chrome, on the kinozal layout); retro90 = «Ретро 90-е» (Windows 95 bevels on a teal desktop, on the terminal layout); popart = «Поп-арт» (comic Ben-Day dots, black outlines and hard shadows, on the projector layout); constructivism = «Конструктивизм» (1920s–30s poster graphics, red/black/cream diagonals, on the terminal layout); matrix = «Матрица» (green phosphor digital rain, glowing mono type, on the terminal layout). Only kinozal has a light variant.
              * @default kinozal
              * @enum {string}
              */
-            design: "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism";
+            design: "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix";
             /**
              * @description Hide Japanese animation (TMDB genre Animation + original language ja) everywhere in the catalog.
              * @default false

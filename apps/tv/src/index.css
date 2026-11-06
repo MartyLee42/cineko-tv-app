@@ -281,6 +281,40 @@ html.design-cyberpunk .t-band-fade { background: linear-gradient(0deg, rgb(6,6,1
 html.design-cyberpunk .tv-chip.is-focused { background: rgb(0,240,255); color: #04080a; }
 html.design-cyberpunk .tv-progress-fill, html.design-cyberpunk .tv-check { background: rgb(0,240,255); color: #04080a; }
 
+/* ---------------------------------------------------------------- «Матрица» (terminal skeleton) */
+.mx-rain { background-color: rgb(0,6,2); overflow: hidden; }
+.mx-col { position: absolute; width: 30px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 26px; line-height: 30px; text-align: center; word-break: break-all; color: rgb(0,190,52); }
+.mx-head { display: block; color: rgb(214,255,222); text-shadow: 0 0 8px rgb(0,255,65), 0 0 16px rgba(0,255,65,.6); }
+.mx-veil { background: linear-gradient(180deg, rgba(0,6,2,.15) 0%, rgba(0,6,2,.55) 45%, rgba(0,6,2,.9) 100%); }
+html.design-matrix .t-grid { background: rgb(var(--mt-bg)); }
+html.design-matrix .tv-focus.is-focused { box-shadow: 0 0 0 3px rgb(0,6,2), 0 0 0 6px rgb(0,255,65), 0 0 26px 6px rgba(0,255,65,.45); }
+html.design-matrix .t-bracket, html.design-matrix .t-bracket-tl, html.design-matrix .t-bracket-br, html.design-matrix .t-bracket-tr, html.design-matrix .t-bracket-bl { border-color: rgb(0,255,65); }
+html.design-matrix h1, html.design-matrix h2 { color: rgb(200,255,210); text-shadow: 0 0 14px rgba(0,255,65,.7); }
+html.design-matrix h1.t-label { text-shadow: 0 0 10px rgba(0,255,65,.65); }
+html.design-matrix .text-accent { text-shadow: 0 0 10px rgba(0,255,65,.45); }
+html.design-matrix .t-tab.bg-text { background: rgb(0,255,65); color: #000e04; box-shadow: 0 0 18px rgba(0,255,65,.55); }
+html.design-matrix nav[data-design-nav="terminal"] { background: linear-gradient(180deg, rgba(0,6,2,.94) 0%, rgba(0,6,2,.65) 75%, rgba(0,6,2,0) 100%); }
+html.design-matrix nav[data-design-nav="terminal"]::after { content: ""; position: absolute; left: 96px; right: 48px; bottom: 18px; height: 2px; background: linear-gradient(90deg, rgb(0,255,65) 0%, rgba(0,255,65,.5) 55%, rgba(0,255,65,0) 100%); }
+/* Section labels as a prompt: «> ФИЛЬМЫ_». */
+html.design-matrix .t-hair p.t-label:first-child::before { content: "> "; color: rgb(0,255,65); }
+html.design-matrix .t-hair p.t-label:first-child::after { content: "_"; color: rgb(0,255,65); }
+html.design-matrix .t-hair { border-color: rgba(0,255,65,.28); }
+html.design-matrix .t-tag { background: rgba(0,6,2,.9); box-shadow: inset 3px 0 0 rgb(0,255,65); }
+html.design-matrix .tv-rate-t-good { color: rgb(0,255,65); }
+html.design-matrix .tv-rate-t-mid { color: rgb(190,255,120); }
+html.design-matrix .tv-rate-t-bad { color: rgb(255,110,90); }
+html.design-matrix .t-row-best { background: rgba(0,255,65,.1); }
+html.design-matrix .t-row.is-focused { background: rgb(0,255,65); color: #000e04; }
+html.design-matrix .t-seg-on { background: rgb(0,255,65); }
+html.design-matrix [data-testid="status-ticker"] { background: rgb(0,255,65); color: #000e04; }
+html.design-matrix .t-scanlines { background-image: repeating-linear-gradient(0deg, rgba(0,12,4,.5) 0px, rgba(0,12,4,.5) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 4px); }
+/* Artwork on the terminal layout's mono slots: green phosphor (static filter, rasterised once). */
+html.design-matrix .t-mono-img { -webkit-filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(3) brightness(.85); filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(3) brightness(.85); opacity: .85; }
+html.design-matrix .t-band-fade { background: linear-gradient(0deg, rgb(0,6,2) 0%, rgba(0,6,2,.6) 35%, rgba(0,30,10,.25) 70%, rgba(0,6,2,.4) 100%); }
+html.design-matrix .tv-chip.is-focused { background: rgb(0,255,65); color: #000e04; }
+html.design-matrix .tv-progress-fill, html.design-matrix .tv-check { background: rgb(0,255,65); color: #000e04; box-shadow: 0 0 10px rgba(0,255,65,.6); }
+html.design-matrix .bg-accent { color: #000e04; }
+
 /* ---------------------------------------------------------------- Ар-деко (kinozal skeleton) */
 .dc-lacquer {
   background-color: rgb(11,10,8);
@@ -581,6 +615,7 @@ html.design-retro80 .tv-panel, html.design-retro80 .tv-release:not(.is-focused) 
 html.design-retro90 .tv-panel, html.design-retro90 .tv-release:not(.is-focused) { box-shadow: inset 2px 2px 0 #c0c0c0, inset -2px -2px 0 #404040; }
 html.design-popart .tv-panel:not(.is-focused), html.design-popart .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 3px #000, 6px 6px 0 #000; }
 html.design-constructivism .tv-panel, html.design-constructivism .tv-release:not(.is-focused) { box-shadow: inset 4px 0 0 rgb(215,38,30); }
+html.design-matrix .tv-panel, html.design-matrix .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 1px rgba(0,255,65,.4); }
 
 /* Veil over a skin background behind long text (Settings, guide). */
 .skin-veil { background: linear-gradient(90deg, rgba(var(--mt-bg), .9) 0%, rgba(var(--mt-bg), .78) 60%, rgba(var(--mt-bg), .6) 100%); }
@@ -610,6 +645,9 @@ html.design-constructivism .tv-panel, html.design-constructivism .tv-release:not
 .dt-constructivism .dt-nav { background: #efe4cc !important; }
 .dt-constructivism .dt-poster { border-radius: 0; }
 .dt-constructivism .dt-title { transform: rotate(-4deg); }
+.dt-matrix { background-image: repeating-linear-gradient(90deg, rgba(0,255,65,.0) 0px, rgba(0,255,65,.0) 7px, rgba(0,255,65,.35) 7px, rgba(0,255,65,.35) 9px, rgba(0,255,65,0) 9px, rgba(0,255,65,0) 16px), linear-gradient(180deg, rgba(0,6,2,0) 0%, rgba(0,6,2,.9) 100%) !important; background-size: 16px 22px, 100% 100% !important; }
+.dt-matrix .dt-title { box-shadow: 0 0 8px rgb(0,255,65); }
+.dt-matrix .dt-poster { border-radius: 0; }
 
 /* Проектор-skeleton flat elements never scale on focus (any skin). */
 html.skel-projector .tv-flat.is-focused { transform: none; }

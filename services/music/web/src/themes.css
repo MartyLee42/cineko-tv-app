@@ -202,6 +202,26 @@ html.design-constructivism {
   --round: 0;
 }
 
+html.design-matrix {
+  --bg: rgb(0, 6, 2);
+  --panel: rgb(4, 20, 10);
+  --panel-2: rgb(8, 34, 16);
+  --panel-3: color-mix(in srgb, rgb(8, 34, 16) 70%, rgb(22, 84, 38));
+  --line: rgb(22, 84, 38);
+  --text: rgb(180, 255, 196);
+  --muted: rgb(84, 178, 106);
+  --dim: color-mix(in srgb, rgb(84, 178, 106) 60%, rgb(0, 6, 2));
+  --accent: rgb(0, 255, 65);
+  --accent-2: rgb(200, 255, 210);
+  --on-accent: rgb(0, 14, 4);
+  --radius: 0px;
+  --radius-ctl: 0px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "JetBrains Mono", ui-monospace, "Courier New", monospace;
+  --font-label: "JetBrains Mono", ui-monospace, "Courier New", monospace;
+  --round: 0;
+}
+
 /* Headings use each design's display face, like Cineko. */
 html.design-deco h1, html.design-deco h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2,
@@ -209,9 +229,11 @@ html.design-cyberpunk h1, html.design-cyberpunk h2 { font-family: var(--font-dis
 html.design-retro80 h1, html.design-retro80 h2 { font-family: var(--font-display); font-weight: 400; font-style: italic; }
 html.design-popart h1, html.design-popart h2 { font-family: var(--font-display); font-weight: 400; word-spacing: -.35em; }
 html.design-constructivism h1, html.design-constructivism h2 { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+html.design-matrix h1, html.design-matrix h2 { font-family: var(--font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
 html.design-kinozal h1, html.design-terminal h1, html.design-projector h1 { font-family: var(--font-display); }
 html.design-terminal .hero-kind, html.design-cyberpunk .hero-kind, html.design-wireframe .hero-kind,
 html.design-retro90 .hero-kind, html.design-constructivism .hero-kind,
+html.design-matrix .hero-kind, html.design-matrix .chip,
 html.design-terminal .chip, html.design-cyberpunk .chip { font-family: var(--font-label); text-transform: uppercase; letter-spacing: .06em; }
 /* Pop-art: ink outlines and hard offset shadows. */
 html.design-popart .card-art .cover, html.design-popart .big-play, html.design-popart .card-play,

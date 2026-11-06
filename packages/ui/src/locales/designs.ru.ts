@@ -15,6 +15,8 @@ export const designsRu: Record<keyof typeof designsEn, string> = {
   "settings.design.popart_hint": "Страница комикса: растровые точки, жёлтый и красный, чёрный контур, жёсткие тени и взрывы «БАМ!».",
   "settings.design.constructivism": "Конструктивизм",
   "settings.design.constructivism_hint": "Киноплакат 20–30-х: красный, чёрный и кремовая бумага, смелые диагонали, клинья, круги и рубленый шрифт.",
+  "settings.design.matrix": "Матрица",
+  "settings.design.matrix_hint": "Зелёный фосфор на чёрном: цифровой дождь, светящийся моноширинный шрифт и командная строка.",
   "designs.motion": "Движение фона",
   "designs.motion_hint": "Неоновая сетка медленно бежит навстречу. «Спокойно» — без анимации (легче для старых ТВ).",
   "designs.motion.on": "Движется",

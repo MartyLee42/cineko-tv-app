@@ -9,7 +9,7 @@ import (
 )
 
 func TestSettingsDesigns(t *testing.T) {
-	for _, d := range []string{"kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism"} {
+	for _, d := range []string{"kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix"} {
 		if f := (Settings{Design: ptr(d)}).validate(); len(f) > 0 {
 			t.Fatalf("design %q rejected: %v", d, f)
 		}

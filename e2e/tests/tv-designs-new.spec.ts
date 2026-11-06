@@ -12,6 +12,7 @@ const NEW = [
   { design: "retro90", skeleton: "terminal", bg: "desktop" },
   { design: "popart", skeleton: "projector", bg: "comic" },
   { design: "constructivism", skeleton: "terminal", bg: "poster" },
+  { design: "matrix", skeleton: "terminal", bg: "rain" },
 ] as const;
 type NewDesign = (typeof NEW)[number];
 
@@ -221,7 +222,7 @@ test("TV new designs: skin on skeleton, Details / Browse / Settings, focus in vi
       await intoMenu(tv, d);
       await pick(tv, d, "settings");
       await expect(tv.getByTestId("tv-settings")).toBeVisible();
-      await expect(tv.getByTestId("design-previews").locator("[data-design-tile]")).toHaveCount(10);
+      await expect(tv.getByTestId("design-previews").locator("[data-design-tile]")).toHaveCount(11);
       await expect(tv.locator(`[data-design-tile="${d.design}"]`)).toHaveAttribute("data-active", "1");
       await expect(tv.locator('[data-setting="calm_motion"]')).toHaveCount(d.design === "wireframe" ? 1 : 0);
       await press(tv, "Escape");

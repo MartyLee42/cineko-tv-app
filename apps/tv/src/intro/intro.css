@@ -142,3 +142,7 @@
 .cvi-wedge { animation: cvi-wedge .5s cubic-bezier(.2,.8,.2,1) both; }
 .cvi-kino { animation: cvi-kino .5s cubic-bezier(.2,.8,.2,1) .35s both; }
 .cvi-line { transform-origin: 0 50%; transform: rotate(-30deg); animation: cvi-line .5s ease-out both; }
+
+/* ---- matrix: code columns drop in, then the prompt and the glowing name (transform/opacity only) */
+.in-mx-col { animation: in-mx-drop 1.4s cubic-bezier(.2,.7,.3,1) both; }
+@keyframes in-mx-drop { from { transform: translate3d(0,-520px,0); opacity: 0; } 30% { opacity: 1; } to { transform: translate3d(0,0,0); } }
