@@ -25,6 +25,7 @@ func (s *Service) Routes(api fiber.Router) {
 // AdminRoutes mounts the admin views on the admin group (RequireAdmin).
 func (s *Service) AdminRoutes(admin fiber.Router) {
 	admin.Get("/client-errors", s.list)
+	admin.Get("/client-errors/users", s.users)
 	admin.Get("/client-errors/:id", s.get)
 	admin.Patch("/client-errors/:id", s.update)
 	admin.Delete("/client-errors/:id", s.remove)
@@ -208,6 +209,17 @@ const groupCols = `g.id, g.app, g.kind, g.message, g.top_frame, g.component, g.c
 	(SELECT count(*) FROM client_error_affected a WHERE a.group_id = g.id AND a.kind = 'd'),
 	g.first_seen, g.last_seen, g.last_release, g.last_url, g.resolved_at, g.regressed_at`
 
+// userGroupCols is groupCols as one user saw it (the `ua` affected row joined
+// by userJoin): their own count and first/last seen, and their devices.
+const userGroupCols = `g.id, g.app, g.kind, g.message, g.top_frame, g.component, ua.count, 1,
+	(SELECT count(*) FROM client_error_affected a JOIN devices d ON d.id = a.subject_id
+	 WHERE a.group_id = g.id AND a.kind = 'd' AND d.owner_user_id = ua.subject_id),
+	ua.first_seen, ua.last_seen, g.last_release, g.last_url, g.resolved_at, g.regressed_at`
+
+func userJoin(p string) string {
+	return ` JOIN client_error_affected ua ON ua.group_id = g.id AND ua.kind = 'u' AND ua.subject_id = ` + p
+}
+
 func scanGroup(row pgx.Row) (Group, error) {
 	var g Group
 	var regressedAt *time.Time
@@ -230,6 +242,15 @@ func (s *Service) list(c fiber.Ctx) error {
 		return "$" + strconv.Itoa(len(args))
 	}
 	bad := map[string]string{}
+	// With user_id the groups are that user's: counts and times are theirs.
+	cols, from, seen, count := groupCols, ` FROM client_error_groups g`, "g.last_seen", "g.count"
+	if v := c.Query("user_id"); v != "" {
+		if !isUUID(v) {
+			bad["user_id"] = "must be a UUID"
+		} else {
+			cols, from, seen, count = userGroupCols, from+userJoin(arg(v)), "ua.last_seen", "ua.count"
+		}
+	}
 	if v := c.Query("app"); v != "" {
 		if !slices.Contains(Apps, v) {
 			bad["app"] = "unknown app"
@@ -256,15 +277,13 @@ func (s *Service) list(c fiber.Ctx) error {
 		if err != nil {
 			bad["since"] = "must be an RFC 3339 time"
 		}
-		where = append(where, "g.last_seen >= "+arg(t))
+		where = append(where, seen+" >= "+arg(t))
 	}
-	for _, f := range []struct{ param, kind string }{{"user_id", "u"}, {"device_id", "d"}} {
-		if v := c.Query(f.param); v != "" {
-			if !isUUID(v) {
-				bad[f.param] = "must be a UUID"
-				continue
-			}
-			where = append(where, "EXISTS (SELECT 1 FROM client_error_affected a WHERE a.group_id = g.id AND a.kind = '"+f.kind+"' AND a.subject_id = "+arg(v)+")")
+	if v := c.Query("device_id"); v != "" {
+		if !isUUID(v) {
+			bad["device_id"] = "must be a UUID"
+		} else {
+			where = append(where, "EXISTS (SELECT 1 FROM client_error_affected a WHERE a.group_id = g.id AND a.kind = 'd' AND a.subject_id = "+arg(v)+")")
 		}
 	}
 	if v := strings.TrimSpace(c.Query("q")); v != "" {
@@ -275,11 +294,11 @@ func (s *Service) list(c fiber.Ctx) error {
 		p := arg("%" + esc + "%")
 		where = append(where, "(g.message ILIKE "+p+" OR g.component ILIKE "+p+" OR g.top_frame ILIKE "+p+")")
 	}
-	order := "g.last_seen DESC, g.id"
+	order := seen + " DESC, g.id"
 	switch c.Query("sort", "last_seen") {
 	case "last_seen":
 	case "count":
-		order = "g.count DESC, g.last_seen DESC, g.id"
+		order = count + " DESC, " + seen + " DESC, g.id"
 	default:
 		bad["sort"] = "must be last_seen or count"
 	}
@@ -300,10 +319,10 @@ func (s *Service) list(c fiber.Ctx) error {
 	}
 	ctx := c.Context()
 	var total int
-	if err := s.pool.QueryRow(ctx, `SELECT count(*) FROM client_error_groups g`+cond, args...).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, `SELECT count(*)`+from+cond, args...).Scan(&total); err != nil {
 		return err
 	}
-	rows, err := s.pool.Query(ctx, `SELECT `+groupCols+` FROM client_error_groups g`+cond+
+	rows, err := s.pool.Query(ctx, `SELECT `+cols+from+cond+
 		` ORDER BY `+order+` LIMIT `+arg(limit)+` OFFSET `+arg(offset), args...)
 	if err != nil {
 		return err
@@ -323,8 +342,14 @@ func (s *Service) list(c fiber.Ctx) error {
 	return c.JSON(fiber.Map{"items": items, "total": total})
 }
 
-func (s *Service) group(ctx context.Context, id string) (Group, error) {
-	g, err := scanGroup(s.pool.QueryRow(ctx, `SELECT `+groupCols+` FROM client_error_groups g WHERE g.id = $1`, id))
+// group loads one group; with userID, as that user saw it (not found when
+// they never hit it).
+func (s *Service) group(ctx context.Context, id, userID string) (Group, error) {
+	q, args := `SELECT `+groupCols+` FROM client_error_groups g WHERE g.id = $1`, []any{id}
+	if userID != "" {
+		q, args = `SELECT `+userGroupCols+` FROM client_error_groups g`+userJoin("$2")+` WHERE g.id = $1`, []any{id, userID}
+	}
+	g, err := scanGroup(s.pool.QueryRow(ctx, q, args...))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return g, errNotFound
 	}
@@ -367,8 +392,12 @@ func (s *Service) get(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	userID := c.Query("user_id")
+	if userID != "" && !isUUID(userID) {
+		return httpx.Validation(map[string]string{"user_id": "must be a UUID"})
+	}
 	ctx := c.Context()
-	g, err := s.group(ctx, id)
+	g, err := s.group(ctx, id, userID)
 	if errors.Is(err, errNotFound) {
 		return httpx.NotFound()
 	}
@@ -384,9 +413,9 @@ func (s *Service) get(c fiber.Ctx) error {
 		LEFT JOIN users u ON u.id = s.user_id
 		LEFT JOIN devices d ON d.id = s.device_id
 		LEFT JOIN profiles p ON p.id = s.profile_id
-		WHERE s.group_id = $1
+		WHERE s.group_id = $1 AND ($3::uuid IS NULL OR s.user_id = $3)
 		ORDER BY s.id DESC
-		LIMIT $2`, id, samplesPerGroup)
+		LIMIT $2`, id, samplesPerGroup, nullable(userID))
 	if err != nil {
 		return err
 	}
@@ -454,7 +483,7 @@ func (s *Service) update(c fiber.Ctx) error {
 	if cmd.RowsAffected() == 0 {
 		return httpx.NotFound()
 	}
-	g, err := s.group(c.Context(), id)
+	g, err := s.group(c.Context(), id, "")
 	if errors.Is(err, errNotFound) {
 		return httpx.NotFound()
 	}
@@ -462,6 +491,35 @@ func (s *Service) update(c fiber.Ctx) error {
 		return err
 	}
 	return c.JSON(g)
+}
+
+// ErrorUser is an account that hit at least one stored group (the filter list).
+type ErrorUser struct {
+	ID          string    `json:"id"`
+	Username    string    `json:"username"`
+	DisplayName string    `json:"display_name"`
+	Groups      int       `json:"groups"`
+	LastSeen    time.Time `json:"last_seen"`
+}
+
+func (s *Service) users(c fiber.Ctx) error {
+	rows, err := s.pool.Query(c.Context(), `
+		SELECT u.id, u.username, u.display_name, count(*), max(a.last_seen)
+		FROM client_error_affected a JOIN users u ON u.id = a.subject_id
+		WHERE a.kind = 'u'
+		GROUP BY u.id
+		ORDER BY lower(coalesce(nullif(u.display_name, ''), u.username)), u.id`)
+	if err != nil {
+		return err
+	}
+	items, err := pgx.CollectRows(rows, func(r pgx.CollectableRow) (ErrorUser, error) {
+		var u ErrorUser
+		return u, r.Scan(&u.ID, &u.Username, &u.DisplayName, &u.Groups, &u.LastSeen)
+	})
+	if err != nil {
+		return err
+	}
+	return c.JSON(fiber.Map{"items": items})
 }
 
 func (s *Service) remove(c fiber.Ctx) error {

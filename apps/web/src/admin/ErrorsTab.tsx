@@ -41,6 +41,8 @@ interface Filters {
   range: TimeRange;
   q: string;
   sort: Sort;
+  /** User id ("" = everyone). */
+  user: string;
 }
 
 /** Unresolved groups seen since the admin last opened the Errors tab (the
@@ -83,7 +85,7 @@ export function ErrorsTab() {
   const { t } = useI18n();
   // The previous visit, captured once: groups first seen after it are "new".
   const [prevView] = useState(() => readLastViewed());
-  const [filters, setFilters] = useState<Filters>({ app: "", kind: "", status: "unresolved", range: "7d", q: "", sort: "last_seen" });
+  const [filters, setFilters] = useState<Filters>({ app: "", kind: "", status: "unresolved", range: "7d", q: "", sort: "last_seen", user: "" });
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -91,6 +93,16 @@ export function ErrorsTab() {
     const h = setTimeout(() => setFilters((f) => (f.q === search.trim() ? f : { ...f, q: search.trim() })), 300);
     return () => clearTimeout(h);
   }, [search]);
+
+  const users = useQuery({
+    queryKey: [...LIST_KEY, "users"],
+    queryFn: async () => (await unwrap(api.GET("/admin/client-errors/users"))).items,
+    staleTime: 60_000,
+  });
+  const userName = (id: string) => {
+    const u = users.data?.find((x) => x.id === id);
+    return u ? u.display_name || u.username : "";
+  };
 
   const since = sinceFor(filters.range);
   const list = useInfiniteQuery({
@@ -108,6 +120,7 @@ export function ErrorsTab() {
               ...(filters.app ? { app: filters.app } : {}),
               ...(filters.kind ? { kind: filters.kind } : {}),
               ...(filters.q ? { q: filters.q } : {}),
+              ...(filters.user ? { user_id: filters.user } : {}),
               ...(since ? { since } : {}),
             },
           },
@@ -125,7 +138,7 @@ export function ErrorsTab() {
 
   return (
     <div className="space-y-3" data-testid="errors-tab">
-      <Card className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3 lg:grid-cols-6">
+      <Card className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3 lg:grid-cols-7">
         <Input
           type="search"
           value={search}
@@ -148,6 +161,15 @@ export function ErrorsTab() {
           {ERROR_KINDS.map((k) => (
             <option key={k} value={k}>
               {t(`admin.errors.kind.${k}` as MessageKey)}
+            </option>
+          ))}
+        </Select>
+        <Select value={filters.user} onChange={(e) => set("user", e.target.value)} aria-label={t("admin.errors.filter.user")} data-testid="errors-filter-user">
+          <option value="">{t("admin.errors.filter.all_users")}</option>
+          {filters.user && !users.data?.some((u) => u.id === filters.user) && <option value={filters.user}>{filters.user.slice(0, 8)}</option>}
+          {users.data?.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.display_name && u.display_name !== u.username ? `${u.display_name} (${u.username})` : u.username}
             </option>
           ))}
         </Select>
@@ -182,7 +204,10 @@ export function ErrorsTab() {
         </div>
       ) : (
         <>
-          <p className="px-1 text-xs text-muted">{t("admin.errors.total", { n: total })}</p>
+          <p className="px-1 text-xs text-muted">
+            {t("admin.errors.total", { n: total })}
+            {filters.user && userName(filters.user) && ` · ${t("admin.errors.user_scope", { name: userName(filters.user) })}`}
+          </p>
           <ul className="space-y-2" data-testid="errors-list">
             {items.map((g) => (
               <GroupRow key={g.id} g={g} isNew={isNewGroup(g, prevView)} onOpen={() => setOpenId(g.id)} />
@@ -197,7 +222,7 @@ export function ErrorsTab() {
           )}
         </>
       )}
-      {openId && <ErrorDetailSheet id={openId} onClose={() => setOpenId(null)} />}
+      {openId && <ErrorDetailSheet id={openId} userId={filters.user} onClose={() => setOpenId(null)} />}
     </div>
   );
 }
@@ -276,14 +301,16 @@ function GroupRow({ g, isNew, onOpen }: { g: ErrorGroup; isNew: boolean; onOpen:
   );
 }
 
-function ErrorDetailSheet({ id, onClose }: { id: string; onClose: () => void }) {
+/** One group; with userId, as that user saw it and only their samples. */
+function ErrorDetailSheet({ id, userId, onClose }: { id: string; userId: string; onClose: () => void }) {
   const { t, locale } = useI18n();
   const qc = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const q = useQuery({
-    queryKey: [...LIST_KEY, "detail", id],
-    queryFn: () => unwrap(api.GET("/admin/client-errors/{id}", { params: { path: { id } } })),
+    queryKey: [...LIST_KEY, "detail", id, userId],
+    queryFn: () =>
+      unwrap(api.GET("/admin/client-errors/{id}", { params: { path: { id }, query: userId ? { user_id: userId } : {} } })),
   });
   const resolve = useMutation({
     mutationFn: (resolved: boolean) => unwrap(api.PATCH("/admin/client-errors/{id}", { params: { path: { id } }, body: { resolved } })),

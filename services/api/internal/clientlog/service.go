@@ -197,9 +197,9 @@ func (s *Service) record(ctx context.Context, e Event, who Who) error {
 				continue
 			}
 			if _, err := tx.Exec(ctx, `
-				INSERT INTO client_error_affected (group_id, kind, subject_id) VALUES ($1, $2, $3)
-				ON CONFLICT (group_id, kind, subject_id) DO UPDATE SET last_seen = now()`,
-				groupID, sub.kind, sub.id); err != nil {
+				INSERT INTO client_error_affected AS a (group_id, kind, subject_id, count) VALUES ($1, $2, $3, $4)
+				ON CONFLICT (group_id, kind, subject_id) DO UPDATE SET last_seen = now(), count = a.count + EXCLUDED.count`,
+				groupID, sub.kind, sub.id, e.Count); err != nil {
 				return err
 			}
 		}
