@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"martytv/api/internal/playback"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -27,6 +28,7 @@ type fakeInvidious struct {
 	srv       *httptest.Server
 	playback  atomic.Int32
 	stale     atomic.Int32 // answer this many videoplayback calls with 403
+	hang      atomic.Int32 // stall this many videoplayback calls for a second
 	videoHits atomic.Int32
 	thumbHits atomic.Int32
 	lastRange atomic.Value
@@ -114,6 +116,14 @@ func newFakeInvidious(t *testing.T) *fakeInvidious {
 				w.WriteHeader(403)
 				return
 			}
+			if f.hang.Load() > 0 {
+				f.hang.Add(-1)
+				select {
+				case <-time.After(time.Second):
+				case <-r.Context().Done():
+					return
+				}
+			}
 			itag := r.URL.Query().Get("itag")
 			size := int64(4_000_000)
 			m := rangeRe.FindStringSubmatch(r.Header.Get("Range"))
@@ -133,8 +143,8 @@ func newFakeInvidious(t *testing.T) *fakeInvidious {
 			for i := range body {
 				body[i] = byte((from + int64(i)) % 251)
 			}
-			if sb, ok := sidx[itag]; ok && from == indexFrom[itag] {
-				copy(body, sb)
+			if sb, ok := sidx[itag]; ok && from <= indexFrom[itag] && indexFrom[itag]-from < int64(len(body)) {
+				copy(body[indexFrom[itag]-from:], sb)
 			}
 			w.Header().Set("Content-Type", "video/mp4")
 			w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", from, to, size))
@@ -397,6 +407,17 @@ func TestVideoPlaybackHLS(t *testing.T) {
 	if strings.Count(apl, "#EXTINF:") != 22 {
 		t.Fatalf("audio playlist:\n%s", apl)
 	}
+	// The init segment came with the sidx (one upstream request per track,
+	// started when the source was created): served from memory.
+	calls := f.playback.Load()
+	init := tv.Do("GET", base+"m136.mp4", nil, "Range", "bytes=0-739").Expect(206)
+	if len(init.Body) != 740 || init.Header.Get("Content-Range") != "bytes 0-739/26455880" || f.playback.Load() != calls {
+		t.Fatalf("init %d bytes, %q, upstream calls %d → %d", len(init.Body), init.Header.Get("Content-Range"), calls, f.playback.Load())
+	}
+	if init.Body[0] != 0 || init.Body[739] != byte(739%251) {
+		t.Fatal("init bytes differ from upstream")
+	}
+
 	// A fragment: Range passes through.
 	seg := tv.Do("GET", base+"m136.mp4", nil, "Range", "bytes=1228-2227").Expect(206)
 	if len(seg.Body) != 1000 || seg.Header.Get("Content-Range") != "bytes 1228-2227/4000000" || f.lastRange.Load() != "bytes=1228-2227" {
@@ -414,6 +435,18 @@ func TestVideoPlaybackHLS(t *testing.T) {
 	if f.videoHits.Load() != hits+1 {
 		t.Fatal("stale url not refreshed")
 	}
+	// A stalled upstream request is retried on a fresh connection.
+	tm := playback.DefaultTimings()
+	tm.VideoHeaderWait = 150 * time.Millisecond
+	env.Server.Playback.SetTimings(tm)
+	calls = f.playback.Load()
+	f.hang.Store(1)
+	start := time.Now()
+	tv.Do("GET", base+"m136.mp4", nil, "Range", "bytes=1228-2227").Expect(206)
+	if f.playback.Load() != calls+2 || time.Since(start) > 900*time.Millisecond {
+		t.Fatalf("stall: %d upstream calls in %v", f.playback.Load()-calls, time.Since(start))
+	}
+	env.Server.Playback.SetTimings(playback.DefaultTimings())
 	cc := tv.Do("GET", base+"cc0.vtt", nil).Expect(200)
 	if !strings.HasPrefix(string(cc.Body), "WEBVTT") {
 		t.Fatalf("caption %s", cc.Body)

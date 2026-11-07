@@ -2664,7 +2664,13 @@ the admin's active streams). `fallback_url` is the progressive MP4 (itag 18,
 360p; YouTube dropped itag 22) for engines without fMP4 HLS. Captions are
 `cc<n>.vtt`. Only URLs the provider returned for that video, on the Invidious
 origin, are ever fetched (same-origin redirects only); a 403/410 from upstream
-(expired googlevideo URL) refetches the video once. Live streams and premieres
+(expired googlevideo URL) refetches the video once. To cut the start-up
+round trips, creating the source fetches both tracks' sidx in the background
+(in parallel; one request per track also brings the init segment, which sits
+right before the sidx, and is then served from memory), and concurrent
+requests share one fetch. A request to Invidious with no response headers
+after `VideoHeaderWait` (6 s) is retried once on a fresh connection instead of
+failing at the 15 s upstream timeout. Live streams and premieres
 (DASH live, no HLS from the companion client) answer 422
 `video_live_unsupported`.
 
