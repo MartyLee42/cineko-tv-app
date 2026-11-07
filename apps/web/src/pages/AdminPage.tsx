@@ -331,7 +331,7 @@ function ActivityCard() {
           {t("admin.activity_empty")}
         </p>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2" data-testid="activity-list">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="activity-list">
           {q.data.map((a, i) => (
             <ActivityCardItem key={`${a.device?.id ?? a.user.id}-${i}`} a={a} />
           ))}
@@ -354,7 +354,7 @@ function ActivityCardItem({ a }: { a: ActivityItem }) {
   const { data: cfg } = useCatalogConfig();
   const pct = activityPercent(a);
   return (
-    <li className="flex gap-3 rounded-xl border border-border bg-bg/40 p-2.5" data-testid="activity-item">
+    <li className="flex min-w-0 gap-3 rounded-xl border border-border bg-bg/40 p-2.5" data-testid="activity-item">
       <div className="relative aspect-[2/3] w-14 shrink-0 overflow-hidden rounded-lg" style={{ background: placeholderColor(a.media.title) }}>
         <Img src={imageUrl(cfg, a.media.poster_path, "w185")} alt="" className="absolute inset-0 h-full w-full object-cover" fallback={null} />
       </div>
