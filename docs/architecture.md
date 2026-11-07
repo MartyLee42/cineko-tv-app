@@ -132,7 +132,8 @@ Envelope: `{id?, type, target_device_id?, device_id?, payload?}`.
   message (5 s deadline). `?auth=token` makes the server ignore any cookie, so a
   TV page in a signed-in browser still connects as the TV.
 - **Server events:** `hello`, `device.presence {online}`, `device.state`,
-  `device.changed`, `ack`, `error`, `pong`, `admin.devices.updated` (super_admins, see [Roles](#roles)).
+  `device.changed`, `ack`, `error`, `pong`, `admin.devices.updated` (super_admins, see [Roles](#roles)),
+  `settings.changed {profile_id?}` (to a TV: see [Device settings](#device-settings-per-class-and-per-tv)).
 - **Commands** (controller → TV): `media.*`, `playback.*`, `device.show_message`
   and `device.request_state`. The server checks access (owner/use/control) and
   forwards the command to the TV, which must reply with `ack {ok, error?, result?}`.
@@ -1206,6 +1207,59 @@ read-write at `/var/lib/martytv/library` on the api container (`LIBRARY_DIR`).
 `deploy.sh` creates it idempotently, owned by 65532:65532 (the distroless
 `nonroot` uid). A missing or unwritable dir makes `POST /downloads` answer
 503 `library_unavailable`, and the admin storage shows `ok: false`.
+
+### Device settings (per class and per TV)
+
+A profile's **look and playback behaviour** can differ per device: on the
+phone, on the computer and on each TV of the household. Migration
+`00033_device_settings`; code in `profiles/layers.go`,
+`internal/devicesettings`, `packages/ui/src/deviceSettings.ts`.
+
+- **Layers.** `profile_settings` stays the **base**. On top of it a layer
+  holds only the keys a client set there: `profile_class_settings`
+  (`desktop` = «Компьютер», `mobile` = «Телефон») and
+  `profile_device_settings` (one TV). Effective = base → layer, per key.
+  Nothing was copied by the migration, so every device keeps showing what it
+  showed until a setting is changed on it.
+- **Layered keys** (`profiles.LayeredKeys` = `LAYERED_KEYS` in TS): `theme`,
+  `design`, `design_surprise`, `design_favorites`, `loading_style`,
+  `seasonal_effects`, `cozy_mode`, `cozy_ambience`, `cozy_sound`,
+  `poster_wobble`, `hidden_tabs`, `autoplay_next_episode`,
+  `autoplay_countdown`, `skip_segments`, `video_autoplay`. Everything else
+  (taste note, `min_votes`, sources, IPTV lists, `hide_*`,
+  `spoiler_free_episodes`, `poster_rating`, `video_quality` /
+  `video_hide_shorts` — read server-side for streams —, family, curated,
+  onboarding) stays **per profile**; server features only ever read the base
+  (`GetSettings`), and none of them uses a layered key.
+- **Who writes where.** A TV's `PUT /profiles/{id}/settings` sends its
+  layered keys to its own layer (the TV credential identifies it; no client
+  change was needed). A browser adds `?device_class=desktop|mobile`
+  (`apps/web/src/devsettings/deviceClass.ts`: phones and tablets by UA, else
+  touch-only with a screen < 1100 px; decided once, stored in
+  `martytv.device_class`, changeable in Settings → «Это устройство»). Without a
+  class (API tokens, old cached PWAs) everything goes to the base. The
+  per-profile keys of any PUT always go to the base. A new TV or class starts
+  from the base. «Сюрприз» works per layer: its inputs are layered and the
+  daily pick is computed client-side from the effective settings.
+- **A TV's own options** (`devices.settings`, all profiles): `screensaver`,
+  `ui_sounds`, `startup_intro`, `calm_motion`, `language`, `health_report`,
+  `slow_hint`, `show_prebuffer`, `speedtest`. They were localStorage-only; the
+  TV keeps localStorage as the cache every feature reads (instant start,
+  offline) and `apps/tv/src/settings/tvOwn.ts` syncs it: on start and on each
+  realtime `hello` it reads `/devices/me/settings`, uploads the keys the
+  server doesn't have yet (the one-time seed) and applies the rest. TV
+  Settings writes through `tvOwn.set`.
+- **Editing any TV from a phone.** Устройства → a TV → «Настройки ТВ»
+  (`/devices/:id/settings`, also from Admin → «Устройства»): the TV's own
+  options and, per profile, its layer (badges «своё для ТВ» with «Как в
+  профиле» = reset the key). `GET/PATCH /devices/{id}/settings`; access like
+  playback prefs: the TV itself, its owner, a `use` share (only the sharer's
+  own profiles), any super_admin; `control` shares and strangers get 404.
+  A change made elsewhere sends the TV `settings.changed {profile_id?}`: it
+  re-syncs its own options and refetches that profile's settings, and App
+  applies the new design (per-design chunk via `loadLook`) at once. A change
+  of a profile's base also reaches the owner's TVs (`settings.changed`).
+  Playback quality / codecs stay in «Это устройство» (playback prefs).
 
 ## Watch sync (Phase 5)
 

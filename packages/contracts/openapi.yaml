@@ -539,6 +539,59 @@ paths:
         "404": { $ref: "#/components/responses/Error" }
         "413": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
+  /devices/{id}/settings:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: "Device id, or `me` for the calling TV."
+        schema: { type: string }
+    get:
+      tags: [devices]
+      operationId: getTvSettings
+      description: |
+        A TV's settings: its own options (`device`, every profile) and, for
+        one profile, the TV's layer of the profile settings (`overrides`) and
+        the merged result (`effective`). Access like playback-prefs: the TV
+        itself, its owner, a `use` share (own profiles only) and any
+        super_admin; `control`-only and strangers get 404.
+      parameters:
+        - name: profile_id
+          in: query
+          description: "Default: the profile the TV shows now, else its default profile, else the first one. Not editable by the caller → 404."
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: The TV's settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TvSettings" }
+        "404": { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [devices]
+      operationId: updateTvSettings
+      description: |
+        Same access as GET. `device` keys replace the TV's own options,
+        `reset_device` unsets them; `profile` (layered keys only) is stored in
+        the TV's layer of `profile_id`, `reset` removes keys from it (back to
+        the profile). Edited by anyone but the TV itself, the TV gets the
+        realtime event `settings.changed` {profile_id?} and applies it at once.
+        Invalid → 422 validation_failed; body > 16 KB → 413.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TvSettingsPatch" }
+      responses:
+        "200":
+          description: The TV's settings after the change.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TvSettings" }
+        "400": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "413": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
   /devices/{id}/health:
     parameters:
       - name: id
@@ -1716,7 +1769,18 @@ paths:
 
   # ---------------------------------------------------------------- watch sync, lists, settings (Phase 5)
   /profiles/{id}/settings:
-    parameters: [{ $ref: "#/components/parameters/Id" }]
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - name: device_class
+        in: query
+        description: |
+          Browsers name their class (DeviceClass: desktop = «Компьютер», mobile
+          = «Телефон»): GET answers base → that class's layer, PUT stores the
+          layered keys (TvSettings.layered_keys: look, autoplay, skip…) in that
+          layer and the rest in the profile base. A paired TV is always layered
+          per its own device id (the parameter is ignored). Without it (API
+          tokens, old clients) everything is the profile base. Other values → 422.
+        schema: { $ref: "#/components/schemas/DeviceClass" }
     get:
       tags: [profiles]
       operationId: getProfileSettings
@@ -1726,7 +1790,7 @@ paths:
     put:
       tags: [profiles]
       operationId: putProfileSettings
-      description: Partial updates allowed (omitted fields keep their value). TV devices may update settings of profiles they can use.
+      description: Partial updates allowed (omitted fields keep their value). TV devices may update settings of profiles they can use (their layered keys go to that TV's layer). The answer is the caller's effective settings (see device_class).
       requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/ProfileSettings" } } } }
       responses:
         "200": { description: Saved settings., content: { application/json: { schema: { $ref: "#/components/schemas/ProfileSettings" } } } }
@@ -5041,6 +5105,63 @@ components:
         label: { type: [string, "null"] }
 
     # ------------------------------------------------------------ watch sync, lists, settings (Phase 5)
+    DeviceClass:
+      type: string
+      enum: [desktop, mobile]
+      description: "A browser's settings class: desktop = «Компьютер», mobile = «Телефон» (decided once per browser, changeable in Settings)."
+    TvDeviceSettings:
+      type: object
+      description: "A TV's own options (every profile). Unset keys are absent: the TV seeds them once from its local values; clients show the defaults (screensaver sleep, ui_sounds false, startup_intro true, calm_motion false, language: the TV's, health_report true, slow_hint false, show_prebuffer false, speedtest true)."
+      properties:
+        screensaver: { type: string, enum: [sleep, dvd, "off"] }
+        ui_sounds: { type: boolean }
+        startup_intro: { type: boolean }
+        calm_motion: { type: boolean, description: "Calm background motion of «Каркас» / «Матрица»." }
+        language: { type: string, enum: [ru, en, kk] }
+        health_report: { type: boolean, description: "«Отправлять состояние ТВ»." }
+        slow_hint: { type: boolean }
+        show_prebuffer: { type: boolean }
+        speedtest: { type: boolean, description: "Background speed test." }
+    TvSettingsProfile:
+      type: object
+      required: [id, name, avatar, color, own]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        avatar: { type: string }
+        color: { type: string }
+        own: { type: boolean, description: "The caller's own profile." }
+    TvSettings:
+      type: object
+      required: [device_id, device, updated_at, profiles, active_profile_id, profile_id, effective, overrides, layered_keys]
+      properties:
+        device_id: { type: string, format: uuid }
+        device: { $ref: "#/components/schemas/TvDeviceSettings" }
+        updated_at: { type: [string, "null"], format: date-time, description: "Last change of `device`." }
+        profiles:
+          type: array
+          description: "The TV's profiles the caller may edit there."
+          items: { $ref: "#/components/schemas/TvSettingsProfile" }
+        active_profile_id: { type: [string, "null"], format: uuid, description: "The profile the TV shows now (live state; null offline)." }
+        profile_id: { type: [string, "null"], format: uuid, description: "The profile `effective` / `overrides` are for (null: no profiles)." }
+        effective:
+          description: "The profile's settings on this TV (base → the TV's layer)."
+          oneOf: [{ $ref: "#/components/schemas/ProfileSettings" }, { type: "null" }]
+        overrides:
+          description: "Only the keys set on this TV (the rest follow the profile). A partial ProfileSettings."
+          oneOf: [{ $ref: "#/components/schemas/ProfileSettings" }, { type: "null" }]
+        layered_keys:
+          type: array
+          description: "Settings that live per device class / per TV (look & feel, autoplay, countdown, skip); all others are per profile."
+          items: { type: string }
+    TvSettingsPatch:
+      type: object
+      properties:
+        device: { $ref: "#/components/schemas/TvDeviceSettings" }
+        reset_device: { type: array, items: { type: string, enum: [screensaver, ui_sounds, startup_intro, calm_motion, language, health_report, slow_hint, show_prebuffer, speedtest] } }
+        profile_id: { type: string, format: uuid, description: "Required with `profile` / `reset`." }
+        profile: { $ref: "#/components/schemas/ProfileSettings", description: "Layered keys only (others → 422)." }
+        reset: { type: array, items: { type: string }, description: "Layered keys to remove from the TV's layer." }
     ProfileSettings:
       type: object
       properties:

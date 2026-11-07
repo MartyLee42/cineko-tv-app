@@ -115,6 +115,16 @@ function DeviceCard({ device: d }: { device: Device }) {
           <Button variant="secondary" disabled={!online} busy={ping.isPending} onClick={() => ping.mutate()}>
             {t("devices.send_message")}
           </Button>
+          {(isOwner || d.access === "use") && (
+            // Look, screensaver, language… of this TV (devsettings/TvSettingsPage).
+            <Link
+              to={`/devices/${d.id}/settings`}
+              data-testid="tv-settings-open"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-surface-2 px-4 py-2 font-semibold transition hover:bg-border"
+            >
+              {t("devset.tv.button")}
+            </Link>
+          )}
           {(isOwner || d.access === "use") && <DevicePrefsButton deviceId={d.id} name={d.name} />}
           {isOwner && !editing && (
             <Button variant="secondary" onClick={() => setEditing(true)}>
