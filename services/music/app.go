@@ -263,6 +263,7 @@ func (a *App) authed(h handler) http.HandlerFunc {
 func (a *App) routes() http.Handler {
 	m := http.NewServeMux()
 	m.HandleFunc("GET /music/healthz", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("ok")) })
+	m.HandleFunc("GET /metrics", a.hMetrics) // METRICS_TOKEN; not under /music, so never proxied
 
 	api := func(pattern string, h handler) { m.HandleFunc(pattern, a.authed(h)) }
 	api("GET /music/api/me", a.hMe)
