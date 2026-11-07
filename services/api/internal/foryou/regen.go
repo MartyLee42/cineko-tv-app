@@ -148,9 +148,11 @@ func (s *Service) regenerateProfile(runID, profileID, trigger string) {
 			s.refundRegen(ctx, profileID) // the model failed: the user may try again
 		}
 	}
-	if _, err := s.computeProfile(ctx, profileID, s.profileLang(ctx, profileID), true); err != nil {
+	c, err := s.computeProfile(ctx, profileID, s.profileLang(ctx, profileID), true)
+	if err != nil {
 		run.addError(profileID, "rows", errText(err))
 		return
 	}
+	s.aiExtras(ctx, run, profileID, t, c)
 	s.notify(ctx, []string{profileID}, "collections")
 }

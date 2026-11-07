@@ -172,3 +172,28 @@ func TestMergeStreams(t *testing.T) {
 		t.Fatalf("%+v", got)
 	}
 }
+
+func TestParseStatm(t *testing.T) {
+	res, shr, err := ParseStatm([]byte("9000 3000 900 10 0 500 0\n"))
+	if err != nil || res != 3000 || shr != 900 {
+		t.Fatalf("%d %d %v", res, shr, err)
+	}
+	if _, _, err := ParseStatm([]byte("12")); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestContainerIDFromCgroup(t *testing.T) {
+	id := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	for _, in := range []string{
+		"0::/system.slice/docker-" + id + ".scope\n",
+		"12:memory:/docker/" + id + "\n1:name=systemd:/docker/" + id + "\n",
+	} {
+		if got := ContainerIDFromCgroup([]byte(in)); got != id {
+			t.Fatalf("%q → %q", in, got)
+		}
+	}
+	if got := ContainerIDFromCgroup([]byte("0::/user.slice/user-1000.slice/session-2.scope\n")); got != "" {
+		t.Fatalf("host process: %q", got)
+	}
+}

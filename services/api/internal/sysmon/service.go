@@ -54,6 +54,10 @@ type TranscoderStats struct {
 	JobsStarted        int64 `json:"jobs_started"`
 	JobsRejected       int64 `json:"jobs_rejected"`
 	JobsFailed         int64 `json:"jobs_failed"`
+	// VideoEncoder: what re-encoded video runs on (cpu, nvenc, vaapi, qsv);
+	// VideoEncoderFallback: the GPU failed recently and the CPU is used.
+	VideoEncoder         string `json:"video_encoder,omitempty"`
+	VideoEncoderFallback bool   `json:"video_encoder_fallback,omitempty"`
 }
 
 type WSCounts struct {

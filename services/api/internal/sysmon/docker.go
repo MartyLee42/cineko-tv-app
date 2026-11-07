@@ -93,7 +93,7 @@ func (d *Docker) Containers(ctx context.Context, hostMem uint64) ([]Container, e
 		if len(s.Names) > 0 {
 			name = strings.TrimPrefix(s.Names[0], "/")
 		}
-		out[i] = Container{Name: name, State: s.State}
+		out[i] = Container{ID: s.ID, Name: name, State: s.State}
 		if s.State != "running" || !containerID.MatchString(s.ID) {
 			continue
 		}

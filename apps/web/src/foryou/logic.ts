@@ -84,6 +84,32 @@ export function splitAffinities<A extends { score: number }>(items: readonly A[]
   return { likes, dislikes };
 }
 
+/** A Taste DNA theme (TMDB keyword); `localized` = `name` is in the UI's catalog language. */
+export interface ThemeLike {
+  id: number;
+  name: string;
+  localized: boolean;
+  score: number;
+  count: number;
+}
+
+/** Themes in the shape the affinity bars take. */
+export function themeAffinities(items: readonly ThemeLike[]): { key: string; name: string; score: number; count: number }[] {
+  return items.map((x) => ({ key: String(x.id), name: x.name, score: x.score, count: x.count }));
+}
+
+/**
+ * The headline «Вам нравятся фильмы про …»: up to n clearly liked themes
+ * with a name in the UI language; without any, the best one as-is
+ * (`localized: false` → «Ваша тема: heist»). null when nothing is liked.
+ */
+export function likedThemes(items: readonly ThemeLike[], n = 3): { text: string; localized: boolean } | null {
+  const liked = items.filter((x) => x.score >= 0.3).sort((a, b) => b.score - a.score);
+  const named = liked.filter((x) => x.localized).slice(0, n);
+  if (named.length) return { text: named.map((x) => x.name).join(", "), localized: true };
+  return liked.length ? { text: liked[0]!.name, localized: false } : null;
+}
+
 /** SVG donut arc path for a fraction (0…1) of a circle, starting at 12 o'clock. */
 export function arcPath(cx: number, cy: number, r: number, from: number, to: number): string {
   const f = Math.max(0, Math.min(1, from));

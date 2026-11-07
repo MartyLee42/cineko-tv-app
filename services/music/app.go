@@ -42,6 +42,9 @@ type App struct {
 	resolving map[string]*resolveCall
 
 	lyrics *ttlCache
+
+	stMu   sync.Mutex
+	stBusy map[string]chan struct{} // soundtrack builds in progress (user|media)
 }
 
 type cachedSession struct {
@@ -260,6 +263,7 @@ func (a *App) authed(h handler) http.HandlerFunc {
 func (a *App) routes() http.Handler {
 	m := http.NewServeMux()
 	m.HandleFunc("GET /music/healthz", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("ok")) })
+	m.HandleFunc("GET /metrics", a.hMetrics) // METRICS_TOKEN; not under /music, so never proxied
 
 	api := func(pattern string, h handler) { m.HandleFunc(pattern, a.authed(h)) }
 	api("GET /music/api/me", a.hMe)
@@ -286,6 +290,7 @@ func (a *App) routes() http.Handler {
 	api("HEAD /music/api/ytq", a.hYTQuery)
 	api("POST /music/api/import/match", a.hImportMatch)
 	api("POST /music/api/ai/playlist", a.hAIPlaylist)
+	api("POST /music/api/soundtrack", a.hSoundtrack)
 	api("GET /music/api/tabs/search", a.hTabsSearch)
 	api("PUT /music/api/torrentchoice", a.hTorrentChoice)
 	api("GET /music/api/zv/search", a.hZvSearch)

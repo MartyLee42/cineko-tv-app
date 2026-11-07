@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -276,4 +277,28 @@ func FriendlyName(comm string) string {
 		return "kernel"
 	}
 	return comm
+}
+
+// ParseStatm parses /proc/[pid]/statm (world-readable, unlike smaps): the
+// resident and shared page counts. Shared = resident file pages + shared
+// memory (e.g. postgres' shared_buffers, mapped by every backend).
+func ParseStatm(b []byte) (resident, shared uint64, err error) {
+	f := strings.Fields(string(b))
+	if len(f) < 3 {
+		return 0, 0, errFormat
+	}
+	resident, err1 := strconv.ParseUint(f[1], 10, 64)
+	shared, err2 := strconv.ParseUint(f[2], 10, 64)
+	if err1 != nil || err2 != nil {
+		return 0, 0, errFormat
+	}
+	return resident, shared, nil
+}
+
+var cgroupContainerID = regexp.MustCompile(`[0-9a-f]{64}`)
+
+// ContainerIDFromCgroup finds the Docker container id in /proc/[pid]/cgroup
+// ("0::/system.slice/docker-<id>.scope", "…/docker/<id>"); "" = not in a container.
+func ContainerIDFromCgroup(b []byte) string {
+	return string(cgroupContainerID.Find(b))
 }

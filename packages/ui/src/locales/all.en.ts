@@ -37,5 +37,9 @@ import { skipEn } from "./skip.en";
 import { pocketpetEn } from "./pocketpet.en";
 import { triviaEn } from "./trivia.en";
 import { surpriseEn } from "./surprise.en";
+import { smoothEn } from "./smooth.en";
+import { chaptersEn } from "./chapters.en";
+import { soundtrackEn } from "./soundtrack.en";
+import { themesEn } from "./themes.en";
 
-export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn };
+export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn, ...soundtrackEn, ...themesEn, ...smoothEn, ...chaptersEn };

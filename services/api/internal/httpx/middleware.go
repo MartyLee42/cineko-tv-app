@@ -64,7 +64,7 @@ func LoggerMiddleware(log *slog.Logger) fiber.Handler {
 			}
 		}
 		path := c.Path()
-		if strings.HasPrefix(path, "/healthz") || strings.HasPrefix(path, "/readyz") {
+		if strings.HasPrefix(path, "/healthz") || strings.HasPrefix(path, "/readyz") || (path == "/metrics" && status == fiber.StatusOK) {
 			return err
 		}
 		level := slog.LevelInfo

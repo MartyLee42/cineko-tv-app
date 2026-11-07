@@ -1176,8 +1176,9 @@ paths:
         only re-rank per request (penalties, never hiding): warnings
         too_heavy_for_device, over_device_resolution, codec_unsupported,
         codec_unknown (likely XviD: an old-style rip naming no codec or resolution),
-        audio_needs_conversion, audio_unsupported, hdr_avoided; reason
-        device_fit when a release fits every constraint.
+        audio_needs_conversion, audio_unsupported, hdr_avoided, may_stutter
+        (the variant is in the device's auto.rough); reason device_fit when a
+        release fits every constraint.
       parameters:
         - { name: season, in: query, schema: { type: integer, minimum: 0 } }
         - { name: episode, in: query, schema: { type: integer, minimum: 1 } }
@@ -2872,6 +2873,8 @@ paths:
                     music: { type: number, minimum: 0, maximum: 1.5 }
                     facts: { type: number, minimum: 0, maximum: 1.5 }
                 facts_ai: { type: boolean, description: "False: «Факты» show only Kinopoisk's (stored AI ones are hidden)." }
+                themes_ai: { type: boolean, description: "False: the daily run doesn't ask the model to group the scorer's candidates into theme rubrics." }
+                picks_ai: { type: boolean, description: "False: no AI re-ranking of «Подобрано для вас» (stored picks still apply until they expire, 48 h)." }
       responses:
         "200":
           description: The new settings.
@@ -3884,6 +3887,11 @@ components:
         video: { type: array, maxItems: 16, items: { type: string, enum: [h264, hevc, vp9, av1, hdr10, dv] }, description: "Decodable video codecs/formats." }
         audio: { type: array, maxItems: 16, items: { type: string, enum: [aac, ac3, eac3, dts, truehd, mp3, opus, flac] }, description: "Decodable audio codecs." }
         containers: { type: array, maxItems: 16, items: { type: string, enum: [mkv, mp4, ts] } }
+        rough:
+          type: array
+          maxItems: 16
+          items: { type: string, enum: [h264_1080p, h264_2160p, hevc_1080p, hevc_2160p, hevc_10bit_1080p, hevc_10bit_2160p, av1_1080p, av1_2160p, av1_10bit_1080p, av1_10bit_2160p] }
+          description: "Video variants (codec, 10-bit, 1080p / 2160p) the device decodes but not smoothly: mediaCapabilities.decodingInfo says smooth = false, or playback dropped many frames there. Ranking demotes matching releases (warning may_stutter)."
         hls: { type: [boolean, "null"] }
         compat: { type: [boolean, "null"], description: "Compat streams (AAC transcode) are usable." }
         throughput_bps: { type: [number, "null"], minimum: 0, maximum: 10000000000, description: "Current estimate of the device → server throughput, bits/s: the median of recent playback sessions and background speed tests (GET /speedtest), the newest test weighing most (a new network replaces older samples)." }
@@ -3906,7 +3914,7 @@ components:
     PlaybackEffective:
       type: object
       description: "auto + manual merged (manual wins); what release ranking uses. Null limits = none. Mirrors effectivePrefs() in @martytv/media-types."
-      required: [max_resolution, max_bitrate_bps, max_size_gb, video_codec, avoid_hdr, audio, prefer_smaller, video, audio_codecs, compat, default_player]
+      required: [max_resolution, max_bitrate_bps, max_size_gb, video_codec, avoid_hdr, audio, prefer_smaller, video, audio_codecs, rough, compat, default_player]
       properties:
         max_resolution: { type: [string, "null"], enum: ["720p", "1080p", "2160p", null] }
         max_bitrate_bps: { type: [number, "null"] }
@@ -3917,6 +3925,7 @@ components:
         prefer_smaller: { type: boolean }
         video: { type: [array, "null"], items: { type: string }, description: "Decodable video (null = unknown)." }
         audio_codecs: { type: [array, "null"], items: { type: string }, description: "Decodable audio (null = unknown)." }
+        rough: { type: [array, "null"], items: { type: string }, description: "auto.rough: variants that don't play smoothly (null = none known)." }
         compat: { type: boolean }
         default_player: { type: [string, "null"], enum: [builtin, msx, external, null] }
     PlaybackConstraint:
@@ -4593,7 +4602,7 @@ components:
         confidence: { type: number, minimum: 0, maximum: 1, description: "How sure we are this is the requested title/episode." }
         score: { type: number, description: "Ranking score (confidence × quality × preferences × availability)." }
         reasons: { type: array, items: { type: string }, description: "Machine-readable match reasons, e.g. title_exact, year_match, imdb_match, episode_match." }
-        warnings: { type: array, items: { type: string }, description: "e.g. low_seeders, cam_quality, over_size_limit, no_preferred_language, likely_unplayable_codec, disc_image, 3d, uncertain_match; with a device profile also too_heavy_for_device, over_device_resolution, codec_unsupported, codec_unknown (an old-style rip naming neither codec nor resolution: likely XviD), audio_needs_conversion, audio_unsupported, hdr_avoided." }
+        warnings: { type: array, items: { type: string }, description: "e.g. low_seeders, cam_quality, over_size_limit, no_preferred_language, likely_unplayable_codec, disc_image, 3d, uncertain_match; with a device profile also too_heavy_for_device, over_device_resolution, codec_unsupported, codec_unknown (an old-style rip naming neither codec nor resolution: likely XviD), audio_needs_conversion, audio_unsupported, hdr_avoided, may_stutter (decodes here but not smoothly)." }
         est_bitrate_bps: { type: [number, "null"], description: "Estimated average bitrate (size × 8 / runtime; per episode for packs), bits/s. null when the runtime is unknown." }
     Voiceover:
       type: object
@@ -5184,15 +5193,16 @@ components:
               tx_total: { type: integer, format: int64 }
         processes:
           type: array
-          description: Top 12 by resident memory, grouped by friendly name (e.g. all postgres backends). Names only, never command lines.
+          description: Top 12 by memory, grouped by friendly name per container (e.g. one container's postgres backends). Names only, never command lines.
           items:
             type: object
             required: [name, pid, count, rss_bytes, cpu_percent]
             properties:
               name: { type: string }
+              container: { type: string, description: "Docker container name (hostmon only; absent for host processes)." }
               pid: { type: integer, description: "The group's biggest process." }
               count: { type: integer }
-              rss_bytes: { type: integer, format: int64 }
+              rss_bytes: { type: integer, format: int64, description: "Resident memory with shared pages counted once per group: the members' private memory plus the largest member's shared part." }
               cpu_percent: { type: number, description: "100 = one full core." }
         containers:
           type: array
@@ -5248,6 +5258,8 @@ components:
                     jobs_started: { type: integer, format: int64 }
                     jobs_rejected: { type: integer, format: int64, description: Refused because all slots were busy. }
                     jobs_failed: { type: integer, format: int64 }
+                    video_encoder: { type: string, enum: [cpu, nvenc, vaapi, qsv], description: "What re-encoded video (XviD / MPEG-2 / VC-1 → H.264) runs on: detected at the transcoder's start (TRANSCODER_HWACCEL)." }
+                    video_encoder_fallback: { type: boolean, description: The GPU failed recently; re-encoding uses the CPU for a while. }
                 - type: "null"
     SystemSample:
       type: object
@@ -5450,11 +5462,14 @@ components:
         trending «В тренде для вас»; rewatch «Пересмотреть любимое»; ai_collection (an AI подборка);
         popular (cold start: the profile has no signals yet);
         family «Семья советует» (GET /profiles/{id}/family; computed per request, second row);
-        curated «Подборка: …» (one curated list per profile per day, GET /curated/{list_id}; computed per request).
-      enum: [top_picks, because_you_rated, director, actor, genre, hidden_gems, something_different, trending, rewatch, ai_collection, popular, family, curated]
+        curated «Подборка: …» (one curated list per profile per day, GET /curated/{list_id}; computed per request);
+        theme «Вам нравятся фильмы про …» (TMDB discover by the profile's most liked keyword; reason.keyword_*).
+        AI theme rubrics (the model grouping the scorer's own candidates) are ai_collection rows too.
+      enum: [top_picks, because_you_rated, director, actor, genre, hidden_gems, something_different, trending, rewatch, ai_collection, popular, family, curated, theme]
     ForYouReasonType:
       type: string
-      enum: [because_you_rated, director, actor, genre, hidden_gem, something_different, trending_for_you, ai_collection, rewatch, popular, mood, family, curated]
+      description: "theme: the title has a TMDB keyword the profile likes (keyword_id / keyword_name; genre_ids are the fallback)."
+      enum: [because_you_rated, director, actor, genre, hidden_gem, something_different, trending_for_you, ai_collection, rewatch, popular, mood, family, curated, theme]
     ForYouReason:
       type: object
       description: |
@@ -5474,6 +5489,18 @@ components:
         collection_id: { type: [string, "null"], format: uuid, description: "ai_collection." }
         collection_title: { type: [string, "null"] }
         mood: { type: [string, "null"], description: "mood (Surprise): the SurpriseMood key." }
+        keyword_id: { type: integer, description: "theme: the TMDB keyword id." }
+        keyword_name:
+          type: string
+          description: "theme: the keyword's name in the response language when known (Russian names come from the AI themes call), else TMDB's English name. Absent when the keyword is unknown."
+        keyword_localized: { type: boolean, description: "theme: keyword_name is in the response language (Russian reads after «фильмы про …»)." }
+        ai_text:
+          type: string
+          maxLength: 140
+          description: |
+            The model's one-line personal reason from the daily AI re-ranking of «Подобрано для вас»
+            («медленный, как любимый вами Тарковский, но с развязкой»), in the profile's language; only
+            when the response language matches it. Clients show it instead of the typed reason.
         family: { $ref: "#/components/schemas/FamilyWhy", description: "family: who in the family liked the title and how (only on family items)." }
     ForYouItem:
       type: object
@@ -5704,6 +5731,8 @@ components:
         enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
         temperature: { $ref: "#/components/schemas/AITemperature" }
         facts_ai: { type: boolean, description: "DeepSeek may write «Факты» for titles Kinopoisk has none for (admin switch, default true)." }
+        themes_ai: { type: boolean, description: "The daily run groups each profile's good unseen candidates into AI theme rubrics (admin switch, default true)." }
+        picks_ai: { type: boolean, description: "The daily run re-ranks «Подобрано для вас» with a personal reason per title (admin switch, default true)." }
         model: { type: string }
         tokens_today: { type: integer, description: "Tokens used today (Moscow date)." }
         daily_budget: { type: integer }
@@ -5732,6 +5761,8 @@ components:
         enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
         temperature: { $ref: "#/components/schemas/AITemperature" }
         facts_ai: { type: boolean, description: "AI-written «Факты» allowed (admin switch)." }
+        themes_ai: { type: boolean, description: "AI theme rubrics allowed (admin switch)." }
+        picks_ai: { type: boolean, description: "AI re-ranking of «Подобрано для вас» allowed (admin switch)." }
         creativity:
           type: object
           description: "Offset each creativity adds to the temperature."
@@ -5882,6 +5913,17 @@ components:
         profile_path: { type: [string, "null"] }
         score: { type: number }
         count: { type: integer }
+    TasteTheme:
+      type: object
+      description: "A TMDB keyword («heist», «time loop») as a taste theme."
+      required: [id, name, name_en, localized, score, count]
+      properties:
+        id: { type: integer, description: "TMDB keyword id." }
+        name: { type: string, description: "In the response language when known, else TMDB's English name." }
+        name_en: { type: string }
+        localized: { type: boolean, description: "name is in the response language (Russian: accusative, reads after «фильмы про …»)." }
+        score: { type: number, description: "−1…1 (damped for keywords common across the catalog)." }
+        count: { type: integer }
     TasteDNA:
       type: object
       required: [profile_id, computed_at, signals, rating_histogram, kinds, genres, decades, languages, countries, directors, actors, credits_coverage]
@@ -5913,6 +5955,10 @@ components:
         countries: { type: array, items: { $ref: "#/components/schemas/TasteAffinity" } }
         directors: { type: array, items: { $ref: "#/components/schemas/TastePerson" } }
         actors: { type: array, items: { $ref: "#/components/schemas/TastePerson" } }
+        themes: { type: array, items: { $ref: "#/components/schemas/TasteTheme" }, description: "TMDB keywords (≥ 2 titles), strongest first, ≤ 20." }
+        writers: { type: array, items: { $ref: "#/components/schemas/TastePerson" }, description: "Screenplay / Writer (≥ 2 titles)." }
+        cinematographers: { type: array, items: { $ref: "#/components/schemas/TastePerson" }, description: "Director of Photography (≥ 2 titles)." }
+        composers: { type: array, items: { $ref: "#/components/schemas/TastePerson" }, description: "Original Music Composer (≥ 2 titles)." }
         credits_coverage:
           type: object
           description: "How many signal titles have cast/crew loaded (filled lazily by the daily run)."

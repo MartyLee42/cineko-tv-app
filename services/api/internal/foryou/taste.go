@@ -34,13 +34,18 @@ type Signal struct {
 
 // Features are a title's facts used for affinities and scoring.
 type Features struct {
-	Kind       string
-	Genres     []int
-	Year       int
-	Lang       string
-	Countries  []string
-	Directors  []int // TMDB person ids (Director, or Creator for series)
-	Actors     []int // top-billed cast
+	Kind      string
+	Genres    []int
+	Year      int
+	Lang      string
+	Countries []string
+	Directors []int // TMDB person ids (Director, or Creator for series)
+	Actors    []int // top-billed cast
+	// Writers (Screenplay / Writer), Cinematographers (Director of
+	// Photography), Composers (Original Music Composer): TMDB person ids.
+	Writers, Cinematographers, Composers []int
+	// Keywords: TMDB keyword ids minus the stoplist (themes.go).
+	Keywords   []int
 	HasCredits bool
 }
 
@@ -83,7 +88,12 @@ type Taste struct {
 	Countries []Affinity `json:"countries"`
 	Directors []Affinity `json:"directors"`
 	Actors    []Affinity `json:"actors"`
-	Seeds     []Seed     `json:"seeds"`
+	// Themes and the crew beyond directors (themes.go).
+	Keywords         []Affinity `json:"keywords,omitempty"`
+	Writers          []Affinity `json:"writers,omitempty"`
+	Cinematographers []Affinity `json:"cinematographers,omitempty"`
+	Composers        []Affinity `json:"composers,omitempty"`
+	Seeds            []Seed     `json:"seeds"`
 	// Seen = rated, completed, started or dismissed titles: never recommended
 	// (except rewatch). Not stored (recomputed with the taste).
 	Stats     TasteStats `json:"stats"`
@@ -96,6 +106,9 @@ type Taste struct {
 	Adjustments []ReasonAdjustment `json:"adjustments,omitempty"`
 
 	genre, decade, lang, country map[string]float64
+	keyword                      map[int]float64
+	// people: role → TMDB person id → affinity.
+	people map[string]map[int]float64
 }
 
 // index builds the lookup maps (after decoding from JSON too).
@@ -108,6 +121,20 @@ func (t *Taste) index() {
 		return m
 	}
 	t.genre, t.decade, t.lang, t.country = mk(t.Genres), mk(t.Decades), mk(t.Languages), mk(t.Countries)
+	byID := func(list []Affinity) map[int]float64 {
+		m := make(map[int]float64, len(list))
+		for _, a := range list {
+			if id, err := strconv.Atoi(a.Key); err == nil {
+				m[id] = a.Score
+			}
+		}
+		return m
+	}
+	t.keyword = byID(t.Keywords)
+	t.people = map[string]map[int]float64{
+		roleDirector: byID(t.Directors), roleActor: byID(t.Actors), roleWriter: byID(t.Writers),
+		roleCinematographer: byID(t.Cinematographers), roleComposer: byID(t.Composers),
+	}
 }
 
 func (t *Taste) genreScore(id int) float64 {
@@ -232,11 +259,18 @@ type acc struct {
 
 // ComputeTaste aggregates signals into affinities. Pure and deterministic.
 func ComputeTaste(signals []Signal, feats map[string]Features, now time.Time, w Weights) *Taste {
+	return ComputeTasteIDF(signals, feats, nil, now, w)
+}
+
+// ComputeTasteIDF is ComputeTaste with keyword damping factors (keyword id
+// → 0..1, keywordIDF; nil = no damping).
+func ComputeTasteIDF(signals []Signal, feats map[string]Features, kwIDF map[int]float64, now time.Time, w Weights) *Taste {
 	t := &Taste{}
 	center := ratingCenter(signals, w)
 	t.RatingCenter = center
 	genres, decades, langs, countries := map[string]*acc{}, map[string]*acc{}, map[string]*acc{}, map[string]*acc{}
 	directors, actors := map[string]*acc{}, map[string]*acc{}
+	keywords, writers, dops, composers := map[string]*acc{}, map[string]*acc{}, map[string]*acc{}, map[string]*acc{}
 	add := func(m map[string]*acc, k string, v float64) {
 		a := m[k]
 		if a == nil {
@@ -326,6 +360,22 @@ func ComputeTaste(signals []Signal, feats map[string]Features, now time.Time, w 
 		for _, p := range f.Actors {
 			add(actors, strconv.Itoa(p), v*w.ActorFactor)
 		}
+		for _, k := range f.Keywords {
+			damp := 1.0
+			if x, ok := kwIDF[k]; ok {
+				damp = x
+			}
+			add(keywords, strconv.Itoa(k), v*damp)
+		}
+		for _, p := range uniqInts(f.Writers) {
+			add(writers, strconv.Itoa(p), v)
+		}
+		for _, p := range f.Cinematographers {
+			add(dops, strconv.Itoa(p), v)
+		}
+		for _, p := range f.Composers {
+			add(composers, strconv.Itoa(p), v)
+		}
 	}
 	if t.Stats.Ratings > 0 {
 		t.Stats.AverageRating = math.Round(float64(ratingSum)/float64(t.Stats.Ratings)*100) / 100
@@ -337,6 +387,10 @@ func ComputeTaste(signals []Signal, feats map[string]Features, now time.Time, w 
 	t.Adjustments = reasonAdjustments(signals, w)
 	t.Directors = limit(affinities(directors, w.AffinityPrior, w.MinPersonTitles), 30)
 	t.Actors = limit(affinities(actors, w.AffinityPrior, w.MinPersonTitles), 30)
+	t.Keywords = limit(affinities(keywords, w.AffinityPrior, w.KeywordMinTitles), 40)
+	t.Writers = limit(affinities(writers, w.AffinityPrior, w.MinPersonTitles), 20)
+	t.Cinematographers = limit(affinities(dops, w.AffinityPrior, w.MinPersonTitles), 20)
+	t.Composers = limit(affinities(composers, w.AffinityPrior, w.MinPersonTitles), 20)
 
 	// Seeds: strongest liked titles, plus a few recent ones.
 	slices.SortFunc(ws, func(a, b weighted) int {
