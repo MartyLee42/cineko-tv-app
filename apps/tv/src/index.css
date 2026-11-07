@@ -69,8 +69,12 @@ body { overflow: hidden; cursor: none; }
 .tv-spoiler { -webkit-filter: blur(18px); filter: blur(18px); transform: scale(1.15); }
 
 /* ---------------------------------------------------------------- loading screens */
-.tv-loader-ease { transition: transform 900ms cubic-bezier(.22,.61,.36,1); will-change: transform; }
+/* Progress steps arrive ~4/s (loading.ts SHOW_EVERY_MS): ease between them. */
+.tv-loader-ease { transition: transform 600ms cubic-bezier(.25,.6,.4,1); will-change: transform; }
 .tv-loader-fade { transition: opacity 900ms ease; }
+/* The end flourish over the starting film (loaderChunks FINALE_MS): holds, then fades away. */
+.tv-loader-finale { pointer-events: none; animation: tv-loader-finale 1500ms ease-in both; }
+@keyframes tv-loader-finale { 0%, 55% { opacity: 1; } 100% { opacity: 0; } }
 .tv-loader-title { font-size: 112px; line-height: 1.08; font-weight: 800; letter-spacing: -.01em; margin: 0; }
 /* Outline text: dim fill + stroke (prefixed for old engines). */
 .tv-title-outline { color: rgba(var(--mt-text), .1); -webkit-text-stroke: 2px rgba(var(--mt-text), .38); }

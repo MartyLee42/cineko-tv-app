@@ -11,7 +11,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from "react-rout
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { unwrap, type PlaybackSource } from "@martytv/contracts";
 import { episodeCode, imageUrl, skipMode } from "@martytv/media-types";
-import { useI18n } from "@martytv/ui";
+import { loaderPick, matchInfoOf, useI18n } from "@martytv/ui";
 import { api } from "../api";
 import { useDevices } from "../queries";
 import { useCatalogConfig, useCatalogLang, useMedia, useSeason } from "../catalog/queries";
@@ -85,6 +85,8 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
   const tParam = parseT(params.get("t"));
   const releaseParam = params.get("release");
   const attempt = Number(params.get("try") ?? "0") || 0;
+  // «Сюрприз»: this load's own key (one pick per Watch instance — it is keyed per attempt).
+  const [loadId] = useState(() => `${mediaId}|${episodeId ?? ""}|${attempt}|${Date.now()}`);
   const target: ReleaseTarget & { episode_id?: string } = useMemo(
     () => ({
       media_id: mediaId,
@@ -444,7 +446,7 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
 
       {covered && !fallback && (
         <Loader
-          style={settings.loading_style}
+          style={loaderPick.resolve(settings.loading_style, loadId, () => matchInfoOf(mediaId, m))}
           m={{
             p,
             stage,

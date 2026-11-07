@@ -3,7 +3,7 @@
 // the first sound — always inside a key / click handler, so the browser's
 // autoplay policy allows it — and reused. Silent while a film or song plays.
 import { getAppliedDesign } from "./designs";
-import { makeThrottle, recipeLength, uiSoundForKey, uiSoundRecipe, uiSoundsPref, UI_SOUND_VOLUME, UI_TICK_EVERY_MS, type UiSoundKind } from "./uiSounds";
+import { makeThrottle, recipeLength, uiSoundForKey, uiSoundRecipe, uiSoundsPref, UI_SOUND_VOLUME, UI_TICK_EVERY_MS, type SoundRecipe, type UiSoundKind } from "./uiSounds";
 
 type AC = typeof AudioContext;
 
@@ -41,10 +41,22 @@ export function playUiSound(kind: UiSoundKind): void {
   if (!uiSoundsPref.get()) return;
   if (kind === "tick" && !tickGate(Date.now())) return;
   if (mediaPlaying()) return;
+  playRecipe(uiSoundRecipe(getAppliedDesign(), kind));
+}
+
+/**
+ * A loading style's own cue (the odyssey's note, a dropped egg's «хрусь»):
+ * only when «Звуки интерфейса» is on; plays over a film that just started.
+ */
+export function playLoaderSound(r: SoundRecipe): void {
+  if (!uiSoundsPref.get()) return;
+  playRecipe(r);
+}
+
+function playRecipe(r: SoundRecipe): void {
   const c = context();
   if (!c) return;
   if (c.state === "suspended") void c.resume().catch(() => undefined);
-  const r = uiSoundRecipe(getAppliedDesign(), kind);
   const t0 = c.currentTime + 0.005;
   try {
     const master = c.createGain();

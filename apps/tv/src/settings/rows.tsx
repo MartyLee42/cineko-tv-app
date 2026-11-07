@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PlayerKind } from "@martytv/contracts";
 import { imageUrl } from "@martytv/media-types";
-import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, SURPRISE_MODES, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
+import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, SURPRISE_MODES, useI18n, useUiSoundsPref, type Locale, type MessageKey } from "@martytv/ui";
 import { useCatalogConfig, useHome } from "../catalog/queries";
 import { Loader } from "../player/Loader";
 import type { LoadStage } from "../player/loading";
@@ -26,7 +26,28 @@ const LOADING_LABEL = {
   marty: "settings.loading.marty",
   marty_popcorn: "settings.loading.marty_popcorn",
   matrix: "settings.loading.matrix",
+  paws: "settings.loading.paws",
+  aquarium: "settings.loading.aquarium",
+  speed88: "settings.loading.speed88",
+  odyssey: "settings.loading.odyssey",
+  balloons: "settings.loading.balloons",
+  catch: "settings.loading.catch",
+  surprise: "settings.loading.surprise",
+  match: "settings.loading.match",
 } as const;
+
+/** The focused style's one-line explanation (styles that need one). */
+const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
+  popcorn: "settings.loading.popcorn_hint",
+  paws: "settings.loading.paws_hint",
+  aquarium: "settings.loading.aquarium_hint",
+  speed88: "settings.loading.speed88_hint",
+  odyssey: "settings.loading.odyssey_hint",
+  balloons: "settings.loading.balloons_hint",
+  catch: "settings.loading.catch_hint",
+  surprise: "settings.loading.surprise_hint",
+  match: "settings.loading.match_hint",
+};
 
 export function useSettingRows() {
   const { t, locale } = useI18n();
@@ -155,7 +176,7 @@ export function useSettingRows() {
       kind: "choice",
       key: "loading_style",
       label: t("settings.loading_style"),
-      hint: settings.loading_style === "popcorn" ? t("settings.loading.popcorn_hint") : undefined,
+      hint: LOADING_HINT[settings.loading_style] ? t(LOADING_HINT[settings.loading_style]!) : undefined,
       choices: LOADING_STYLES.map((v) => ({ value: v, label: t(LOADING_LABEL[v]) })),
       value: settings.loading_style,
       onChange: (v) => set({ loading_style: v as LoadingStyle }),
@@ -247,9 +268,9 @@ export function useSettingRows() {
 }
 
 const STAGES: [number, LoadStage][] = [
-  [0.12, "searching"],
-  [0.35, "metadata"],
-  [0.85, "preloading"],
+  [0.06, "searching"],
+  [0.15, "metadata"],
+  [0.9, "preloading"],
   [1.01, "starting"],
 ];
 

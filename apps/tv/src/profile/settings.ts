@@ -22,7 +22,7 @@ export const DESIGNS: readonly DesignSetting[] = UI_DESIGNS;
 export type Settings = Required<ProfileSettings>;
 const MIN_VOTES: readonly Settings["min_votes"][] = [0, 50, 100, 300, 1000, 5000];
 
-export const LOADING_STYLES: readonly LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix"];
+export const LOADING_STYLES: readonly LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix", "paws", "aquarium", "speed88", "odyssey", "balloons", "catch", "surprise", "match"];
 export const THEMES: readonly ThemeSetting[] = ["system", "dark", "light"];
 
 export const DEFAULT_SETTINGS: Settings = {
