@@ -69,6 +69,10 @@ services:
       TRANSCODER_SECRET: ${TRANSCODER_SECRET:?set TRANSCODER_SECRET in .env (run ./install.sh)}
       # YouTube «Видео» tab.
       INVIDIOUS_URL: ${INVIDIOUS_URL:-http://invidious:3000}
+      # Nightly Invidious restart (INVIDIOUS_RESTART_AT, default 03:00 in TZ;
+      # postponed while a YouTube video plays) through restart-proxy below.
+      INVIDIOUS_RESTART_DOCKER_URL: http://restart-proxy:2375
+      INVIDIOUS_RESTART_CONTAINERS: ${COMPOSE_PROJECT_NAME}-companion-1,${COMPOSE_PROJECT_NAME}-invidious-1
       # TMDB image cache (IMAGE_PROXY=true) and server downloads, one volume.
       IMAGE_CACHE_DIR: /var/cache/martytv/images
       LIBRARY_DIR: ${LIBRARY_DIR:-/var/cache/martytv/library}
@@ -82,7 +86,7 @@ services:
       postgres:
         condition: service_healthy
     mem_limit: 768m
-    networks: [internal, media]
+    networks: [internal, media, restart]
 
   # Browser compatibility streams: ffmpeg remux, audio → AAC (XviD / MPEG-2
   # re-encoded to H.264 on request). Only the API calls it (signed jobs); it
@@ -301,6 +305,28 @@ services:
     mem_limit: 512m
     networks: [invidious]
 
+  # Nightly Invidious restart: the API restarts the two containers above at
+  # INVIDIOUS_RESTART_AT (03:00 in TZ) through this Docker socket proxy. It
+  # allows exactly one request — POST /containers/<project>-{companion,
+  # invidious}-1/restart — and only from the api container: no listing, no
+  # exec, no other container. Root inside only to open the socket (whatever
+  # its group id); no capabilities, read-only, its own network.
+  restart-proxy:
+    image: wollomatic/socket-proxy:1.12.0
+    restart: unless-stopped
+    user: "0:0"
+    command:
+      - -listenip=0.0.0.0
+      - -allowfrom=api
+      - -allowPOST=(/v1\.[0-9]+)?/containers/${COMPOSE_PROJECT_NAME}-(companion|invidious)-1/restart
+      - -loglevel=WARN
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    read_only: true
+    <<: *hardening
+    mem_limit: 32m
+    networks: [restart]
+
   # --- Optional: outbound VPN (profile "vpn") --------------------------------
   # For countries where TMDB / YouTube are blocked. Gluetun connects to your
   # VPN provider (settings in gluetun.env next to .env) and offers an HTTP
@@ -331,6 +357,8 @@ networks:
   media: {}
   # Invidious, its database and companion.
   invidious: {}
+  # The API and restart-proxy only.
+  restart: {}
 
 volumes:
   pgdata:
