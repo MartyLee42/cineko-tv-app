@@ -260,6 +260,8 @@ html.design-stickerbook {
   --mt-radius-card: 14px;
   --mt-radius-control: 16px;
   color-scheme: dark;
+}
+
 /* «Тамагочи»: a pastel toy with an LCD. The app content is the LCD (light grey-green, near-black pixel
    ink, almost monochrome: «accent» is the ink too, so accent buttons read as lit pixel blocks); the
    pastel shell (pink, lilac, mint) is drawn around it by the TV look / PWA chrome. Headings and labels
