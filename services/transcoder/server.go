@@ -34,6 +34,11 @@ type Config struct {
 	NicePath       string
 	SubReadRate    float64 // ×real time for subtitle extraction; 0 = unlimited
 	VideoThreads   int     // libx264 threads per re-encoded stream; 0 = DefaultVideoThreads
+	// Encoder: the video encoder of re-encoding jobs (DetectEncoder at
+	// startup; zero = CPU).
+	Encoder  Encoder
+	HWMode   HWMode // TRANSCODER_HWACCEL (main.go)
+	HWDevice string // TRANSCODER_HWACCEL_DEVICE: render node for vaapi / qsv
 
 	// HLS sessions (hls.go).
 	HLSDir        string        // per-session directories (on disk: segments are large)
@@ -61,6 +66,7 @@ type Server struct {
 	subs   chan struct{}
 	probes chan struct{}
 	kf     *keyframeCache
+	enc    *encoderState
 
 	hls       *hlsManager
 	hlsDirErr error
@@ -107,6 +113,7 @@ func NewServer(cfg Config, log *slog.Logger) *Server {
 		subs:   make(chan struct{}, cfg.MaxSubJobs),
 		probes: make(chan struct{}, cfg.MaxProbes),
 		kf:     newKeyframeCache(512, 30*time.Minute),
+		enc:    newEncoderState(cfg.Encoder),
 		hls:    newHLSManager(),
 		quit:   make(chan struct{}),
 	}
@@ -162,12 +169,17 @@ type Metrics struct {
 	// HLS sessions (running or finished, files on disk) and their segment bytes.
 	HLSSessions int   `json:"hls_sessions"`
 	HLSBytes    int64 `json:"hls_bytes"`
+	// VideoEncoder: the backend re-encoded video uses (cpu, nvenc, vaapi,
+	// qsv); VideoEncoderFallback: the GPU failed recently, the CPU is used.
+	VideoEncoder         string `json:"video_encoder"`
+	VideoEncoderFallback bool   `json:"video_encoder_fallback"`
 }
 
 func (s *Server) Metrics() Metrics {
 	m := Metrics{
 		ActiveJobs: len(s.jobs), ActiveSubtitleJobs: len(s.subs), MaxJobs: cap(s.jobs),
 		JobsStarted: s.started.Load(), JobsRejected: s.rejected.Load(), JobsFailed: s.failed.Load(),
+		VideoEncoder: string(s.enc.detected().Backend), VideoEncoderFallback: s.enc.fallback(),
 	}
 	for _, sess := range s.hls.list() {
 		m.HLSSessions++
@@ -209,6 +221,9 @@ func (s *Server) readJob(w http.ResponseWriter, r *http.Request, kind string) *J
 		return nil
 	}
 	j.threads = s.cfg.VideoThreads
+	if j.Video == VideoH264 {
+		j.enc = s.enc.current()
+	}
 	return j
 }
 
@@ -251,7 +266,20 @@ func (s *Server) remux(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { <-s.jobs }()
 	start := s.resolveStart(r.Context(), j)
-	s.run(w, r, j, KindRemux, s.cfg.FFmpeg, RemuxArgs(j, start), "video/mp4", start)
+	if s.run(w, r, j, KindRemux, s.cfg.FFmpeg, RemuxArgs(j, start), "video/mp4", start, j.enc.hw()) != runRetry {
+		return
+	}
+	// The GPU encode failed before any output: once more on the CPU.
+	c := cpuCopy(j)
+	if s.run(w, r, c, KindRemux, s.cfg.FFmpeg, RemuxArgs(c, start), "video/mp4", start, false) == runSent {
+		s.gpuBroken(j.enc)
+	}
+}
+
+// gpuBroken: a job failed on e and worked on the CPU.
+func (s *Server) gpuBroken(e Encoder) {
+	s.enc.broken()
+	s.log.Warn("hwaccel: gpu encode failed where cpu worked; using cpu for a while", "encoder", e.String(), "for", hwBrokenFor.String())
 }
 
 func (s *Server) subtitles(w http.ResponseWriter, r *http.Request) {
@@ -265,7 +293,7 @@ func (s *Server) subtitles(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { <-s.subs }()
 	start := s.resolveStart(r.Context(), j)
-	s.run(w, r, j, KindSubtitles, s.cfg.FFmpeg, SubtitleArgs(j, start, s.cfg.SubReadRate), "text/vtt; charset=utf-8", start)
+	s.run(w, r, j, KindSubtitles, s.cfg.FFmpeg, SubtitleArgs(j, start, s.cfg.SubReadRate), "text/vtt; charset=utf-8", start, false)
 }
 
 // keyframe answers {"start": K}: where a stream requested at j.Start really
@@ -343,19 +371,29 @@ func (s *Server) command(ctx context.Context, bin string, args []string) *exec.C
 	return cmd
 }
 
+// runOutcome: how run ended.
+type runOutcome int
+
+const (
+	runSent   runOutcome = iota // output was streamed (to the end or not)
+	runFailed                   // failed before output; answered 502 (or the client left)
+	runRetry                    // failed before output with retry set; nothing answered
+)
+
 // run starts ffmpeg and streams its stdout to w. Headers are sent once the
 // first bytes arrive, so a file that can't be opened still gets a clean 502.
 // ffmpeg is killed when the client goes away, when nothing was written for
 // IdleTimeout (stalled torrent or a paused player that stopped reading), or
-// after MaxDuration.
-func (s *Server) run(w http.ResponseWriter, r *http.Request, j *Job, kind, bin string, args []string, contentType string, start float64) {
+// after MaxDuration. retry: an ffmpeg error before any output returns
+// runRetry without answering (the caller tries again on the CPU).
+func (s *Server) run(w http.ResponseWriter, r *http.Request, j *Job, kind, bin string, args []string, contentType string, start float64, retry bool) runOutcome {
 	ctx, cancel := context.WithTimeout(r.Context(), s.cfg.MaxDuration)
 	defer cancel()
 	cmd := s.command(ctx, bin, args)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "internal", "Could not start the converter.")
-		return
+		return runFailed
 	}
 	var stderr bytes.Buffer
 	cmd.Stderr = &limitedBuffer{b: &stderr, max: 8192, tail: true}
@@ -364,7 +402,7 @@ func (s *Server) run(w http.ResponseWriter, r *http.Request, j *Job, kind, bin s
 		s.failed.Add(1)
 		s.log.Error("ffmpeg start failed", "kind", kind, "err", err)
 		writeError(w, http.StatusInternalServerError, "internal", "Could not start the converter.")
-		return
+		return runFailed
 	}
 	s.started.Add(1)
 	audio := -1
@@ -372,6 +410,9 @@ func (s *Server) run(w http.ResponseWriter, r *http.Request, j *Job, kind, bin s
 		audio = *j.Audio
 	}
 	log := s.log.With("kind", kind, "start", fmtSeconds(start), "audio", audio, "stream", j.Stream, "video", j.Video)
+	if j.Video == VideoH264 {
+		log = log.With("encoder", j.enc.String())
+	}
 	log.Info("job started")
 
 	idle := s.cfg.IdleTimeout
@@ -443,16 +484,21 @@ func (s *Server) run(w http.ResponseWriter, r *http.Request, j *Job, kind, bin s
 	}
 	if !headerSent {
 		s.failed.Add(1)
+		if retry && reason == "ffmpeg_error" {
+			log.Warn("job failed before output, retrying on cpu", attrs...)
+			return runRetry
+		}
 		log.Warn("job failed before output", attrs...)
 		if r.Context().Err() == nil {
 			writeError(w, http.StatusBadGateway, "stream_unavailable", "The file could not be opened or converted.")
 		}
-		return
+		return runFailed
 	}
 	if reason == "ffmpeg_error" {
 		s.failed.Add(1)
 	}
 	log.Info("job ended", attrs...)
+	return runSent
 }
 
 // limitedBuffer keeps at most max bytes of stderr (the first, or the last

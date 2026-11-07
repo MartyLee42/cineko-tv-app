@@ -138,6 +138,49 @@ recreates the containers whose settings changed.
 - **Memory**: every container has a `mem_limit`. On a small server lower
   TorrServer's cache in its settings and `TRANSCODER_MAX_JOBS`.
 
+## GPU transcoding
+
+Most compatibility streams copy the video; only old codecs (XviD / DivX,
+MPEG-2, VC-1 ≤ 1080p) are re-encoded to H.264. That runs on the CPU
+(libx264) unless the transcoder finds a working GPU encoder at startup.
+`TRANSCODER_HWACCEL=auto` (default) tries, in order, NVIDIA NVENC, VAAPI
+(Intel / AMD) and Intel QSV; a backend is used only when ffmpeg has its
+encoder **and** a one-second test encode succeeds. Otherwise — and with
+`TRANSCODER_HWACCEL=none` — it stays on the CPU. `nvenc` / `vaapi` / `qsv`
+restricts the probe to that backend (still falling back to the CPU).
+Output is the same on every backend: H.264 High 4.0, 8-bit 4:2:0, a keyframe
+every 2 s, AAC audio. A GPU job that fails before any output is retried on the
+CPU; if that works, the CPU is used for the next 10 minutes.
+
+The GPU has to be passed into the container — add to
+`deployments/compose.override.yaml`:
+
+```yaml
+services:
+  transcoder:
+    # Intel / AMD: the render nodes, readable by the `render` group's id on the host.
+    devices: ["/dev/dri:/dev/dri"]
+    group_add: ["${RENDER_GID:-109}"]     # getent group render | cut -d: -f3
+```
+
+- **Intel**: the amd64 image includes the drivers (iHD for Broadwell and newer,
+  i965 for older, oneVPL for QSV).
+- **AMD**: needs Mesa's VA driver, which is large (~225 MB), so it is not in
+  the published image: build it with
+  `build: { context: ../services/transcoder, target: runtime, args: { VA_DRIVERS: mesa-va-gallium } }`
+  in the override and `scripts/cineko.sh up -d --build transcoder`.
+- **NVIDIA**: the stock image's ffmpeg (Alpine) has no NVENC encoder, so `auto`
+  skips it. The detection supports it for a custom image (`FFMPEG_PATH` to an
+  ffmpeg with `h264_nvenc`) with the nvidia-container-toolkit, see the
+  commented example in `deployments/compose.yaml`.
+
+Check the choice: `scripts/cineko.sh logs transcoder | grep "video encoder"`,
+or run the probe again with every attempt shown:
+`scripts/cineko.sh exec transcoder martytv-transcoder probe`. The
+transcoder's `/metrics` (`video_encoder`, `video_encoder_fallback`) is in the
+API's admin system stats too. `TRANSCODER_HWACCEL_DEVICE=/dev/dri/renderD129`
+picks another GPU.
+
 ## Torrent indexers (Prowlarr)
 
 Cineko searches through Prowlarr. Open its UI through an SSH tunnel:

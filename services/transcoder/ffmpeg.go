@@ -10,8 +10,9 @@ import (
 
 // Command lines. By default the video is copied (-c:v copy): the only CPU
 // cost is decoding one audio track and encoding it to AAC. A job with
-// Video "h264" re-encodes the video with libx264 (XviD / DivX / MPEG-2 /
-// VC-1 that the TV can't decode; the API allows it for ≤ 1080p sources).
+// Video "h264" re-encodes the video with libx264 or a GPU (hwaccel.go):
+// XviD / DivX / MPEG-2 / VC-1 that the TV can't decode; the API allows it
+// for ≤ 1080p sources.
 
 // seekPad: ffmpeg seeks to (-ss − 3/23 s) when the video has B-frames (a
 // "dts heuristic" in fftools), which from exactly a keyframe's time lands on
@@ -48,6 +49,7 @@ func inputArgs(j *Job, start float64, pre ...string) []string {
 		// AVI (XviD packed B-frames) often lacks pts; the encoder needs them.
 		// Decoders get the same thread cap as the encoder.
 		a = append(a, "-fflags", "+genpts", "-threads", strconv.Itoa(videoThreads(j)))
+		a = append(a, hwInputArgs(j.enc)...) // GPU device (none for libx264)
 	}
 	a = append(a, pre...)
 	return append(a, "-i", j.Input)
@@ -97,14 +99,7 @@ func videoArgs(j *Job) []string {
 		}
 		return a
 	}
-	return []string{
-		"-filter_threads", "1", "-vf", "yadif=deint=interlaced,scale=trunc(iw/2)*2:trunc(ih/2)*2",
-		"-c:v", "libx264", "-preset", x264Preset, "-crf", x264CRF,
-		"-maxrate", "8M", "-bufsize", "16M",
-		"-profile:v", "high", "-level:v", "4.0", "-pix_fmt", "yuv420p",
-		"-force_key_frames", "expr:gte(t,n_forced*" + strconv.Itoa(x264GOP) + ")",
-		"-threads", strconv.Itoa(videoThreads(j)),
-	}
+	return encodeArgs(j.enc, videoThreads(j))
 }
 
 // HLSArgs: the same streams as RemuxArgs, written as an fMP4 HLS EVENT

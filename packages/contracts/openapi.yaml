@@ -5243,6 +5243,8 @@ components:
                     jobs_started: { type: integer, format: int64 }
                     jobs_rejected: { type: integer, format: int64, description: Refused because all slots were busy. }
                     jobs_failed: { type: integer, format: int64 }
+                    video_encoder: { type: string, enum: [cpu, nvenc, vaapi, qsv], description: "What re-encoded video (XviD / MPEG-2 / VC-1 → H.264) runs on: detected at the transcoder's start (TRANSCODER_HWACCEL)." }
+                    video_encoder_fallback: { type: boolean, description: The GPU failed recently; re-encoding uses the CPU for a while. }
                 - type: "null"
     SystemSample:
       type: object

@@ -911,6 +911,19 @@ browser ─GET compat.mp4?audio=&start=─▶ API (token, checks) ─POST /v1/re
   ~25× real time with 2 threads (≈ 0.15 core per second of video); 1080p
   MPEG-2 → ~3.5×. Expect roughly half that on the server's EPYC vCPUs —
   still well ahead of real time for SD.
+- **GPU encoding** (`hwaccel.go`, `TRANSCODER_HWACCEL=auto|none|nvenc|vaapi|qsv`):
+  at startup the transcoder tries NVENC (`/dev/nvidiactl`), then VAAPI and QSV
+  on each `/dev/dri/renderD*`; a backend counts when `ffmpeg -encoders` lists
+  it and a 1 s `testsrc2` encode through the real filter chain succeeds,
+  else libx264. Decode, yadif and scale stay on the CPU; frames are uploaded
+  (`format=nv12,hwupload`) only for the encoder: `h264_vaapi` / `h264_qsv` /
+  `h264_nvenc`, High 4.0, 5 Mb/s average, 8 Mb/s peak, the same forced
+  keyframes. A GPU job failing before output is retried once on libx264
+  (remux and HLS); if that works the GPU is skipped for 10 min. `/metrics`
+  reports `video_encoder` / `video_encoder_fallback`; `martytv-transcoder
+  probe` reruns the detection verbosely. The image ships Intel's VA/oneVPL
+  drivers on amd64 (AMD: build arg `VA_DRIVERS=mesa-va-gallium`); Alpine's
+  ffmpeg has no NVENC.
 - **Seeking = restart.** `HEAD compat.mp4?start=S` answers `X-Stream-Start: K`
   without starting ffmpeg; the player then loads `start=K` and adds K to
   `currentTime` for display, the seek bar (`media_info.duration_seconds`) and

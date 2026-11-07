@@ -155,37 +155,49 @@ func (s *Server) hlsStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	start := s.resolveStart(r.Context(), j)
-	sess, fresh, err := s.hlsSession(r.Context(), j, start)
-	if errors.Is(err, errBusy) {
-		s.busy(w, KindHLS)
-		return
-	}
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "internal", "Could not start the converter.")
-		return
-	}
-	switch s.waitReady(r.Context(), sess) {
-	case readyOK:
-	case readyGone:
-		return // the API gave up; the janitor removes the session if unused
-	default:
-		sess.mu.Lock()
-		exited := sess.exited
-		sess.mu.Unlock()
-		reason := "no_output"
-		if !exited {
-			reason = "start_timeout"
+	cur := j
+	for {
+		sess, fresh, err := s.hlsSession(r.Context(), cur, start)
+		if errors.Is(err, errBusy) {
+			s.busy(w, KindHLS)
+			return
 		}
-		s.log.Warn("hls session failed before output", "reason", reason, "session", sess.id, "fresh", fresh,
-			"stderr", sanitize(sess.stderrString(), j))
-		s.closeHLS(sess, reason)
-		writeError(w, http.StatusBadGateway, "stream_unavailable", "The file could not be opened or converted.")
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "internal", "Could not start the converter.")
+			return
+		}
+		switch s.waitReady(r.Context(), sess) {
+		case readyOK:
+			if cur != j {
+				s.gpuBroken(j.enc)
+			}
+		case readyGone:
+			return // the API gave up; the janitor removes the session if unused
+		default:
+			sess.mu.Lock()
+			exited := sess.exited
+			sess.mu.Unlock()
+			reason := "no_output"
+			if !exited {
+				reason = "start_timeout"
+			}
+			s.log.Warn("hls session failed before output", "reason", reason, "session", sess.id, "fresh", fresh,
+				"stderr", sanitize(sess.stderrString(), cur))
+			s.closeHLS(sess, reason)
+			if exited && fresh && cur.enc.hw() && r.Context().Err() == nil {
+				// The GPU encode failed: once more on the CPU.
+				cur = cpuCopy(j)
+				continue
+			}
+			writeError(w, http.StatusBadGateway, "stream_unavailable", "The file could not be opened or converted.")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("X-Stream-Start", fmtSeconds(start))
+		_ = json.NewEncoder(w).Encode(map[string]any{"session": sess.id, "start": start})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "no-store")
-	w.Header().Set("X-Stream-Start", fmtSeconds(start))
-	_ = json.NewEncoder(w).Encode(map[string]any{"session": sess.id, "start": start})
 }
 
 func (s *Server) hlsFile(w http.ResponseWriter, r *http.Request) {
@@ -395,6 +407,9 @@ func (s *Server) startHLS(j *Job, start float64, key string) (*hlsSession, error
 		audio = *j.Audio
 	}
 	log := s.log.With("kind", KindHLS, "session", sess.id, "start", fmtSeconds(start), "audio", audio, "video", j.Video)
+	if j.Video == VideoH264 {
+		log = log.With("encoder", j.enc.String())
+	}
 	log.Info("job started")
 	go func() {
 		werr := cmd.Wait()
