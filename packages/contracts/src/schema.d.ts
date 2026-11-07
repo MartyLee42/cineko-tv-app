@@ -2126,6 +2126,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/client-errors/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Accounts that hit at least one stored group (the user filter), by name. Admin only. */
+        get: operations["adminListClientErrorUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/client-errors/{id}": {
         parameters: {
             query?: never;
@@ -5708,6 +5725,16 @@ export interface components {
         ClientErrorDetail: {
             group: components["schemas"]["ClientErrorGroup"];
             samples: components["schemas"]["ClientErrorSample"][];
+        };
+        ClientErrorUser: {
+            /** Format: uuid */
+            id: string;
+            username: string;
+            display_name: string;
+            /** @description Stored groups the user hit. */
+            groups: number;
+            /** Format: date-time */
+            last_seen: string;
         };
         /** @description Realtime `client_error.new` payload, sent to admins' browser sockets when a group is created or regresses. */
         ClientErrorNewEvent: {
@@ -10555,6 +10582,12 @@ export interface operations {
                 status?: "unresolved" | "resolved" | "all";
                 /** @description Only groups seen at or after this time. */
                 since?: string;
+                /**
+                 * @description Only groups this user hit (a paired TV's errors count for its owner).
+                 *     `count`, `first_seen`, `last_seen` (also for `since` and `sort`) are
+                 *     then the user's own; `users_affected` is 1 and `devices_affected`
+                 *     counts the user's TVs.
+                 */
                 user_id?: string;
                 device_id?: string;
                 /** @description Substring of the message */
@@ -10583,9 +10616,34 @@ export interface operations {
             };
         };
     };
-    adminGetClientError: {
+    adminListClientErrorUsers: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Users. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["ClientErrorUser"][];
+                    };
+                };
+            };
+        };
+    };
+    adminGetClientError: {
+        parameters: {
+            query?: {
+                /** @description The group as this user saw it (see the list's `user_id`) and only their samples; 404 if they never hit it. */
+                user_id?: string;
+            };
             header?: never;
             path: {
                 id: components["parameters"]["Id"];
@@ -10604,6 +10662,7 @@ export interface operations {
                 };
             };
             404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     adminDeleteClientError: {

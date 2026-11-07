@@ -37,6 +37,7 @@ import { sleepKk } from "./sleep.kk";
 import { skipKk } from "./skip.kk";
 import { pocketpetKk } from "./pocketpet.kk";
 import { westernKk } from "./western.kk";
+import { errorsUserKk } from "./errorsuser.kk";
 import { triviaKk } from "./trivia.kk";
 import { surpriseKk } from "./surprise.kk";
 import { smoothKk } from "./smooth.kk";
@@ -53,4 +54,4 @@ import { andersonKk } from "./anderson.kk";
 
 
 
-export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk, ...soundtrackKk, ...themesKk, ...smoothKk, ...chaptersKk, ...companionKk, ...devsettingsKk, ...loadersKk, ...loaders2Kk, ...filmthemeKk, ...multtarkovskyKk, ...andersonKk, ...westernKk };
+export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk, ...soundtrackKk, ...themesKk, ...smoothKk, ...chaptersKk, ...companionKk, ...devsettingsKk, ...loadersKk, ...loaders2Kk, ...filmthemeKk, ...multtarkovskyKk, ...andersonKk, ...westernKk, ...errorsUserKk };
