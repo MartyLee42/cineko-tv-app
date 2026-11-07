@@ -368,6 +368,8 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   const { t, locale } = useI18n();
   const settings = useSettings();
   const autoplay = settings.autoplay_next_episode;
+  // «Отсчёт перед следующим» off: the next episode starts at once (no card).
+  const countdownOn = settings.autoplay_countdown;
   const [, setTick] = useState(0);
   const rerender = useCallback(() => setTick((n) => n + 1), []);
   const [controls, setControls] = useState(true);
@@ -455,7 +457,11 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
     ending: playing && ctx.kind === "series" && sleep.state.mode !== "episode" && !!player.nextRef(),
     playKey: `${flow.source?.id ?? ""}|${ctx.season ?? ""}|${ctx.episode ?? ""}`,
     autoplay,
-    startCountdown: () => setCountdown((c) => c ?? COUNTDOWN),
+    startCountdown: () => {
+      if (!countdownOn) {
+        if (!player.nextEpisode()) player.close();
+      } else setCountdown((c) => c ?? COUNTDOWN);
+    },
     nextEpisode: () => {
       setCountdown(null);
       if (!player.nextEpisode()) player.close();
@@ -540,12 +546,15 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
       if (!player.endedForReal()) return;
       // «После этой серии»: the goodnight screen instead of the next one.
       if (sleepRef.current.atEpisodeEnd()) return;
-      if (ctx.kind === "series" && player.nextRef()) setCountdown(autoplay ? COUNTDOWN : MANUAL);
-      else player.close();
+      if (ctx.kind === "series" && player.nextRef()) {
+        if (autoplay && !countdownOn) {
+          if (!player.nextEpisode()) player.close();
+        } else setCountdown(autoplay ? COUNTDOWN : MANUAL);
+      } else player.close();
     };
     v.addEventListener("ended", onEnded);
     return () => v.removeEventListener("ended", onEnded);
-  }, [v, ctx.kind, autoplay]);
+  }, [v, ctx.kind, autoplay, countdownOn]);
   useEffect(() => {
     if (countdown === null || countdown === MANUAL) return;
     const id = setTimeout(() => {

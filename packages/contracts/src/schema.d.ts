@@ -4709,6 +4709,11 @@ export interface components {
             /** @default true */
             autoplay_next_episode: boolean;
             /**
+             * @description «Отсчёт перед следующим»: the next episode (autoplay_next_episode) and the next YouTube video (video_autoplay) wait on a card with a countdown first; false starts them at once.
+             * @default true
+             */
+            autoplay_countdown: boolean;
+            /**
              * @description «Заставки и титры» (SkipMarker): button = show «Пропустить заставку» / «Пропустить пересказ» during them and «Следующая серия» at a series' credits; auto = skip intros and recaps by themselves (with «Вернуть» for a few seconds) and start the next-episode countdown at the credits; off = never.
              * @default button
              * @enum {string}
@@ -4774,6 +4779,11 @@ export interface components {
              * @default true
              */
             video_hide_shorts: boolean;
+            /**
+             * @description «Видео»: when a video ends, play the next one after a 5 s card — the next part of its series («Часть 3» → «Часть 4», "Episode 3", "#3", S01E03…, same channel: related videos, then the channel's uploads), else a random related video (not a Short or live, unwatched first).
+             * @default true
+             */
+            video_autoplay: boolean;
             /**
              * @description «Праздничные анимации»: seasonal/holiday decorations (snow at New Year, Maslenitsa suns…). on = animated; calm = still decorations; off = none (the default: users turn them on in Settings). The admin switch (GET /status seasonal_effects) turns them off for everyone.
              * @default off

@@ -425,6 +425,7 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
           next={next}
           prev={prev}
           autoplayNext={settings.autoplay_next_episode}
+          autoplayCountdown={settings.autoplay_countdown ?? true}
           skipMode={skipMode(settings.skip_segments)}
         >
           {silent && !fallback && (

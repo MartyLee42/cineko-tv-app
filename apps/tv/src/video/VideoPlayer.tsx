@@ -12,6 +12,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-spatial-navigation";
 import { ApiError, type PlaybackSource } from "@martytv/contracts";
 import { Spinner, useI18n } from "@martytv/ui";
+import { nextInSeries, pickNextVideo, seriesPart } from "@martytv/media-types";
+import { activeProfile } from "../profile/active";
 import { useDesign, type Design } from "../design/context";
 import { accumulateSeek, playerKey, registerMediaKeys, type SeekPreview } from "../player/keys";
 import { attachHlsJs, streamMode, type HlsHandle } from "../player/stream";
@@ -34,7 +36,7 @@ import {
   type VideoItem,
   type VideoQuality,
 } from "./logic";
-import { createVideoSource, invalidateVideoLists, isVideoUnavailable, reportVideoProgress, useVideoDetail } from "./queries";
+import { createVideoSource, fetchChannelVideos, invalidateVideoLists, isVideoUnavailable, reportVideoProgress, useVideoDetail } from "./queries";
 import { useVideoSession, videoSession, type VideoSession } from "./session";
 import { useVideoMeta, VideoThumb } from "./VideoCard";
 
@@ -79,6 +81,12 @@ function VideoInner({ session }: { session: VideoSession }) {
   const [seek, setSeek] = useState<SeekPreview | null>(null);
   /** Paused with the overlay folded by Back (to look at the frame); the next Back leaves. */
   const [hush, setHush] = useState(false);
+  /** «Далее»: the video that plays when the countdown runs out (video_autoplay). */
+  const [upNext, setUpNext] = useState<UpNext | null>(null);
+  /** Played in this session: random picks skip them (no ping-pong between two videos). */
+  const played = useRef(new Set<string>());
+  /** What the end does (set below, called by the stream's "ended" handler). */
+  const endedRef = useRef<() => Promise<void>>(async () => undefined);
   const osdTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const seekTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   /** Where a reload (quality switch) continues. */
@@ -107,7 +115,11 @@ function VideoInner({ session }: { session: VideoSession }) {
     setOsd(true);
     setPanel(null);
     setHush(false);
+    setUpNext(null);
   }
+  useEffect(() => {
+    played.current.add(id);
+  }, [id]);
   useEffect(() => {
     clearTimeout(osdTimer.current);
     osdTimer.current = setTimeout(() => setOsd(false), OSD_MS);
@@ -219,7 +231,7 @@ function VideoInner({ session }: { session: VideoSession }) {
     const onEnded = () => {
       report();
       setOsd(true);
-      setPanel((p) => p ?? { line: "related", idx: 0 });
+      void endedRef.current();
     };
     const onError = () => {
       if (cancelled || !src) return;
@@ -289,12 +301,40 @@ function VideoInner({ session }: { session: VideoSession }) {
   );
   const play = useCallback((v: VideoItem) => videoSession.open(v, { quality: cap }), [cap]);
 
+  // ---- the end: «Далее» (the series' next part, else a random related video) or the related panel.
+  useEffect(() => {
+    endedRef.current = async () => {
+      const showRelated = () => setPanel((p) => p ?? { line: "related", idx: 0 });
+      if (!settings.video_autoplay || !d) return showRelated();
+      let channel: VideoItem[] = [];
+      // A series whose next part isn't among the related videos: the channel's uploads.
+      if (seriesPart(d.title) && !nextInSeries(d, related)) channel = await fetchChannelVideos(d.channel_id, activeProfile.get()).catch(() => []);
+      if (videoSession.get()?.video.id !== d.id) return; // moved on meanwhile
+      const next = pickNextVideo(d, related, channel, { recent: played.current });
+      if (!next) return showRelated();
+      setPanel(null);
+      // «Отсчёт перед следующим» off: straight on.
+      if (!settings.autoplay_countdown) return play(next.video);
+      setUpNext({ video: next.video, why: next.why, n: UP_NEXT_S });
+    };
+  });
+  // The countdown: one second at a time, then the next video.
+  useEffect(() => {
+    if (!upNext) return;
+    const timer = setTimeout(() => {
+      if (upNext.n > 1) return setUpNext({ ...upNext, n: upNext.n - 1 });
+      setUpNext(null);
+      play(upNext.video);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [upNext, play]);
+
   const block = d ? blockReason(d) : null;
   const shownFailure: Failure | null = failure ?? (block === "live" ? "live" : null);
   const channelName = d?.channel.name ?? session.video.channel_name ?? "";
-  const st = useRef({ panel, related, qualities, cap, seek, dur, phase, failure: shownFailure, paused, osd, hush, title, channelName, channelId: d?.channel_id ?? session.video.channel_id ?? null });
+  const st = useRef({ detail: d, upNext, panel, related, qualities, cap, seek, dur, phase, failure: shownFailure, paused, osd, hush, title, channelName, channelId: d?.channel_id ?? session.video.channel_id ?? null });
   useEffect(() => {
-    st.current = { panel, related, qualities, cap, seek, dur, phase, failure: shownFailure, paused, osd, hush, title, channelName, channelId: d?.channel_id ?? session.video.channel_id ?? null };
+    st.current = { detail: d, upNext, panel, related, qualities, cap, seek, dur, phase, failure: shownFailure, paused, osd, hush, title, channelName, channelId: d?.channel_id ?? session.video.channel_id ?? null };
   });
   // Title / channel / quality / phase changes reach the phone at once.
   useEffect(() => videoSession.changed(), [title, channelName, cap, phase, shownFailure, qualities.length]);
@@ -390,6 +430,18 @@ function VideoInner({ session }: { session: VideoSession }) {
         if ((k === "back" || k === "stop" || k === "ok") && !e.repeat) videoSession.close();
         return;
       }
+      const un = st.current.upNext;
+      if (un) {
+        // «Далее»: OK plays it now; Back / Stop cancel (the related videos instead).
+        if ((k === "ok" || k === "play" || k === "playpause" || k === "next") && !e.repeat) {
+          setUpNext(null);
+          play(un.video);
+        } else if (k === "back" || k === "stop") {
+          setUpNext(null);
+          if (related.length > 0) setPanel({ line: "related", idx: 0 });
+        }
+        return;
+      }
       if (panel) {
         const items = panel.line === "related" ? related.length : qualities.length;
         if (k === "left") setPanel({ ...panel, idx: Math.max(0, panel.idx - 1) });
@@ -444,7 +496,8 @@ function VideoInner({ session }: { session: VideoSession }) {
           if (qualities.length > 1) return setPanel({ line: "quality", idx: Math.max(0, qualities.indexOf(cap)) });
           return showOsd();
         case "next": {
-          const v = related.find((x) => !blockReason(x));
+          const cur = st.current.detail;
+          const v = cur ? pickNextVideo(cur, related, [], { recent: played.current })?.video : related.find((x) => !blockReason(x));
           if (v) play(v);
           return;
         }
@@ -502,11 +555,45 @@ function VideoInner({ session }: { session: VideoSession }) {
         />
       )}
       {!shownFailure && panel && <PanelView design={design} panel={panel} related={related} qualities={qualities} cap={cap} />}
+      {!shownFailure && upNext && <UpNextCard upNext={upNext} design={design} />}
     </div>
   );
 }
 
 // ---------------------------------------------------------------- pieces
+
+/** Seconds «Далее» waits before the next video. */
+const UP_NEXT_S = 5;
+
+interface UpNext {
+  video: VideoItem;
+  why: "series" | "random";
+  /** Seconds left. */
+  n: number;
+}
+
+/** «Далее»: the next video's thumbnail and title, the countdown and the keys. */
+function UpNextCard({ upNext, design }: { upNext: UpNext; design: Design }) {
+  const { t } = useI18n();
+  const v = upNext.video;
+  return (
+    <div data-testid="video-up-next" data-why={upNext.why} className="absolute bottom-[96px] right-[96px] flex w-[760px] items-center gap-8 rounded-3xl bg-black/85 p-6 text-white shadow-2xl">
+      <div className="shrink-0">
+        <VideoThumb v={v} w={304} h={171} design={design} focused={false} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[24px] font-semibold uppercase tracking-wide text-accent">
+          {t("video.next.title")} · {t(upNext.why === "series" ? "video.next.series" : "video.next.random")}
+        </p>
+        <p className="mt-2 line-clamp-2 text-[32px] font-bold leading-tight">{v.title}</p>
+        <p className="mt-2 truncate text-[24px] text-white/70">{v.channel_name}</p>
+        <p className="mt-3 text-[24px] tabular-nums text-white/85">
+          {t("video.next.in", { n: upNext.n })} · {t("video.next.tv_hint")}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function Osd({
   design,

@@ -13,6 +13,8 @@ export const settingsEn = {
   "settings.hide_watched": "Hide watched titles",
   "settings.hide_watched_hint": "Titles you finished are hidden from lists and browse.",
   "settings.autoplay_next": "Play next episode automatically",
+  "settings.autoplay_countdown": "Countdown before the next one",
+  "settings.autoplay_countdown_hint": "The next episode or video first shows on a card with a countdown. Turn off to start it right away.",
   "settings.spoiler_free": "Spoiler-free episodes",
   "settings.spoiler_free_hint": "Blur pictures and descriptions of episodes you haven't seen.",
   "settings.loading_style": "Loading animation",
