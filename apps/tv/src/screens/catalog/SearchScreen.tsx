@@ -118,6 +118,7 @@ export function SearchScreen({ mem, onOpen }: { mem: RouteMemory; onOpen: (item:
         initialIndex={mem.get<number>("idx") ?? 0}
         onIndexChange={onIndex}
         onSelect={(it) => onOpen(it, t("catalog.search"))}
+        quick={(it) => ({ item: it, onOpen: () => onOpen(it, t("catalog.search")) })}
         renderItem={(it, focused, i) => <GridCard item={it} cfg={cfg.data} g={g} focused={focused} index={i} />}
       />
     );

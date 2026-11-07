@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/caveat.css"; /* not in the startup CSS */
 /* ---- stickerbook: stickers slapped onto a dark album page one by one, the logo sticker last, taped down */
 .sbi-board { background-image: radial-gradient(circle, rgba(255,248,239,.09) 0px, rgba(255,248,239,.09) 1.4px, rgba(255,248,239,0) 2px); background-size: 26px 26px; }
 @keyframes sbi-slap { 0% { opacity: 0; transform: translate3d(0,-30px,0) scale(1.45); } 55% { opacity: 1; transform: translate3d(0,0,0) scale(.94); } 78% { transform: scale(1.03); } 100% { opacity: 1; transform: scale(1); } }

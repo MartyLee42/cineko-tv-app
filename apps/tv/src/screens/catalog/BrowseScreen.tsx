@@ -97,6 +97,7 @@ export function BrowseScreen({ kind, mem, onOpen }: { kind: MediaKind; mem: Rout
         initialIndex={mem.get<number>("idx") ?? 0}
         onIndexChange={onIndex}
         onSelect={(it) => onOpen(it, title)}
+        quick={(it) => ({ item: it, onOpen: () => onOpen(it, title) })}
         renderItem={(it, focused, i) => <GridCard item={it} cfg={cfg.data} g={g} focused={focused} index={i} />}
       />
     );

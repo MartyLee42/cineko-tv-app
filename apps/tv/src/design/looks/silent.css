@@ -1,3 +1,6 @@
+@import "@martytv/ui/themes/silent.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/old-standard-tt.css";
+@import "@martytv/ui/fonts/playfair-display.css";
 /* ---------------------------------------------------------------- «Немое кино» (projector skeleton)
    A silent-comedy print: pure black and white (photos greyed by a static filter), static grain,
    a vignette, intertitle cards (black, white serif, an art-nouveau double frame drawn as a

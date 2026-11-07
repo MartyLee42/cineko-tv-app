@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNewEpisodes } from "../../newepisodes/data";
 import type { ContinueItem, Genre, HomeRow, IptvChannel, MediaSummary } from "@martytv/contracts";
-import { reasonText, rowTitle, useI18n, visibleRows, type MessageKey } from "@martytv/ui";
-import { FocusButton, FocusLine, FocusSection, getCurrentFocusKey, useInitialFocus } from "../../focus";
+import { rowTitle, useI18n, visibleRows, type MessageKey } from "@martytv/ui";
+import { FocusButton, FocusLine, FocusSection, useInitialFocus } from "../../focus";
+import { quickMenu } from "../../quick/store";
 import { dismiss, track, trackImpressions, useForYouRows, type ForYouItem, type ForYouRow } from "../../foryou/queries";
 import { cardKey } from "../../catalog/focusKeys";
 import type { RouteMemory } from "../../catalog/nav";
@@ -152,55 +153,23 @@ export function HomeCatalog({
   const [hero, setHero] = useState<Focused | null>(() => mem.get<Focused>("hero") ?? null);
   const [inCont, setInCont] = useState(false);
   const [contMenu, setContMenu] = useState<{ item: ContinueItem; title: string; actions: MenuAction[] } | null>(null);
-  const [fyMenu, setFyMenu] = useState<{ title: string; subtitle: string; actions: MenuAction[] } | null>(null);
   const [why, setWhy] = useState<{ mediaId: string; title: string; target: string | null } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
   /** The focused «Для вас» card (for the ☰ key). */
-  const fyFocus = useRef<{ row: Section; r: number; i: number } | null>(null);
 
-  /** «Не интересно» / «Подробнее» for a «Для вас» card. */
-  const openFyMenu = (row: Section, r: number, it: ForYouItem, i: number) => {
+  /** «Не интересно» from a «Для вас» card's quick actions: focus moves to the neighbour (or the next row when this one empties), then «Почему?». */
+  const dismissFy = (row: Section, r: number, it: ForYouItem, i: number) => {
     const fyRow = row.fy!;
-    setFyMenu({
-      title: it.media.title,
-      subtitle: reasonText(it.reason, t),
-      actions: [
-        {
-          key: "dismiss",
-          label: t("fy.dismiss"),
-          primary: true,
-          onPress: () => {
-            setFyMenu(null);
-            // Focus moves to the neighbour (or the next row when this one empties).
-            const rest = fyRow.items.filter((x) => x.media.id !== it.media.id);
-            const next = rest[Math.min(i, rest.length - 1)];
-            const nextRow = rows[r + 1];
-            const target = next ? cardKey(rowKey(row), next.media.id) : nextRow ? cardKey(rowKey(nextRow), sectionItems(nextRow)[0]!.id) : null;
-            if (next) mem.set(`idx-${row.key}`, Math.min(i, rest.length - 1));
-            fyFocus.current = null;
-            dismiss(it.media.id, fyRow.id);
-            // «Почему?»: reason chips (+ optional comment) saved as a note; focus returns after.
-            setWhy({ mediaId: it.media.id, title: it.media.title, target });
-          },
-        },
-        { key: "open", label: t("tvd.cont.open"), onPress: () => (setFyMenu(null), track(it.media.id, "open", fyRow.id), onOpen(it.media, row.title)) },
-      ],
-    });
+    const rest = fyRow.items.filter((x) => x.media.id !== it.media.id);
+    const next = rest[Math.min(i, rest.length - 1)];
+    const nextRow = rows[r + 1];
+    const target = next ? cardKey(rowKey(row), next.media.id) : nextRow ? cardKey(rowKey(nextRow), sectionItems(nextRow)[0]!.id) : null;
+    if (next) mem.set(`idx-${row.key}`, Math.min(i, rest.length - 1));
+    dismiss(it.media.id, fyRow.id);
+    // «Почему?»: reason chips (+ optional comment) saved as a note; focus returns after.
+    setWhy({ mediaId: it.media.id, title: it.media.title, target });
   };
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      // ☰ / Tools / ContextMenu on a «Для вас» card.
-      if (!(e.key === "ContextMenu" || e.keyCode === 93 || e.keyCode === 10135) || fyMenu || contMenu || why) return;
-      const f = fyFocus.current;
-      const it = f?.row.fy?.items[f.i];
-      if (!f || !it || !getCurrentFocusKey()?.startsWith(`${rowKey(f.row)}-`)) return;
-      e.preventDefault();
-      openFyMenu(f.row, f.r, it, f.i);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  });
 
   const unavailable = isUnavailable(home.error ?? cfg.error, cfg.data);
   // Nothing to focus in the content: park focus on the menu.
@@ -211,7 +180,6 @@ export function HomeCatalog({
 
   const focusItem = (r: number, row: Section, i: number, f: Focused) => {
     if (row.fy) trackImpressions(row.fy.id, row.fy.items.map((x) => x.media.id));
-    fyFocus.current = row.fy ? { row, r, i } : null;
     setRowIdx(r);
     setInCont(!!row.cont);
     mem.set("row", r);
@@ -319,6 +287,7 @@ export function HomeCatalog({
               viewport={viewport}
               onIndexChange={(i, it) => focusItem(r, row, i, { item: it, row: row.title, rowIndex: r })}
               onSelect={(it) => onOpen(it, row.title)}
+              quick={(it) => ({ item: it, onOpen: () => onOpen(it, row.title) })}
               renderItem={(it, focused) => <LeninCard media={it} cfg={cfg.data} height={g.poster.h} focused={focused} />}
             />
           ) : row.gk ? (
@@ -334,6 +303,7 @@ export function HomeCatalog({
               initialIndex={mem.get<number>(`idx-${row.key}`) ?? 0}
               onIndexChange={(i, it) => focusItem(r, row, i, { item: it, row: row.title, rowIndex: r })}
               onSelect={(it) => onOpen(it, row.title)}
+              quick={(it) => ({ item: it, onOpen: () => onOpen(it, row.title) })}
               renderItem={(it, focused, i) => <PosterCard item={it} cfg={cfg.data} width={size.w} height={size.h} focused={focused} index={i + 1} showTitle={g.caption > 0} />}
             />
           ) : row.live ? (
@@ -347,7 +317,6 @@ export function HomeCatalog({
               pad={g.pad}
               viewport={viewport}
               onIndexChange={() => {
-                fyFocus.current = null;
                 setRowIdx(r);
                 setInCont(false);
                 mem.set("row", r);
@@ -371,6 +340,13 @@ export function HomeCatalog({
                 if (!it.seen_at) seen.mutate(it.id);
                 onOpen(it.media, row.title);
               }}
+              quick={(it) => ({
+                item: it.media,
+                onOpen: () => {
+                  if (!it.seen_at) seen.mutate(it.id);
+                  onOpen(it.media, row.title);
+                },
+              })}
               renderItem={(it, focused, i) => {
                 const chip = <SenderChip r={it} design={design} index={i + 1} />;
                 return wide ? (
@@ -396,8 +372,13 @@ export function HomeCatalog({
                 track(it.media.id, "open", row.fy!.id);
                 onOpen(it.media, row.title);
               }}
-              // Holding OK (or ☰): «Не интересно» / «Подробнее».
-              onLongPress={(it, i) => openFyMenu(row, r, it, i)}
+              // Holding OK (or ☰ / Info): ♥, «Буду смотреть», the rating, «Не интересно» (focus moves on, «Почему?»), «Подробнее».
+              quick={(it, i) => ({
+                item: it.media,
+                rowId: row.fy!.id,
+                onDismiss: () => dismissFy(row, r, it, i),
+                onOpen: () => (track(it.media.id, "open", row.fy!.id), onOpen(it.media, row.title)),
+              })}
               renderItem={(it, focused, i) => {
                 // «Семья советует»: who liked it, on the card.
                 const chip = row.fy!.kind === "family" ? <FamilyChip item={it} design={design} /> : undefined;
@@ -429,6 +410,7 @@ export function HomeCatalog({
                   actions: [
                     ...(onContinue ? [{ key: "resume", label: `▶  ${t("tvd.cont.resume_now")}`, primary: true, onPress: () => (setContMenu(null), onContinue(it)) }] : []),
                     { key: "open", label: t("tvd.cont.open"), onPress: () => (setContMenu(null), onOpen(it.media, row.title, resumeTarget(it))) },
+                    { key: "quick", label: t("quick.menu"), onPress: () => (setContMenu(null), quickMenu.open({ item: it.media, onOpen: () => onOpen(it.media, row.title, resumeTarget(it)) })) },
                   ],
                 })
               }
@@ -447,6 +429,7 @@ export function HomeCatalog({
               initialIndex={mem.get<number>(`idx-${row.key}`) ?? 0}
               onIndexChange={(i, it) => focusItem(r, row, i, { item: it, row: row.title, rowIndex: r })}
               onSelect={(it) => onOpen(it, row.title)}
+              quick={(it) => ({ item: it, onOpen: () => onOpen(it, row.title) })}
               renderItem={(it, focused, i) =>
                 wide ? (
                   <WideCard media={it} title={it.title} cfg={cfg.data} width={size.w} height={size.h} focused={focused} />
@@ -493,7 +476,6 @@ export function HomeCatalog({
         </>
       )}
       {contMenu && <ActionMenu title={contMenu.title} actions={contMenu.actions} testId="continue-menu" onCancel={() => setContMenu(null)} />}
-      {fyMenu && <ActionMenu title={fyMenu.title} subtitle={fyMenu.subtitle} actions={fyMenu.actions} testId="foryou-menu" onCancel={() => setFyMenu(null)} />}
       {why && (
         <DismissWhy
           mediaId={why.mediaId}

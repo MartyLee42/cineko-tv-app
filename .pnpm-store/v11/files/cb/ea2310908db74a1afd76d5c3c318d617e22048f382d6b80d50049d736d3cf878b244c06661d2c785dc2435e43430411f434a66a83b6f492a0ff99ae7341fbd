@@ -1,0 +1,16 @@
+type Task = () => unknown | Promise<unknown>;
+/**
+ * Scheduler provides a simple way to queue and execute tasks in a strict sequence.
+ * - Regular tasks are run one after another; if a new task is scheduled before the current one starts, it replaces the pending next task.
+ * - Priority tasks are added to a separate queue and will be executed before any remaining regular tasks.
+ */
+export default class Scheduler {
+    private currentTask?;
+    private nextTask?;
+    private nextPriorityTasks;
+    private tick;
+    bind<A extends unknown[], R>(fn: (...args: A) => R | Promise<R>, context: any): (...args: A) => Promise<void>;
+    schedule(task: Task): void;
+    schedulePriority(task: Task): void;
+}
+export {};

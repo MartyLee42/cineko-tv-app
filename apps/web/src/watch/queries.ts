@@ -9,14 +9,13 @@ import {
 } from "@tanstack/react-query";
 import {
   unwrap,
-  type MediaDetail,
   type MediaPage,
   type MediaProgress,
-  type MediaSummary,
   type MediaUserState,
   type ProfileSettings,
 } from "@martytv/contracts";
 import { effectiveDesign, useEffectiveDesign } from "@martytv/ui";
+import { patchMediaMe } from "@martytv/media-types";
 import { api } from "../api";
 import { useCatalogLang } from "../catalog/queries";
 import { useActiveProfile } from "./ActiveProfile";
@@ -248,27 +247,14 @@ export function useProfileList(list: ListName) {
   });
 }
 
-const EMPTY_ME: MediaUserState = { progress_percent: null, completed: false, in_watchlist: false, favorite: false, rating: null };
-
 /** Patches `me` on every cached copy of a title (detail, rows, grids, lists). */
 export function patchMe(qc: QueryClient, mediaId: string, patch: Partial<MediaUserState>) {
-  const fix = <T extends MediaSummary>(m: T): T => (m.id === mediaId ? { ...m, me: { ...EMPTY_ME, ...m.me, ...patch } } : m);
-  const walk = (data: unknown): unknown => {
-    if (!data || typeof data !== "object") return data;
-    if (Array.isArray(data)) return data.map(walk);
-    const o = data as Record<string, unknown>;
-    if (typeof o.id === "string" && typeof o.kind === "string" && "tmdb_id" in o) return fix(o as unknown as MediaDetail);
-    let changed = false;
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(o)) {
-      const nv = v && typeof v === "object" ? walk(v) : v;
-      if (nv !== v) changed = true;
-      out[k] = nv;
+  for (const prefix of [["media", mediaId], ["catalog"], ["lists"], ["continue"], ["history"], ["foryou"], ["person"], ["family"]]) {
+    for (const [key, d] of qc.getQueriesData({ queryKey: prefix })) {
+      if (d === undefined) continue;
+      const next = patchMediaMe(d, mediaId, patch);
+      if (next !== d) qc.setQueryData(key, next);
     }
-    return changed ? out : data;
-  };
-  for (const prefix of [["media", mediaId], ["catalog"], ["lists"], ["continue"], ["history"]]) {
-    qc.setQueriesData({ queryKey: prefix }, (d: unknown) => walk(d));
   }
 }
 

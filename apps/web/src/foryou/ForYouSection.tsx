@@ -10,6 +10,7 @@ import { RegenButton } from "./RegenButton";
 import { NoteEditor } from "./NoteEditor";
 import { trackOpen, useDismiss, useFeedback, useForYouRows, type ForYouItem, type ForYouRow } from "./queries";
 import { FamilyCardExtra, FamilyRowHeader } from "../family/Family";
+import { QuickSheet, useQuickSheet } from "../watch/QuickActions";
 
 const rowItem = "w-[7.25rem] shrink-0 snap-start sm:w-36 lg:w-40";
 const LONG_PRESS_MS = 500;
@@ -224,6 +225,8 @@ export function ForYouCard({ item, rowId, onDismiss, className = "" }: { item: F
   const m = item.media;
   const why = reasonText(item.reason, t);
   const [open, setOpen] = useState(false);
+  const quick = useQuickSheet();
+  const card = useRef<HTMLDivElement>(null);
   const press = useRef<{ timer?: ReturnType<typeof setTimeout>; long: boolean }>({ long: false });
   useEffect(() => () => clearTimeout(press.current.timer), []);
 
@@ -233,7 +236,7 @@ export function ForYouCard({ item, rowId, onDismiss, className = "" }: { item: F
   };
 
   return (
-    <div className={`group relative ${className}`} data-testid="foryou-card" data-media-id={m.id}>
+    <div ref={card} className={`group relative ${className}`} data-testid="foryou-card" data-media-id={m.id}>
       <a
         href={`/title/${m.id}`}
         onClick={(e) => {
@@ -314,6 +317,19 @@ export function ForYouCard({ item, rowId, onDismiss, className = "" }: { item: F
           <p data-testid="foryou-reason" className="mb-3 line-clamp-5 text-xs leading-snug">
             {why}
           </p>
+          {quick.enabled && (
+            <button
+              type="button"
+              data-testid="foryou-quick"
+              onClick={() => {
+                setOpen(false);
+                quick.show(card.current);
+              }}
+              className="mb-1.5 min-h-[36px] rounded-lg bg-white/15 px-2 text-xs font-semibold hover:bg-white/25"
+            >
+              {t("quick.menu")}
+            </button>
+          )}
           <button
             type="button"
             data-testid="foryou-dismiss"
@@ -327,6 +343,7 @@ export function ForYouCard({ item, rowId, onDismiss, className = "" }: { item: F
           </button>
         </div>
       )}
+      {quick.open && <QuickSheet item={m} anchor={quick.anchor} onClose={quick.close} onDismiss={onDismiss} />}
     </div>
   );
 }

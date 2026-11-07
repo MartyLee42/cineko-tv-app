@@ -1,0 +1,21 @@
+/* «retro80» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Ретро 80-е»: VHS night: navy, sunset orange, tape teal; Russo One headings. */
+html.design-retro80 {
+  --mt-bg: 11, 14, 42;
+  --mt-surface: 27, 32, 78;
+  --mt-surface-2: 42, 48, 108;
+  --mt-border: 80, 88, 170;
+  --mt-text: 255, 244, 230;
+  --mt-muted: 190, 186, 218;
+  --mt-accent: 255, 122, 26;
+  --mt-accent-strong: 22, 224, 208;
+  --mt-on-accent: 24, 8, 0;
+  --mt-focus: 22, 224, 208;
+  --mt-font-display: "Russo One", "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 6px;
+  --mt-radius-control: 8px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-retro80 h1, html.design-retro80 h2 { font-family: var(--mt-font-display); font-weight: 400; font-style: italic; letter-spacing: .01em; }

@@ -166,13 +166,18 @@ func (s *Service) ResolveDeviceCredential(ctx context.Context, token string) (*P
 	var credID string
 	var lastUsed *time.Time
 	err := s.pool.QueryRow(ctx, `
-		SELECT c.id, c.last_used_at, d.id, u.id, u.username, u.role
+		SELECT c.id, c.last_used_at, d.id, d.demo, u.id, u.username, u.role
 		FROM device_credentials c
 		JOIN devices d ON d.id = c.device_id
 		JOIN users u ON u.id = d.owner_user_id
 		WHERE c.token_hash = $1 AND c.revoked_at IS NULL AND d.revoked_at IS NULL
-		  AND u.disabled_at IS NULL`, s.hasher.Hash(token)).
-		Scan(&credID, &lastUsed, &p.DeviceID, &p.UserID, &p.Username, &p.Role)
+		  AND u.disabled_at IS NULL
+		  AND (c.expires_at IS NULL OR c.expires_at > now())
+		  -- A demo TV (/demo_tv) lives only as long as its browser session.
+		  AND (NOT d.demo OR EXISTS (SELECT 1 FROM user_sessions s
+		       WHERE s.id = d.demo_session_id AND s.user_id = d.owner_user_id AND s.revoked_at IS NULL
+		         AND s.expires_at > now() AND s.absolute_expires_at > now()))`, s.hasher.Hash(token)).
+		Scan(&credID, &lastUsed, &p.DeviceID, &p.Demo, &p.UserID, &p.Username, &p.Role)
 	if db.IsNoRows(err) {
 		return nil, ErrNotFound
 	}
@@ -400,6 +405,18 @@ func (s *Service) RevokeAPIToken(ctx context.Context, userID, tokenID string) er
 func (s *Service) Cleanup(ctx context.Context) error {
 	_, err := s.pool.Exec(ctx, `DELETE FROM user_sessions WHERE absolute_expires_at < now() - interval '7 days'
 		OR expires_at < now() - interval '7 days' OR revoked_at < now() - interval '7 days'`)
+	if err != nil {
+		return err
+	}
+	// Demo TVs (/demo_tv) whose session ended are unpaired (the row stays for
+	// the watch history); their spent credentials go away.
+	if _, err := s.pool.Exec(ctx, `UPDATE devices d SET revoked_at = now()
+		WHERE d.demo AND d.revoked_at IS NULL AND NOT EXISTS (SELECT 1 FROM user_sessions s
+		  WHERE s.id = d.demo_session_id AND s.revoked_at IS NULL AND s.expires_at > now() AND s.absolute_expires_at > now())`); err != nil {
+		return err
+	}
+	_, err = s.pool.Exec(ctx, `DELETE FROM device_credentials c USING devices d
+		WHERE c.device_id = d.id AND d.demo AND (c.expires_at < now() OR c.revoked_at IS NOT NULL OR d.revoked_at IS NOT NULL)`)
 	return err
 }
 

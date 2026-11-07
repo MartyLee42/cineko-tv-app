@@ -8,6 +8,7 @@ import { useI18n } from "@martytv/ui";
 import { api } from "../api";
 import { queryClient } from "../catalog/queries";
 import { useActiveProfileId } from "../profile/active";
+import { patchMeEverywhere } from "../quick/data";
 
 export type Recommendation = Schemas["Recommendation"];
 
@@ -71,6 +72,9 @@ export function useToggleWatchlist() {
       const opts = { params: { path: { id: profile!, list: "watchlist" as const, mediaId } } };
       return unwrap(on ? api.PUT("/profiles/{id}/lists/{list}/{mediaId}", opts) : api.DELETE("/profiles/{id}/lists/{list}/{mediaId}", opts));
     },
+    // Rows and grids show the change at once (as the quick actions do).
+    onMutate: ({ mediaId, on }) => patchMeEverywhere(mediaId, { in_watchlist: on }),
+    onError: (_e, { mediaId, on }) => patchMeEverywhere(mediaId, { in_watchlist: !on }),
     onSettled: (_d, _e, { mediaId }) => {
       void queryClient.invalidateQueries({ queryKey: watchlistKey(profile) });
       void queryClient.invalidateQueries({ queryKey: ["media", mediaId] });
