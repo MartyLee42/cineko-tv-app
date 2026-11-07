@@ -5029,6 +5029,11 @@ export interface components {
              * @default true
              */
             show_curated: boolean;
+            /**
+             * @description «Тема под фильм»: Details and the player's loading screen take a look matching the film (silent → black and white, Soviet animation → a soft painted palette, noir, 80s neon, anime…), classified on the client from MediaDetail. The menu and catalog keep the profile's design.
+             * @default false
+             */
+            film_theme: boolean;
         };
         AdminAppearance: {
             seasonal_effects: boolean;

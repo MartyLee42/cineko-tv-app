@@ -43,7 +43,8 @@ import { soundtrackEn } from "./soundtrack.en";
 import { themesEn } from "./themes.en";
 import { companionEn } from "./companion.en";
 import { loaders2En } from "./loaders2.en";
+import { filmthemeEn } from "./filmtheme.en";
 
 
 
-export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn, ...soundtrackEn, ...themesEn, ...smoothEn, ...chaptersEn, ...companionEn, ...loaders2En };
+export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn, ...soundtrackEn, ...themesEn, ...smoothEn, ...chaptersEn, ...companionEn, ...loaders2En, ...filmthemeEn };

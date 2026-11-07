@@ -57,6 +57,7 @@ export const DEFAULT_SETTINGS: Settings = {
   share_with_family: false,
   show_family: true,
   show_curated: true,
+  film_theme: false,
 };
 
 /** Server settings with defaults filled in (unknown enum values fall back). */
@@ -76,7 +77,7 @@ export function withDefaults(s: ProfileSettings | null | undefined): Settings {
   if (s.cozy_ambience === "rain" || s.cozy_ambience === "fireplace" || s.cozy_ambience === "off") out.cozy_ambience = s.cozy_ambience;
   if (s.skip_segments === "button" || s.skip_segments === "auto" || s.skip_segments === "off") out.skip_segments = s.skip_segments;
   if (s.video_quality === 480 || s.video_quality === 720 || s.video_quality === 1080) out.video_quality = s.video_quality;
-  for (const k of ["hide_anime", "hide_watched", "autoplay_next_episode", "autoplay_countdown", "spoiler_free_episodes", "onboarding_completed", "video_hide_shorts", "video_autoplay", "cozy_mode", "cozy_sound", "poster_wobble", "share_with_family", "show_family", "show_curated"] as const) {
+  for (const k of ["hide_anime", "hide_watched", "autoplay_next_episode", "autoplay_countdown", "spoiler_free_episodes", "onboarding_completed", "video_hide_shorts", "video_autoplay", "cozy_mode", "cozy_sound", "poster_wobble", "share_with_family", "show_family", "show_curated", "film_theme"] as const) {
     if (typeof s[k] === "boolean") out[k] = s[k];
   }
   return out;

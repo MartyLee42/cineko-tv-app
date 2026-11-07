@@ -7,8 +7,11 @@
 // profile's style is fetched — ahead of time, with the player's code (see
 // loaderChunks.ts); until it's there, Minimal stands in.
 import { Suspense, useEffect, useState } from "react";
-import type { PlaybackSource } from "@martytv/contracts";
-import { Spinner, useAppliedDesign } from "@martytv/ui";
+import type { MediaDetail, PlaybackSource } from "@martytv/contracts";
+import { catalogLang } from "@martytv/media-types";
+import { Spinner, useAppliedDesign, useI18n } from "@martytv/ui";
+import { queryClient } from "../catalog/queries";
+import { useFilmTheme } from "../filmtheme/load";
 import { loadTracker, type LoadStage } from "./loading";
 import type { LoadingStyle } from "../profile/settings";
 import { Backdrop, pct, Status, type LoaderModel } from "./loaderParts";
@@ -42,15 +45,24 @@ export function useLoadProgress(
   return p;
 }
 
+/** The title's Details if already cached (`seed` is the media id); never fetched here. */
+function cachedDetail(id: string, locale: string): MediaDetail | null {
+  return (queryClient.getQueryData(["media", id, catalogLang(locale)]) as MediaDetail | undefined) ?? null;
+}
+
 /** The loading screen in the chosen style. `preview` = settings thumbnail (no stats). */
 export function Loader({ style, m, preview = false }: { style: LoadingStyle; m: LoaderModel; preview?: boolean }) {
+  const { locale } = useI18n();
   // «Конструктивизм» and «Матрица»: their own loader whatever the style.
   const applied = useAppliedDesign();
   const kind = loaderKind(style, applied ?? "kinozal", preview);
+  // «Тема под фильм»: the title's look (from its cached Details; not in Settings' preview).
+  const filmTheme = useFilmTheme(preview ? null : cachedDetail(m.seed, locale));
   return (
     <div
       data-testid={preview ? "loader-preview" : "player-preparing"}
       data-loader={style}
+      data-film-theme={filmTheme ?? undefined}
       data-cv={kind === "poster" ? "1" : undefined}
       data-progress={Math.round(m.p * 100)}
       className="tv-loader absolute left-0 top-0 h-full w-full overflow-hidden bg-bg"

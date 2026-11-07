@@ -71,7 +71,7 @@ export function useSettingRows() {
     { value: true, label: t("tv.settings.on") },
     { value: false, label: t("tv.settings.off") },
   ];
-  const bool = (key: "hide_anime" | "hide_watched" | "autoplay_next_episode" | "autoplay_countdown" | "spoiler_free_episodes" | "video_hide_shorts" | "video_autoplay", label: string, hint?: string): Row => ({
+  const bool = (key: "hide_anime" | "hide_watched" | "autoplay_next_episode" | "autoplay_countdown" | "spoiler_free_episodes" | "video_hide_shorts" | "video_autoplay" | "film_theme", label: string, hint?: string): Row => ({
     kind: "choice",
     key,
     label,
@@ -188,6 +188,7 @@ export function useSettingRows() {
       value: settings.loading_style,
       onChange: (v) => set({ loading_style: v as LoadingStyle }),
     } as Row,
+    filmTheme: bool("film_theme", t("filmtheme.setting"), t("filmtheme.setting_hint")),
     hideAnime: bool("hide_anime", t("settings.hide_anime"), t("settings.hide_anime_hint")),
     hideWatched: bool("hide_watched", t("settings.hide_watched"), t("settings.hide_watched_hint")),
     autoplay: bool("autoplay_next_episode", t("settings.autoplay_next")),

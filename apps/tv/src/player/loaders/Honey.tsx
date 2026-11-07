@@ -17,7 +17,8 @@ export default function Honey({ m }: { m: LoaderModel }) {
   const stalled = useStalled(m.p);
   const peers = m.torrent?.peers ?? 0;
   const bees = m.online ? 3 : beeCount(peers);
-  const caption = stalled ? t("loaders2.honey_pot.wrong") : m.online ? t("loaders2.honey_pot.online") : t("loaders2.honey_pot.bees", { n: peers });
+  // No torrent numbers yet: no bee count.
+  const caption = stalled ? t("loaders2.honey_pot.wrong") : m.online ? t("loaders2.honey_pot.online") : m.torrent ? t("loaders2.honey_pot.bees", { n: peers }) : undefined;
   const level = 300 * (1 - m.p);
   return (
     <HomageLayout m={m} name="honey_pot" caption={caption} backdrop={0.08} tone="lh-meadow">

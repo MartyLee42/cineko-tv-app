@@ -1,0 +1,8 @@
+/* «Тема под фильм» — noir: Нуар: жёсткий контраст и тени жалюзи. Its own chunk (filmtheme/load.ts). */
+:root [data-film-theme="noir"] > .tv-fade img,
+:root .tv-loader[data-film-theme="noir"] img { -webkit-filter: grayscale(1) contrast(1.55) brightness(.82); filter: grayscale(1) contrast(1.55) brightness(.82); }
+:root [data-film-theme="noir"] h1 { font-family: 'Oswald', 'Onest', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+:root [data-film-theme="noir"]::after { background-image: repeating-linear-gradient(-24deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 46px, rgba(0, 0, 0, .13) 46px, rgba(0, 0, 0, .13) 78px), radial-gradient(ellipse at 40% 40%, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, .75) 100%), var(--ft-grain); opacity: .85; }
+/* The loader takes the theme's palette too (Details keeps the design's but its accent). */
+:root .tv-loader[data-film-theme="noir"] { --mt-bg: 6, 6, 6; --mt-surface: 22, 22, 22; --mt-surface-2: 36, 36, 36; --mt-text: 240, 240, 240; --mt-muted: 150, 150, 150; --mt-accent: 230, 230, 230; --mt-accent-strong: 255, 255, 255; --mt-on-accent: 0, 0, 0; color: rgb(var(--mt-text)); }
+:root [data-film-theme="noir"] { --mt-accent: 232, 232, 232; --mt-accent-strong: 232, 232, 232; }

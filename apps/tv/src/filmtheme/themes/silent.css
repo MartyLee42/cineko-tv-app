@@ -1,0 +1,8 @@
+/* «Тема под фильм» — silent: Немое кино: чёрно-белое, зерно, виньетка, шрифт интертитров. Its own chunk (filmtheme/load.ts). */
+:root [data-film-theme="silent"] > .tv-fade img,
+:root .tv-loader[data-film-theme="silent"] img { -webkit-filter: grayscale(1) contrast(1.2) brightness(.92); filter: grayscale(1) contrast(1.2) brightness(.92); }
+:root [data-film-theme="silent"] h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; letter-spacing: .01em; }
+:root [data-film-theme="silent"]::after { background-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 52%, rgba(0, 0, 0, .7) 100%), var(--ft-grain); opacity: .9; }
+/* The loader takes the theme's palette too (Details keeps the design's but its accent). */
+:root .tv-loader[data-film-theme="silent"] { --mt-bg: 14, 14, 13; --mt-surface: 30, 30, 28; --mt-surface-2: 44, 44, 41; --mt-text: 236, 233, 224; --mt-muted: 168, 164, 154; --mt-accent: 226, 222, 210; --mt-accent-strong: 255, 255, 250; --mt-on-accent: 12, 12, 12; color: rgb(var(--mt-text)); }
+:root [data-film-theme="silent"] { --mt-accent: 226, 222, 210; --mt-accent-strong: 226, 222, 210; }

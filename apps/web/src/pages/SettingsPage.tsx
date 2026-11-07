@@ -334,6 +334,17 @@ function ProfileSettingsCard() {
             </div>
           </div>
 
+          {/* «Тема под фильм»: Details takes the film's look (off by default). */}
+          <div className="divide-y divide-border rounded-xl border border-border">
+            <Toggle
+              testId="setting-film-theme"
+              label={t("filmtheme.setting")}
+              hint={t("filmtheme.setting_hint")}
+              on={s.film_theme ?? false}
+              onChange={(v) => set({ film_theme: v })}
+            />
+          </div>
+
           {/* «Подборки»: the daily curated-list row on Home (on by default). */}
           <div className="divide-y divide-border rounded-xl border border-border">
             <Toggle

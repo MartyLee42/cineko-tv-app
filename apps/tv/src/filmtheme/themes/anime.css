@@ -1,0 +1,7 @@
+/* «Тема под фильм» — anime: Аниме: чистые насыщенные «целлулоидные» цвета. Its own chunk (filmtheme/load.ts). */
+:root [data-film-theme="anime"] > .tv-fade img,
+:root .tv-loader[data-film-theme="anime"] img { -webkit-filter: saturate(1.35) contrast(1.1); filter: saturate(1.35) contrast(1.1); }
+:root [data-film-theme="anime"] h1 { font-family: 'Unbounded', 'Onest', sans-serif; font-weight: 800; letter-spacing: -.01em; }
+:root [data-film-theme="anime"]::after { background-image: radial-gradient(ellipse at 50% 40%, rgba(0, 0, 0, 0) 65%, rgba(20, 10, 60, .45) 100%); opacity: 1; }
+/* The loader takes the theme's palette too (Details keeps the design's). */
+:root .tv-loader[data-film-theme="anime"] { --mt-bg: 16, 18, 42; --mt-surface: 30, 34, 72; --mt-surface-2: 44, 50, 98; --mt-text: 250, 248, 255; --mt-muted: 180, 184, 220; --mt-accent: 255, 92, 142; --mt-accent-strong: 120, 222, 255; --mt-on-accent: 30, 6, 18; color: rgb(var(--mt-text)); }

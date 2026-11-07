@@ -15,6 +15,7 @@ import { useActiveProfile } from "../watch/ActiveProfile";
 import { ListToggles, ProgressBar, RatePrompt } from "../watch/components";
 import { episodeProgressMap, formatClock, formatLeft, resumeState, seasonProgress } from "../watch/format";
 import { useMediaProgress, useSetWatched, useSettings } from "../watch/queries";
+import { useFilmTheme } from "../filmtheme/useFilmTheme";
 import { RecommendButton } from "../reco/RecommendButton";
 import { FamilyRatings } from "../family/Family";
 import { OnlineWatchButton } from "../play/OnlineWatch";
@@ -89,6 +90,8 @@ function Title({ id }: { id: string }) {
 
 function Hero({ m }: { m: MediaDetail }) {
   const { t, locale } = useI18n();
+  // «Тема под фильм»: the hero takes the film's look once its chunk is here.
+  const filmTheme = useFilmTheme(m);
   const runtime = formatRuntime(m.runtime, locale);
   const meta = [
     m.year,
@@ -103,7 +106,7 @@ function Hero({ m }: { m: MediaDetail }) {
   ].filter(Boolean);
 
   return (
-    <section className="relative -mx-4 -mt-6 overflow-hidden sm:mx-0 sm:mt-0 sm:rounded-3xl">
+    <section data-film-theme={filmTheme ?? undefined} className="relative -mx-4 -mt-6 overflow-hidden sm:mx-0 sm:mt-0 sm:rounded-3xl">
       <Backdrop path={m.backdrop_path} title={m.title} eager />
       <div className="relative flex flex-col gap-5 px-4 pb-6 pt-40 sm:flex-row sm:items-end sm:gap-8 sm:px-10 sm:pb-10 sm:pt-56">
         <Poster
