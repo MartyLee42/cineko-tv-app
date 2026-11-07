@@ -124,6 +124,17 @@ export function trackLabel(tr: { label?: string | null; title?: string | null; l
   return title ? `${lang} · ${title}` : lang;
 }
 
+/**
+ * A track the TV reported for the phone remote: the TV already named it the
+ * way its own menu shows it («Русский · LF»), so show that label as is; only
+ * a bare or missing label is named here.
+ */
+export function remoteTrackLabel(tr: { label?: string | null; language?: string | null }, locale = "en"): string {
+  const label = (tr.label ?? "").trim();
+  const bare = !label || (!!tr.language && label.toLowerCase() === tr.language.toLowerCase());
+  return bare ? trackLabel(tr, locale) : label;
+}
+
 /** Compact language code for a chip: "RU", "EN". */
 export function languageCode(code: string): string {
   return code.toUpperCase();
