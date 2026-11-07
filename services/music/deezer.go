@@ -617,6 +617,15 @@ func (d *Deezer) SearchTracks(ctx context.Context, q string, limit int) ([]Track
 	return normTracks(r.Data, nil), nil
 }
 
+// SearchAlbums: catalog albums for q (no release dates: Album has them).
+func (d *Deezer) SearchAlbums(ctx context.Context, q string, limit int) ([]Album, error) {
+	var r dzList[dzAlbum]
+	if err := d.get(ctx, "/search/album", url.Values{"q": {q}, "limit": {strconv.Itoa(limit)}}, ttlShort, &r); err != nil {
+		return nil, err
+	}
+	return normAlbums(r.Data), nil
+}
+
 func shortErr(err error) error {
 	var ue *url.Error
 	if errors.As(err, &ue) {
