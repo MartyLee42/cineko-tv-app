@@ -1,0 +1,15 @@
+/* ---- wireframe: wave terrain (the mockup) */
+@keyframes in-row { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes in-glow { from { opacity: 0; } to { opacity: .3; } }
+@keyframes in-drop { 0% { opacity: 0; transform: translateY(-90px) rotate(-10deg); } 55% { opacity: 1; transform: translateY(10px) rotate(3deg); } 78% { transform: translateY(-5px) rotate(0); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes in-bob { from { transform: translateY(0); } to { transform: translateY(-7px); } }
+@keyframes in-pill { 0% { transform: scale(0) rotate(-14deg); } 50% { transform: scale(1.18) rotate(5deg); } 80% { transform: scale(.94) rotate(-2deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes in-twinkle { 0%, 100% { opacity: 0; transform: scale(.2) rotate(0); } 50% { opacity: 1; transform: scale(1.1) rotate(45deg); } }
+.in-row { position: absolute; left: 0; width: 1280px; overflow: hidden; animation: in-row .8s cubic-bezier(.2,.8,.2,1) both; }
+/* animation-name is per row (its wavelength on screen), set inline. */
+.in-drift { position: absolute; left: 0; top: 0; will-change: transform; animation-duration: 7s; animation-timing-function: linear; animation-iteration-count: infinite; }
+.in-glow { animation: in-glow .7s ease .2s both; }
+.in-drop { display: inline-block; animation: in-drop .55s cubic-bezier(.3,.7,.3,1) both; }
+.in-bob { display: inline-block; animation: in-bob .9s ease-in-out infinite alternate; }
+.in-pill { animation: in-pill .45s cubic-bezier(.3,.7,.3,1) 1.35s both; transform-origin: 50% 60%; }
+.in-star { animation: in-twinkle .9s ease-in-out both; }
