@@ -838,7 +838,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         ? t("chapters.titled", { n: chapterAt + 1, title: chapters[chapterAt]!.title! })
         : t("chapters.n", { n: chapterAt + 1 })
       : null;
-  const bufferingNow = playing && (player.recovering() || !!rebuf || player.compatRestarting() || ((!v || v.seeking || v.readyState < 3) && !paused && !player.quietStall()));
+  const bufferingNow = playing && (player.recovering() || !!rebuf || player.compatRestarting() || ((!v || v.seeking || v.readyState < 3) && !paused && !player.quietStall() && !player.advancingNow()));
   // After a seek (esp. backwards) seeking / readyState flap several times a
   // second: show the spinner / «Буферизация» only once it lasts, hide it once
   // playback has really resumed; nothing while ◀▶ are still choosing a position.
