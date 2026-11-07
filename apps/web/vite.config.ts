@@ -42,7 +42,7 @@ export default defineConfig({
         // Videos saved for offline play (/offline-video/<id>, Range support): src/offline/device.ts.
         importScripts: ["/offline-video-sw.js"],
         // /music: Cineko Music, a separate app (services/music) on the same origin.
-        navigateFallbackDenylist: [/^\/docs\//, /^\/api\//, /^\/tv\//, /^\/msx\//, /^\/music(\/|$)/, /^\/healthz/, /^\/readyz/],
+        navigateFallbackDenylist: [/^\/docs\//, /^\/api\//, /^\/tv\//, /^\/demo_tv/, /^\/msx\//, /^\/music(\/|$)/, /^\/healthz/, /^\/readyz/],
         runtimeCaching: [
           {
             // Per-profile responses (watch state in `me`, progress) must be

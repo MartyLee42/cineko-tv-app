@@ -37,7 +37,11 @@ import { sleepRu } from "./sleep.ru";
 import { skipRu } from "./skip.ru";
 import { pocketpetRu } from "./pocketpet.ru";
 import { westernRu } from "./western.ru";
+<<<<<<< HEAD
 import { errorsUserRu } from "./errorsuser.ru";
+=======
+import { quickRu } from "./quick.ru";
+>>>>>>> origin/main
 import { triviaRu } from "./trivia.ru";
 import { surpriseRu } from "./surprise.ru";
 import { smoothRu } from "./smooth.ru";
@@ -51,7 +55,14 @@ import { loaders2Ru } from "./loaders2.ru";
 import { filmthemeRu } from "./filmtheme.ru";
 import { multtarkovskyRu } from "./multtarkovsky.ru";
 import { andersonRu } from "./anderson.ru";
+import { demoRu } from "./demo.ru";
 
 
 
+<<<<<<< HEAD
 export const messagesRu: Record<MessageKey, string> = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu, ...skipRu, ...pocketpetRu, ...surpriseRu, ...soundtrackRu, ...themesRu, ...smoothRu, ...chaptersRu, ...companionRu, ...devsettingsRu, ...loadersRu, ...loaders2Ru, ...filmthemeRu, ...multtarkovskyRu, ...andersonRu, ...westernRu, ...errorsUserRu };
+=======
+
+
+export const messagesRu: Record<MessageKey, string> = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu, ...skipRu, ...pocketpetRu, ...surpriseRu, ...soundtrackRu, ...themesRu, ...smoothRu, ...chaptersRu, ...companionRu, ...devsettingsRu, ...loadersRu, ...loaders2Ru, ...filmthemeRu, ...multtarkovskyRu, ...andersonRu, ...westernRu, ...quickRu, ...demoRu };
+>>>>>>> origin/main

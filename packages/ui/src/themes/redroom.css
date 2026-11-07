@@ -1,0 +1,22 @@
+/* «redroom» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Красная комната»: a homage to a famous surreal TV series' red room: near-black, deep curtain red,
+   ivory; elegant capitals in Playfair Display (has Cyrillic). */
+html.design-redroom {
+  --mt-bg: 11, 6, 6;
+  --mt-surface: 42, 10, 12;
+  --mt-surface-2: 62, 16, 18;
+  --mt-border: 110, 34, 36;
+  --mt-text: 244, 239, 230;
+  --mt-muted: 196, 178, 170;
+  --mt-accent: 226, 44, 52;
+  --mt-accent-strong: 240, 236, 228;
+  --mt-on-accent: 255, 255, 255;
+  --mt-focus: 240, 236, 228;
+  --mt-font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 4px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-redroom h1, html.design-redroom h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .04em; }

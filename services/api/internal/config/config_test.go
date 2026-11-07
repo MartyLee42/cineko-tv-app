@@ -38,6 +38,25 @@ func TestLoadDefaultsAndAliases(t *testing.T) {
 	}
 }
 
+func TestNewTVDesign(t *testing.T) {
+	for in, want := range map[string]string{"": "wireframe", "off": "", "None": "", " Deco ": "deco"} {
+		c, err := LoadFrom(env(map[string]string{"DATABASE_URL": "postgres://x", "APP_SESSION_SECRET": strings.Repeat("s", 32), "NEW_TV_DESIGN": in}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if c.NewTVDesign != want {
+			t.Fatalf("NEW_TV_DESIGN=%q → %q, want %q", in, c.NewTVDesign, want)
+		}
+	}
+	// Set but empty in the real environment = off (unset = the default).
+	t.Setenv("NEW_TV_DESIGN", "")
+	t.Setenv("DATABASE_URL", "postgres://x")
+	t.Setenv("APP_SESSION_SECRET", strings.Repeat("s", 32))
+	if c, err := Load(); err != nil || c.NewTVDesign != "" {
+		t.Fatalf("empty NEW_TV_DESIGN: %v %q", err, c.NewTVDesign)
+	}
+}
+
 func TestCatalogConfig(t *testing.T) {
 	base := map[string]string{"DATABASE_URL": "postgres://x", "APP_SESSION_SECRET": strings.Repeat("s", 32)}
 	c, err := LoadFrom(env(base))

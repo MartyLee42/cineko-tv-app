@@ -1,3 +1,6 @@
+@import "@martytv/ui/themes/tarkovsky.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/cormorant-garamond.css";
+@import "@martytv/ui/fonts/playfair-display.css";
 /* «tarkovsky»: this design's own rules (loaded with the design's chunk, design/looks).
    ---------------------------------------------------------------- Созерцание (kinozal skeleton)
    The calmest design, for evenings: a dim, low-contrast ground (wet slate over still water, static

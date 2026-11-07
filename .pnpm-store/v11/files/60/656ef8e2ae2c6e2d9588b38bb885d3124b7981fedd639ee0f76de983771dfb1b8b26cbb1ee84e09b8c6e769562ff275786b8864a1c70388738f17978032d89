@@ -1,0 +1,15 @@
+import { type FocusableComponent } from '../SpatialNavigation';
+import BaseWebAdapter from './web';
+export default class GetBoundingClientRectAdapter extends BaseWebAdapter {
+    measureLayout: (component: FocusableComponent) => Promise<{
+        node: HTMLElement;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        left: number;
+        top: number;
+        right: any;
+        bottom: any;
+    }>;
+}

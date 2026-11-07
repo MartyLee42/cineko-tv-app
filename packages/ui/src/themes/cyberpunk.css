@@ -1,0 +1,21 @@
+/* «cyberpunk» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Киберпанк»: near-black, acid yellow, cyan and magenta. */
+html.design-cyberpunk {
+  --mt-bg: 6, 6, 10;
+  --mt-surface: 20, 20, 30;
+  --mt-surface-2: 32, 32, 46;
+  --mt-border: 64, 64, 90;
+  --mt-text: 238, 246, 255;
+  --mt-muted: 162, 174, 196;
+  --mt-accent: 245, 240, 60;
+  --mt-accent-strong: 0, 240, 255;
+  --mt-on-accent: 10, 10, 4;
+  --mt-focus: 0, 240, 255;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-cyberpunk h1, html.design-cyberpunk h2 { font-family: var(--mt-font-display); }

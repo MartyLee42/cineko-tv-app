@@ -35,6 +35,11 @@ type Config struct {
 	SessionIdleTTL     time.Duration
 	SessionAbsoluteTTL time.Duration
 	PairingTTL         time.Duration
+	// NewTVDesign is the design a newly paired TV shows for every profile
+	// until a design is picked on / for it (NEW_TV_DESIGN, default
+	// "wireframe" = «Каркас»; empty or "off" = the profile's design, as
+	// before). TVs paired earlier are never touched.
+	NewTVDesign string
 
 	// MSXApps is a JSON array of extra Media Station X launcher buttons
 	// ({label, icon, url, image}); empty = Lampa.
@@ -171,7 +176,22 @@ var regionPattern = regexp.MustCompile(`^[A-Z]{2}$`)
 
 // Load reads configuration from the process environment.
 func Load() (*Config, error) {
-	return LoadFrom(os.Getenv)
+	return LoadFrom(func(name string) string {
+		// NEW_TV_DESIGN= (set but empty) turns the default off; unset keeps it.
+		if v, ok := os.LookupEnv(name); ok && strings.TrimSpace(v) == "" && name == "NEW_TV_DESIGN" {
+			return "off"
+		}
+		return os.Getenv(name)
+	})
+}
+
+// newTVDesign normalises NEW_TV_DESIGN ("off" / "none" = no default).
+func newTVDesign(v string) string {
+	v = strings.ToLower(strings.TrimSpace(v))
+	if v == "off" || v == "none" {
+		return ""
+	}
+	return v
 }
 
 // LoadFrom reads configuration using getenv (handy for tests).
@@ -218,6 +238,7 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 		SessionIdleTTL:     duration("SESSION_IDLE_TTL", 30*24*time.Hour),
 		SessionAbsoluteTTL: duration("SESSION_ABSOLUTE_TTL", 90*24*time.Hour),
 		PairingTTL:         duration("PAIRING_TTL", 5*time.Minute),
+		NewTVDesign:        newTVDesign(get("NEW_TV_DESIGN", "wireframe")),
 		Prowlarr: ProwlarrConfig{
 			URL:    strings.TrimRight(get("PROWLARR_URL", ""), "/"),
 			APIKey: secret("PROWLARR_API_KEY"),

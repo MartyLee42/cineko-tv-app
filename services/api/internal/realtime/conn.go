@@ -106,6 +106,13 @@ func (h *Handler) serve(conn *websocket.Conn) {
 		}
 	}
 
+	if p.Demo {
+		// «Демо TV» (/demo_tv) stays off the socket: no presence, no remote
+		// control, no pushes (the app does not connect at all).
+		writeClose(conn, websocket.ClosePolicyViolation, "demo device")
+		return
+	}
+
 	c := &Client{hub: h.hub, conn: conn, p: p, send: make(chan Envelope, sendQueueLength), done: make(chan struct{})}
 	h.hub.register(c)
 	defer h.hub.unregister(c)

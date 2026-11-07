@@ -1,0 +1,325 @@
+import { type LayoutAdapter } from './adapter/types';
+import WritingDirection from './WritingDirection';
+export interface NodeTypeOverrides {
+}
+export type NodeType = NodeTypeOverrides extends {
+    node: infer N;
+} ? N : HTMLElement;
+export type Direction = 'up' | 'down' | 'left' | 'right';
+export type NextFocusResolver = (direction: Direction, focusKey: string, siblings: FocusableComponent[]) => FocusableComponent | null;
+type DistanceCalculationMethod = 'center' | 'edges' | 'corners';
+type DistanceCalculationFunction = (refCorners: Corners, siblingCorners: Corners, isVerticalDirection: boolean, distanceCalculationMethod: DistanceCalculationMethod) => number;
+export declare const ROOT_FOCUS_KEY = "SN:ROOT";
+export interface FocusableComponentLayout {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+    node: NodeType;
+}
+export interface FocusableComponent {
+    focusKey: string;
+    node: NodeType;
+    parentFocusKey: string;
+    onEnterPress: (details?: KeyPressDetails) => void;
+    onEnterRelease: () => void;
+    onArrowPress: (direction: string, details: KeyPressDetails) => boolean;
+    onArrowRelease: (direction: string) => void;
+    onFocus: (layout: FocusableComponentLayout, details: FocusDetails) => void;
+    onBlur: (layout: FocusableComponentLayout, details: FocusDetails) => void;
+    onUpdateFocus: (focused: boolean) => void;
+    onUpdateHasFocusedChild: (hasFocusedChild: boolean) => void;
+    saveLastFocusedChild: boolean;
+    trackChildren: boolean;
+    preferredChildFocusKey?: string;
+    focusable: boolean;
+    isFocusBoundary: boolean;
+    focusBoundaryDirections?: Direction[];
+    autoRestoreFocus: boolean;
+    forceFocus: boolean;
+    nextFocusResolver?: NextFocusResolver;
+    /**
+     * When false, direct children of this component are not measured during
+     * navigation (`smartNavigate`) or `updateAllLayouts`. Only meaningful
+     * alongside `nextFocusResolver`, since default coordinate-based navigation
+     * requires fresh child layouts. Defaults to true when undefined.
+     */
+    measureChildrenLayout?: boolean;
+    lastFocusedChildKey?: string;
+    layout?: FocusableComponentLayout;
+    layoutUpdatedAt?: number;
+    accessibilityLabel?: string;
+}
+interface FocusableComponentUpdatePayload {
+    node: NodeType;
+    preferredChildFocusKey?: string;
+    focusable: boolean;
+    isFocusBoundary: boolean;
+    focusBoundaryDirections?: Direction[];
+    onEnterPress: (details?: KeyPressDetails) => void;
+    onEnterRelease: () => void;
+    onArrowPress: (direction: string, details: KeyPressDetails) => boolean;
+    onArrowRelease: (direction: string) => void;
+    onFocus: (layout: FocusableComponentLayout, details: FocusDetails) => void;
+    onBlur: (layout: FocusableComponentLayout, details: FocusDetails) => void;
+    accessibilityLabel?: string;
+    nextFocusResolver?: NextFocusResolver;
+    measureChildrenLayout?: boolean;
+}
+interface FocusableComponentRemovePayload {
+    focusKey: string;
+}
+interface CornerCoordinates {
+    x: number;
+    y: number;
+}
+interface Corners {
+    a: CornerCoordinates;
+    b: CornerCoordinates;
+}
+export type PressedKeys = {
+    [index: string]: number;
+};
+/**
+ * Extra details about pressed keys passed on the key events
+ */
+export interface KeyPressDetails {
+    pressedKeys: PressedKeys;
+}
+/**
+ * Extra details passed from outside to be bounced back on other callbacks
+ */
+export interface FocusDetails {
+    event?: Event;
+    nativeEvent?: Event;
+    [key: string]: any;
+}
+export type BackwardsCompatibleKeyMap = {
+    [index: string]: string | number | (number | string)[];
+};
+export type KeyMap = {
+    [index: string]: (string | number)[];
+};
+export type SpatialNavigationServiceOptions = {
+    debug: boolean;
+    visualDebug: boolean;
+    throttle: number;
+    throttleKeypresses: boolean;
+    /**
+     * @deprecated Use layoutAdapter API instead.
+     */
+    useGetBoundingClientRect: boolean;
+    shouldFocusDOMNode: boolean;
+    domNodeFocusOptions: FocusOptions;
+    shouldUseNativeEvents: boolean;
+    rtl: boolean;
+    /**
+     * Can be a class (constructor) that implements LayoutAdapter,
+     * or an object that partially implements LayoutAdapter.
+     */
+    layoutAdapter?: (new (...args: any[]) => LayoutAdapter) | Partial<LayoutAdapter>;
+    distanceCalculationMethod: DistanceCalculationMethod;
+    customDistanceCalculationFunction?: DistanceCalculationFunction;
+    onUtterText?: (text: string) => void;
+    focusOnPresetKey: boolean;
+};
+export declare class SpatialNavigationService {
+    private focusableComponents;
+    private visualDebugger;
+    /**
+     * Focus key of the currently focused element
+     */
+    private focusKey;
+    private shouldFocusDOMNode;
+    private shouldUseNativeEvents;
+    /**
+     * This collection contains focus keys of the elements that are having a child focused
+     * Might be handy for styling of certain parent components if their child is focused.
+     */
+    private parentsHavingFocusedChild;
+    /**
+     * When shouldFocusDOMNode is true, this prop specifies the focus options that should be passed to the element being focused.
+     */
+    private domNodeFocusOptions;
+    private enabled;
+    /**
+     * Throttling delay for key presses in milliseconds
+     */
+    private throttle;
+    /**
+     * Enables/disables throttling feature
+     */
+    private throttleKeypresses;
+    /**
+     * Storing pressed keys counter by the eventType
+     */
+    private pressedKeys;
+    /**
+     * Flag used to block key events from this service
+     */
+    private paused;
+    private layoutAdapter;
+    private keyDownEventListener;
+    private keyDownEventListenerThrottled;
+    private keyUpEventListener;
+    private keyMap;
+    private debug;
+    private logIndex;
+    private setFocusDebounced;
+    private writingDirection;
+    private distanceCalculationMethod;
+    private customDistanceCalculationFunction?;
+    private scheduler;
+    get options(): {
+        shouldFocusDOMNode: boolean;
+        domNodeFocusOptions: FocusOptions;
+        shouldUseNativeEvents: boolean;
+    };
+    /**
+     * Callback invoked with concatenated accessibility labels when a focusable component receives focus.
+     * Parent region labels are included only when entering a new region for the first time.
+     */
+    private onUtterText;
+    /**
+     * When a focusable is added whose focus key was already set as the current focus key
+     * (e.g. setFocus was called before the component mounted), automatically focus it.
+     * Enabled by default for backward compatibility.
+     */
+    private focusOnPresetKey;
+    /**
+     * Used to determine the coordinate that will be used to filter items that are over the "edge"
+     */
+    static getCutoffCoordinate(isVertical: boolean, isIncremental: boolean, isSibling: boolean, layout: FocusableComponentLayout, writingDirection: WritingDirection): number;
+    /**
+     * Returns two corners (a and b) coordinates that are used as a reference points
+     * Where "a" is always leftmost and topmost corner, and "b" is rightmost bottommost corner
+     */
+    static getRefCorners(direction: string, isSibling: boolean, layout: FocusableComponentLayout): {
+        a: {
+            x: number;
+            y: number;
+        };
+        b: {
+            x: number;
+            y: number;
+        };
+    };
+    /**
+     * Calculates if the sibling node is intersecting enough with the ref node by the secondary coordinate
+     */
+    static isAdjacentSlice(refCorners: Corners, siblingCorners: Corners, isVerticalDirection: boolean): boolean;
+    static getPrimaryAxisDistance(refCorners: Corners, siblingCorners: Corners, isVerticalDirection: boolean): number;
+    static getSecondaryAxisDistance(refCorners: Corners, siblingCorners: Corners, isVerticalDirection: boolean, distanceCalculationMethod: DistanceCalculationMethod, customDistanceCalculationFunction?: DistanceCalculationFunction): number;
+    /**
+     * Inspired by: https://developer.mozilla.org/en-US/docs/Mozilla/Firefox_OS_for_TV/TV_remote_control_navigation#Algorithm_design
+     * Ref Corners are the 2 corners of the current component in the direction of navigation
+     * They are used as a base to measure adjacent slices
+     */
+    sortSiblingsByPriority(siblings: FocusableComponent[], currentLayout: FocusableComponentLayout, direction: string, focusKey: string): FocusableComponent[];
+    constructor();
+    init({ debug, visualDebug, throttle: throttleParam, throttleKeypresses, useGetBoundingClientRect, layoutAdapter, shouldFocusDOMNode, domNodeFocusOptions, shouldUseNativeEvents, rtl, distanceCalculationMethod, customDistanceCalculationFunction, onUtterText, focusOnPresetKey }?: Partial<SpatialNavigationServiceOptions>): void;
+    setThrottle({ throttle: throttleParam, throttleKeypresses }?: {
+        throttle?: number;
+        throttleKeypresses?: boolean;
+    }): void;
+    destroy(): void;
+    getEventType(keyCode: number | string): string;
+    bindEventHandlers(): void;
+    unbindEventHandlers(): void;
+    onEnterPress(keysDetails: KeyPressDetails): void;
+    onEnterRelease(): void;
+    onArrowPress(direction: string, keysDetails: KeyPressDetails): boolean;
+    onArrowRelease(direction: string): void;
+    /**
+     * Move focus by direction, if you can't use buttons or focusing by key.
+     *
+     * @example
+     * navigateByDirection('right') // The focus is moved to right
+     */
+    navigateByDirection(direction: string, focusDetails?: FocusDetails): Promise<void>;
+    /**
+     * This function navigates between siblings OR goes up by the Tree
+     * Based on the Direction
+     */
+    smartNavigate(direction: string, fromParentFocusKey: string, focusDetails: FocusDetails): Promise<void>;
+    saveLastFocusedChildKey(component: FocusableComponent, focusKey: string): void;
+    log(functionName: string, debugString: string, ...rest: any[]): void;
+    /**
+     * Returns the current focus key
+     */
+    getCurrentFocusKey(): string;
+    /**
+     * Returns the focus key to which focus can be forced if there are force-focusable components.
+     * A component closest to the top left viewport corner (0,0) is returned.
+     */
+    getForcedFocusKey(): string | undefined;
+    /**
+     * This function tries to determine the next component to Focus
+     * It's either the target node OR the one down by the Tree if node has children components
+     * Based on "targetFocusKey" which means the "intended component to focus"
+     */
+    getNextFocusKey(targetFocusKey: string): Promise<string>;
+    addFocusable({ focusKey, node, parentFocusKey, onEnterPress, onEnterRelease, onArrowPress, onArrowRelease, onFocus, onBlur, saveLastFocusedChild, trackChildren, onUpdateFocus, onUpdateHasFocusedChild, preferredChildFocusKey, autoRestoreFocus, forceFocus, focusable, isFocusBoundary, focusBoundaryDirections, accessibilityLabel, nextFocusResolver, measureChildrenLayout }: FocusableComponent): void;
+    removeFocusable({ focusKey }: FocusableComponentRemovePayload): void;
+    getNodeLayoutByFocusKey(focusKey: string): Promise<FocusableComponentLayout>;
+    setCurrentFocusedKey(newFocusKey: string, focusDetails: FocusDetails): void;
+    updateParentsHasFocusedChild(focusKey: string, focusDetails: FocusDetails): void;
+    updateParentsLastFocusedChild(focusKey: string): void;
+    getKeyMap(): KeyMap;
+    setKeyMap(keyMap: BackwardsCompatibleKeyMap): void;
+    isFocusableComponent(focusKey: string): boolean;
+    /**
+     * Checks whether the focusableComponent is actually participating in spatial navigation (in other words, is a
+     * 'focusable' focusableComponent). Seems less confusing than calling it isFocusableFocusableComponent()
+     */
+    isParticipatingFocusableComponent(focusKey: string): boolean;
+    /**
+     * Checks whether the focusableComponent is a descendant of another component.
+     * @param focusKey The focus key of the component to check
+     * @param ancestorFocusKey The focus key of the ancestor component
+     * @returns Whether the focusableComponent is a descendant of the ancestor component
+     */
+    isDescendantOf(focusKey: string, ancestorFocusKey: string): boolean;
+    onIntermediateNodeBecameFocused(focusKey: string, focusDetails: FocusDetails): void;
+    onIntermediateNodeBecameBlurred(focusKey: string, focusDetails: FocusDetails): void;
+    pause(): void;
+    resume(): void;
+    /**
+     * Builds and utters accessibility labels when focus changes.
+     * Parent region labels are spoken only when entering a new region (similar to aria-label on role=region).
+     * When navigating within the same parent, only the leaf node's label is spoken.
+     *
+     * Must be called BEFORE updateParentsHasFocusedChild so we can compare
+     * the new parent chain against the current one to detect newly entered regions.
+     */
+    private utterAccessibilityLabels;
+    private setImmediateFocus;
+    setFocus(focusKey: string, focusDetails?: FocusDetails): Promise<void>;
+    updateAllLayouts(): Promise<void>;
+    updateLayout(focusKey: string): Promise<void>;
+    updateFocusable(focusKey: string, { node, preferredChildFocusKey, focusable, isFocusBoundary, focusBoundaryDirections, onEnterPress, onEnterRelease, onArrowPress, onFocus, onBlur, accessibilityLabel, nextFocusResolver, measureChildrenLayout }: FocusableComponentUpdatePayload): void;
+    doesFocusableExist(focusKey: string): boolean;
+    /**
+     * Makes a container forget its last focused child, so the next time focus enters it,
+     * it goes to `preferredChildFocusKey` (or the first child) instead. Does not move focus.
+     */
+    clearLastFocusedChild(focusKey: string): void;
+    /**
+     * This function updates the writing direction
+     * @param rtl whether the writing direction is right-to-left
+     */
+    updateRtl(rtl: boolean): void;
+}
+/**
+ * Export singleton
+ */
+export declare const SpatialNavigation: SpatialNavigationService;
+export declare const init: ({ debug, visualDebug, throttle: throttleParam, throttleKeypresses, useGetBoundingClientRect, layoutAdapter, shouldFocusDOMNode, domNodeFocusOptions, shouldUseNativeEvents, rtl, distanceCalculationMethod, customDistanceCalculationFunction, onUtterText, focusOnPresetKey }?: Partial<SpatialNavigationServiceOptions>) => void, setThrottle: ({ throttle: throttleParam, throttleKeypresses }?: {
+    throttle?: number;
+    throttleKeypresses?: boolean;
+}) => void, destroy: () => void, setKeyMap: (keyMap: BackwardsCompatibleKeyMap) => void, setFocus: (focusKey: string, focusDetails?: FocusDetails) => Promise<void>, navigateByDirection: (direction: string, focusDetails?: FocusDetails) => Promise<void>, pause: () => void, resume: () => void, updateAllLayouts: () => Promise<void>, getCurrentFocusKey: () => string, doesFocusableExist: (focusKey: string) => boolean, clearLastFocusedChild: (focusKey: string) => void, updateRtl: (rtl: boolean) => void;
+export {};
