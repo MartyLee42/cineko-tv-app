@@ -52,6 +52,5 @@
 @-webkit-keyframes idle-zzz { 0% { -webkit-transform: translate3d(0, 20px, 0); opacity: 0; } 20% { opacity: .9; } 100% { -webkit-transform: translate3d(30px, -90px, 0); opacity: 0; } }
 @keyframes idle-zzz { 0% { transform: translate3d(0, 20px, 0); opacity: 0; } 20% { opacity: .9; } 100% { transform: translate3d(30px, -90px, 0); opacity: 0; } }
 
-/* ---- DVD: the wordmark (and its «tv» pill) in the bounce colour */
-.idle-dvd .mt-logo { color: var(--idle-dvd); }
-.idle-dvd .mt-logo .bg-accent { background: var(--idle-dvd); color: #000; }
+/* ---- DVD: a still picture moved by transform only (its own layer) */
+.idle-dvd { will-change: transform; }
