@@ -4935,10 +4935,20 @@ export interface components {
              *     marty = Cineko the mascot's loading loop with a progress bar; he cheers at 100%;
              *     marty_popcorn = the same with Cineko munching popcorn while it loads;
              *     matrix = «Матрица»: «> Загрузка конструкта…», the percentage counting up in green and a block bar over the digital rain (also what the matrix design always shows).
+             *     water_glass = «Стакан воды»: ripples in a glass of water grow with the buffer; one big ripple at 100%;
+             *     poster_dig = «Подкоп»: the title's poster on a wall, a little hammer digs behind it; at 100% the poster tears open;
+             *     chocolate_box = «Коробка конфет»: one chocolate eaten every ~8%, each with a fact about the title (cached facts, else Details lines);
+             *     coffee_cup = «Чашка кофе»: a cup fills with coffee;
+             *     honey_pot = «Горшочек мёда»: bees (one per few torrent peers) fill a honey pot; a caption when progress stalls;
+             *     hyperjump = «Гиперпрыжок»: drifting stars stretch into lines at 100%;
+             *     ghost_meter = «Призракометр»: a gauge's needle and lights rise; a short beep at 100% (only with the device's interface sounds on);
+             *     target_scan = «Сканер цели»: a red scanning HUD with the percentage; the runtime at 100%;
+             *     docking = «Стыковка»: a craft docks with a spinning ring;
+             *     claw_machine = «Кран-машина»: a claw picks the title's poster from a pile of toys (slips and retries when progress stalls).
              * @default popcorn
              * @enum {string}
              */
-            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix";
+            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix" | "water_glass" | "poster_dig" | "chocolate_box" | "coffee_cup" | "honey_pot" | "hyperjump" | "ghost_meter" | "target_scan" | "docking" | "claw_machine";
             /**
              * @description «О моих вкусах»: the viewer's own description of their tastes (trimmed, at most 600 characters; "" clears it).
              *     Sent to DeepSeek only as delimited data (`viewer_note`) in the AI collections and Ask AI prompts. A change

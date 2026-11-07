@@ -1,0 +1,14 @@
+/* «Сканер цели» (Scanner.tsx): red HUD over a grey picture, on every design. */
+.ls-root { color: #fff; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.ls-root .text-muted { color: rgba(255, 205, 205, .8); }
+.ls-root .text-accent, .ls-root .text-accent-strong { color: #ffd2d2; }
+.ls-root .tv-scrim-bottom { opacity: 0; }
+.ls-grey { -webkit-filter: grayscale(1) contrast(1.2); filter: grayscale(1) contrast(1.2); }
+.ls-tint { background: rgba(190, 0, 0, .62); }
+.ls-lines { background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, .18) 0px, rgba(0, 0, 0, .18) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 5px); }
+.ls-hud { text-shadow: 0 0 8px rgba(255, 60, 60, .8); }
+.ls-corner { border-color: #fff; transition: transform 600ms ease; }
+.ls-corner.is-lock { transform: scale(.82); }
+@keyframes ls-scan { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 474px, 0); } }
+.ls-scan { background: rgba(255, 255, 255, .85); box-shadow: 0 0 16px 4px rgba(255, 120, 120, .8); animation: ls-scan 1.8s ease-in-out infinite alternate; }
+.ls-blink { animation: hg-blink .6s steps(2) infinite; }

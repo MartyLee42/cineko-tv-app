@@ -1,0 +1,14 @@
+/* What the film-homage loaders share (homageParts.tsx). Transform/opacity
+   animations only; the calm switch (data-calm) stops every loop. */
+.hg-caption { text-shadow: 0 2px 12px rgba(0, 0, 0, .35); }
+.hg-ease { transition: transform 900ms cubic-bezier(.22, .61, .36, 1); }
+.hg-fade { transition: opacity 700ms ease; }
+.hg-root[data-calm] *,
+.hg-root[data-calm] *::before,
+.hg-root[data-calm] *::after { -webkit-animation: none !important; animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .hg-root *, .hg-root *::before, .hg-root *::after { -webkit-animation: none !important; animation: none !important; }
+}
+@keyframes hg-blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes hg-bob { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -10px, 0); } }
+.hg-stage-foot { background: linear-gradient(180deg, rgba(var(--mt-bg), 0), rgb(var(--mt-bg))); }

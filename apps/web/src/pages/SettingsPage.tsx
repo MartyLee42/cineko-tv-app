@@ -39,6 +39,7 @@ import { TasteCard } from "../foryou/TasteCard";
 import { ServerDownloadIcon } from "../downloads/ui";
 import { VideoQualityRow } from "../video/VideoSettings";
 import { LOADING_STYLES, supportsLight, THEMES, type LoadingStyle, type Settings } from "../watch/settings";
+import { HomagePreview, homageKeys } from "./HomagePreview";
 import { SeasonalSetting } from "../seasons/SeasonalSetting";
 import { ThisDeviceCard } from "../devprefs/ui";
 
@@ -679,12 +680,13 @@ export function LoadingOption({ value, on, onPick }: { value: LoadingStyle; on: 
       aria-checked={on}
       data-value={value}
       onClick={onPick}
+      title={homageKeys(value) ? t(homageKeys(value)!.hint) : undefined}
       className={`overflow-hidden rounded-xl border text-left transition ${on ? "border-accent ring-1 ring-accent" : "border-border hover:border-muted"}`}
     >
       <LoadingPreview style={value} />
       <span className="flex items-center gap-1.5 px-2.5 py-2 text-sm font-semibold">
         {on && <CheckIcon className="text-accent" />}
-        {t(`settings.loading.${value}` as MessageKey)}
+        {t(homageKeys(value)?.name ?? (`settings.loading.${value}` as MessageKey))}
       </span>
     </button>
   );
@@ -696,6 +698,7 @@ export function LoadingPreview({ style }: { style: LoadingStyle }) {
   return (
     <span aria-hidden className={`relative block aspect-video overflow-hidden ${backdrop}`}>
       {style === "popcorn" && <PopcornPreview />}
+      <HomagePreview style={style} />
       {(style === "marty" || style === "marty_popcorn") && (
         <span className="absolute inset-0 flex flex-col items-center justify-center gap-1">
           <Mascot size={56} mood={style === "marty" ? "loading" : "popcorn"} animated hat={null} />

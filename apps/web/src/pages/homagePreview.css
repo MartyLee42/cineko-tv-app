@@ -1,0 +1,30 @@
+/* HomagePreview.tsx: loops of the film-homage loading-style tiles. */
+@keyframes hp-ring { from { transform: scale(.2); opacity: 1; } to { transform: scale(1); opacity: 0; } }
+.hp-ring { animation: hp-ring 1.4s ease-out infinite; }
+@keyframes hp-tear-l { 0%, 60% { transform: translateX(-50%) rotate(0); opacity: 1; } 90%, 100% { transform: translateX(-90%) rotate(-20deg); opacity: 0; } }
+@keyframes hp-tear-r { 0%, 60% { transform: translateX(50%) rotate(0); opacity: 1; } 90%, 100% { transform: translateX(90%) rotate(20deg); opacity: 0; } }
+.hp-tear-l { animation: hp-tear-l 3s ease-in infinite; }
+.hp-tear-r { animation: hp-tear-r 3s ease-in infinite; }
+@keyframes hp-choc { 0%, 30% { opacity: 1; transform: scale(1); } 40%, 100% { opacity: .1; transform: scale(.5); } }
+.hp-choc { animation: hp-choc 3s ease-in-out infinite; }
+@keyframes hp-fill { from { transform: scaleY(.05); } 80%, to { transform: scaleY(1); } }
+.hp-fill { animation: hp-fill 3s ease-in-out infinite; }
+@keyframes hp-bee { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(10px, 8px); } }
+.hp-bee { animation: hp-bee 1.4s ease-in-out infinite; }
+@keyframes hp-streak { 0%, 65% { transform: scaleX(1); } 85%, 100% { transform: scaleX(14); } }
+.hp-streak { animation: hp-streak 3s ease-in infinite; }
+@keyframes hp-needle { from { transform: translateX(-50%) rotate(-60deg); } 80%, to { transform: translateX(-50%) rotate(60deg); } }
+.hp-needle { animation: hp-needle 3s ease-in-out infinite; }
+@keyframes hp-lamp { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+.hp-lamp { animation: hp-lamp 1s ease-in-out infinite; }
+@keyframes hp-scan { from { transform: translateY(0); } to { transform: translateY(60px); } }
+.hp-scan { animation: hp-scan 1.4s ease-in-out infinite alternate; }
+@keyframes hp-spin { to { transform: rotate(360deg); } }
+.hp-spin { animation: hp-spin 8s linear infinite; }
+@keyframes hp-dock { from { transform: translate(40px, 24px) scale(.6); } 80%, to { transform: translate(0, 0) scale(1); } }
+.hp-dock { animation: hp-dock 3s ease-in-out infinite; }
+@keyframes hp-claw { 0%, 100% { transform: translateX(-50%) scaleY(.3); } 50% { transform: translateX(-50%) scaleY(1.6); } }
+.hp-claw { animation: hp-claw 3s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .hp-ring, .hp-tear-l, .hp-tear-r, .hp-choc, .hp-fill, .hp-bee, .hp-streak, .hp-needle, .hp-lamp, .hp-scan, .hp-spin, .hp-dock, .hp-claw { animation: none; }
+}

@@ -83,6 +83,11 @@ function LazyStyle({ kind, m, mood }: { kind: Exclude<LoaderKind, "minimal">; m:
       return <LOADERS.matrix m={m} />;
     case "poster":
       return <LOADERS.poster m={m} />;
+    default: {
+      // The rest take just the model.
+      const Style = LOADERS[kind];
+      return <Style m={m} />;
+    }
   }
 }
 
