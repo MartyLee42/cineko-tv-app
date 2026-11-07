@@ -1249,6 +1249,11 @@ export interface paths {
          *     `live: true` source at once whose `stream_url` (/api/v1/live/<token>/index.m3u8, or
          *     …/stream.ts for plain MPEG-TS channels) goes through the signed live proxy. It has no id to
          *     GET later (POST again for a fresh token), no duration and no progress reporting.
+         *     The server opens the channel first (its URL, then mirrors: other URLs of the same tvg-id),
+         *     with short timeouts; when none answers it fails in seconds with 502 and a cause:
+         *     `channel_geo_blocked` (403/451: region or access restricted), `channel_timeout`,
+         *     `channel_format_unsupported` (not HLS / MPEG-TS, e.g. DASH or an HTML page) or
+         *     `channel_unavailable` (offline: DNS, 404, refused, 5xx). The failure is remembered for 45 s.
          */
         post: operations["createPlaybackSource"];
         delete?: never;
@@ -4800,10 +4805,14 @@ export interface components {
             channel_id?: string | null;
             provider?: components["schemas"]["ProviderRef"] | null;
             /**
-             * @description Online: how to play stream_url (hls needs hls.js outside Safari/TVs). ts: IPTV MPEG-TS pass-through (TVs; browsers can't play it). Torrent: null.
+             * @description Online: how to play stream_url (hls needs hls.js outside Safari/TVs). ts: IPTV MPEG-TS pass-through (TVs natively; browsers through mpegts.js). Torrent: null.
              * @enum {string|null}
              */
             format?: "mp4" | "hls" | "ts" | null;
+            /** @description IPTV: the video codec the last health check saw (h264, hevc, mpeg2), null if unknown. */
+            video_codec?: string | null;
+            /** @description IPTV: the audio codec the last health check saw (aac, mp3, mp2, ac3, eac3), null if unknown. Browsers usually can't decode ac3/eac3, mpeg2 or hevc. */
+            audio_codec?: string | null;
             /** @description Online: current quality. */
             quality?: number | null;
             /** @description Online: switchable qualities (PATCH {quality}). Torrent: []. */
@@ -6598,8 +6607,13 @@ export interface components {
             playlist_id: string;
             favorite: boolean;
             hidden: boolean;
-            /** @description Repeated stream failures: show dimmed (still playable; heals on the next success). */
+            /** @description The stream doesn't work (health dead/geo, or repeated failures): clients hide it behind «Нерабочие» (still playable; heals on the next success). */
             offline: boolean;
+            /**
+             * @description Last stream check (daily; at once when a start fails): codec = reachable but browsers may not decode it (HEVC, AC-3, MPEG-2); geo = 403/451; dead = DNS/404/refused/not a stream; null = not checked yet.
+             * @enum {string|null}
+             */
+            health?: "ok" | "codec" | "geo" | "dead" | "timeout" | null;
             /**
              * @description Detected stream type (null until first played/probed). ts plays on TVs; browsers need HLS.
              * @enum {string|null}

@@ -31,6 +31,7 @@ type Channel struct {
 	Hidden       bool       `json:"hidden"`
 	Offline      bool       `json:"offline"`
 	Format       *string    `json:"format"`
+	Health       *string    `json:"health"`
 	HasEPG       bool       `json:"has_epg"`
 	Now          *Programme `json:"now"`
 	Next         *Programme `json:"next"`
@@ -141,7 +142,7 @@ func (s *Service) lineup(ctx context.Context, profileID *string, includeHidden b
 			title = *r.Group
 		}
 		c := &Channel{ID: r.ID, Number: num, CustomNumber: r.Number, Name: r.Name, GroupID: GroupID(title), Group: groupName(title),
-			PlaylistID: r.PlaylistID, Favorite: r.Favorite, Hidden: r.Hidden, Offline: r.Offline, Format: r.Format,
+			PlaylistID: r.PlaylistID, Favorite: r.Favorite, Hidden: r.Hidden, Offline: r.Offline, Format: r.Format, Health: r.Health,
 			HasEPG: r.EPGChannel != nil, altNames: r.AltNames}
 		if r.Logo != nil && *r.Logo != "" && !s.logoFailed(*r.Logo) {
 			u := "/api/v1/iptv/logos/" + r.ID + "?v=" + hash8(*r.Logo)

@@ -15,7 +15,7 @@ import { useDesign, useFrame, type Design } from "../../design/context";
 import { ScreenTitle } from "../../design/grid";
 import { TERMINAL_MENU } from "../../design/menuOrder";
 import { useReportDeep, useToTop } from "../../design/topJump";
-import { buildChips, epgProgress, filterGroup, hhmm, type Chip } from "../../iptv/logic";
+import { channelChips, epgProgress, filterGroup, hhmm, offlineLabel, type Chip } from "../../iptv/logic";
 import { ChannelLogo, EpgBar } from "../../iptv/ChannelLogo";
 import { setFavorite, useIptvChannels } from "../../iptv/queries";
 
@@ -56,8 +56,7 @@ export function TvChannelsScreen({
   const g = tileGeo(design, width);
   const q = useIptvChannels();
   const all = useMemo(() => q.data?.items ?? [], [q.data]);
-  const favorites = all.filter((c) => c.favorite).length;
-  const chips = buildChips(q.data?.groups ?? [], all.length, favorites);
+  const chips = useMemo(() => channelChips(q.data?.groups ?? [], all), [q.data, all]);
   const [group, setGroup] = useState(() => mem.get<string>("group") ?? "all");
   const active = chips.some((c) => c.id === group) ? group : "all";
   const items = useMemo(() => filterGroup(all, active), [all, active]);
@@ -236,7 +235,7 @@ function ChannelTile({ channel: c, focused, design, g, now }: { channel: IptvCha
               )}
             </>
           ) : (
-            <p className="mt-2 truncate text-[21px] text-muted">{c.offline ? t("iptv.offline") : t("iptv.no_epg")}</p>
+            <p className="mt-2 truncate text-[21px] text-muted">{c.offline ? t(offlineLabel(c)) : t("iptv.no_epg")}</p>
           )}
         </div>
         {c.favorite && <span className="absolute right-4 top-3 text-[26px] text-accent">★</span>}
