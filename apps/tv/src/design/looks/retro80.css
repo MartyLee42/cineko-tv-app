@@ -1,0 +1,47 @@
+/* «retro80»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
+/* ---------------------------------------------------------------- Ретро 80-е (kinozal skeleton)
+   A VHS night: navy, sunset orange, tape teal, rainbow tape stripes; chrome
+   italic headings (static gradient text). Focus = teal + orange double ring. */
+.r8-vhs {
+  background-color: rgb(11,14,42);
+  background-image:
+    radial-gradient(ellipse 1300px 520px at 85% 100%, rgba(255,59,140,.22), rgba(255,59,140,0)),
+    radial-gradient(ellipse 900px 420px at 0% 0%, rgba(22,224,208,.10), rgba(22,224,208,0)),
+    linear-gradient(180deg, rgb(11,14,42) 0%, rgb(20,16,58) 70%, rgb(38,14,64) 100%);
+}
+/* Faint VHS scanlines plus one static tracking band low on the screen. */
+.r8-tracking {
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0) 78%, rgba(255,255,255,.05) 78.4%, rgba(255,255,255,.02) 79.2%, rgba(255,255,255,0) 79.6%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0px, rgba(0,0,0,.16) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 4px);
+}
+.r8-tracking-band { background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.10) 20%, rgba(22,224,208,.12) 50%, rgba(255,255,255,.08) 80%, rgba(255,255,255,0) 100%); }
+/* The rail: dark navy with the four tape stripes on its edge. */
+html.design-retro80 nav[data-design-nav="kinozal"] > div:first-child { box-shadow: inset -4px 0 0 #16e0d0, inset -8px 0 0 #ffd23a, inset -12px 0 0 #ff7a1a, inset -16px 0 0 #ff3b5c; }
+html.design-retro80 .k-rail-focus { background: linear-gradient(180deg, #ffd23a 0%, #ff7a1a 55%, #ff3b8c 100%); color: #180800; }
+html.design-retro80 .k-rail-active { background: rgba(22,224,208,.14); color: rgb(var(--mt-text)); box-shadow: inset 0 0 0 2px rgba(22,224,208,.55); }
+html.design-retro80 .tv-menu-panel { background: linear-gradient(90deg, rgb(11,14,42) 0%, rgb(11,14,42) 72%, rgba(11,14,42,0) 100%); }
+/* Cards: a thin teal frame; focus: teal + orange rings (no scale, like Кинозал). */
+html.design-retro80 .mt-card::after { content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 2px solid rgba(22,224,208,.45); border-radius: inherit; pointer-events: none; }
+html.design-retro80 .mt-card.is-focused::after { border-color: rgba(255,210,58,.9); }
+html.design-retro80 .tv-focus.is-focused { box-shadow: 0 0 0 5px rgb(11,14,42), 0 0 0 10px rgb(22,224,208), 0 0 0 15px rgb(255,122,26); }
+html.design-retro80 .k-primary { background: linear-gradient(180deg, #ffd23a 0%, #ff7a1a 55%, #ff3b8c 100%); color: #180800; }
+html.design-retro80 .k-icon-btn { background: rgba(27,32,78,.92); box-shadow: inset 0 0 0 2px rgba(22,224,208,.55); }
+html.design-retro80 .k-badge { background: transparent; color: #16e0d0; box-shadow: inset 0 0 0 2px #16e0d0; }
+html.design-retro80 .tv-rate-good, html.design-retro80 .tv-rate-mid, html.design-retro80 .tv-rate-bad { background: rgba(11,14,42,.88); box-shadow: inset 0 0 0 2px currentColor; }
+html.design-retro80 .tv-rate-good { color: #16e0d0; }
+html.design-retro80 .tv-rate-mid { color: #ffd23a; }
+html.design-retro80 .tv-rate-bad { color: #ff7a9c; }
+html.design-retro80 .k-fade-left { background: linear-gradient(90deg, rgb(11,14,42) 0%, rgba(11,14,42,.94) 22%, rgba(11,14,42,.6) 42%, rgba(11,14,42,.12) 70%, rgba(11,14,42,0) 100%); }
+html.design-retro80 .k-fade-bottom { background: linear-gradient(0deg, rgb(11,14,42) 0%, rgba(11,14,42,.9) 20%, rgba(11,14,42,0) 62%); }
+html.design-retro80 .tv-key-hint { background: rgba(11,14,42,.86); box-shadow: inset 0 0 0 2px rgba(22,224,208,.5); }
+html.design-retro80 .tv-chip.is-focused { background: linear-gradient(180deg, #ffd23a 0%, #ff7a1a 100%); color: #180800; }
+html.design-retro80 .tv-progress-fill, html.design-retro80 .tv-check { background: linear-gradient(90deg, #ff3b5c, #ff7a1a, #ffd23a, #16e0d0); color: #180800; }
+/* Chrome headings: a horizon in the letters (silver sky, orange ground). */
+html.design-retro80 [data-testid="hero"] h2, html.design-retro80 [data-media-id] h1 {
+  background-image: linear-gradient(180deg, #ffffff 0%, #d8e6ff 38%, #6a7dff 50%, #ffb04a 53%, #ff7a1a 74%, #ffe7a0 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  padding-right: .12em; padding-bottom: .06em;
+}
+html.design-retro80 h3 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .02em; }
+html.design-retro80 .tv-panel, html.design-retro80 .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 2px rgba(22,224,208,.4); }

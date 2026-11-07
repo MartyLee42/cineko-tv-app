@@ -1,0 +1,53 @@
+/* «wireframe»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
+/* ================================================================ skins
+   The later designs reuse a skeleton (html.skel-*) and restyle it here
+   under html.design-<id>. Skeleton markup carries marker classes
+   (mt-card, k-rail-*, p-tab*, p-primary, t-tab) for these rules.
+   Old-engine rules: no flex gap / aspect-ratio / inset / backdrop-filter;
+   animations are transform/opacity only; clip-path is -webkit- prefixed. */
+
+/* ---------------------------------------------------------------- Каркас (projector skeleton) */
+html.design-wireframe body, html.design-wireframe .bg-bg { background-color: rgb(var(--mt-bg)); }
+.sw-floor-fade { background: linear-gradient(180deg, rgba(13,4,32,1) 0%, rgba(13,4,32,.55) 14%, rgba(13,4,32,0) 46%), linear-gradient(0deg, rgba(13,4,32,.55) 0%, rgba(13,4,32,0) 30%); }
+.sw-veil { background: linear-gradient(90deg, rgba(13,4,32,.7) 0%, rgba(13,4,32,.5) 40%, rgba(13,4,32,0) 72%); }
+.sw-lines { transform-origin: 50% 0; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+/* 1 → 1/R (R = .78, FLOOR_R in skins.tsx): each cross line lands on the next one. */
+@keyframes sw-run { from { transform: scale3d(1,1,1); } to { transform: scale3d(1,1.2821,1); } }
+.sw-lines-run { animation: sw-run 2.4s linear infinite; }
+/* Cards: thin neon outline; focus = cyan glow + slight scale (layered box-shadows, no blur filter). */
+html.design-wireframe .mt-card::after { content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 2px solid rgba(255,79,216,.55); border-radius: inherit; pointer-events: none; }
+html.design-wireframe .tv-focus.is-focused { transform: scale(1.04); box-shadow: 0 0 0 3px rgb(60,232,255), 0 0 0 6px rgba(255,79,216,.85), 0 0 26px 8px rgba(60,232,255,.55), 0 0 60px 16px rgba(255,79,216,.35); }
+html.design-wireframe .mt-card.is-focused::after { border-color: rgba(60,232,255,.9); }
+/* Pill bar → neon outlined strip. */
+html.design-wireframe .p-bar { background: rgba(20,6,44,.82); box-shadow: inset 0 0 0 2px rgba(255,79,216,.6), 0 0 22px rgba(255,79,216,.35); }
+html.design-wireframe .p-tab { color: rgba(248,242,255,.86); }
+html.design-wireframe .p-tab-on { background: rgba(255,79,216,.22); color: #fff; box-shadow: inset 0 0 0 2px rgb(255,79,216); }
+html.design-wireframe .p-tab.is-focused { background: rgb(60,232,255); color: #12052a; box-shadow: 0 0 18px 4px rgba(60,232,255,.65); }
+/* Synthwave icons: cyan line, pink + cyan neon glow; crisp (no glow) on the focused cyan tab. */
+html.design-wireframe .p-tab .w-icon { color: rgb(60,232,255); filter: drop-shadow(0 0 2px rgba(60,232,255,.9)) drop-shadow(0 0 6px rgba(255,79,216,.75)); }
+html.design-wireframe .p-tab-on .w-icon { color: #fff; }
+html.design-wireframe .p-tab.is-focused .w-icon { color: #12052a; filter: none; }
+html.design-wireframe .p-glass .w-icon { color: rgb(60,232,255); filter: drop-shadow(0 0 2px rgba(60,232,255,.9)) drop-shadow(0 0 6px rgba(255,79,216,.75)); }
+html.design-wireframe .p-glass.is-focused .w-icon { color: #fff; }
+/* Emoji drawn as line art (Обзор, «Удиви меня!», «Спросить ИИ»): cyan on the tile, dark on a focused cyan button. */
+html.design-wireframe .w-glyph .w-icon { color: rgb(60,232,255); filter: drop-shadow(0 0 2px rgba(60,232,255,.9)) drop-shadow(0 0 7px rgba(255,79,216,.8)); }
+html.design-wireframe .is-focused .w-glyph .w-icon { color: #fff; }
+html.design-wireframe .tv-chip.is-focused .w-glyph .w-icon { color: #12052a; filter: none; }
+html.design-wireframe .p-primary .w-glyph .w-icon, html.design-wireframe .bg-accent .w-glyph .w-icon { color: #16041f; filter: none; }
+html.design-wireframe .p-primary { background: rgb(255,79,216); color: #16041f; box-shadow: 0 0 22px rgba(255,79,216,.55); }
+html.design-wireframe .p-glass { background: rgba(30,12,62,.8); color: #fff; box-shadow: inset 0 0 0 2px rgba(60,232,255,.55); }
+html.design-wireframe .p-scrim-left { background: linear-gradient(90deg, rgba(13,4,32,.94) 0%, rgba(13,4,32,.72) 30%, rgba(13,4,32,.2) 60%, rgba(13,4,32,0) 80%); }
+html.design-wireframe .p-scrim-bottom { background: linear-gradient(0deg, rgba(13,4,32,.97) 0%, rgba(13,4,32,.74) 22%, rgba(13,4,32,0) 50%); }
+html.design-wireframe .p-scrim-top { background: linear-gradient(180deg, rgba(13,4,32,.7) 0%, rgba(13,4,32,0) 100%); }
+html.design-wireframe .p-card-shade { background: linear-gradient(0deg, rgba(13,4,32,.9) 0%, rgba(13,4,32,.35) 36%, rgba(13,4,32,0) 62%); }
+html.design-wireframe .p-outline { border-color: rgba(60,232,255,.85); color: rgb(60,232,255); }
+/* Headings: wide display face, neon outline. Built from text-shadows, not -webkit-text-stroke (the display
+   face's overlapping contours would show through a stroke). Screen titles are outlines; artwork titles keep a light fill. */
+html.design-wireframe h1.p-wide { color: rgb(13,4,32); letter-spacing: .06em; text-shadow: 2px 0 #ff4fd8, -2px 0 #ff4fd8, 0 2px #ff4fd8, 0 -2px #ff4fd8, 1.5px 1.5px #ff4fd8, -1.5px -1.5px #ff4fd8, 1.5px -1.5px #ff4fd8, -1.5px 1.5px #ff4fd8, 0 0 22px rgba(255,79,216,.6); }
+html.design-wireframe [data-testid="hero"] h2, html.design-wireframe [data-media-id] h1 .p-wide { font-family: var(--mt-font-display); letter-spacing: .02em; line-height: 1.16; padding-top: .06em; color: #fff6ff; text-shadow: 0 0 1px #fff, 4px 4px 0 rgba(255,79,216,.95), 0 0 18px rgba(60,232,255,.7), 0 0 40px rgba(255,79,216,.45); }
+html.design-wireframe [data-testid="hero"] p:first-child, html.design-wireframe [data-media-id] h1 + p { font-family: var(--mt-font-label); }
+html.design-wireframe .tv-rate-chip { border-color: rgb(60,232,255); background: rgba(13,4,32,.78); color: rgb(60,232,255); font-family: var(--mt-font-label); }
+html.design-wireframe .tv-chip.is-focused { background: rgb(60,232,255); color: #12052a; }
+html.design-wireframe .tv-release.is-focused { box-shadow: 0 0 0 3px rgb(60,232,255), 0 0 26px 6px rgba(60,232,255,.45); }
+html.design-wireframe .tv-progress-fill, html.design-wireframe .tv-check { background: rgb(60,232,255); color: #12052a; }
+html.design-wireframe .tv-panel, html.design-wireframe .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 2px rgba(255,79,216,.42); }
