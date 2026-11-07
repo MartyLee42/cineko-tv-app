@@ -21,3 +21,32 @@
 @import "@fontsource/oswald/latin-700.css";
 @import "@fontsource/pixelify-sans/cyrillic-600.css";
 @import "@fontsource/pixelify-sans/latin-600.css";
+/* The later designs: «Одиссея» (Unbounded Light), «Тамагочи» (8×8 pixels), «Нуар» (typewriter mono),
+   «Стикербук» (handwritten), «Мультфильм» (hand-lettered), «Созерцание» (book serif),
+   «Немое кино» (period serif), «Симметрия» (geometric), «Вестерн» (wood-type slab). */
+@import "@fontsource/unbounded/cyrillic-300.css";
+@import "@fontsource/unbounded/latin-300.css";
+@import "@fontsource/press-start-2p/cyrillic-400.css";
+@import "@fontsource/press-start-2p/latin-400.css";
+@import "@fontsource/ibm-plex-mono/cyrillic-400.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/cyrillic-600.css";
+@import "@fontsource/ibm-plex-mono/latin-600.css";
+@import "@fontsource/caveat/cyrillic-700.css";
+@import "@fontsource/caveat/latin-700.css";
+@import "@fontsource/neucha/cyrillic-400.css";
+@import "@fontsource/neucha/latin-400.css";
+@import "@fontsource/cormorant-garamond/cyrillic-600.css";
+@import "@fontsource/cormorant-garamond/latin-600.css";
+@import "@fontsource/old-standard-tt/cyrillic-400.css";
+@import "@fontsource/old-standard-tt/latin-400.css";
+@import "@fontsource/old-standard-tt/cyrillic-700.css";
+@import "@fontsource/old-standard-tt/latin-700.css";
+@import "@fontsource/jost/cyrillic-400.css";
+@import "@fontsource/jost/latin-400.css";
+@import "@fontsource/jost/cyrillic-500.css";
+@import "@fontsource/jost/latin-500.css";
+@import "@fontsource/jost/cyrillic-700.css";
+@import "@fontsource/jost/latin-700.css";
+@import "@fontsource/kelly-slab/cyrillic-400.css";
+@import "@fontsource/kelly-slab/latin-400.css";

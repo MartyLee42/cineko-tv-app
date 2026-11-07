@@ -276,8 +276,8 @@ textarea {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--accent-fill, var(--accent));
+  color: var(--on-accent-fill, var(--on-accent));
   display: grid;
   place-items: center;
   font-weight: 800;
@@ -340,8 +340,8 @@ textarea {
   transform: scale(0.97);
 }
 .btn.primary {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--accent-fill, var(--accent));
+  color: var(--on-accent-fill, var(--on-accent));
 }
 .btn.primary:hover:not(:disabled) {
   background: var(--accent-2);
@@ -382,7 +382,7 @@ textarea {
 }
 .chip.on {
   background: var(--text);
-  color: #000;
+  color: var(--on-text, #000);
 }
 .chips {
   display: flex;
@@ -686,8 +686,8 @@ textarea {
   width: 46px;
   height: 46px;
   border-radius: var(--round);
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--accent-fill, var(--accent));
+  color: var(--on-accent-fill, var(--on-accent));
   display: grid;
   place-items: center;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
@@ -757,8 +757,8 @@ textarea {
   width: 56px;
   height: 56px;
   border-radius: var(--round);
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--accent-fill, var(--accent));
+  color: var(--on-accent-fill, var(--on-accent));
   display: grid;
   place-items: center;
   flex: none;
@@ -998,8 +998,8 @@ textarea {
   width: 56px;
   height: 56px;
   border-radius: var(--round);
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--accent-fill, var(--accent));
+  color: var(--on-accent-fill, var(--on-accent));
   display: grid;
   place-items: center;
   transition: transform 0.1s, background 0.15s;
@@ -1206,7 +1206,7 @@ textarea {
   height: 36px;
   border-radius: var(--round);
   background: var(--text);
-  color: #000;
+  color: var(--on-text, #000);
   display: grid;
   place-items: center;
   margin: 0 6px;
@@ -1420,12 +1420,12 @@ input[type="range"]::-moz-range-thumb {
   letter-spacing: -0.01em;
 }
 .lyrics.synced p {
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--lyric-dim, rgba(255, 255, 255, 0.35));
   cursor: pointer;
   transition: color 0.25s;
 }
 .lyrics.synced p.past {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--lyric-past, rgba(255, 255, 255, 0.6));
 }
 .lyrics.synced p.on {
   color: var(--accent);
@@ -1446,7 +1446,7 @@ input[type="range"]::-moz-range-thumb {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: #000;
+  background: var(--np-bg, #000);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto auto auto;
   /* minmax(0, …): a long nowrap title must not widen the column past the screen (it ellipsizes instead). */
@@ -1567,7 +1567,7 @@ input[type="range"]::-moz-range-thumb {
   font-size: 14px;
 }
 .np-tabs button.on {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--hover-strong, rgba(255, 255, 255, 0.12));
   color: var(--text);
 }
 
@@ -1627,7 +1627,7 @@ input[type="range"]::-moz-range-thumb {
   font-size: 16px;
 }
 .menu-item:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--hover, rgba(255, 255, 255, 0.08));
 }
 .menu-item.danger {
   color: var(--danger);
@@ -1857,7 +1857,7 @@ input[type="range"]::-moz-range-thumb {
 .toast {
   background: #2d6bff;
   background: var(--text);
-  color: #000;
+  color: var(--on-text, #000);
   padding: 10px 16px;
   border-radius: 8px;
   font-weight: 600;
@@ -2066,7 +2066,7 @@ input[type="range"]::-moz-range-thumb {
     bottom: 0;
     height: calc(var(--nav-h) + var(--safe-b));
     padding-bottom: var(--safe-b);
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.92) 30%);
+    background: linear-gradient(transparent, var(--nav-fade, rgba(0, 0, 0, 0.92)) 30%);
     z-index: 15;
   }
   .mobile-nav a {
