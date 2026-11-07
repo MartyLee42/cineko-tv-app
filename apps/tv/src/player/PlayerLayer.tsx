@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-spatial-navigation";
 import type { PlaybackSource, Release } from "@martytv/contracts";
 import { chapterIndexAt, chapterTicks, fileChapters, imageUrl, nextChapterStart, prevChapterStart, releaseBitrate, skipMode, type Chapter } from "@martytv/media-types";
-import { CvIcon, loaderPick, loadStatsLines, useAppliedDesign, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
+import { CvIcon, loaderPick, loadStatsLines, matchInfoOf, useAppliedDesign, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
 import { FINALE_MS, hasFinale, loaderKind } from "./loaderChunks";
 import { loaderKey } from "./loaderKeys";
 import { FocusButton, FocusLine } from "../focus";
@@ -14,7 +14,7 @@ import { useFlow } from "./flow";
 import { episodeLabel, formatClock, releaseRow } from "./format";
 import { BufferingSpinner, Loader, useLoadProgress } from "./Loader";
 import { useSteady } from "./steady";
-import { getSource } from "./data";
+import { cachedMedia, getSource } from "./data";
 import { mbit, prebufferPref } from "./rebuffer";
 import { bufferStripe, netStats } from "./stats";
 import { formatBytes, formatSpeed } from "./format";
@@ -297,7 +297,7 @@ function PreparingOverlay({ flow, done = false }: { flow: Extract<Flow, { phase:
   const loadKey = player.loadKey();
   useEffect(() => player.reportLoad(loadKey, p, torrent), [loadKey, p, torrent]);
   // «Сюрприз»: one pick per load attempt (the same key keeps it through remounts and the finale).
-  const style = loaderPick.resolve(settings.loading_style, loadKey);
+  const style = loaderPick.resolve(settings.loading_style, loadKey, () => matchInfoOf(ctx.media_id, { title: ctx.title, ...cachedMedia(ctx.media_id, ctx.lang), kind: ctx.kind }));
   if (done && !hasFinale(loaderKind(style, applied ?? "kinozal"))) return null;
   return (
     <Loader

@@ -33,5 +33,6 @@ export * from "./aiCreativity";
 export * from "./trivia";
 export * from "./surprise";
 export * from "./loaderPick";
+export * from "./loaderMatch";
 export * from "./companion";
 export * from "./soundtrack";

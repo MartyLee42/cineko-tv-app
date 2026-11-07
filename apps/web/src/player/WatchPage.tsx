@@ -11,7 +11,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from "react-rout
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { unwrap, type PlaybackSource } from "@martytv/contracts";
 import { episodeCode, imageUrl, skipMode } from "@martytv/media-types";
-import { loaderPick, useI18n } from "@martytv/ui";
+import { loaderPick, matchInfoOf, useI18n } from "@martytv/ui";
 import { api } from "../api";
 import { useDevices } from "../queries";
 import { useCatalogConfig, useCatalogLang, useMedia, useSeason } from "../catalog/queries";
@@ -446,7 +446,7 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
 
       {covered && !fallback && (
         <Loader
-          style={loaderPick.resolve(settings.loading_style, loadId)}
+          style={loaderPick.resolve(settings.loading_style, loadId, () => matchInfoOf(mediaId, m))}
           m={{
             p,
             stage,
