@@ -127,19 +127,24 @@ export function PosterCard({
         </div>
         {square && focused && <Brackets small />}
       </div>
-      {showTitle && <CardCaption design={design} focused={focused} title={item.title} sub={item.year ? String(item.year) : null} />}
+      {showTitle && <CardCaption design={design} focused={focused} title={item.title} sub={item.year ? String(item.year) : null} year />}
     </div>
   );
 }
 
-function CardCaption({ design, focused, title, sub }: { design: Design; focused: boolean; title: string; sub?: string | null }) {
+/** `year`: `sub` is the release year (Вестерн prints it as the bill's reward). */
+function CardCaption({ design, focused, title, sub, year }: { design: Design; focused: boolean; title: string; sub?: string | null; year?: boolean }) {
   if (design === "terminal") {
     return <p className={`t-label mt-3 truncate text-[17px] ${focused ? "text-text" : "text-muted"}`}>{title}</p>;
   }
   return (
     <>
       <p className={`mt-3 truncate text-[22px] leading-tight ${focused ? "font-bold text-text" : "text-text/85"}`}>{title}</p>
-      {sub && <p className="mt-1 truncate text-[18px] text-muted">{sub}</p>}
+      {sub && (
+        <p data-year={year ? "" : undefined} className="mt-1 truncate text-[18px] text-muted">
+          {sub}
+        </p>
+      )}
     </>
   );
 }

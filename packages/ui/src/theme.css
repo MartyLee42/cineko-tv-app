@@ -15,6 +15,8 @@
      design-matrix             — «Матрица»: green phosphor digital rain, glowing mono type (terminal skeleton)
      design-stickerbook        — «Стикербук»: die-cut sticker posters, washi tape, cream/pink/mint on ink (kinozal skeleton)
      design-pocketpet          — «Тамагочи»: pastel toy shell around a grey-green LCD, pixel ink and type (terminal skeleton)
+     design-western            — «Вестерн»: sun-bleached desert, wanted posters, letterboxing, slab type (kinozal skeleton)
+     design-redroom            — «Красная комната»: red curtains, zigzag floor, ivory serif capitals (projector skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {
@@ -283,6 +285,48 @@ html.design-pocketpet {
   color-scheme: light;
 }
 
+/* «Вестерн»: a spaghetti-western homage on a sun-bleached desert: pale sand sky, dusty ochre, dark
+   saddle-brown ink, a rust-red «wanted» accent; wood-type slab headings (Kelly Slab, has Cyrillic),
+   body text Onest. Light, like Тамагочи: the kinozal skeleton reads its tokens. */
+html.design-western {
+  --mt-bg: 236, 220, 188;
+  --mt-surface: 224, 199, 154;
+  --mt-surface-2: 210, 180, 130;
+  --mt-border: 150, 106, 62;
+  --mt-text: 43, 26, 14;
+  --mt-muted: 98, 66, 40;
+  --mt-accent: 163, 58, 28;
+  --mt-accent-strong: 208, 138, 46;
+  --mt-on-accent: 255, 243, 222;
+  --mt-focus: 43, 26, 14;
+  --mt-danger: 178, 34, 34;
+  --mt-ok: 46, 125, 50;
+  --mt-warn: 168, 98, 10;
+  --mt-font-display: "Kelly Slab", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 3px;
+  --mt-radius-control: 4px;
+  color-scheme: light;
+}
+
+/* «Красная комната»: a homage to a famous surreal TV series' red room: near-black, deep curtain red,
+   ivory; elegant capitals in Playfair Display (has Cyrillic). */
+html.design-redroom {
+  --mt-bg: 11, 6, 6;
+  --mt-surface: 42, 10, 12;
+  --mt-surface-2: 62, 16, 18;
+  --mt-border: 110, 34, 36;
+  --mt-text: 244, 239, 230;
+  --mt-muted: 196, 178, 170;
+  --mt-accent: 226, 44, 52;
+  --mt-accent-strong: 240, 236, 228;
+  --mt-on-accent: 255, 255, 255;
+  --mt-focus: 240, 236, 228;
+  --mt-font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 4px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
 /* Headings in the later designs use their display face (web and TV). */
 html.design-deco h1, html.design-deco h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2 { font-family: var(--mt-font-display); }
@@ -294,6 +338,8 @@ html.design-constructivism h1, html.design-constructivism h2 { font-family: var(
 html.design-matrix h1, html.design-matrix h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 0 10px rgba(0, 255, 65, .55); }
 html.design-stickerbook h1, html.design-stickerbook h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-pocketpet h1, html.design-pocketpet h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; line-height: 1.25; }
+html.design-western h1, html.design-western h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .02em; }
+html.design-redroom h1, html.design-redroom h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .04em; }
 
 html, body, #root { height: 100%; }
 body {

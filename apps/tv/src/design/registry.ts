@@ -11,7 +11,7 @@ export interface Skin {
   /** Has a light colour mode (Кинозал only). */
   light: boolean;
   /** Full-screen background layer drawn behind screens (null = plain bg colour / skeleton default). */
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | null;
+  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "desert" | "curtains" | null;
   /** Animated background layers (transform-only); the calm mode stops them. */
   animatedLayers: 0 | 1;
   /** Headline size factor on the skeleton's sizes (wide display faces need less). */
@@ -39,6 +39,9 @@ export const SKINS: Record<DesignSetting, Skin> = {
   pocketpet: { id: "pocketpet", skeleton: "terminal", light: false, background: "lcd", titleScale: 0.6, animatedLayers: 0, ornaments: none },
   // Mono display type runs wide: titles a little smaller.
   matrix: { id: "matrix", skeleton: "terminal", light: false, background: "rain", titleScale: 0.86, animatedLayers: 0, ornaments: { ...none, cornerBrackets: true } },
+  western: { id: "western", skeleton: "kinozal", light: false, background: "desert", titleScale: 1, animatedLayers: 0, ornaments: { ...none, heroEdges: true, titlePlate: true } },
+  // Playfair runs wide in capitals: titles a touch smaller.
+  redroom: { id: "redroom", skeleton: "projector", light: false, background: "curtains", titleScale: 0.9, animatedLayers: 0, ornaments: { ...none, heroEdges: true } },
 };
 
 export { DESIGNS };
