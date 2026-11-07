@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CAT_AFTER_MS, CodeMatcher, codeKey, dvdStep, idlePhase, SAVER_AFTER_MS, SECRET, type CodeKey } from "./logic";
+import { CAT_AFTER_MS, CodeMatcher, codeKey, dvdStep, idlePhase, PAUSED_SAVER_MS, pausedSaverDue, SAVER_AFTER_MS, SECRET, type CodeKey } from "./logic";
 
 describe("idle phases on Home", () => {
   const all = { cat: true, saver: true };
@@ -48,5 +48,15 @@ describe("DVD bounce", () => {
     // A long frame (the TV was busy) doesn't fling it out.
     const s3 = dvdStep({ x: 5, y: 5, vx: -400, vy: -400 }, 5000, 1920, 1080, 300, 100);
     expect(s3).toMatchObject({ x: 0, y: 0, bounced: true });
+  });
+});
+
+describe("the screensaver over a paused player", () => {
+  it("waits PAUSED_SAVER_MS from the pause or the last key, whichever is later", () => {
+    expect(pausedSaverDue(null, 0, PAUSED_SAVER_MS * 3)).toBe(false);
+    expect(pausedSaverDue(1000, 0, 1000 + PAUSED_SAVER_MS - 1)).toBe(false);
+    expect(pausedSaverDue(1000, 0, 1000 + PAUSED_SAVER_MS)).toBe(true);
+    expect(pausedSaverDue(1000, 60_000, 1000 + PAUSED_SAVER_MS)).toBe(false);
+    expect(pausedSaverDue(1000, 60_000, 60_000 + PAUSED_SAVER_MS)).toBe(true);
   });
 });

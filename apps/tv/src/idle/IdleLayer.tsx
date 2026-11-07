@@ -137,7 +137,7 @@ function Dance({ cv }: { cv: boolean }) {
   );
 }
 
-function Screensaver({ cv }: { cv: boolean }) {
+export function Screensaver({ cv }: { cv: boolean }) {
   const [style] = useState(() => saverPref.get());
   return (
     <div data-testid="screensaver" data-saver={style} className="idle-saver absolute left-0 top-0 z-[60]" style={{ width: 1920, height: 1080 }}>
