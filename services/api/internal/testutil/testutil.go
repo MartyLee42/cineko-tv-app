@@ -99,6 +99,8 @@ func New(t *testing.T, opts ...Options) *Env {
 			return "off" // ratings tests point it at a fake
 		case "THEINTRODB_URL", "INTRODB_URL":
 			return "off" // intro/credits databases: segments tests use fakes
+		case "NEW_TV_DESIGN":
+			return "off" // paired TVs follow their profiles (tests opt in)
 		}
 		return ""
 	})

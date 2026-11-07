@@ -1,8 +1,10 @@
+@import "@martytv/ui/themes/vague.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/caveat.css";
 /* ---------------------------------------------------------------- «Новая волна» (terminal skeleton)
    A French New Wave homage (mood only, no copied title cards): a black screen, section titles as big
    bold words on solid red / blue / white cards (Unbounded capitals), handwritten margin notes
    (Caveat), square everything. Focus = a white frame with a red block offset. Cute touch: screens
-   arrive with a jump cut (an instant 2–3 frame offset, ≤ 150 ms; off in calm mode). */
+   switch without a transition. */
 .nv-ground { background-color: rgb(10,10,12); overflow: hidden; }
 /* Margin cards: a word set sideways (reads bottom to top), a pencilled note on the blue one. */
 .nv-side { position: absolute; left: 29px; top: 50%; white-space: nowrap; font-family: "Unbounded", "Onest", sans-serif; font-weight: 800; font-size: 34px; line-height: 1; letter-spacing: .04em; color: #fff; -webkit-transform: translate(-50%, -50%) rotate(-90deg); transform: translate(-50%, -50%) rotate(-90deg); }
@@ -79,16 +81,4 @@ html.design-vague .t-mono-img { -webkit-filter: grayscale(1) contrast(1.3); filt
 html.design-vague .t-scanlines { background-image: none; }
 html.design-vague .t-band-fade { background: linear-gradient(0deg, rgb(10,10,12) 0%, rgba(10,10,12,.6) 38%, rgba(10,10,12,.2) 70%, rgba(10,10,12,.4) 100%); }
 
-/* Jump cut: a screen arrives in three hard frames — blank, a jolt off to one side, a jolt back —
-   then sits still (steps(1): no tween, ≈ 140 ms). On the screen root's child, so it plays when the
-   (lazy) screen actually mounts, not on the empty frame before. Off in calm mode / reduced motion. */
-html.design-vague [data-design-shell]:not([data-calm]) .mt-screen > * { animation: nv-cut 140ms steps(1, end) backwards; }
-@keyframes nv-cut {
-  0% { opacity: 0; }
-  30% { opacity: 1; -webkit-transform: translate3d(-26px, 0, 0); transform: translate3d(-26px, 0, 0); }
-  65% { opacity: 1; -webkit-transform: translate3d(12px, -6px, 0); transform: translate3d(12px, -6px, 0); }
-  100% { opacity: 1; -webkit-transform: none; transform: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  html.design-vague .mt-screen > * { animation: none !important; }
-}
+/* No screen transition: a jump cut replayed whenever a lazy screen part arrived and read as layout jumps. */

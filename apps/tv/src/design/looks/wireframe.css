@@ -1,3 +1,4 @@
+@import "@martytv/ui/themes/wireframe.css"; /* the design's tokens (not in the startup CSS) */
 /* «wireframe»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
 /* ================================================================ skins
    The later designs reuse a skeleton (html.skel-*) and restyle it here

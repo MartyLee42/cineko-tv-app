@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/jost.css"; /* not in the startup CSS */
 /* ---- anderson: a symmetric pastel façade rises, the awning drops, the title card falls into place,
    Cineko appears in the doorway, the desk bell is pressed («дзынь»). Transform / opacity only. */
 @keyframes ani-rise { from { transform: translateY(720px); } to { transform: translateY(0); } }

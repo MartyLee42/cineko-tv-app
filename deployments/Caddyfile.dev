@@ -22,6 +22,9 @@
 			flush_interval -1
 		}
 	}
+	# «Демо TV» (apps/tv/src/demo.ts).
+	@demotv path /demo_tv /demo_tv/
+	redir @demotv /tv/?demo=1 302
 	handle /tv/* {
 		reverse_proxy tv:5174
 	}

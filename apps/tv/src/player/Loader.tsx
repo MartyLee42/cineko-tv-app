@@ -15,7 +15,8 @@ import { useFilmTheme } from "../filmtheme/load";
 import { loadTracker, SHOW_EVERY_MS, type LoadStage } from "./loading";
 import type { LoadingStyle } from "../profile/settings";
 import { Backdrop, pct, Status, type LoaderModel } from "./loaderParts";
-import { LOADERS, loaderKind, type LoaderKind } from "./loaderChunks";
+import { loaderKind, type LoaderKind } from "./loaderChunks";
+import { LOADERS } from "./loaderStyles";
 
 export type { LoaderModel };
 
@@ -59,11 +60,12 @@ export function Loader({ style, m, preview = false }: { style: LoadingStyle; m: 
   const { locale } = useI18n();
   // «Конструктивизм» and «Матрица»: their own loader whatever the style.
   const applied = useAppliedDesign();
-  // «Сюрприз»: only Settings shows the setting itself (a load gets the picked style).
-  if (isLoaderPicker(style)) return <PickTile picker={style} />;
+  // «Тема под фильм»: the title's look (from its cached Details; not in Settings' preview). Hooks first, always.
+  const picker = isLoaderPicker(style);
+  const filmTheme = useFilmTheme(preview || picker ? null : cachedDetail(m.seed, locale));
+  // «Сюрприз» / «Под фильм»: only Settings shows the setting itself (a load gets the picked style).
+  if (picker) return <PickTile picker={style} />;
   const kind = loaderKind(style, applied ?? "kinozal", preview);
-  // «Тема под фильм»: the title's look (from its cached Details; not in Settings' preview).
-  const filmTheme = useFilmTheme(preview ? null : cachedDetail(m.seed, locale));
   return (
     <div
       data-testid={preview ? "loader-preview" : m.done ? "loader-finale" : "player-preparing"}

@@ -1,0 +1,22 @@
+/* «popart» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Поп-арт»: a comic page: process blue with Ben-Day dots, yellow + red, black ink outlines and hard
+   offset shadows. Headings in Rubik Mono One (heavy comic «БАМ!» lettering, has Cyrillic). */
+html.design-popart {
+  --mt-bg: 20, 58, 150;
+  --mt-surface: 14, 34, 98;
+  --mt-surface-2: 30, 74, 178;
+  --mt-border: 0, 0, 0;
+  --mt-text: 255, 255, 255;
+  --mt-muted: 206, 220, 250;
+  --mt-accent: 255, 214, 0;
+  --mt-accent-strong: 255, 45, 60;
+  --mt-on-accent: 0, 0, 0;
+  --mt-focus: 255, 214, 0;
+  --mt-font-display: "Rubik Mono One", "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 4px;
+  --mt-radius-control: 10px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-popart h1, html.design-popart h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; word-spacing: -.35em; }

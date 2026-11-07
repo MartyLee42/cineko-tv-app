@@ -231,13 +231,15 @@ test("TV For you: rows, dismiss, menus, history, explore, surprise in every desi
       await expect(tv.getByTestId("hero")).toContainText(/Because you liked “The Matrix”/i);
       await shot(tv, `${design}-home`);
 
-      // ---- «Не интересно» (hold OK): the dismiss is sent and the card leaves the row.
+      // ---- «Не интересно» (hold OK → quick actions): the dismiss is sent and the card leaves the row.
       const card = fyRow.locator(`[data-card-id="${pool[1]!.id}"]`);
       await expect(card).toHaveCount(1);
       await holdOk(tv);
-      const menu = tv.getByTestId("foryou-menu");
+      const menu = tv.getByTestId("tv-quick");
       await expect(menu).toBeVisible();
-      await expect(menu.locator("[data-action=dismiss]")).toHaveText("Not interested");
+      await expect(menu.locator("[data-quick=dismiss]")).toContainText("Not interested");
+      await press(tv, "ArrowDown", 3); // ♥ → watchlist → rating → «Не интересно»
+      await expect(menu.locator("[data-quick=dismiss]")).toHaveClass(/is-focused/);
       await press(tv, "Enter");
       await expect(menu).toHaveCount(0);
       await expect(card).toHaveCount(0);

@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/caveat.css"; /* not in the startup CSS */
 /* ---- vague: hard cuts only — each word card is on screen for one shot (with one jolt mid-shot), then gone */
 @keyframes nvi-flash {
   0% { opacity: 1; transform: translate(0, 0); }

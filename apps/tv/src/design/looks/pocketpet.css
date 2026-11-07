@@ -1,3 +1,5 @@
+@import "@martytv/ui/themes/pocketpet.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/press-start-2p.css";
 /* «pocketpet»: this design's own rules (loaded with the design's chunk, design/looks). */
 /* ---------------------------------------------------------------- «Тамагочи» (terminal skeleton)
    A pastel toy: the app is its grey-green LCD (near-black pixel ink, faint unlit cells, a soft

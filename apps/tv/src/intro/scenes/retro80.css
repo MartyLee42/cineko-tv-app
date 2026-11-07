@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/russo-one.css"; /* not in the startup CSS */
 /* ---- retro80: VCR «PLAY», tracking noise, chrome logo over a striped sunset */
 @keyframes r8i-blue { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes r8i-noise { from { transform: translateY(-160px); opacity: 1; } 80% { opacity: 1; } to { transform: translateY(720px); opacity: 0; } }

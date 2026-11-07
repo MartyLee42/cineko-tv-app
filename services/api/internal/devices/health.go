@@ -229,6 +229,10 @@ func (h *Handlers) postHealth(c fiber.Ctx) error {
 	if id != p.DeviceID {
 		return httpx.NotFound()
 	}
+	if p.Demo {
+		// «Демо TV» is a browser tab, not a TV: its health is not recorded.
+		return c.SendStatus(fiber.StatusNoContent)
+	}
 	if len(c.Body()) > MaxHealthBody {
 		return httpx.NewError(fiber.StatusRequestEntityTooLarge, "payload_too_large", "Body is larger than 4 KB.")
 	}
