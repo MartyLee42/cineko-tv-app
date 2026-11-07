@@ -7,7 +7,7 @@ html.design-stickerbook {
   --mt-surface-2: 76, 66, 104;
   --mt-border: 112, 100, 146;
   --mt-text: 255, 248, 239;
-  --mt-muted: 204, 194, 222;
+  --mt-muted: 216, 208, 232;
   --mt-accent: 255, 111, 165;
   --mt-accent-strong: 95, 211, 196;
   --mt-on-accent: 42, 12, 26;
@@ -16,6 +16,8 @@ html.design-stickerbook {
   --mt-radius-card: 14px;
   --mt-radius-control: 16px;
   color-scheme: dark;
+  --mt-accent-text: 255, 150, 190;
+  --mt-danger: 255, 170, 170;
 }
 
 /* Headings use the display face (web and TV). */

@@ -10,9 +10,9 @@
 
 html.design-odyssey body, html.design-odyssey .bg-bg { background-color: rgb(var(--mt-bg)); }
 /* Scrims fade the artwork into station white (the projector layout's text sits on them). */
-html.design-odyssey .p-scrim-left { background: linear-gradient(90deg, rgba(238,241,244,.97) 0%, rgba(238,241,244,.86) 32%, rgba(238,241,244,.3) 62%, rgba(238,241,244,0) 82%); }
-html.design-odyssey .p-scrim-bottom { background: linear-gradient(0deg, rgba(238,241,244,1) 0%, rgba(238,241,244,.86) 24%, rgba(238,241,244,0) 52%); }
-html.design-odyssey .p-scrim-top { background: linear-gradient(180deg, rgba(238,241,244,.8) 0%, rgba(238,241,244,0) 100%); }
+html.design-odyssey .p-scrim-left { background: linear-gradient(90deg, rgba(238,241,244, .95) 0%, rgba(238,241,244, .88) 34%, rgba(238,241,244, .76) 55%, rgba(238,241,244, .3) 74%, rgba(238,241,244, 0) 90%); }
+html.design-odyssey .p-scrim-bottom { background: linear-gradient(0deg, rgba(238,241,244, .97) 0%, rgba(238,241,244, .8) 24%, rgba(238,241,244, 0) 52%); }
+html.design-odyssey .p-scrim-top { background: linear-gradient(180deg, rgba(238,241,244, .86) 0%, rgba(238,241,244, .72) 50%, rgba(238,241,244, 0) 100%); }
 
 /* The red light: the one focus ring everywhere. */
 html.design-odyssey .tv-focus.is-focused { box-shadow: 0 0 0 3px rgb(238,241,244), 0 0 0 6px rgb(226,30,22), 0 0 16px 7px rgba(255,40,28,.55), 0 0 44px 14px rgba(255,40,28,.22); transition-timing-function: cubic-bezier(.25,.1,.25,1); }
@@ -35,7 +35,7 @@ html.design-odyssey .p-outline { border-radius: 2px; border-width: 1px; border-c
 html.design-odyssey .mt-card { border-radius: 2px; }
 html.design-odyssey .mt-card:not(.is-focused) { box-shadow: 0 6px 16px rgba(16,19,24,.16); }
 html.design-odyssey .mt-card::after { content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid rgba(16,19,24,.14); border-radius: inherit; pointer-events: none; }
-html.design-odyssey .p-card-shade { background: linear-gradient(0deg, rgba(10,12,16,.86) 0%, rgba(10,12,16,.32) 36%, rgba(10,12,16,0) 62%); }
+html.design-odyssey .p-card-shade { background: linear-gradient(0deg, rgba(10,12,16,.9) 0%, rgba(10,12,16,.72) 32%, rgba(10,12,16,0) 64%); }
 
 /* Home hero and Details header sit on the white scrims: dark ink. */
 html.design-odyssey [data-testid="hero"] [class*="text-white"], html.design-odyssey [data-media-id] [class*="text-white"] { color: rgba(16,19,24,.86); }

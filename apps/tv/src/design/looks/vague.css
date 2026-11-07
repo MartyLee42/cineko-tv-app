@@ -24,7 +24,7 @@ html.design-vague h3.t-label, html.design-vague h2.t-label {
   background: rgb(52,92,222);
   color: #fff;
 }
-html.design-vague h3.t-label.text-text { background: rgb(230,40,30); }
+html.design-vague h3.t-label.text-text { background: rgb(220,34,26); }
 html.design-vague h2.t-label { background: rgb(250,250,248); color: rgb(10,10,12); }
 
 /* Handwritten notes: the hero's eyebrow and Details' tagline, pencilled in the margin. */
@@ -49,16 +49,16 @@ html.design-vague [data-testid="hero"] h2, html.design-vague h1.font-display { l
 /* The menu: plain black; tabs in bold capitals; the focused tab a red card, the active one underlined white. */
 html.design-vague nav[data-design-nav="terminal"] { background: rgb(10,10,12); }
 html.design-vague nav[data-design-nav="terminal"] .t-tab { font-family: var(--mt-font-label); font-weight: 500; letter-spacing: 0; }
-html.design-vague nav[data-design-nav="terminal"] .t-tab.bg-text { background: rgb(230,40,30); color: #fff; }
+html.design-vague nav[data-design-nav="terminal"] .t-tab.bg-text { background: rgb(220,34,26); color: #fff; }
 html.design-vague nav[data-design-nav="terminal"] .t-tab .bg-accent { background: #fff; height: 5px; }
 html.design-vague [data-testid="status-ticker"] { background: rgb(52,92,222); color: #fff; font-weight: 700; }
 
 /* Cards and buttons: square; focus = a white frame and a red block offset down-right. */
-html.design-vague .tv-focus.is-focused { box-shadow: 0 0 0 5px rgb(10,10,12), 0 0 0 11px #fff, 14px 14px 0 11px rgb(230,40,30); }
+html.design-vague .tv-focus.is-focused { box-shadow: 0 0 0 5px rgb(10,10,12), 0 0 0 11px #fff, 14px 14px 0 11px rgb(220,34,26); }
 html.design-vague .t-bracket-tl, html.design-vague .t-bracket-tr, html.design-vague .t-bracket-bl, html.design-vague .t-bracket-br { display: none; }
 html.design-vague .tv-focus[role=button], html.design-vague .tv-chip, html.design-vague .tv-release, html.design-vague .tv-panel,
 html.design-vague .tv-focus.rounded-full, html.design-vague .tv-focus .rounded-full { border-radius: 0 !important; }
-html.design-vague .tv-focus.bg-accent:not(.mt-card), html.design-vague .tv-chip.bg-accent { background: rgb(230,40,30); color: #fff; font-weight: 700; }
+html.design-vague .tv-focus.bg-accent:not(.mt-card), html.design-vague .tv-chip.bg-accent { background: rgb(220,34,26); color: #fff; font-weight: 700; }
 html.design-vague .tv-focus[role=button].bg-surface-2:not(.mt-card), html.design-vague .tv-chip.bg-surface-2, html.design-vague .tv-chip.bg-surface { background: rgb(250,250,248); color: rgb(10,10,12); font-weight: 700; }
 html.design-vague .tv-focus[role=button].bg-surface-2 .text-muted, html.design-vague .tv-chip.bg-surface-2 .text-muted { color: rgb(70,70,76); }
 html.design-vague .tv-focus[role=button].bg-surface-2 .text-text, html.design-vague .tv-chip.bg-surface-2 .text-text { color: rgb(10,10,12); }
@@ -67,18 +67,17 @@ html.design-vague .tv-release.is-focused { background: #fff; color: rgb(10,10,12
 html.design-vague .tv-release.is-focused .text-text, html.design-vague .tv-release.is-focused .text-muted { color: rgb(10,10,12); }
 html.design-vague .t-hair { border-color: rgba(250,250,248,.28); }
 html.design-vague .t-tag { background: rgb(10,10,12); }
-html.design-vague .t-seg-on { background: rgb(230,40,30); }
+html.design-vague .t-seg-on { background: rgb(220,34,26); }
 html.design-vague .t-row-best { background: rgba(52,92,222,.25); }
 html.design-vague .t-row.is-focused { background: #fff; color: rgb(10,10,12); }
 html.design-vague .tv-rate-t-good { color: #fff; }
 html.design-vague .tv-rate-t-mid { color: rgb(170,170,176); }
 html.design-vague .tv-rate-t-bad { color: rgb(255,120,110); }
-html.design-vague .tv-progress-fill, html.design-vague .tv-check { background: rgb(230,40,30); color: #fff; }
+html.design-vague .tv-progress-fill, html.design-vague .tv-check { background: rgb(220,34,26); color: #fff; }
 html.design-vague .tv-key-hint { background: #fff; color: rgb(10,10,12); }
 html.design-vague .tv-panel, html.design-vague .tv-release:not(.is-focused) { box-shadow: inset 4px 0 0 rgb(52,92,222); }
 /* Details band: a hard black-and-white still, no scanlines. */
 html.design-vague .t-mono-img { -webkit-filter: grayscale(1) contrast(1.3); filter: grayscale(1) contrast(1.3); }
 html.design-vague .t-scanlines { background-image: none; }
-html.design-vague .t-band-fade { background: linear-gradient(0deg, rgb(10,10,12) 0%, rgba(10,10,12,.6) 38%, rgba(10,10,12,.2) 70%, rgba(10,10,12,.4) 100%); }
 
 /* No screen transition: a jump cut replayed whenever a lazy screen part arrived and read as layout jumps. */

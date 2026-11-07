@@ -21,14 +21,14 @@
 .pa-dots-red { background-image: radial-gradient(circle, rgba(255,45,60,.55) 0px, rgba(255,45,60,.55) 4px, rgba(255,45,60,0) 4.6px); background-size: 18px 18px; -webkit-mask-image: linear-gradient(200deg, #000 0%, rgba(0,0,0,0) 46%); }
 @keyframes pa-pop { 0% { transform: scale(0) rotate(-24deg); } 60% { transform: scale(1.12) rotate(-6deg); } 100% { transform: scale(1) rotate(-9deg); } }
 .pa-burst { transform: rotate(-9deg); transform-origin: 50% 50%; animation: pa-pop .45s cubic-bezier(.3,.7,.3,1) .2s both; }
-html.design-popart .p-scrim-left { background: linear-gradient(90deg, rgba(12,30,92,.94) 0%, rgba(12,30,92,.7) 30%, rgba(12,30,92,.18) 60%, rgba(12,30,92,0) 80%); }
-html.design-popart .p-scrim-bottom { background: linear-gradient(0deg, rgba(12,30,92,.97) 0%, rgba(12,30,92,.74) 22%, rgba(12,30,92,0) 50%); }
-html.design-popart .p-scrim-top { background: linear-gradient(180deg, rgba(12,30,92,.6) 0%, rgba(12,30,92,0) 100%); }
-html.design-popart .p-card-shade { background: linear-gradient(0deg, rgba(0,0,0,.82) 0%, rgba(0,0,0,.3) 36%, rgba(0,0,0,0) 62%); }
+html.design-popart .p-scrim-left { background: linear-gradient(90deg, rgba(12,30,92, .95) 0%, rgba(12,30,92, .88) 34%, rgba(12,30,92, .76) 55%, rgba(12,30,92, .3) 74%, rgba(12,30,92, 0) 90%); }
+html.design-popart .p-scrim-bottom { background: linear-gradient(0deg, rgba(12,30,92, .97) 0%, rgba(12,30,92, .8) 24%, rgba(12,30,92, 0) 52%); }
+html.design-popart .p-scrim-top { background: linear-gradient(180deg, rgba(12,30,92, .86) 0%, rgba(12,30,92, .72) 50%, rgba(12,30,92, 0) 100%); }
+html.design-popart .p-card-shade { background: linear-gradient(0deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.72) 32%, rgba(0,0,0,0) 64%); }
 /* The menu: a white comic panel, black ink and a hard shadow; the open tab red, the focused one yellow. */
 html.design-popart .p-bar { background: #fff; box-shadow: 0 0 0 4px #000, 8px 8px 0 4px #000; }
 html.design-popart .p-tab { color: #000; font-weight: 700; }
-html.design-popart .p-tab-on { background: rgb(255,45,60); color: #fff; box-shadow: inset 0 0 0 3px #000; }
+html.design-popart .p-tab-on { background: rgb(214,20,40); color: #fff; box-shadow: inset 0 0 0 3px #000; }
 html.design-popart nav .p-tab.is-focused { background: rgb(255,214,0); color: #000; box-shadow: inset 0 0 0 3px #000, 3px 3px 0 #000; }
 html.design-popart nav[data-design-nav="projector"] > div > span.text-white { text-shadow: 2px 2px 0 #000; }
 /* Cards: black ink frame + a hard black shadow; focus: up-left over a yellow ring and the shadow slab. */
@@ -38,7 +38,7 @@ html.design-popart .tv-focus.is-focused { transform: translate3d(-4px,-4px,0); b
 html.design-popart .tv-flat.is-focused { transform: none; }
 html.design-popart .p-primary { background: rgb(255,214,0); color: #000; font-weight: 700; box-shadow: 0 0 0 4px #000, 7px 7px 0 4px #000; }
 html.design-popart .p-glass { background: #fff; color: #000; box-shadow: 0 0 0 4px #000, 7px 7px 0 4px #000; }
-html.design-popart .p-primary.is-focused, html.design-popart .p-glass.is-focused { background: rgb(255,45,60); color: #fff; box-shadow: 0 0 0 4px #000, 0 0 0 10px rgb(255,214,0), 11px 11px 0 10px #000; }
+html.design-popart .p-primary.is-focused, html.design-popart .p-glass.is-focused { background: rgb(214,20,40); color: #fff; box-shadow: 0 0 0 4px #000, 0 0 0 10px rgb(255,214,0), 11px 11px 0 10px #000; }
 html.design-popart .p-outline { border-color: #000; background: rgb(255,214,0); color: #000; }
 /* Comic lettering: yellow headline with a black ink outline and a hard red shadow (text-shadows, static). */
 html.design-popart [data-testid="hero"] h2, html.design-popart [data-media-id] h1 .p-wide {
@@ -53,7 +53,7 @@ html.design-popart [data-testid="hero"] > p:first-child, html.design-popart [dat
 html.design-popart .tv-rate-chip { border: 3px solid #000; background: rgb(255,214,0); color: #000; box-shadow: 3px 3px 0 #000; }
 html.design-popart .tv-chip.is-focused { background: rgb(255,214,0); color: #000; }
 html.design-popart .tv-release.is-focused { box-shadow: 0 0 0 4px #000, 0 0 0 9px rgb(255,214,0), 10px 10px 0 9px #000; }
-html.design-popart .tv-progress-fill, html.design-popart .tv-check { background: rgb(255,45,60); color: #fff; }
+html.design-popart .tv-progress-fill, html.design-popart .tv-check { background: rgb(214,20,40); color: #fff; }
 html.design-popart .tv-progress { background: rgba(0,0,0,.6); }
 html.design-popart .tv-key-hint { background: #fff; color: #000; box-shadow: 0 0 0 3px #000, 4px 4px 0 3px #000; }
 html.design-popart .tv-panel:not(.is-focused), html.design-popart .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 3px #000, 6px 6px 0 #000; }

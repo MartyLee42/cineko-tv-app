@@ -34,8 +34,6 @@ html.design-retro80 .tv-rate-good, html.design-retro80 .tv-rate-mid, html.design
 html.design-retro80 .tv-rate-good { color: #16e0d0; }
 html.design-retro80 .tv-rate-mid { color: #ffd23a; }
 html.design-retro80 .tv-rate-bad { color: #ff7a9c; }
-html.design-retro80 .k-fade-left { background: linear-gradient(90deg, rgb(11,14,42) 0%, rgba(11,14,42,.94) 22%, rgba(11,14,42,.6) 42%, rgba(11,14,42,.12) 70%, rgba(11,14,42,0) 100%); }
-html.design-retro80 .k-fade-bottom { background: linear-gradient(0deg, rgb(11,14,42) 0%, rgba(11,14,42,.9) 20%, rgba(11,14,42,0) 62%); }
 html.design-retro80 .tv-key-hint { background: rgba(11,14,42,.86); box-shadow: inset 0 0 0 2px rgba(22,224,208,.5); }
 html.design-retro80 .tv-chip.is-focused { background: linear-gradient(180deg, #ffd23a 0%, #ff7a1a 100%); color: #180800; }
 html.design-retro80 .tv-progress-fill, html.design-retro80 .tv-check { background: linear-gradient(90deg, #ff3b5c, #ff7a1a, #ffd23a, #16e0d0); color: #180800; }

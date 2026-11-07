@@ -26,6 +26,12 @@ module.exports = {
         ok: v("ok"),
         warn: v("warn"),
       },
+      // Accent *as text* (text-accent): a design whose accent is a fill colour too light or too
+      // dark to read on its ground sets --mt-accent-text (and --mt-accent-strong-text), see theme.css.
+      textColor: {
+        accent: "rgba(var(--mt-accent-text, var(--mt-accent)), <alpha-value>)",
+        "accent-strong": "rgba(var(--mt-accent-strong-text, var(--mt-accent-strong)), <alpha-value>)",
+      },
       fontFamily: {
         sans: ["var(--mt-font-body)"],
         display: ["var(--mt-font-display)"],

@@ -152,7 +152,7 @@ export function ConfirmSheet({
             onClick={onConfirm}
             disabled={busy}
             data-testid="confirm-yes"
-            className={`min-h-[48px] rounded-xl px-2 font-semibold disabled:opacity-60 ${danger ? "bg-danger text-white hover:bg-danger/85" : "bg-accent text-on-accent hover:bg-accent-strong"}`}
+            className={`min-h-[48px] rounded-xl px-2 font-semibold disabled:opacity-60 ${danger ? "bg-danger text-bg hover:bg-danger/85" : "bg-accent text-on-accent hover:bg-accent-strong"}`}
           >
             {confirm}
           </button>

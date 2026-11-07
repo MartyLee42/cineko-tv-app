@@ -508,7 +508,7 @@ function RowHeader({ design, index, title, current, height, badge }: { design: D
   }
   return (
     <div className="flex items-center" style={{ height }}>
-      <h3 className={`truncate text-[31px] font-bold ${current || design === "projector" ? "text-text" : "text-text/70"}`}>{title}</h3>
+      <h3 className={`truncate text-[31px] font-bold ${current || design === "projector" ? "text-text" : "text-text/80"}`}>{title}</h3>
       {badge && <span data-testid="reco-unseen" className="ml-5 text-[22px] font-bold text-accent">{badge}</span>}
     </div>
   );

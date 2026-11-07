@@ -115,7 +115,7 @@ function AdminTabs({ tab, superAdmin, onChange }: { tab: AdminTab; superAdmin: b
           {t(x.label)}
           {x.id === "errors" && unseenErrors > 0 && (
             <span
-              className="ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1 text-[11px] font-semibold leading-5 text-white"
+              className="ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1 text-[11px] font-semibold leading-5 text-bg"
               aria-label={t("admin.errors.tab_badge", { n: unseenErrors })}
               data-testid="errors-tab-badge"
             >

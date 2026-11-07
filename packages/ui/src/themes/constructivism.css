@@ -8,7 +8,7 @@ html.design-constructivism {
   --mt-border: 112, 98, 84;
   --mt-text: 243, 234, 214;
   --mt-muted: 190, 178, 156;
-  --mt-accent: 215, 38, 30;
+  --mt-accent: 205, 34, 28;
   --mt-accent-strong: 239, 228, 204;
   --mt-on-accent: 248, 240, 222;
   --mt-focus: 243, 234, 214;
@@ -17,6 +17,8 @@ html.design-constructivism {
   --mt-radius-card: 0px;
   --mt-radius-control: 0px;
   color-scheme: dark;
+  --mt-accent-text: 245, 128, 112;
+  --mt-danger: 245, 110, 100;
 }
 
 /* Headings use the display face (web and TV). */

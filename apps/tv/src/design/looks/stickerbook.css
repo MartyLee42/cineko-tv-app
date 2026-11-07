@@ -96,8 +96,6 @@ html.design-stickerbook .tv-rate-good, html.design-stickerbook .tv-rate-mid, htm
 html.design-stickerbook .tv-rate-good { color: #13806f; }
 html.design-stickerbook .tv-rate-mid { color: #8a5a00; }
 html.design-stickerbook .tv-rate-bad { color: #c22a5c; }
-html.design-stickerbook .k-fade-left { background: linear-gradient(90deg, rgb(42,36,56) 0%, rgba(42,36,56,.94) 22%, rgba(42,36,56,.6) 42%, rgba(42,36,56,.12) 70%, rgba(42,36,56,0) 100%); }
-html.design-stickerbook .k-fade-bottom { background: linear-gradient(0deg, rgb(42,36,56) 0%, rgba(42,36,56,.9) 20%, rgba(42,36,56,0) 62%); }
 html.design-stickerbook .tv-key-hint { background: rgba(58,50,80,.94); box-shadow: inset 0 0 0 2px rgba(255,248,239,.5); }
 html.design-stickerbook .tv-chip.is-focused { background: rgb(255,209,102); color: rgb(42,36,56); }
 html.design-stickerbook .tv-progress-fill, html.design-stickerbook .tv-check { background: rgb(95,211,196); color: rgb(10,40,36); }

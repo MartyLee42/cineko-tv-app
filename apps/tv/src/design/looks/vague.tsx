@@ -12,7 +12,7 @@ import { layer } from "./common";
 function Cards({ dim }: { dim: boolean }) {
   const { t } = useI18n();
   return (
-    <div data-skin-bg="cards" className={`nv-ground ${layer}`} style={{ opacity: dim ? 0.4 : 1 }}>
+    <div aria-hidden data-skin-bg="cards" className={`nv-ground ${layer}`} style={{ opacity: dim ? 0.4 : 1 }}>
       <div className="absolute" style={{ left: 0, top: 168, width: 58, height: 430, background: "#e6281e" }}>
         <span className="nv-side">{t("designs.vague.side")}</span>
       </div>

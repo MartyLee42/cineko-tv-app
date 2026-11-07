@@ -142,7 +142,7 @@ function SectionHeader({ design, index, title, current }: { design: Design; inde
   }
   return (
     <div className="flex items-center" style={{ height: HEADER }}>
-      <h3 className={`truncate text-[31px] font-bold ${current || design === "projector" ? "text-text" : "text-text/70"}`}>{title}</h3>
+      <h3 className={`truncate text-[31px] font-bold ${current || design === "projector" ? "text-text" : "text-text/80"}`}>{title}</h3>
     </div>
   );
 }

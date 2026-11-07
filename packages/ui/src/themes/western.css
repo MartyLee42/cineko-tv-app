@@ -8,18 +8,19 @@ html.design-western {
   --mt-surface-2: 210, 180, 130;
   --mt-border: 150, 106, 62;
   --mt-text: 43, 26, 14;
-  --mt-muted: 98, 66, 40;
+  --mt-muted: 84, 56, 34;
   --mt-accent: 163, 58, 28;
   --mt-accent-strong: 208, 138, 46;
   --mt-on-accent: 255, 243, 222;
   --mt-focus: 43, 26, 14;
-  --mt-danger: 178, 34, 34;
-  --mt-ok: 46, 125, 50;
-  --mt-warn: 168, 98, 10;
+  --mt-danger: 140, 27, 27;
+  --mt-ok: 30, 82, 33;
+  --mt-warn: 105, 61, 6;
   --mt-font-display: "Kelly Slab", Georgia, "Times New Roman", serif;
   --mt-radius-card: 3px;
   --mt-radius-control: 4px;
   color-scheme: light;
+  --mt-accent-text: 127, 45, 22;
 }
 
 /* Headings use the display face (web and TV). */

@@ -27,13 +27,13 @@ export function CvPlan() {
   return (
     <section data-testid="cv-plan" aria-label={`Пятилетка ${plan.year}`} className="cv-plan-web relative overflow-hidden px-4 py-4 sm:px-6">
       <div className="flex flex-wrap items-end gap-x-6 gap-y-1">
-        <p className="font-display text-sm font-bold uppercase tracking-[0.2em] text-[#d7261e]">Пятилетка {plan.year} · план по просмотру</p>
+        <p className="font-display text-sm font-bold uppercase tracking-[0.2em] text-[#a8170f]">Пятилетка {plan.year} · план по просмотру</p>
         <p className="font-display text-2xl font-bold uppercase leading-none sm:text-4xl">
-          Просмотрено {plan.done} из {plan.target} <span className="text-[#d7261e]">({plan.pct}%)</span>
+          Просмотрено {plan.done} из {plan.target} <span className="text-[#a8170f]">({plan.pct}%)</span>
         </p>
       </div>
       <div className="mt-3 h-3 bg-[#1a1512]/15">
-        <div className="h-full bg-[#d7261e]" style={{ width: `${Math.min(100, (plan.done / plan.target) * 100)}%` }} />
+        <div className="h-full bg-[#cd221c]" style={{ width: `${Math.min(100, (plan.done / plan.target) * 100)}%` }} />
       </div>
       {hero && (
         <p data-testid="cv-stakhanov" className="mt-3 font-display text-base font-bold uppercase tracking-wide sm:text-lg">
