@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isRealEnd, isUnexplainedJump, seekMissed } from "./glitch";
+import { isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed } from "./glitch";
 
 describe("seekMissed", () => {
   it("an engine that dropped the start seek plays near 0", () => {
@@ -37,5 +37,13 @@ describe("isUnexplainedJump", () => {
   it("normal playback and user seeks are fine", () => {
     expect(isUnexplainedJump(705, 700, false)).toBe(false);
     expect(isUnexplainedJump(2690, 700, true)).toBe(false);
+  });
+});
+
+describe("isUnexplainedDrop", () => {
+  it("flags the engine restarting from the start without a seek", () => {
+    expect(isUnexplainedDrop(3, 2400, false)).toBe(true);
+    expect(isUnexplainedDrop(2390, 2400, false)).toBe(false); // small wobble
+    expect(isUnexplainedDrop(3, 2400, true)).toBe(false); // the viewer seeked back
   });
 });
