@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FocusContext, getCurrentFocusKey, useFocusable, type FocusableComponent } from "@noriginmedia/norigin-spatial-navigation";
 import { clamp, gridNeighbor, gridPos, gridWindow, trackedIndex, type Direction } from "../catalog/virtual";
 import { Slot } from "./HRow";
+import { SkinEnd, useHasSkinEnd } from "../design/skins";
 
 /**
  * A virtualized grid: renders only the rows around the focused one, at
@@ -69,6 +70,8 @@ export function VGrid<T>({
   });
   const [start, end] = gridWindow(idx, items.length, cols, rowsBefore, rowsAfter);
   const rows = Math.ceil(items.length / cols);
+  // The skin's end card under the last row (once it is rendered), if it has one («Конец фильма»).
+  const hasEnd = useHasSkinEnd();
 
   const slots: ReactNode[] = [];
   for (let i = start; i < end; i++) {
@@ -97,6 +100,11 @@ export function VGrid<T>({
     <FocusContext.Provider value={key}>
       <div ref={ref} className="relative" style={{ height: rows * pitchY, width: cols * pitchX }}>
         {slots}
+        {hasEnd && items.length > 0 && end >= items.length && (
+          <div className="absolute left-0" style={{ top: rows * pitchY, width: cols * pitchX }}>
+            <SkinEnd kind="screen" width={cols * pitchX} height={200} />
+          </div>
+        )}
       </div>
     </FocusContext.Provider>
   );

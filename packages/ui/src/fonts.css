@@ -34,3 +34,8 @@
 /* «Стикербук» headings and tape labels (handwritten). */
 @import "@fontsource/caveat/cyrillic-700.css";
 @import "@fontsource/caveat/latin-700.css";
+/* «Мультфильм» headings (hand-lettered, like old title cards) and «Созерцание» (a quiet book serif). */
+@import "@fontsource/neucha/cyrillic-400.css";
+@import "@fontsource/neucha/latin-400.css";
+@import "@fontsource/cormorant-garamond/cyrillic-600.css";
+@import "@fontsource/cormorant-garamond/latin-600.css";

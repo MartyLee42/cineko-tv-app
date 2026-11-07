@@ -1,0 +1,17 @@
+/* ---- tarkovsky: dusk over still water, rain fades in, the logo surfaces slowly with its reflection */
+.tki-ground {
+  background-image:
+    linear-gradient(180deg, rgba(216,210,191,0) 0px, rgba(216,210,191,0) 395px, rgba(216,210,191,.08) 395px, rgba(216,210,191,0) 398px),
+    linear-gradient(180deg, #1b1e1a 0%, #161915 54%, #10120f 100%);
+}
+@keyframes tki-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tki-surface { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes tki-drift { from { transform: translateX(0); } to { transform: translateX(-120px); } }
+.tki-rain { animation: tki-in 1.4s ease both; }
+.tki-slow { animation: tki-surface 1.3s cubic-bezier(.3,.6,.3,1) both; }
+.tki-reflect { transform: scaleY(-1); opacity: .2; }
+.tki-mist {
+  left: 0; width: 1500px; height: 180px;
+  background-image: radial-gradient(ellipse 520px 60px at 380px 90px, rgba(200,204,190,.12), rgba(200,204,190,0)), radial-gradient(ellipse 640px 70px at 1050px 110px, rgba(200,204,190,.1), rgba(200,204,190,0));
+  animation: tki-drift 3.4s linear both;
+}
