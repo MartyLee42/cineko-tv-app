@@ -1,0 +1,13 @@
+/* ---- anderson: a symmetric pastel façade rises, the awning drops, the title card falls into place,
+   Cineko appears in the doorway, the desk bell is pressed («дзынь»). Transform / opacity only. */
+@keyframes ani-rise { from { transform: translateY(720px); } to { transform: translateY(0); } }
+@keyframes ani-drop { from { transform: translateY(-70px); } to { transform: translateY(0); } }
+@keyframes ani-card { 0% { opacity: 0; transform: translateY(-420px); } 70% { opacity: 1; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes ani-press { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(6px); } }
+@keyframes ani-ding { 0% { opacity: 0; transform: scale(.6); } 30% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0; transform: scale(1.25); } }
+
+.ani-rise { animation: ani-rise .7s cubic-bezier(.2,.8,.2,1) both; }
+.ani-drop { animation: ani-drop .45s cubic-bezier(.2,.8,.2,1) .35s both; }
+.ani-card { opacity: 0; animation: ani-card .6s cubic-bezier(.3,.7,.3,1) both; }
+.ani-press { animation: ani-press .25s ease-in-out both; }
+.ani-ding { opacity: 0; transform-origin: 60px 40px; animation: ani-ding .7s ease-out both; }

@@ -11,8 +11,7 @@ export interface Skin {
   /** Has a light colour mode (Кинозал only). */
   light: boolean;
   /** Full-screen background layer drawn behind screens (null = plain bg colour / skeleton default). */
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | null;
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "gouache" | "rainwater" | null;
+  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | "intertitle" | "symmetry" | "gouache" | "rainwater" | null;
   /** Animated background layers (transform-only); the calm mode stops them. */
   animatedLayers: 0 | 1;
   /** Headline size factor on the skeleton's sizes (wide display faces need less). */
@@ -45,6 +44,10 @@ export const SKINS: Record<DesignSetting, Skin> = {
   // Light by design (no dark/light switch, like Тамагочи): `light` is the colour-mode toggle.
   mult: { id: "mult", skeleton: "kinozal", light: false, background: "gouache", titleScale: 1, animatedLayers: 1, ornaments: { ...none, heroEdges: true, titlePlate: true } },
   tarkovsky: { id: "tarkovsky", skeleton: "kinozal", light: false, background: "rainwater", titleScale: 1, animatedLayers: 1, ornaments: { ...none, heroEdges: true } },
+  // Silent-film intertitles: the one animated layer is a faint projector flicker (off when calm).
+  silent: { id: "silent", skeleton: "projector", light: false, background: "intertitle", titleScale: 0.9, animatedLayers: 1, ornaments: { ...none, heroEdges: true, titlePlate: true } },
+  // Jost runs narrow and geometric; the hero title is centred.
+  anderson: { id: "anderson", skeleton: "projector", light: false, background: "symmetry", titleScale: 0.9, animatedLayers: 0, ornaments: { ...none, heroEdges: true, titlePlate: true } },
 };
 
 export { DESIGNS };

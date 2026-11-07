@@ -362,6 +362,47 @@ html.design-odyssey header.sticky { background-color: rgba(255, 255, 255, 0.94);
 html.design-odyssey :focus-visible { outline: 2px solid rgb(226, 30, 22); outline-offset: 3px; box-shadow: 0 0 14px 4px rgba(255, 40, 28, 0.45); }
 .design-swatch-odyssey { background-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 46%, #101318 46%, #101318 54%, rgba(0, 0, 0, 0) 54%), linear-gradient(26deg, rgba(0, 0, 0, 0) 49%, rgba(150, 160, 172, 0.7) 49.5%, rgba(0, 0, 0, 0) 50.5%), linear-gradient(-26deg, rgba(0, 0, 0, 0) 49%, rgba(150, 160, 172, 0.7) 49.5%, rgba(0, 0, 0, 0) 50.5%), linear-gradient(180deg, #f6f8fa 0%, #e6eaee 50%, #cfd5dc 100%) !important; background-size: 100% 30%, 100% 100%, 100% 100%, 100% 100% !important; background-position: 0 50%, 0 0, 0 0, 0 0 !important; background-repeat: no-repeat !important; box-shadow: inset 0 0 0 1px rgba(16, 19, 24, 0.25); }
 
+/* «Немое кино»: a black-and-white print: static grain and a vignette over black, posters in grey,
+   headings on intertitle cards (a double white rule), serif type. */
+html.design-silent body { background-color: rgb(var(--mt-bg)); }
+html.design-silent body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse at 50% 40%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.7) 100%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.07) 0px, rgba(255, 255, 255, 0.07) 0.8px, rgba(255, 255, 255, 0) 1.2px);
+  background-size: 100% 100%, 5px 7px;
+}
+html.design-silent img { -webkit-filter: grayscale(1) contrast(1.1); filter: grayscale(1) contrast(1.1); }
+html.design-silent h1 { display: table; padding: 0.15em 0.9em 0.25em; border: 2px solid #f2f2f2; outline: 1px solid rgba(242, 242, 242, 0.7); outline-offset: 4px; background: #0a0a0a; }
+html.design-silent section.rounded-2xl.border { border-color: rgba(242, 242, 242, 0.45); box-shadow: inset 0 0 0 4px rgb(var(--mt-surface)), inset 0 0 0 5px rgba(242, 242, 242, 0.2); }
+html.design-silent .aspect-\[2\/3\] { box-shadow: inset 0 0 0 1px rgba(242, 242, 242, 0.5); }
+html.design-silent header.sticky { box-shadow: 0 1px 0 rgba(242, 242, 242, 0.5), 0 4px 0 #0a0a0a, 0 5px 0 rgba(242, 242, 242, 0.25); }
+html.design-silent :focus-visible { outline: 2px solid #f4f4f4; outline-offset: 2px; box-shadow: 0 0 0 5px #0a0a0a, 0 0 0 6px #f4f4f4; }
+.design-swatch-silent { background-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.75) 100%), radial-gradient(circle, rgba(255, 255, 255, 0.14) 0px, rgba(255, 255, 255, 0.14) 0.8px, rgba(255, 255, 255, 0) 1.2px) !important; background-size: 100% 100%, 4px 5px !important; box-shadow: inset 0 0 0 2px #0a0a0a, inset 0 0 0 3px #f2f2f2; }
+/* «Симметрия»: a pink wall under a mint/cream awning; centred spaced-capital headings; cream mats
+   in mustard rules around panels and posters; raspberry focus. */
+html.design-anderson body { background-color: rgb(var(--mt-bg)); }
+html.design-anderson body::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 10px;
+  z-index: 60;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(90deg, #8fcfb8 0px, #8fcfb8 24px, #fbeee6 24px, #fbeee6 48px);
+}
+html.design-anderson h1 { text-align: center; }
+html.design-anderson section.rounded-2xl.border { border-radius: 0; border: 2px solid #d9a520; box-shadow: inset 0 0 0 5px rgb(var(--mt-surface)), inset 0 0 0 6px rgba(217, 165, 32, 0.6); }
+html.design-anderson .aspect-\[2\/3\] { border-radius: 0; box-shadow: inset 0 0 0 5px #fbeee6, inset 0 0 0 6px #d9a520; }
+html.design-anderson header.sticky { box-shadow: 0 2px 0 #d9a520; }
+html.design-anderson :focus-visible { outline: 3px solid rgb(122, 34, 62); outline-offset: 3px; }
+.design-swatch-anderson { background-image: repeating-linear-gradient(90deg, #8fcfb8 0px, #8fcfb8 6px, #fbeee6 6px, #fbeee6 12px), linear-gradient(#fbeee6, #fbeee6) !important; background-size: 100% 5px, 40% 30% !important; background-position: 0 0, 50% 60% !important; background-repeat: no-repeat !important; box-shadow: inset 0 0 0 2px #d9a520; }
+
 /* Page changes: a short fade-in of the new page (transform + opacity only). */
 .mt-page { -webkit-animation: mt-page-in .18s ease-out both; animation: mt-page-in .18s ease-out both; }
 @-webkit-keyframes mt-page-in { from { opacity: 0; -webkit-transform: translate3d(0, 6px, 0); } to { opacity: 1; -webkit-transform: none; } }

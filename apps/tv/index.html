@@ -20,8 +20,10 @@
         m.odyssey = "#eef1f4"; // «Одиссея»: station white, dark ink
         m.mult = "#f3e9d6"; // «Мультфильм»: warm paper (light), umber ink
         m.tarkovsky = "#141613";
+        m.silent = "#0a0a0a";
+        m.anderson = "#f6d6d6"; // «Симметрия»: powder pink, raspberry ink
         // Light designs: dark ink from the first frame.
-        var f = { pocketpet: "#182012", odyssey: "#101318" };
+        var f = { pocketpet: "#182012", odyssey: "#101318", mult: "#3a2a20", anderson: "#3a222c" };
         var bg = m[d] || "#08090c", fg = f[d] || "#f2f2f2";
         var light = d === "kinozal" && (t === "light" || (t === "system" && !!window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches));
         if (light) { bg = "#f4f5f0"; fg = "#0e100c"; }

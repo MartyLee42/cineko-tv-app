@@ -42,3 +42,14 @@
 @import "@fontsource/neucha/latin-400.css";
 @import "@fontsource/cormorant-garamond/cyrillic-600.css";
 @import "@fontsource/cormorant-garamond/latin-600.css";
+/* «Немое кино» intertitles (a period serif) and «Симметрия» (geometric, Futura-like). */
+@import "@fontsource/old-standard-tt/cyrillic-400.css";
+@import "@fontsource/old-standard-tt/latin-400.css";
+@import "@fontsource/old-standard-tt/cyrillic-700.css";
+@import "@fontsource/old-standard-tt/latin-700.css";
+@import "@fontsource/jost/cyrillic-400.css";
+@import "@fontsource/jost/latin-400.css";
+@import "@fontsource/jost/cyrillic-500.css";
+@import "@fontsource/jost/latin-500.css";
+@import "@fontsource/jost/cyrillic-700.css";
+@import "@fontsource/jost/latin-700.css";

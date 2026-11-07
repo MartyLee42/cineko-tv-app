@@ -280,6 +280,17 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 .dt-tarkovsky { background-image: repeating-linear-gradient(98deg, rgba(216,210,191,0) 0px, rgba(216,210,191,0) 9px, rgba(216,210,191,.13) 9px, rgba(216,210,191,.13) 10px), linear-gradient(180deg, rgba(0,0,0,0) 66%, rgba(216,210,191,.14) 66%, rgba(216,210,191,0) 68%, rgba(8,10,8,.5) 100%) !important; }
 .dt-tarkovsky .dt-poster { background: #6e5c43 !important; border-color: rgba(226,220,203,.25) !important; }
 .dt-tarkovsky .dt-accent + .dt-poster { background: #4f6a5c !important; }
+/* «Немое кино»: black and white, an intertitle frame on the title bar, grain dots. */
+.dt-silent { background-image: radial-gradient(circle, rgba(255,255,255,.1) 0px, rgba(255,255,255,.1) 1px, rgba(255,255,255,0) 1.4px), radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 50%, rgba(0,0,0,.7) 100%) !important; background-size: 5px 7px, 100% 100% !important; }
+.dt-silent .dt-nav { background: #0a0a0a !important; box-shadow: 0 0 0 1px #f2f2f2; }
+.dt-silent .dt-title { background: #0a0a0a !important; box-shadow: 0 0 0 2px #f2f2f2, 0 0 0 4px #0a0a0a, 0 0 0 5px #f2f2f2; }
+.dt-silent .dt-poster { border-color: #f2f2f2 !important; background: #3a3a3a !important; }
+/* «Симметрия»: pink with a mint/cream awning, centred title card in a mustard rule, framed posters. */
+.dt-anderson { background-image: repeating-linear-gradient(90deg, #8fcfb8 0px, #8fcfb8 8px, #fbeee6 8px, #fbeee6 16px) !important; background-size: 100% 6px !important; background-repeat: no-repeat !important; }
+.dt-anderson .dt-nav { border-radius: 0; box-shadow: 0 0 0 1px #d9a520; }
+.dt-anderson .dt-title { left: 27%; width: 46%; background: #3a222c !important; box-shadow: 0 0 0 4px #fbeee6, 0 0 0 5px #d9a520; }
+.dt-anderson .dt-accent { left: 40%; }
+.dt-anderson .dt-poster { border-radius: 0; border: 3px solid #fbeee6 !important; box-shadow: 0 0 0 1px #d9a520; }
 
 /* Проектор-skeleton flat elements never scale on focus (any skin). The doubled
    class outweighs the skins' focus rules, which load later (design/looks/*.css). */
