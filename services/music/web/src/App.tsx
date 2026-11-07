@@ -17,6 +17,7 @@ import { DownloadsPage, HistoryPage, LibraryPage, LikedPage, MyPlaylistPage } fr
 import { SearchPage } from "./pages/Search";
 import { AiPage } from "./pages/Ai";
 import { TabsPage } from "./pages/Tabs";
+import { SoundtrackPage } from "./pages/Soundtrack";
 
 export function App() {
   const qc = useQueryClient();
@@ -91,6 +92,7 @@ function Shell({ me, offline }: { me: Me; offline?: boolean }) {
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/ai" element={<AiPage />} />
+          <Route path="/soundtrack/:media" element={<SoundtrackPage />} />
           <Route path="/tabs" element={<TabsPage />} />
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/liked" element={<LikedPage />} />
