@@ -3,13 +3,12 @@
 // whether to draw the shared SeasonLayer. Mounted once in Layout; the
 // full-screen player (/watch) is outside Layout, inline players pause it
 // through useVideoPlaying, and title pages (trailers, backdrops) skip it.
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { isAdminRole, unwrap } from "@martytv/contracts";
 import {
   forcedState,
-  SeasonLayer,
   seasonParam,
   seasonRender,
   useReducedMotion,
@@ -22,6 +21,9 @@ import {
 import { api } from "../api";
 import { useSession } from "../session";
 import { useSettings } from "../watch/queries";
+
+// The layer (and its sprites) is its own chunk: fetched only when a holiday is on.
+const SeasonLayer = lazy(() => import("@martytv/ui/season-layer").then((m) => ({ default: m.SeasonLayer })));
 
 /** GET /status (shared with anything else that reads it): the admin's seasonal switch. */
 export function useSeasonalAllowed(): boolean {
@@ -76,6 +78,7 @@ export function WebSeasonLayer() {
   const narrow = useNarrow();
   if (!state || render === "none") return null;
   return (
+    <Suspense fallback={null}>
     <SeasonLayer
       key={`${state.id}${preview ? "-preview" : ""}`}
       season={state.id}
@@ -87,5 +90,6 @@ export function WebSeasonLayer() {
       main={state.main}
       greeting={preview ? null : { phase: state.main ? "day" : "soon", year: state.year }}
     />
+    </Suspense>
   );
 }

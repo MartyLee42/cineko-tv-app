@@ -6,7 +6,11 @@
     ".": "./src/index.ts",
     "./theme.css": "./src/theme.css",
     "./tailwind.preset.cjs": "./tailwind.preset.cjs",
-    "./fonts.css": "./src/fonts.css"
+    "./fonts.css": "./src/fonts.css",
+    "./locale-preload": "./src/localePreload.ts",
+    "./season-layer": "./src/SeasonLayer.tsx",
+    "./cozy-layer": "./src/CozyLayer.tsx",
+    "./popcorn": "./src/PopcornLoader.tsx"
   },
   "scripts": {
     "typecheck": "tsc -p .",

@@ -1,3 +1,4 @@
+import { PopcornLoader } from "@martytv/ui/popcorn";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { isAdminRole } from "@martytv/contracts";
@@ -8,7 +9,6 @@ import {
   LOCALES,
   Mascot,
   matrixPillSeen,
-  PopcornLoader,
   ProfileAvatar,
   requestPill,
   shouldAskPill,

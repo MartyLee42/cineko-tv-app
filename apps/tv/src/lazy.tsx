@@ -12,6 +12,8 @@ import type { MenuId } from "./design/menuOrder";
 import { player } from "./player/controller";
 import { live } from "./iptv/live";
 import { videoSession } from "./video/session";
+import { currentSettings } from "./profile/settings";
+import { loaderKind, preloadLoader } from "./player/loaderChunks";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -30,7 +32,12 @@ const details = chunk(() => import("./screens/catalog/DetailsScreen"));
 const catalog = chunk(() => import("./screens/catalog/chunkCatalog"));
 const media = chunk(() => import("./screens/catalog/chunkMedia"));
 const settings = chunk(() => import("./settings/chunkSettings"));
-const playback = chunk(() => import("./player/chunkPlayback"));
+const playback = chunk(() => {
+  // The profile's loading style travels with the player (it's the first thing the player shows).
+  const s = currentSettings();
+  void preloadLoader(loaderKind(s.loading_style, s.design)).catch(() => undefined);
+  return import("./player/chunkPlayback");
+});
 
 /** React.lazy over a named export of a chunk. */
 function from<M, K extends keyof M>(load: () => Promise<M>, name: K) {

@@ -4,7 +4,7 @@
 // every look plays once). Transform/opacity animations only; nothing runs
 // until the TV has been left alone.
 import { useEffect, useRef, useState } from "react";
-import { applyDesign, DESIGNS, getAppliedDesign, Logo, Mascot, SovietEmblem, useAppliedDesign, useVideoPlaying } from "@martytv/ui";
+import { applyDesign, DESIGNS, getAppliedDesign, Mascot, SovietEmblem, useAppliedDesign, useVideoPlaying } from "@martytv/ui";
 import { useCalmMotion } from "../design/skins";
 import { CodeMatcher, codeKey, DVD_COLORS, dvdStep, idlePhase, saverPref, type IdlePhase } from "./logic";
 import "./idle.css";
@@ -161,19 +161,27 @@ function SleepingCineko({ cv }: { cv: boolean }) {
   );
 }
 
-const DVD_W = 420;
-const DVD_H = 150;
+/** The logo's box: the picture fills it exactly, so it touches every edge. */
+const DVD_W = 400;
+const DVD_H = 180;
+/** «Конструктивизм»: the emblem (a disc) instead. */
+const CV_SIZE = 170;
 
-/** The wordmark bouncing between the edges; a new colour on every wall. */
+/**
+ * A still picture (no animation inside) bouncing between the edges at a
+ * fixed angle — 45°-ish, like the original — with a new colour on every wall.
+ */
 function DvdLogo({ cv }: { cv: boolean }) {
   const box = useRef<HTMLDivElement>(null);
   const [color, setColor] = useState(0);
+  const w = cv ? CV_SIZE : DVD_W;
+  const h = cv ? CV_SIZE : DVD_H;
   useEffect(() => {
-    let b = { x: 300, y: 200, vx: 150, vy: 110 };
+    let b = { x: 300, y: 200, vx: 140, vy: 140 };
     let last = 0;
     let raf = 0;
     const frame = (t: number) => {
-      const s = dvdStep(b, last ? t - last : 0, 1920, 1080, DVD_W, DVD_H);
+      const s = dvdStep(b, last ? t - last : 0, 1920, 1080, w, h);
       last = t;
       b = s;
       if (s.bounced) setColor((c) => (c + 1) % DVD_COLORS.length);
@@ -182,17 +190,35 @@ function DvdLogo({ cv }: { cv: boolean }) {
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [w, h]);
   const c = DVD_COLORS[color]!;
   return (
-    <div
-      ref={box}
-      data-testid="dvd-logo"
-      data-color={color}
-      className="idle-dvd absolute left-0 top-0 flex items-center justify-center"
-      style={{ width: DVD_W, height: DVD_H, color: c, ["--idle-dvd" as string]: c }}
-    >
-      {cv ? <SovietEmblem size={140} color={c} /> : <Logo className="text-[84px]" />}
+    <div ref={box} data-testid="dvd-logo" data-color={color} className="idle-dvd absolute left-0 top-0" style={{ width: w, height: h, color: c }}>
+      {cv ? <SovietEmblem size={CV_SIZE} color={c} /> : <DvdMark />}
     </div>
+  );
+}
+
+/** «cineko» over a «TV» disc, the old DVD-Video layout; fills its viewBox edge to edge, in currentColor. */
+function DvdMark() {
+  return (
+    <svg width={DVD_W} height={DVD_H} viewBox="0 0 400 180" fill="currentColor" aria-hidden focusable="false" className="block">
+      <text
+        x="200"
+        y="96"
+        textAnchor="middle"
+        fontSize="112"
+        fontWeight="800"
+        textLength="400"
+        lengthAdjust="spacingAndGlyphs"
+        style={{ fontFamily: "var(--mt-font-display), sans-serif" }}
+      >
+        cineko
+      </text>
+      <ellipse cx="200" cy="146" rx="200" ry="34" />
+      <text x="200" y="160" textAnchor="middle" fontSize="40" fontWeight="800" fill="#000" letterSpacing="12" style={{ fontFamily: "var(--mt-font-display), sans-serif" }}>
+        TV
+      </text>
+    </svg>
   );
 }
