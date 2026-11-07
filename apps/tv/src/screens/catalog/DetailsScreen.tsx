@@ -373,6 +373,7 @@ export function DetailsScreen({
       initialIndex={mem.get<number>(`idx-${key}`) ?? 0}
       onIndexChange={(i) => mem.set(`idx-${key}`, i)}
       onSelect={(it) => onOpen(it, from)}
+      quick={(it) => ({ item: it, onOpen: () => onOpen(it, from) })}
       renderItem={(it, focused, i) =>
         cards.wide ? (
           <WideCard media={it} title={it.title} cfg={cfg.data} width={pw} height={ph} focused={focused} />

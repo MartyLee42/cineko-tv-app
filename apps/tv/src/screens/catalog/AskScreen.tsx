@@ -333,6 +333,7 @@ function Answer({
             viewport={width}
             onIndexChange={(i) => setFocusIdx(i)}
             onSelect={(it) => onOpen(it.media)}
+            quick={(it) => ({ item: it.media, onOpen: () => onOpen(it.media) })}
             renderItem={(it, focused, i) => <GridCard item={it.media} cfg={cfg.data} g={g} focused={focused} index={i} />}
           />
         </>
