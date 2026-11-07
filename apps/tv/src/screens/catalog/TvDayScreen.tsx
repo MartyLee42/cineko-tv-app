@@ -58,7 +58,7 @@ export function TvDayScreen({ channel, mem, onPlay }: { channel: IptvChannel; me
     return false;
   });
   useReportDeep(ty > 0);
-  const dateLabel = day.from.toLocaleDateString(locale === "ru" ? "ru-RU" : "en-GB", { weekday: "long", day: "numeric", month: "long" });
+  const dateLabel = day.from.toLocaleDateString(locale === "en" ? "en-GB" : locale === "kk" ? "kk-KZ" : "ru-RU", { weekday: "long", day: "numeric", month: "long" });
 
   let body: React.ReactNode;
   if (q.isPending) body = <GridSkeleton cols={1} width={LIST_W} height={ROW_H - 12} pitchX={LIST_W} pitchY={ROW_H} />;

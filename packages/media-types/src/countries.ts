@@ -79,6 +79,7 @@ export function countryName(code: string, locale: string): string {
   const c = code.toUpperCase();
   const ru = locale.startsWith("ru");
   const known = NAMES[c];
+  if (locale.startsWith("kk")) return displayNames("kk")?.of(c) ?? (known ? known[0] : (displayNames("ru")?.of(c) ?? c));
   if (known) return ru ? known[0] : known[1];
   return displayNames(ru ? "ru" : "en")?.of(c) ?? c;
 }

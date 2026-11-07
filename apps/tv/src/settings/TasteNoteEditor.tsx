@@ -35,7 +35,7 @@ export function TasteNoteEditor({
 }) {
   const { t, locale } = useI18n();
   const [text, setText] = useState(initial);
-  const [layout, setLayout] = useState<Layout>(locale === "ru" ? "ru" : "en");
+  const [layout, setLayout] = useState<Layout>(locale === "en" ? "en" : "ru");
   const edit = (a: KeyAction) => setText((p) => applyNoteKey(p, a, false, max));
   const close = useRef(onClose);
   useEffect(() => {

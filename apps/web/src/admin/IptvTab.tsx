@@ -323,7 +323,7 @@ function AddSheet({ existing, proxy, onClose }: { existing: AdminPlaylist[]; pro
       if (kind === "iptv_org_country") {
         for (const code of chosen) {
           const c = countries.data?.find((x) => x.code === code);
-          await create.mutateAsync({ kind, country: code, name: (locale === "ru" ? c?.name_ru : c?.name_en) ?? code, ...common() });
+          await create.mutateAsync({ kind, country: code, name: (locale !== "en" ? c?.name_ru : c?.name_en) ?? code, ...common() });
         }
       } else if (kind === "m3u_url") {
         await create.mutateAsync({ kind, url: d.url.trim(), ...(d.name.trim() && { name: d.name.trim() }), ...common() });
@@ -386,7 +386,7 @@ function AddSheet({ existing, proxy, onClose }: { existing: AdminPlaylist[]; pro
                       onClick={() => toggle(c.code)}
                       className={`min-h-[36px] rounded-full border px-3 text-sm transition disabled:opacity-50 ${on ? "border-accent bg-accent text-on-accent" : "border-border hover:border-muted"}`}
                     >
-                      {locale === "ru" ? c.name_ru : c.name_en}
+                      {locale !== "en" ? c.name_ru : c.name_en}
                       {already && ` · ${t("iptv.admin.country_added")}`}
                     </button>
                   );

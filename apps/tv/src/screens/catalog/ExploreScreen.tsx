@@ -50,7 +50,7 @@ export function ExploreScreen({ mem, onTile }: { mem: RouteMemory; onTile: (tile
                 ? rs.unlimited
                   ? t("taste.regen.hint_unlimited")
                   : t("taste.regen.hint")
-                : t("taste.regen.tv_used", { time: new Date(rs.next_available_at).toLocaleTimeString(locale === "ru" ? "ru-RU" : "en-GB", { hour: "2-digit", minute: "2-digit" }) }),
+                : t("taste.regen.tv_used", { time: new Date(rs.next_available_at).toLocaleTimeString(locale === "en" ? "en-GB" : locale === "kk" ? "kk-KZ" : "ru-RU", { hour: "2-digit", minute: "2-digit" }) }),
           },
           t("taste.regen.section"),
         )

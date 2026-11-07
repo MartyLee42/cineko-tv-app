@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { unwrap, type Profile } from "@martytv/contracts";
-import { LOCALES, PROFILE_COLORS, ProfileAvatar, useI18n, type Locale, type MessageKey } from "@martytv/ui";
+import { LOCALE_NAMES, LOCALES, PROFILE_COLORS, ProfileAvatar, useI18n, type Locale, type MessageKey } from "@martytv/ui";
 import { api } from "../api";
 import { useSession } from "../session";
 import { Button, ErrorText, Field, Input, Select } from "../components";
@@ -180,7 +180,7 @@ function Onboarding({ profile }: { profile: Profile }) {
                 <Select value={locale} onChange={(e) => setLocale(e.target.value as Locale)}>
                   {LOCALES.map((l) => (
                     <option key={l} value={l}>
-                      {l === "en" ? "English" : "Русский"}
+                      {LOCALE_NAMES[l]}
                     </option>
                   ))}
                 </Select>
