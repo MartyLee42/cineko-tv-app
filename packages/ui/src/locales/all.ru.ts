@@ -42,5 +42,8 @@ import { smoothRu } from "./smooth.ru";
 import { chaptersRu } from "./chapters.ru";
 import { soundtrackRu } from "./soundtrack.ru";
 import { themesRu } from "./themes.ru";
+import { companionRu } from "./companion.ru";
 
-export const messagesRu: Record<MessageKey, string> = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu, ...skipRu, ...pocketpetRu, ...surpriseRu, ...soundtrackRu, ...themesRu, ...smoothRu, ...chaptersRu };
+
+
+export const messagesRu: Record<MessageKey, string> = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu, ...skipRu, ...pocketpetRu, ...surpriseRu, ...soundtrackRu, ...themesRu, ...smoothRu, ...chaptersRu, ...companionRu };

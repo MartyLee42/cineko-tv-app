@@ -35,6 +35,14 @@ export interface TriviaQuery<T> {
   refetch: () => unknown;
 }
 
+/** A chip of the header's secondary line. */
+export interface ExtraChip {
+  focusKey: string;
+  testId: string;
+  label: string;
+  onPress: () => void;
+}
+
 /**
  * The header's secondary line: «🏆 Награды ▸» (when any) then «❝ Цитаты»
  * (null = hidden: none found) and «✦ Факты».
@@ -44,6 +52,7 @@ export function ExtrasLine({
   onAwards,
   onQuotes,
   onFacts,
+  extra = [],
   square = false,
   className = "",
 }: {
@@ -51,13 +60,15 @@ export function ExtrasLine({
   onAwards: (() => void) | null;
   onQuotes: (() => void) | null;
   onFacts: (() => void) | null;
+  /** More chips after «Факты» (the watch companion). */
+  extra?: ExtraChip[];
   /** Терминал: square label chips. */
   square?: boolean;
   className?: string;
 }) {
   const { t } = useI18n();
   const hasAwards = !!awards?.length && !!onAwards;
-  if (!hasAwards && !onQuotes && !onFacts) return null;
+  if (!hasAwards && !onQuotes && !onFacts && extra.length === 0) return null;
   const chip = `tv-chip ml-3 flex h-[52px] shrink-0 items-center whitespace-nowrap bg-surface-2 px-5 text-[23px] font-semibold text-text ${square ? "t-label" : "rounded-control"}`;
   return (
     <div data-testid="tv-extras-line" className={`flex items-center ${className}`}>
@@ -72,6 +83,11 @@ export function ExtrasLine({
           <span data-testid="tv-facts-button">✦ {t("trivia.facts")}</span>
         </FocusButton>
       )}
+      {extra.map((x, i) => (
+        <FocusButton key={x.focusKey} focusKey={x.focusKey} onPress={x.onPress} className={`${chip} ${hasAwards || onQuotes || onFacts || i > 0 ? "" : "!ml-4"}`}>
+          <span data-testid={x.testId}>{x.label}</span>
+        </FocusButton>
+      ))}
     </div>
   );
 }
@@ -100,7 +116,7 @@ export function usePanelKeys(onKey: (k: PlayerKey, e: KeyboardEvent) => void) {
   }, []);
 }
 
-function Shell({ testId, heading, badge, footer, children }: { testId: string; heading: string; badge?: ReactNode; footer: ReactNode; children: ReactNode }) {
+export function Shell({ testId, heading, badge, footer, children }: { testId: string; heading: string; badge?: ReactNode; footer: ReactNode; children: ReactNode }) {
   return (
     // Fixed over the whole 1920×1080 canvas, like AwardsPanel.
     <div data-testid={testId} className="fixed left-0 top-0 z-30 flex h-[1080px] w-[1920px] items-center justify-center bg-black/70">
@@ -117,7 +133,7 @@ function Shell({ testId, heading, badge, footer, children }: { testId: string; h
 }
 
 /** Slow first fetch: the thinking mascot (Конструктивизм: the emblem). */
-function Loading({ label }: { label: MessageKey }) {
+export function Loading({ label }: { label: MessageKey }) {
   const { t } = useI18n();
   const cv = useConstructivism();
   return (

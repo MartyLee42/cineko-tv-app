@@ -256,12 +256,16 @@ export function useSetFactsAI() {
   });
 }
 
-/** The AI themes / picks switches (admin «Рекомендации»). */
+/** The AI themes / picks / watch companion switches (admin «Рекомендации»). */
 export function useSetAIFeature() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { themes_ai?: boolean; picks_ai?: boolean }) => unwrap(api.PUT("/admin/foryou/ai", { body })),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ["admin", "foryou-runs"] }),
+    mutationFn: (body: { themes_ai?: boolean; picks_ai?: boolean; companion_ai?: boolean }) => unwrap(api.PUT("/admin/foryou/ai", { body })),
+    onSuccess: (_d, body) => {
+      void qc.invalidateQueries({ queryKey: ["admin", "foryou-runs"] });
+      // «Ранее в сериале» / «После титров» buttons appear or vanish.
+      if (body.companion_ai !== undefined) void qc.invalidateQueries({ predicate: (q) => q.queryKey[0] === "media" && q.queryKey[2] === "companion" });
+    },
   });
 }
 
