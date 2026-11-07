@@ -25,6 +25,9 @@ type ForYouConfig struct {
 	CreditsPerProfile int
 	// AskDailyPerUser caps «Спросить ИИ» requests per account per Moscow day.
 	AskDailyPerUser int
+	// CompanionDailyPerProfile caps uncached «Ранее в сериале» / «После
+	// титров» answers and chat messages per profile per Moscow day.
+	CompanionDailyPerProfile int
 }
 
 // AIConfigured reports whether AI collections can run.
@@ -48,6 +51,8 @@ func loadForYou(get func(string, string) string, secret func(string) string, err
 		DailyHour:         5,
 		CreditsPerProfile: 150,
 		AskDailyPerUser:   30,
+
+		CompanionDailyPerProfile: 20,
 	}
 	posInt := func(name string, dst *int) {
 		v := get(name, "")
@@ -65,6 +70,7 @@ func loadForYou(get func(string, string) string, secret func(string) string, err
 	posInt("FORYOU_AI_RUN_TOKENS", &f.AIRunTokens)
 	posInt("FORYOU_CREDITS_PER_PROFILE", &f.CreditsPerProfile)
 	posInt("FORYOU_ASK_DAILY_PER_USER", &f.AskDailyPerUser)
+	posInt("FORYOU_COMPANION_DAILY_PER_PROFILE", &f.CompanionDailyPerProfile)
 	switch at := strings.ToLower(get("FORYOU_DAILY_AT", "05:00")); at {
 	case "off", "none", "false", "-", "disabled":
 		f.DailyOff = true

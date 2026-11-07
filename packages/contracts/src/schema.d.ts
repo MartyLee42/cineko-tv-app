@@ -984,6 +984,107 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/media/{id}/companion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /**
+         * @description Which watch-companion buttons the profile gets on this title (internal/companion).
+         *     «Ранее в сериале» (`recap.available`): a series with completed episodes, last
+         *     touched ≥ 7 days ago. «После титров» (`after_credits.available`): a completed
+         *     movie, or a series whose season finale is completed (`scope: season`, or
+         *     `series` for the final season of an ended show). Both false while AI is off
+         *     (no DeepSeek key, or the admin switch `companion_ai`).
+         */
+        get: operations["getMediaCompanion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/{id}/recap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description «Ранее в сериале»: ≤ 5 lines built by DeepSeek ONLY from the TMDB synopses of the
+         *     episodes this profile completed (the furthest 12; nothing past the last watched
+         *     one is sent). Cached by the exact episodes used (a repeat press is free, `cached`).
+         *     409 `not_eligible` (no break yet / nothing completed), 422 `no_synopses`,
+         *     429 `companion_limit` (FORYOU_COMPANION_DAILY_PER_PROFILE per Moscow day, uncached
+         *     answers only) or `ai_budget`, 502 `ai_failed` (not counted), 503 `ai_disabled`.
+         */
+        post: operations["postMediaRecap"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/{id}/after-credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description «После титров» (spoilers): `topic: ending` «Объяснение финала» or `significance`
+         *     «Почему это важно» (told to stay general, avoid unverifiable facts and say when it
+         *     doesn't know: `known: false`). Only for what the profile finished; never past that
+         *     season. Cached per title, scope and language. Errors as for /recap.
+         */
+        post: operations["postMediaAfterCredits"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/{id}/after-credits/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /** @description The profile's spoiler chat about what it finished (empty when none, or when it was about an earlier season). */
+        get: operations["getMediaAfterCreditsChat"];
+        put?: never;
+        /**
+         * @description Sends one message (2–300 characters) and returns the chat with the answer
+         *     (1–4 sentences, about this title only; off-topic or injection → `refused`).
+         *     At most 6 messages per chat (409 `chat_full`); `reset: true` starts over
+         *     (with or without a message). Each message counts toward the daily limit.
+         */
+        post: operations["postMediaAfterCreditsChat"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/people/{tmdb_id}": {
         parameters: {
             query?: never;
@@ -2660,7 +2761,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** @description Sets the DeepSeek temperatures (app_settings `ai_temperature`) and the AI «Факты» switch (`ai_facts`). Omitted fields keep their value; at least one of the two is required. Admin only. */
+        /** @description Sets the DeepSeek temperatures (app_settings `ai_temperature`), the AI «Факты» switch (`ai_facts`) and the AI feature switches themes_ai, picks_ai and companion_ai (`ai_feature_themes`, `ai_feature_picks`, `ai_feature_companion`). Omitted fields keep their value; at least one is required. Admin only. */
         put: operations["adminSetForYouAI"];
         post?: never;
         delete?: never;
@@ -4097,6 +4198,76 @@ export interface components {
             source_url: string | null;
             /** @enum {string} */
             lang: "ru" | "en";
+        };
+        MediaCompanion: {
+            ai_enabled: boolean;
+            daily_limit: number;
+            used_today: number;
+            recap: {
+                available: boolean;
+                /** Format: date-time */
+                last_watched_at: string | null;
+                /** @description The furthest completed episode. */
+                through: components["schemas"]["EpisodeRef"] | null;
+                /** @description Pressing is free (already generated for these episodes). */
+                cached: boolean;
+            };
+            after_credits: {
+                available: boolean;
+                /** @enum {string} */
+                scope: "movie" | "season" | "series" | "";
+                season: number | null;
+            };
+        };
+        EpisodeRef: {
+            season: number;
+            episode: number;
+        };
+        CompanionRequest: {
+            /** Format: uuid */
+            profile_id: string;
+            /** @enum {string} */
+            lang?: "en" | "ru";
+        };
+        SeriesRecap: {
+            /** @description Plain text, one sentence each. */
+            lines: string[];
+            through: components["schemas"]["EpisodeRef"];
+            /** @description Synopses it was built from. */
+            episodes: number;
+            cached: boolean;
+            /** Format: date-time */
+            generated_at: string;
+        };
+        AfterCredits: {
+            /** @enum {string} */
+            topic: "ending" | "significance";
+            /** @description False: the model doesn't know this title well enough (paragraphs empty). */
+            known: boolean;
+            paragraphs: string[];
+            /** @enum {string} */
+            scope: "movie" | "season" | "series";
+            season: number | null;
+            cached: boolean;
+            /** Format: date-time */
+            generated_at: string;
+        };
+        AfterCreditsChat: {
+            messages: {
+                /** @enum {string} */
+                role: "user" | "assistant";
+                text: string;
+            }[];
+            /** @description Suggested next questions. */
+            followups: string[];
+            /** @description Messages per chat (6). */
+            limit: number;
+            remaining: number;
+            /** @enum {string} */
+            scope: "movie" | "season" | "series";
+            season: number | null;
+            /** @description The last message was off-topic and declined. */
+            refused: boolean;
         };
         MediaDetail: components["schemas"]["MediaSummary"] & {
             tagline: string;
@@ -5783,6 +5954,8 @@ export interface components {
             themes_ai?: boolean;
             /** @description The daily run re-ranks «Подобрано для вас» with a personal reason per title (admin switch, default true). */
             picks_ai?: boolean;
+            /** @description «Ранее в сериале» / «После титров» allowed (admin switch, default true). */
+            companion_ai: boolean;
             model: string;
             /** @description Tokens used today (Moscow date). */
             tokens_today: number;
@@ -5801,6 +5974,8 @@ export interface components {
             music: number;
             /** @description AI-written «Факты» (default 0.7). */
             facts: number;
+            /** @description «Ранее в сериале» / «После титров» (default 0.3). */
+            companion: number;
         };
         /**
          * @description The viewer's nudge on the admin's temperature («Точнее / Обычно / Смелее»): −0.4 / 0 / +0.4, clamped to 0–1.5.
@@ -5818,6 +5993,8 @@ export interface components {
             themes_ai?: boolean;
             /** @description AI re-ranking of «Подобрано для вас» allowed (admin switch). */
             picks_ai?: boolean;
+            /** @description «Ранее в сериале» / «После титров» allowed (admin switch). */
+            companion_ai: boolean;
             /** @description Offset each creativity adds to the temperature. */
             creativity: {
                 precise: number;
@@ -8379,6 +8556,166 @@ export interface operations {
             401: components["responses"]["Error"];
             404: components["responses"]["Error"];
             502: components["responses"]["Error"];
+        };
+    };
+    getMediaCompanion: {
+        parameters: {
+            query: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+                profile_id: string;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Availability. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaCompanion"];
+                };
+            };
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    postMediaRecap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompanionRequest"];
+            };
+        };
+        responses: {
+            /** @description The recap. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeriesRecap"];
+                };
+            };
+            404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            429: components["responses"]["Error"];
+            502: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
+    postMediaAfterCredits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompanionRequest"] & {
+                    /** @enum {string} */
+                    topic: "ending" | "significance";
+                };
+            };
+        };
+        responses: {
+            /** @description The text. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AfterCredits"];
+                };
+            };
+            404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            429: components["responses"]["Error"];
+            502: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
+    getMediaAfterCreditsChat: {
+        parameters: {
+            query: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+                profile_id: string;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The chat. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AfterCreditsChat"];
+                };
+            };
+            404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
+    postMediaAfterCreditsChat: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompanionRequest"] & {
+                    message?: string;
+                    reset?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description The chat. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AfterCreditsChat"];
+                };
+            };
+            404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            429: components["responses"]["Error"];
+            502: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     getPerson: {
@@ -10961,6 +11298,7 @@ export interface operations {
                         ask?: number;
                         music?: number;
                         facts?: number;
+                        companion?: number;
                     };
                     /** @description False: «Факты» show only Kinopoisk's (stored AI ones are hidden). */
                     facts_ai?: boolean;
@@ -10968,6 +11306,8 @@ export interface operations {
                     themes_ai?: boolean;
                     /** @description False: no AI re-ranking of «Подобрано для вас» (stored picks still apply until they expire, 48 h). */
                     picks_ai?: boolean;
+                    /** @description False: no «Ранее в сериале» / «После титров» (buttons hidden). */
+                    companion_ai?: boolean;
                 };
             };
         };

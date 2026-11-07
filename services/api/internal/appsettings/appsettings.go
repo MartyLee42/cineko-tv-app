@@ -40,20 +40,27 @@ const (
 )
 
 // AITemperature is the admin's DeepSeek temperature per feature: AI
-// collections, «Спросить ИИ», Cineko Music playlists and the AI «Факты».
+// collections, «Спросить ИИ», Cineko Music playlists, the AI «Факты» and
+// the watch companion («Ранее в сериале», «После титров»).
 type AITemperature struct {
 	Collections float64 `json:"collections"`
 	Ask         float64 `json:"ask"`
 	Music       float64 `json:"music"`
 	Facts       float64 `json:"facts"`
+	Companion   float64 `json:"companion"`
 }
 
 // FactsTemperatureDefault: facts should be accurate rather than varied.
 const FactsTemperatureDefault = 0.7
 
+// CompanionTemperatureDefault: recaps and «После титров» must stick to what
+// is known (low: no invented plot points or claims).
+const CompanionTemperatureDefault = 0.3
+
 // DefaultAITemperature is used until an admin changes it.
 func DefaultAITemperature() AITemperature {
-	return AITemperature{Collections: TemperatureDefault, Ask: TemperatureDefault, Music: TemperatureDefault, Facts: FactsTemperatureDefault}
+	return AITemperature{Collections: TemperatureDefault, Ask: TemperatureDefault, Music: TemperatureDefault, Facts: FactsTemperatureDefault,
+		Companion: CompanionTemperatureDefault}
 }
 
 // ClampTemperature keeps t within [TemperatureMin, TemperatureMax], rounded to 0.05.
@@ -162,7 +169,8 @@ func (s *Store) AITemperature(ctx context.Context) AITemperature {
 			return def
 		}
 		s.temp = AITemperature{Collections: pick("collections", TemperatureDefault), Ask: pick("ask", TemperatureDefault),
-			Music: pick("music", TemperatureDefault), Facts: pick("facts", FactsTemperatureDefault)}
+			Music: pick("music", TemperatureDefault), Facts: pick("facts", FactsTemperatureDefault),
+			Companion: pick("companion", CompanionTemperatureDefault)}
 		s.tempLoaded = true
 	}
 	return s.temp
