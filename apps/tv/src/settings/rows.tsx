@@ -94,7 +94,7 @@ export function useSettingRows() {
       kind: "choice",
       key: "calm_motion",
       label: t("designs.motion"),
-      hint: settings.design === "matrix" ? t("designs.motion_hint_matrix") : t("designs.motion_hint"),
+      hint: t(settings.design === "matrix" ? "designs.motion_hint_matrix" : settings.design === "mult" ? "mult.motion_hint" : settings.design === "tarkovsky" ? "tarkovsky.motion_hint" : "designs.motion_hint"),
       choices: [
         { value: false, label: t("designs.motion.on") },
         { value: true, label: t("designs.motion.calm") },

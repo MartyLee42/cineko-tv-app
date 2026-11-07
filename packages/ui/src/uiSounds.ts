@@ -111,6 +111,16 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [tone("square", 2637, 2637, 0.018, 0.12)], noise: [] },
     click: { tones: [tone("square", 1568, 2093, 0.05, 0.16)], noise: [] },
   },
+  // A toy glockenspiel: one soft bar, two on OK (a cartoon «plink-plonk»).
+  mult: {
+    tick: { tones: [tone("sine", 2093, 2093, 0.04, 0.22), tone("sine", 6279, 6279, 0.015, 0.04)], noise: [] },
+    click: { tones: [tone("sine", 1568, 1568, 0.05, 0.3), tone("sine", 2349, 2349, 0.06, 0.3, 0.05)], noise: [] },
+  },
+  // A water drop: a falling sine, low and quiet; OK is a deeper drop with a faint splash.
+  tarkovsky: {
+    tick: { tones: [tone("sine", 1300, 700, 0.035, 0.16)], noise: [] },
+    click: { tones: [tone("sine", 900, 380, 0.09, 0.3)], noise: [noise("lowpass", 900, 0.04, 0.08, 0.7, 0.02)] },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */

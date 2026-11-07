@@ -77,6 +77,17 @@ export function SkinCompanion({ onHome }: { onHome: boolean }) {
   return Companion ? <Companion onHome={onHome} /> : null;
 }
 
+/** The skin draws an end card after rows and grids (HRow / VGrid). */
+export function useHasSkinEnd(): boolean {
+  return !!useLook(useSkin())?.End;
+}
+
+/** The skin's end card («Мультфильм»'s «Конец фильма»), if it has one. */
+export function SkinEnd({ kind, width, height }: { kind: "row" | "screen"; width: number; height: number }) {
+  const End = useLook(useSkin())?.End;
+  return End ? <End kind={kind} width={width} height={height} /> : null;
+}
+
 // ================================================================ ornaments
 
 /** Headline size factor of the applied skin (1 on the original designs). */
