@@ -66,7 +66,7 @@ export function Loader({ style, m, children }: { style: LoadingStyle; m: LoaderM
   const applied = useAppliedDesign();
   const cv = applied === "constructivism";
   // «Матрица»: its own terminal loader too.
-  const mx = applied === "matrix";
+  const mx = applied === "matrix" || style === "matrix";
   const body = cv ? (
     <PosterLoader m={m} />
   ) : mx ? (

@@ -200,6 +200,11 @@ function Filters({ state, patch, onClose }: { state: Discover; patch: (p: Partia
 
       <Group label={t("catalog.filter.genre")}>
         <div className="flex flex-wrap gap-1.5">
+          {/* While the genres load: pills of about their size (the groups below don't jump). */}
+          {genres.isPending &&
+            [64, 88, 72, 96, 60, 80, 70, 90, 66, 84, 76, 58].map((w, i) => (
+              <span key={i} aria-hidden className="block h-9 animate-pulse rounded-full bg-surface-2" style={{ width: w }} />
+            ))}
           {genres.data?.map((g) => {
             const on = state.genres.includes(g.id);
             return (

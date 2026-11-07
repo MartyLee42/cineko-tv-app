@@ -53,6 +53,7 @@ import { useVideoSession, videoSession } from "./video/session";
 import { videoPlaybackState, type VideoItem } from "./video/logic";
 import { qualityInPlace, videoControl } from "./video/remote";
 import { PillLayer } from "./design/PillDialog";
+import { PausedSaver } from "./idle/PausedSaver";
 import { introEnv, shouldShowIntro } from "./intro/logic";
 
 // The startup animation is its own chunk: TVs with it switched off never fetch it.
@@ -754,6 +755,7 @@ export function App() {
         />
       )}
       <PillLayer onRed={() => setIntro("matrix")} />
+      <PausedSaver />
       {intro && (
         <Suspense fallback={<div data-testid="startup-intro-wait" className="absolute left-0 top-0 h-[1080px] w-[1920px]" style={{ background: DESIGN_SWATCH[intro].bg, zIndex: 80 }} />}>
           <StartupIntro design={intro} onDone={endIntro} />

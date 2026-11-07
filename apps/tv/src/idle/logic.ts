@@ -8,7 +8,18 @@ export const CAT_AFTER_MS = 2 * 60_000;
 /** No key on Home this long: the screensaver. */
 export const SAVER_AFTER_MS = 10 * 60_000;
 
+/** A video paused this long (no key either): the screensaver over the player. */
+export const PAUSED_SAVER_MS = 5 * 60_000;
+
 export type IdlePhase = "none" | "cat" | "saver";
+
+/**
+ * Whether the paused-player screensaver is due: paused since `pausedAt`
+ * (null while playing), no key since `lastKey`.
+ */
+export function pausedSaverDue(pausedAt: number | null, lastKey: number, now: number): boolean {
+  return pausedAt !== null && now - Math.max(pausedAt, lastKey) >= PAUSED_SAVER_MS;
+}
 
 /**
  * What Home shows after `idleMs` without a key. The cat walks once per idle
