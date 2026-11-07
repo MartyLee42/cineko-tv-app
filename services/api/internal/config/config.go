@@ -54,6 +54,10 @@ type Config struct {
 	// NewEpisodes: the nightly «Новые серии» check (config/newepisodes.go).
 	NewEpisodes NewEpisodesConfig
 
+	// MetricsToken enables GET /metrics (Prometheus); scrapes send it as a
+	// bearer token. Empty = /metrics answers 404.
+	MetricsToken string
+
 	// HostmonSocket is the unix socket of martytv-hostmon (host load for the
 	// admin Server tab). Missing socket → container-only numbers.
 	HostmonSocket string
@@ -210,6 +214,7 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 		MSXApps:            get("MSX_APPS", ""),
 		MSXBridge:          get("MSX_BRIDGE", "true") != "false",
 		HostmonSocket:      get("HOSTMON_SOCKET", "/run/martytv/hostmon.sock"),
+		MetricsToken:       secret("METRICS_TOKEN"),
 		SessionIdleTTL:     duration("SESSION_IDLE_TTL", 30*24*time.Hour),
 		SessionAbsoluteTTL: duration("SESSION_ABSOLUTE_TTL", 90*24*time.Hour),
 		PairingTTL:         duration("PAIRING_TTL", 5*time.Minute),
