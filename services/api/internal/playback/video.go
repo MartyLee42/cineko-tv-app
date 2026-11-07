@@ -103,18 +103,21 @@ type videoDeps struct {
 	p      VideoProvider
 	tokens *videoSigner
 
-	mu   sync.Mutex
-	sidx map[string]sidxCached // id|itag|size → fragments
+	mu       sync.Mutex
+	sidx     map[string]sidxCached    // id|itag|size → fragments
+	inflight map[string]chan struct{} // sidx fetches under way (one per key)
 }
 
 type sidxCached struct {
 	segs []sidxSegment
+	init []byte // the init segment, bytes [0, InitEnd], when fetched with the sidx
 	at   time.Time
 }
 
 const (
 	maxSidxCached  = 300
 	maxSidxBytes   = 1 << 20
+	maxInitBytes   = 512 << 10
 	videoMaxRedirs = 3
 )
 
@@ -122,7 +125,7 @@ const (
 func (s *Service) SetVideo(p VideoProvider) {
 	m := hmac.New(sha256.New, s.cfg.SessionSecret)
 	m.Write([]byte("martytv/playback/video-token/v1"))
-	s.video = &videoDeps{p: p, tokens: &videoSigner{key: m.Sum(nil)}, sidx: map[string]sidxCached{}}
+	s.video = &videoDeps{p: p, tokens: &videoSigner{key: m.Sum(nil)}, sidx: map[string]sidxCached{}, inflight: map[string]chan struct{}{}}
 }
 
 // ---- token: base64url(0x02 | id (11) | quality (2) | exp (8) | HMAC (32)) ----
@@ -298,6 +301,10 @@ func (s *Service) createVideo(ctx context.Context, who caller, id string, profil
 	if v := pickVideoTrack(vs.Video, q); v != nil && len(vs.Audio) > 0 {
 		h := v.Height
 		src.Quality, src.Format, src.StreamURL, src.MimeType = &h, "hls", base+"master.m3u8", hlsMime
+		// The player asks for the master, then both media playlists and
+		// init segments one after another, each a round trip to YouTube:
+		// fetch the two indexes (with their init segments) right away.
+		go s.warmVideo(vs.ID, *v, vs.Audio[0])
 	} else if fallback != nil {
 		h := fallback.Height
 		src.Quality, src.Format, src.StreamURL, src.MimeType = &h, "mp4", *src.FallbackURL, "video/mp4"
@@ -473,7 +480,7 @@ func (s *Service) videoGet(ctx context.Context, method, u, rng string) (*http.Re
 		if rng != "" {
 			req.Header.Set(fiber.HeaderRange, rng)
 		}
-		resp, err := s.video.p.VideoHTTP().Do(req)
+		resp, err := s.videoDo(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -493,30 +500,123 @@ func (s *Service) videoGet(ctx context.Context, method, u, rng string) (*http.Re
 	}
 }
 
+// videoDo sends req, retrying once when the upstream hasn't started
+// answering within VideoHeaderWait: a stalled YouTube request usually
+// answers at once on a fresh connection, instead of failing after
+// upstreamTimeout.
+func (s *Service) videoDo(ctx context.Context, req *http.Request) (*http.Response, error) {
+	for attempt := 0; ; attempt++ {
+		actx, cancel := context.WithCancel(ctx)
+		timer := time.AfterFunc(s.t.VideoHeaderWait, cancel)
+		resp, err := s.video.p.VideoHTTP().Do(req.Clone(actx))
+		inTime := timer.Stop()
+		if err == nil && inTime {
+			resp.Body = &cancelBody{ReadCloser: resp.Body, cancel: cancel}
+			return resp, nil
+		}
+		if resp != nil {
+			resp.Body.Close()
+		}
+		cancel()
+		if inTime || ctx.Err() != nil {
+			return nil, err
+		}
+		if attempt > 0 {
+			return nil, errors.New("upstream not answering")
+		}
+		s.log.Info("video upstream slow; retrying", "after", s.t.VideoHeaderWait)
+	}
+}
+
 // staleStatus: googlevideo URLs expire or get rejected (403/410); refetch
 // the video once and retry.
 func staleStatus(code int) bool { return code == http.StatusForbidden || code == http.StatusGone }
 
+func sidxKey(id string, t VideoTrack) string {
+	return id + "|" + strconv.Itoa(t.Itag) + "|" + strconv.FormatInt(t.Size, 10)
+}
+
 // videoSidx fetches and parses a track's sidx (cached per id/itag/size).
 func (s *Service) videoSidx(ctx context.Context, id string, t VideoTrack, log *slog.Logger) ([]sidxSegment, error) {
-	key := id + "|" + strconv.Itoa(t.Itag) + "|" + strconv.FormatInt(t.Size, 10)
+	c, err := s.videoIndex(ctx, id, t, log)
+	return c.segs, err
+}
+
+// cachedInit is the track's init segment if a sidx fetch already brought it.
+func (s *Service) cachedInit(id string, t VideoTrack) []byte {
 	s.video.mu.Lock()
-	if c, ok := s.video.sidx[key]; ok {
-		s.video.mu.Unlock()
-		return c.segs, nil
+	defer s.video.mu.Unlock()
+	return s.video.sidx[sidxKey(id, t)].init
+}
+
+// warmVideo fetches both tracks' indexes in the background (see createVideo).
+func (s *Service) warmVideo(id string, v, a VideoTrack) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*upstreamTimeout)
+	defer cancel()
+	log := s.log.With("video_id", id)
+	var wg sync.WaitGroup
+	for _, t := range []VideoTrack{v, a} {
+		if t.InitEnd <= 0 || t.IndexTo <= t.IndexFrom {
+			continue
+		}
+		wg.Add(1)
+		go func(t VideoTrack) {
+			defer wg.Done()
+			if _, err := s.videoIndex(ctx, id, t, log); err != nil {
+				log.Debug("video warm-up failed", "itag", t.Itag, "err", errString(err))
+			}
+		}(t)
 	}
-	s.video.mu.Unlock()
+	wg.Wait()
+}
+
+// videoIndex fetches a track's sidx — with the init segment in the same
+// request when it sits right before the sidx, as YouTube lays them out —
+// once per key: concurrent callers wait for the fetch under way.
+func (s *Service) videoIndex(ctx context.Context, id string, t VideoTrack, log *slog.Logger) (sidxCached, error) {
+	key := sidxKey(id, t)
+	var mine chan struct{}
+	for mine == nil {
+		s.video.mu.Lock()
+		if c, ok := s.video.sidx[key]; ok {
+			s.video.mu.Unlock()
+			return c, nil
+		}
+		if ch, ok := s.video.inflight[key]; ok {
+			s.video.mu.Unlock()
+			select {
+			case <-ch:
+				continue
+			case <-ctx.Done():
+				return sidxCached{}, ctx.Err()
+			}
+		}
+		mine = make(chan struct{})
+		s.video.inflight[key] = mine
+		s.video.mu.Unlock()
+	}
+	defer func() {
+		s.video.mu.Lock()
+		delete(s.video.inflight, key)
+		s.video.mu.Unlock()
+		close(mine)
+	}()
 	if t.IndexTo-t.IndexFrom+1 > maxSidxBytes {
-		return nil, errBadSidx
+		return sidxCached{}, errBadSidx
 	}
 	ctx, cancel := context.WithTimeout(ctx, upstreamTimeout)
 	defer cancel()
-	rng := "bytes=" + strconv.FormatInt(t.IndexFrom, 10) + "-" + strconv.FormatInt(t.IndexTo, 10)
-	var body []byte
+	var body, init []byte
 	for attempt := 0; attempt < 2; attempt++ {
+		from := t.IndexFrom
+		withInit := t.InitEnd > 0 && t.IndexFrom == t.InitEnd+1 && t.InitEnd+1 <= maxInitBytes
+		if withInit {
+			from = 0
+		}
+		rng := "bytes=" + strconv.FormatInt(from, 10) + "-" + strconv.FormatInt(t.IndexTo, 10)
 		resp, err := s.videoGet(ctx, http.MethodGet, t.URL, rng)
 		if err != nil {
-			return nil, err
+			return sidxCached{}, err
 		}
 		// YouTube refusing the server shows up as 403/410, or through the
 		// Invidious proxy as an empty 200: refresh the stream URLs once.
@@ -525,34 +625,41 @@ func (s *Service) videoSidx(ctx context.Context, id string, t VideoTrack, log *s
 			resp.Body.Close()
 			vs, err := s.video.p.VideoStreams(ctx, id, true)
 			if err != nil {
-				return nil, err
+				return sidxCached{}, err
 			}
 			nt := findTrack(append(append([]VideoTrack{}, vs.Video...), vs.Audio...), t.Itag)
 			if nt == nil {
-				return nil, errors.New("track vanished")
+				return sidxCached{}, errors.New("track vanished")
 			}
 			t = *nt
 			continue
 		}
 		if resp.StatusCode != http.StatusPartialContent && resp.StatusCode != http.StatusOK {
 			resp.Body.Close()
-			return nil, errors.New("upstream status " + strconv.Itoa(resp.StatusCode))
+			return sidxCached{}, errors.New("upstream status " + strconv.Itoa(resp.StatusCode))
 		}
 		if empty {
 			resp.Body.Close()
-			return nil, errors.New("upstream sent no data (video blocked for the server)")
+			return sidxCached{}, errors.New("upstream sent no data (video blocked for the server)")
 		}
-		body, err = io.ReadAll(io.LimitReader(resp.Body, t.IndexTo-t.IndexFrom+1))
+		body, err = io.ReadAll(io.LimitReader(resp.Body, t.IndexTo-from+1))
 		resp.Body.Close()
 		if err != nil {
-			return nil, err
+			return sidxCached{}, err
+		}
+		if withInit {
+			if int64(len(body)) != t.IndexTo+1 {
+				return sidxCached{}, errBadSidx
+			}
+			init, body = body[:t.InitEnd+1:t.InitEnd+1], body[t.InitEnd+1:]
 		}
 		break
 	}
 	segs, err := parseSidx(body, t.IndexFrom)
 	if err != nil {
-		return nil, err
+		return sidxCached{}, err
 	}
+	c := sidxCached{segs: segs, init: init, at: time.Now()}
 	s.video.mu.Lock()
 	if len(s.video.sidx) >= maxSidxCached {
 		for k := range s.video.sidx {
@@ -562,10 +669,10 @@ func (s *Service) videoSidx(ctx context.Context, id string, t VideoTrack, log *s
 			}
 		}
 	}
-	s.video.sidx[key] = sidxCached{segs: segs, at: time.Now()}
+	s.video.sidx[key] = c
 	s.video.mu.Unlock()
-	log.Debug("video sidx", "itag", t.Itag, "segments", len(segs))
-	return segs, nil
+	log.Debug("video sidx", "itag", t.Itag, "segments", len(segs), "init", len(init))
+	return c, nil
 }
 
 // videoBytes proxies a media file (adaptive fragment ranges or the
@@ -577,6 +684,11 @@ func (h *Handlers) videoBytes(c fiber.Ctx, id string, itag int, progressive bool
 		method = http.MethodHead
 	}
 	clientRange := c.Get(fiber.HeaderRange)
+	if !progressive && t.Size > 0 && t.InitEnd > 0 && clientRange == "bytes=0-"+strconv.FormatInt(t.InitEnd, 10) {
+		if init := s.cachedInit(id, t); init != nil {
+			return sendVideoInit(c, t, init)
+		}
+	}
 	rng := clientRange
 	if rng == "" {
 		rng = "bytes=0-" // Invidious answers range-less /videoplayback with a short probe
@@ -657,6 +769,25 @@ func (h *Handlers) videoBytes(c fiber.Ctx, id string, itag int, progressive bool
 	}
 	body := newIdleReader(resp.Body, cancel, s.t.StreamIdle, newStreamMeta(c, log, kind))
 	return c.SendStream(activityReader{body}, size)
+}
+
+// sendVideoInit answers the init segment's range from the sidx cache.
+func sendVideoInit(c fiber.Ctx, t VideoTrack, init []byte) error {
+	c.Status(fiber.StatusPartialContent)
+	c.Set("Content-Range", "bytes 0-"+strconv.FormatInt(t.InitEnd, 10)+"/"+strconv.FormatInt(t.Size, 10))
+	c.Set("Accept-Ranges", "bytes")
+	ct := "video/mp4"
+	if strings.HasPrefix(t.Mime, "audio/") {
+		ct = "audio/mp4"
+	}
+	c.Set(fiber.HeaderContentType, ct)
+	c.Set(fiber.HeaderCacheControl, "private, max-age=3600")
+	if c.Method() == fiber.MethodHead {
+		c.Response().Header.SetContentLength(len(init))
+		c.Response().SkipBody = true
+		return nil
+	}
+	return c.Send(init)
 }
 
 // videoCaption proxies one VTT caption track.

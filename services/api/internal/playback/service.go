@@ -163,6 +163,9 @@ type Timings struct {
 	StatsTimeout    time.Duration // live stats on GET
 	MediaInfoRetry  time.Duration // min gap between ffprobe attempts
 	StreamIdle      time.Duration // abort a stream with no upstream bytes for this long
+	// VideoHeaderWait: a YouTube request (through Invidious) that hasn't
+	// started answering by then is retried once on a fresh connection.
+	VideoHeaderWait time.Duration
 }
 
 func DefaultTimings() Timings {
@@ -174,6 +177,7 @@ func DefaultTimings() Timings {
 		StatsTimeout:    2 * time.Second,
 		MediaInfoRetry:  2 * time.Minute,
 		StreamIdle:      2 * time.Minute,
+		VideoHeaderWait: 6 * time.Second,
 	}
 }
 
