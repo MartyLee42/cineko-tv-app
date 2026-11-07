@@ -14,6 +14,7 @@ import { detectPlatform, storage } from "../platform";
 import { audioSupported, engineProbe, type Probe } from "../player/codecs";
 import { canPlayCompat, compatServer } from "../player/compat";
 import { rateStore } from "../player/rebuffer";
+import { ensureSmoothProbe, thisSmoothView } from "../player/smooth";
 import { BRIDGE_KEY, bridgeAvailable } from "../players/msx";
 import { defaultPlayerStore, insideMsx } from "../players/select";
 
@@ -68,7 +69,7 @@ export function deviceModel(ua: string, msx: boolean): string {
 }
 
 /** What this TV can do, from its own engine (the «Об этом телевизоре» probe). */
-export function detectAuto(probe: Probe = engineProbe(), env = browserEnv()): PlaybackAuto {
+export function detectAuto(probe: Probe = engineProbe(), env: DetectEnv = browserEnv()): PlaybackAuto {
   const size = landscapeSize(env.width ? Math.round(env.width) : null, env.height ? Math.round(env.height) : null);
   return {
     screen_width: size.width,
@@ -76,6 +77,8 @@ export function detectAuto(probe: Probe = engineProbe(), env = browserEnv()): Pl
     video: VIDEO.filter(([, t]) => yes(probe, t)).map(([k]) => k),
     audio: AUDIO.filter((k) => audioSupported(probe, k) === true),
     containers: CONTAINERS.filter(([, t]) => yes(probe, t)).map(([k]) => k),
+    // Decodable but not smooth (decodingInfo / dropped frames): absent when nothing is known.
+    ...(env.rough && env.rough.length > 0 ? { rough: env.rough } : {}),
     hls: yes(probe, ["application/vnd.apple.mpegurl", "application/x-mpegURL"]) || !!probe.isTypeSupported,
     compat: env.compatServer && canPlayCompat(probe),
     throughput_bps: env.throughput,
@@ -83,6 +86,8 @@ export function detectAuto(probe: Probe = engineProbe(), env = browserEnv()): Pl
     platform: env.platform,
   };
 }
+
+type DetectEnv = Omit<ReturnType<typeof browserEnv>, "rough"> & { rough?: PlaybackAuto["rough"] };
 
 function browserEnv() {
   const dpr = (typeof window !== "undefined" && window.devicePixelRatio) || 1;
@@ -95,13 +100,22 @@ function browserEnv() {
     platform: detectPlatform(),
     compatServer: compatServer.get(),
     throughput: rateStore.get(),
+    rough: [...thisSmoothView().rough] as NonNullable<PlaybackAuto["rough"]>,
   };
 }
 
 /** Same detection (ignores detected_at and order) — no need to re-send. */
 export function sameAuto(a: PlaybackAuto | null | undefined, b: PlaybackAuto | null | undefined): boolean {
   if (!a || !b) return false;
-  const norm = (x: PlaybackAuto) => JSON.stringify({ ...x, detected_at: null, video: [...(x.video ?? [])].sort(), audio: [...(x.audio ?? [])].sort(), containers: [...(x.containers ?? [])].sort() });
+  const norm = (x: PlaybackAuto) =>
+    JSON.stringify({
+      ...x,
+      detected_at: null,
+      video: [...(x.video ?? [])].sort(),
+      audio: [...(x.audio ?? [])].sort(),
+      containers: [...(x.containers ?? [])].sort(),
+      rough: [...(x.rough ?? [])].sort(),
+    });
   return norm(a) === norm(b);
 }
 
@@ -192,6 +206,8 @@ export const devicePrefs = {
       try {
         const cur = await unwrap(api.GET("/devices/me/playback-prefs"));
         writeCache(cur);
+        // decodingInfo answers (cached per engine; nothing without the API) go into auto.rough.
+        await ensureSmoothProbe().catch(() => null);
         const env = browserEnv();
         syncedMsx = env.msx;
         const auto = detectAuto(engineProbe(), env);
