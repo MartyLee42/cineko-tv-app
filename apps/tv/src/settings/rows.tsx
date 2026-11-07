@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PlayerKind } from "@martytv/contracts";
 import { imageUrl } from "@martytv/media-types";
-import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, SURPRISE_MODES, uiSoundsPref, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
+import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, SURPRISE_MODES, uiSoundsPref, useI18n, useUiSoundsPref, type Locale, type MessageKey } from "@martytv/ui";
 import { useCatalogConfig, useHome } from "../catalog/queries";
 import { Loader } from "../player/Loader";
 import type { LoadStage } from "../player/loading";
@@ -25,7 +25,32 @@ const LOADING_LABEL = {
   marty: "settings.loading.marty",
   marty_popcorn: "settings.loading.marty_popcorn",
   matrix: "settings.loading.matrix",
+  water_glass: "loaders2.water_glass",
+  poster_dig: "loaders2.poster_dig",
+  chocolate_box: "loaders2.chocolate_box",
+  coffee_cup: "loaders2.coffee_cup",
+  honey_pot: "loaders2.honey_pot",
+  hyperjump: "loaders2.hyperjump",
+  ghost_meter: "loaders2.ghost_meter",
+  target_scan: "loaders2.target_scan",
+  docking: "loaders2.docking",
+  claw_machine: "loaders2.claw_machine",
 } as const;
+
+/** Styles with a hint under the row (the film-homage ones say which film). */
+const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
+  popcorn: "settings.loading.popcorn_hint",
+  water_glass: "loaders2.water_glass_hint",
+  poster_dig: "loaders2.poster_dig_hint",
+  chocolate_box: "loaders2.chocolate_box_hint",
+  coffee_cup: "loaders2.coffee_cup_hint",
+  honey_pot: "loaders2.honey_pot_hint",
+  hyperjump: "loaders2.hyperjump_hint",
+  ghost_meter: "loaders2.ghost_meter_hint",
+  target_scan: "loaders2.target_scan_hint",
+  docking: "loaders2.docking_hint",
+  claw_machine: "loaders2.claw_machine_hint",
+};
 
 export function useSettingRows() {
   const { t, locale, setLocale } = useI18n();
@@ -158,7 +183,7 @@ export function useSettingRows() {
       kind: "choice",
       key: "loading_style",
       label: t("settings.loading_style"),
-      hint: settings.loading_style === "popcorn" ? t("settings.loading.popcorn_hint") : undefined,
+      hint: LOADING_HINT[settings.loading_style] ? t(LOADING_HINT[settings.loading_style]!) : undefined,
       choices: LOADING_STYLES.map((v) => ({ value: v, label: t(LOADING_LABEL[v]) })),
       value: settings.loading_style,
       onChange: (v) => set({ loading_style: v as LoadingStyle }),

@@ -1,0 +1,15 @@
+/* «Призракометр» (GhostMeter.tsx). */
+.lg-device { width: 520px; height: 460px; }
+.lg-body { background: linear-gradient(160deg, #5b6166, #33373a); box-shadow: 0 30px 70px rgba(0, 0, 0, .5), inset 0 3px 0 rgba(255, 255, 255, .15), inset 0 -6px 0 rgba(0, 0, 0, .3); }
+.lg-arm { top: 20px; width: 260px; height: 34px; border-radius: 17px; background: linear-gradient(180deg, #8a9196, #4b5155); box-shadow: 0 8px 18px rgba(0, 0, 0, .35); }
+.lg-arm::after { content: ""; position: absolute; top: 6px; width: 22px; height: 22px; border-radius: 50%; background: #f59e0b; }
+.lg-arm-l { left: -230px; transform-origin: 230px 17px; }
+.lg-arm-l::after { left: 8px; }
+.lg-arm-r { left: 490px; transform-origin: 30px 17px; }
+.lg-arm-r::after { right: 8px; }
+.lg-lamp { box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .3); }
+.lg-lamp.is-on { box-shadow: 0 0 18px rgba(255, 220, 120, .7), inset 0 -4px 0 rgba(0, 0, 0, .2); animation: hg-blink 1.2s ease-in-out infinite; }
+.lg-grille { background: repeating-linear-gradient(90deg, #26292b 0px, #26292b 8px, #44494c 8px, #44494c 16px); }
+@keyframes lg-jitter { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+.lg-jitter { animation: lg-jitter .23s linear infinite; }
+.lg-device.is-top .lg-lamp.is-on { animation-duration: .35s; }
