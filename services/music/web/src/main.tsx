@@ -8,8 +8,10 @@ import "./styles.css";
 import "./themes.css";
 import "./designs.css";
 import { initDesign } from "./themes";
+import { installChunkReload } from "./chunkReload";
 
 initDesign();
+installChunkReload();
 
 // The app is built twice: for /music/ on the Cineko host and for / on
 // Music's own host (MUSIC_DOMAIN). The API stays at /music/api on both.

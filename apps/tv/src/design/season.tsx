@@ -21,9 +21,11 @@ import { api } from "../api";
 import { useSettings } from "../profile/settings";
 import { useServerStatus } from "./data";
 import { useCalmMotion } from "./skins";
+import { watched } from "../chunkReload";
+import { ChunkBoundary } from "../ChunkBoundary";
 
 // The layer (and its sprites) is its own chunk: fetched only when a holiday is on.
-const SeasonLayer = lazy(() => import("@martytv/ui/season-layer").then((m) => ({ default: m.SeasonLayer })));
+const SeasonLayer = lazy(() => watched(import("@martytv/ui/season-layer")).then((m) => ({ default: m.SeasonLayer })));
 
 /** Today's season id (Settings' preview starts there). */
 export function useTodaySeason(): SeasonId | null {
@@ -74,6 +76,7 @@ export function TvSeasonLayer() {
   const { state, render } = useTvSeason();
   if (!state || render === "none") return null;
   return (
+    <ChunkBoundary>
     <Suspense fallback={null}>
     <SeasonLayer
       season={state.id}
@@ -85,5 +88,6 @@ export function TvSeasonLayer() {
       fixed={false}
     />
     </Suspense>
+    </ChunkBoundary>
   );
 }

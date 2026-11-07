@@ -353,7 +353,7 @@ func (a *App) routes() http.Handler {
 		http.Redirect(w, r, "/music/", http.StatusMovedPermanently)
 	})
 	m.HandleFunc("/music/", func(w http.ResponseWriter, r *http.Request) {
-		serveSPA(w, r, a.cfg.StaticDir, strings.TrimPrefix(r.URL.Path, "/music/"))
+		serveSPA(w, r, a.cfg.StaticDir, a.archive("music"), strings.TrimPrefix(r.URL.Path, "/music/"))
 	})
 	// Cineko Music on its own host (MUSIC_DOMAIN): Caddy proxies everything
 	// but /api/ there, and the app built for base "/" answers at the root.
@@ -363,7 +363,7 @@ func (a *App) routes() http.Handler {
 			http.NotFound(w, r)
 			return
 		}
-		serveSPA(w, r, a.cfg.RootStaticDir, strings.TrimPrefix(r.URL.Path, "/"))
+		serveSPA(w, r, a.cfg.RootStaticDir, a.archive("music-root"), strings.TrimPrefix(r.URL.Path, "/"))
 	})
 	return securityHeaders(m)
 }
@@ -376,13 +376,31 @@ func securityHeaders(h http.Handler) http.Handler {
 	})
 }
 
+// archive: one build's directory in the asset archive ("" when off).
+func (a *App) archive(name string) string {
+	if a.cfg.ArchiveDir == "" {
+		return ""
+	}
+	return filepath.Join(a.cfg.ArchiveDir, name)
+}
+
 // serveSPA serves a build of the web app from dir (SPA: unknown paths get
-// index.html).
-func serveSPA(w http.ResponseWriter, r *http.Request, dir, rel string) {
+// index.html). A hashed asset this build lacks comes from the archive of
+// earlier releases (a page opened before a deploy), if there.
+func serveSPA(w http.ResponseWriter, r *http.Request, dir, archive, rel string) {
 	clean := filepath.Clean("/" + rel)
+	asset := strings.HasPrefix(clean, "/assets/")
 	full := filepath.Join(dir, clean)
-	if fi, err := os.Stat(full); err == nil && !fi.IsDir() {
-		if strings.HasPrefix(clean, "/assets/") {
+	if fi, err := os.Stat(full); err != nil || fi.IsDir() {
+		full = ""
+		if asset && archive != "" {
+			if p := filepath.Join(archive, clean); isFile(p) {
+				full = p
+			}
+		}
+	}
+	if full != "" {
+		if asset {
 			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 		} else {
 			w.Header().Set("Cache-Control", "no-cache")
@@ -390,12 +408,19 @@ func serveSPA(w http.ResponseWriter, r *http.Request, dir, rel string) {
 		http.ServeFile(w, r, full)
 		return
 	}
-	if strings.HasPrefix(clean, "/assets/") {
+	if asset {
+		// Never cached: the file may come back (a rollback).
+		w.Header().Set("Cache-Control", "no-store")
 		http.NotFound(w, r)
 		return
 	}
 	w.Header().Set("Cache-Control", "no-cache")
 	http.ServeFile(w, r, filepath.Join(dir, "index.html"))
+}
+
+func isFile(p string) bool {
+	fi, err := os.Stat(p)
+	return err == nil && fi.Mode().IsRegular()
 }
 
 // ---- catalog handlers ----

@@ -6,25 +6,20 @@
 // moment: right after waking, or after a while without keys — never while
 // anything plays.
 
+// A chunk of the old release that is already gone doesn't wait for that
+// moment: chunkReload.ts reloads at once.
+import { entryScript, pageEntry } from "@martytv/ui/chunk-reload";
+
+export { entryScript };
+
 const CHECK_MS = 10 * 60_000;
 /** No key for this long counts as nobody using the TV right now. */
 const QUIET_MS = 3 * 60_000;
-
-/** The entry bundle a page's HTML loads ("/tv/assets/index-abc.js"), or null. */
-export function entryScript(html: string): string | null {
-  const m = /src="([^"]*\/assets\/index-[^"]+\.js)"/.exec(html);
-  return m ? m[1]! : null;
-}
 
 /** Whether a reload may happen now. */
 export function safeToReload(o: { playerIdle: boolean; mediaPlaying: boolean; sinceKeyMs: number; justWoke: boolean }): boolean {
   if (!o.playerIdle || o.mediaPlaying) return false;
   return o.justWoke || o.sinceKeyMs >= QUIET_MS;
-}
-
-function ownEntry(): string | null {
-  const s = document.querySelector<HTMLScriptElement>('script[type="module"][src*="/assets/index-"]');
-  return s ? new URL(s.src, location.href).pathname : null;
 }
 
 function mediaPlaying(): boolean {
@@ -33,7 +28,7 @@ function mediaPlaying(): boolean {
 
 /** `playerIdle`: no title is loading or playing in the player. */
 export function installAutoUpdate(playerIdle: () => boolean) {
-  const mine = ownEntry();
+  const mine = pageEntry();
   if (!mine) return; // dev server: no hashed bundle
   let lastKey = Date.now();
   let stale = false;

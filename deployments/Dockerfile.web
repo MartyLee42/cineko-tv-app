@@ -34,3 +34,9 @@ COPY deployments/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /repo/apps/web/dist /srv/web
 COPY --from=build /repo/apps/tv/dist /srv/tv
 COPY --from=build /repo/guides /srv/web/docs
+# Earlier releases' hashed assets for pages opened before a deploy: the
+# entrypoint adds this build's to the asset archive volume (if mounted at
+# /srv/asset-archive) and prunes it; the Caddyfile falls back to it.
+COPY --chmod=755 deployments/web-entrypoint.sh /usr/local/bin/web-entrypoint
+ENTRYPOINT ["/usr/local/bin/web-entrypoint"]
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

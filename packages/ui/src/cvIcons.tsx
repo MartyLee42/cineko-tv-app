@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore, type ReactNode, type SVGProps } from "react";
+import { reportChunkFailure } from "./chunkReload";
 // «Конструктивизм» pictograms: the alternative icon set both apps draw when
 // this design is on. 24×24, solid fills, no rounded corners — bold geometric
 // shapes (circles, wedges, thick bars, 45° diagonals). The main shape is
@@ -26,6 +27,7 @@ export function loadCvGlyphs(): Promise<void> {
     },
     (e: unknown) => {
       loading = null;
+      reportChunkFailure(e);
       throw e;
     },
   ));

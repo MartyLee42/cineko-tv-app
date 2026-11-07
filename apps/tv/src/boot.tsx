@@ -1,7 +1,19 @@
 import { createRoot } from "react-dom/client";
 import { getCurrentFocusKey, init } from "@noriginmedia/norigin-spatial-navigation";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { apiErrorMiddleware, ErrorBoundary, I18nProvider, initialLocale, installErrorReporter, installKeySounds, loadLocale, onDesignApplied, parseDeviceModel } from "@martytv/ui";
+import {
+  apiErrorMiddleware,
+  ErrorBoundary,
+  I18nProvider,
+  initialLocale,
+  installChunkReload,
+  installErrorReporter,
+  installKeySounds,
+  loadLocale,
+  onDesignApplied,
+  parseDeviceModel,
+  UpdatingScreen,
+} from "@martytv/ui";
 import { loadLook } from "./design/looks/registry";
 import { themeCache } from "./profile/settings";
 import { queryClient } from "./catalog/queries";
@@ -15,6 +27,7 @@ import { installNavTrace } from "./remote/navTrace";
 import { installFastNav } from "./design/fastNav";
 import { installAutoUpdate } from "./update";
 import { player } from "./player/controller";
+import { beforeChunkReload, chunkFailed } from "./chunkReload";
 
 // Client error logging (Admin → Errors): window errors, rejections, render
 // crashes, failed API calls and player errors. Sent only once paired.
@@ -49,6 +62,19 @@ installFastNav();
 installKeySounds();
 // A new deploy reaches the TV without a manual restart (update.ts).
 if (!navigator.webdriver) installAutoUpdate(() => player.flow.phase === "idle");
+// A lazy chunk of this release gone from the server: one reload into the new
+// one (chunkReload.ts) — also for failures nobody caught — with
+// «Обновляем приложение…» on top meanwhile (the TV never ends on a crash).
+installChunkReload(chunkFailed);
+beforeChunkReload(() => {
+  const root = document.getElementById("root");
+  if (!root) return;
+  const el = document.createElement("div");
+  el.style.cssText = "position:fixed;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;z-index:2147483647";
+  el.style.transform = root.style.transform;
+  document.body.appendChild(el);
+  createRoot(el).render(<UpdatingScreen tv />);
+});
 
 // The UI is laid out for 1920×1080; scale it to whatever the screen is
 // (720p panels, 4K browsers, desktop windows during development).
@@ -85,7 +111,7 @@ void Promise.all([loadLocale(initialLocale()).catch(() => undefined), loadLook(t
     createRoot(document.getElementById("root")!).render(
       <QueryClientProvider client={queryClient}>
         <I18nProvider>
-          <ErrorBoundary variant="tv">
+          <ErrorBoundary variant="tv" recover={chunkFailed}>
             <App />
           </ErrorBoundary>
         </I18nProvider>

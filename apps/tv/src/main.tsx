@@ -2,6 +2,7 @@ import { preloadLocale } from "@martytv/ui/locale-preload";
 import { tabletRedirect } from "./tablet";
 import { preloadSavedLook } from "./design/looks/registry";
 import { seedNewTvDesign } from "./design/newTv";
+import { watched } from "./chunkReload";
 
 // iPad gets the touch web app; everything else boots the TV app.
 const to = tabletRedirect(location, navigator.userAgent, navigator.maxTouchPoints ?? 0, "ontouchend" in document, sessionStorage);
@@ -13,5 +14,6 @@ else {
   // a fresh, unpaired TV starts in «Каркас» (design/newTv).
   seedNewTvDesign();
   preloadSavedLook();
-  void import("./boot");
+  // A release replaced while this page loaded: reload once (chunkReload.ts).
+  void watched(import("./boot")).catch(() => undefined);
 }
