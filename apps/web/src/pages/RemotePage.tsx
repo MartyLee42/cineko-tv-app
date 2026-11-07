@@ -27,7 +27,7 @@ import {
   type VideoQuality,
 } from "../remote/logic";
 import { sendCommand, setLastUsedDevice, useDeviceState, useLastUsedDevice } from "../remote/state";
-import { trackLabel } from "../play/releases";
+import { remoteTrackLabel } from "../play/releases";
 import { useVideoDetail } from "../video/queries";
 import { watchHref } from "../video/ui";
 
@@ -529,7 +529,7 @@ function TrackSelect({
         {offLabel ? <option value="">{offLabel}</option> : !tracks?.length && <option value="">—</option>}
         {tracks?.map((tr) => (
           <option key={tr.id} value={tr.id}>
-            {trackLabel(tr, locale)}
+            {remoteTrackLabel(tr, locale)}
           </option>
         ))}
       </Select>
