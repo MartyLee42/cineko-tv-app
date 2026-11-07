@@ -579,7 +579,7 @@ html.design-pulsar .pulsar-bg {
   overflow: hidden;
 }
 /* public/pulsar.svg (generated once, a static file): centred, as large as fits the window. */
-html.design-pulsar .pulsar-bg { background: url(/music/pulsar.svg) center / contain no-repeat; opacity: 0.45; }
+html.design-pulsar .pulsar-bg { background: url(/pulsar.svg) center / contain no-repeat; opacity: 0.45; }
 html.design-pulsar .wave { background: #000; border: 1px solid var(--line); position: relative; overflow: hidden; }
 html.design-pulsar .wave-anim { background: transparent; border: 1px solid var(--line); color: var(--text); }
 /* «Моя волна»: the small plot replaces the wave icon. */

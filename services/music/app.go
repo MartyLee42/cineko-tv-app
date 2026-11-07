@@ -158,15 +158,36 @@ func pathInt(r *http.Request, name string) (int64, error) {
 
 const sessionCookie = "mt_session"
 
+// sessionValues returns the request's mt_session cookies. A browser may send
+// two (an old host-only one and the one shared with Cineko Music's own host);
+// the API takes the first valid one.
+func sessionValues(r *http.Request) []string {
+	var out []string
+	for _, c := range r.CookiesNamed(sessionCookie) {
+		if c.Value != "" && len(out) < 4 {
+			out = append(out, c.Value)
+		}
+	}
+	return out
+}
+
+// forwardSession copies the listener's session cookies to a request to the
+// Cineko API.
+func forwardSession(dst, src *http.Request) {
+	for _, v := range sessionValues(src) {
+		dst.AddCookie(&http.Cookie{Name: sessionCookie, Value: v})
+	}
+}
+
 func (a *App) currentUser(r *http.Request) (*User, error) {
 	if a.cfg.DevUser != "" {
 		return &User{ID: "dev-" + a.cfg.DevUser, Username: a.cfg.DevUser, DisplayName: a.cfg.DevUser, Role: "admin"}, nil
 	}
-	c, err := r.Cookie(sessionCookie)
-	if err != nil || c.Value == "" {
+	vals := sessionValues(r)
+	if len(vals) == 0 {
 		return nil, nil
 	}
-	sum := sha256.Sum256([]byte(c.Value))
+	sum := sha256.Sum256([]byte(strings.Join(vals, ";")))
 	key := hex.EncodeToString(sum[:])
 	a.sessMu.Lock()
 	if s, ok := a.sessions[key]; ok && time.Now().Before(s.exp) {
@@ -179,7 +200,7 @@ func (a *App) currentUser(r *http.Request) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.AddCookie(&http.Cookie{Name: sessionCookie, Value: c.Value})
+	forwardSession(req, r)
 	if ip := r.Header.Get("X-Forwarded-For"); ip != "" {
 		req.Header.Set("X-Forwarded-For", ip)
 	}
@@ -331,7 +352,19 @@ func (a *App) routes() http.Handler {
 	m.HandleFunc("/music", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/music/", http.StatusMovedPermanently)
 	})
-	m.HandleFunc("/music/", a.static)
+	m.HandleFunc("/music/", func(w http.ResponseWriter, r *http.Request) {
+		serveSPA(w, r, a.cfg.StaticDir, strings.TrimPrefix(r.URL.Path, "/music/"))
+	})
+	// Cineko Music on its own host (MUSIC_DOMAIN): Caddy proxies everything
+	// but /api/ there, and the app built for base "/" answers at the root.
+	// The main host never sends these paths here.
+	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if a.cfg.RootStaticDir == "" {
+			http.NotFound(w, r)
+			return
+		}
+		serveSPA(w, r, a.cfg.RootStaticDir, strings.TrimPrefix(r.URL.Path, "/"))
+	})
 	return securityHeaders(m)
 }
 
@@ -343,11 +376,11 @@ func securityHeaders(h http.Handler) http.Handler {
 	})
 }
 
-// static serves the web app (SPA: unknown paths get index.html).
-func (a *App) static(w http.ResponseWriter, r *http.Request) {
-	rel := strings.TrimPrefix(r.URL.Path, "/music/")
+// serveSPA serves a build of the web app from dir (SPA: unknown paths get
+// index.html).
+func serveSPA(w http.ResponseWriter, r *http.Request, dir, rel string) {
 	clean := filepath.Clean("/" + rel)
-	full := filepath.Join(a.cfg.StaticDir, clean)
+	full := filepath.Join(dir, clean)
 	if fi, err := os.Stat(full); err == nil && !fi.IsDir() {
 		if strings.HasPrefix(clean, "/assets/") {
 			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
@@ -362,7 +395,7 @@ func (a *App) static(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Cache-Control", "no-cache")
-	http.ServeFile(w, r, filepath.Join(a.cfg.StaticDir, "index.html"))
+	http.ServeFile(w, r, filepath.Join(dir, "index.html"))
 }
 
 // ---- catalog handlers ----
@@ -370,6 +403,8 @@ func (a *App) static(w http.ResponseWriter, r *http.Request) {
 func (a *App) hMe(w http.ResponseWriter, r *http.Request, u *User) error {
 	writeJSON(w, 200, map[string]any{
 		"user": u,
+		// Where «Вернуться в Cineko» leads from Music's own host.
+		"cinekoUrl": a.cfg.CinekoURL,
 		"features": map[string]bool{
 			"youtube":  a.yt.Configured(),
 			"torrents": a.tor.SearchConfigured(),

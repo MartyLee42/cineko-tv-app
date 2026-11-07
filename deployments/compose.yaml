@@ -164,6 +164,8 @@ services:
     restart: unless-stopped
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+      # Cineko Music on its own host (optional; unset = only /music/ here).
+      MUSIC_SITE_ADDRESS: ${MUSIC_DOMAIN:-http://music.invalid}
       CADDY_TRUSTED_PROXIES: ${CADDY_TRUSTED_PROXIES:-private_ranges}
       CADDY_CLIENT_IP_HEADER: ${CADDY_CLIENT_IP_HEADER:-X-Forwarded-For}
     ports:

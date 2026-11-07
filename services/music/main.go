@@ -28,29 +28,33 @@ import (
 )
 
 type config struct {
-	Listen       string
-	DataDir      string
-	StaticDir    string
-	APIURL       string // Cineko API (session check)
-	DevUser      string // skips the session check (local development only)
-	InvidiousURL string
-	ProwlarrURL  string
-	ProwlarrKey  string
-	TorrURL      string
-	TorrUser     string
-	TorrPass     string
-	DeezerURL    string
-	LyricsURL    string
-	ProxyURL     string // optional proxy for Deezer / LRCLIB / images
-	MaxTranscode int
-	AIKey        string
-	AIBase       string
-	AIModel      string
-	AIPerDay     int
-	AIDayTokens  int   // DeepSeek tokens per Moscow day, all accounts (0 = unlimited)
-	CacheBytes   int64 // YouTube audio disk cache
-	Region       string
-	MetricsToken string // GET /metrics bearer token; empty = 404
+	Listen    string
+	DataDir   string
+	StaticDir string // the app built for /music/
+	// RootStaticDir is the app built for "/" (Music on its own host,
+	// MUSIC_DOMAIN); empty = not served.
+	RootStaticDir string
+	CinekoURL     string // PUBLIC_BASE_URL: the main Cineko site
+	APIURL        string // Cineko API (session check)
+	DevUser       string // skips the session check (local development only)
+	InvidiousURL  string
+	ProwlarrURL   string
+	ProwlarrKey   string
+	TorrURL       string
+	TorrUser      string
+	TorrPass      string
+	DeezerURL     string
+	LyricsURL     string
+	ProxyURL      string // optional proxy for Deezer / LRCLIB / images
+	MaxTranscode  int
+	AIKey         string
+	AIBase        string
+	AIModel       string
+	AIPerDay      int
+	AIDayTokens   int   // DeepSeek tokens per Moscow day, all accounts (0 = unlimited)
+	CacheBytes    int64 // YouTube audio disk cache
+	Region        string
+	MetricsToken  string // GET /metrics bearer token; empty = 404
 }
 
 func env(k, def string) string {
@@ -82,29 +86,31 @@ func loadConfig() config {
 		n = 1
 	}
 	return config{
-		Listen:       env("LISTEN_ADDR", ":8080"),
-		DataDir:      env("MUSIC_DATA_DIR", "/data"),
-		StaticDir:    env("MUSIC_STATIC_DIR", "/srv/music"),
-		APIURL:       strings.TrimRight(env("MARTYTV_API_URL", "http://api:8080"), "/"),
-		DevUser:      env("MUSIC_DEV_USER", ""),
-		InvidiousURL: strings.TrimRight(env("INVIDIOUS_URL", ""), "/"),
-		ProwlarrURL:  strings.TrimRight(env("PROWLARR_URL", ""), "/"),
-		ProwlarrKey:  secret("PROWLARR_API_KEY"),
-		TorrURL:      strings.TrimRight(env("TORRSERVER_URL", ""), "/"),
-		TorrUser:     firstNonEmpty(secret("TORRSERVER_USERNAME"), secret("TORRSERVER_LOGIN")),
-		TorrPass:     firstNonEmpty(secret("TORRSERVER_PASSWORD"), secret("TORRSERVER_PWD")),
-		DeezerURL:    strings.TrimRight(env("DEEZER_URL", "https://api.deezer.com"), "/"),
-		LyricsURL:    strings.TrimRight(env("LRCLIB_URL", "https://lrclib.net"), "/"),
-		ProxyURL:     env("MUSIC_PROXY_URL", ""),
-		MaxTranscode: n,
-		AIKey:        secret("DEEPSEEK_API_KEY"),
-		AIBase:       env("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
-		AIModel:      env("DEEPSEEK_MODEL", "deepseek-chat"),
-		AIPerDay:     aiDay,
-		AIDayTokens:  aiTokens,
-		CacheBytes:   int64(gb * (1 << 30)),
-		Region:       env("MUSIC_REGION", "RU"),
-		MetricsToken: secret("METRICS_TOKEN"),
+		Listen:        env("LISTEN_ADDR", ":8080"),
+		DataDir:       env("MUSIC_DATA_DIR", "/data"),
+		StaticDir:     env("MUSIC_STATIC_DIR", "/srv/music"),
+		RootStaticDir: env("MUSIC_ROOT_STATIC_DIR", "/srv/music-root"),
+		CinekoURL:     strings.TrimRight(env("PUBLIC_BASE_URL", ""), "/"),
+		APIURL:        strings.TrimRight(env("MARTYTV_API_URL", "http://api:8080"), "/"),
+		DevUser:       env("MUSIC_DEV_USER", ""),
+		InvidiousURL:  strings.TrimRight(env("INVIDIOUS_URL", ""), "/"),
+		ProwlarrURL:   strings.TrimRight(env("PROWLARR_URL", ""), "/"),
+		ProwlarrKey:   secret("PROWLARR_API_KEY"),
+		TorrURL:       strings.TrimRight(env("TORRSERVER_URL", ""), "/"),
+		TorrUser:      firstNonEmpty(secret("TORRSERVER_USERNAME"), secret("TORRSERVER_LOGIN")),
+		TorrPass:      firstNonEmpty(secret("TORRSERVER_PASSWORD"), secret("TORRSERVER_PWD")),
+		DeezerURL:     strings.TrimRight(env("DEEZER_URL", "https://api.deezer.com"), "/"),
+		LyricsURL:     strings.TrimRight(env("LRCLIB_URL", "https://lrclib.net"), "/"),
+		ProxyURL:      env("MUSIC_PROXY_URL", ""),
+		MaxTranscode:  n,
+		AIKey:         secret("DEEPSEEK_API_KEY"),
+		AIBase:        env("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+		AIModel:       env("DEEPSEEK_MODEL", "deepseek-chat"),
+		AIPerDay:      aiDay,
+		AIDayTokens:   aiTokens,
+		CacheBytes:    int64(gb * (1 << 30)),
+		Region:        env("MUSIC_REGION", "RU"),
+		MetricsToken:  secret("METRICS_TOKEN"),
 	}
 }
 

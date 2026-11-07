@@ -122,7 +122,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	userStore := users.NewStore(pool)
 	auditLog := audit.New(pool, log)
 	authSvc := auth.NewService(pool, userStore, hasher, cfg.SessionIdleTTL, cfg.SessionAbsoluteTTL)
-	mw := auth.NewMiddleware(authSvc, cfg.AllowedOrigins, cfg.CookieSecure)
+	mw := auth.NewMiddleware(authSvc, cfg.AllowedOrigins, cfg.CookieSecure).WithCookieDomain(cfg.CookieDomain)
 	deviceStore := devices.NewStore(pool, hasher)
 	hub := realtime.NewHub(deviceAccess{s: deviceStore, pool: pool, users: userStore, audit: auditLog}, log)
 	authSvc.SetDisconnector(hub)
