@@ -60,3 +60,38 @@ export async function attachLive(video: HTMLVideoElement, url: string, onFatal: 
     destroy: () => hls.destroy(),
   };
 }
+
+/**
+ * Plain MPEG-TS channels (…/stream.ts): mpegts.js transmuxes the endless TS
+ * into MSE (browsers can't play video/mp2t in a video element); native src
+ * where MSE is missing.
+ */
+export async function attachLiveTs(video: HTMLVideoElement, url: string, onFatal: () => void): Promise<LiveHandle> {
+  const mpegts = (await import("mpegts.js")).default;
+  if (!mpegts.isSupported()) return nativeHandle(video, url, onFatal);
+  const player = mpegts.createPlayer(
+    { type: "mpegts", isLive: true, url: new URL(url, window.location.href).href },
+    { enableStashBuffer: false, liveBufferLatencyChasing: true, lazyLoad: false, autoCleanupSourceBuffer: true },
+  );
+  let done = false;
+  player.on(mpegts.Events.ERROR, () => {
+    if (done) return;
+    done = true;
+    onFatal();
+  });
+  player.attachMediaElement(video);
+  player.load();
+  return {
+    liveEdge: () => (video.buffered.length ? video.buffered.end(video.buffered.length - 1) : null),
+    destroy: () => {
+      done = true;
+      try {
+        player.unload();
+        player.detachMediaElement();
+        player.destroy();
+      } catch {
+        // already gone
+      }
+    },
+  };
+}

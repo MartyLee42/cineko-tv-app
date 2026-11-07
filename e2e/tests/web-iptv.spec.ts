@@ -337,9 +337,10 @@ test.describe("ТВ on a phone", () => {
     await expect(player.getByTestId("live-digits")).toHaveText("6");
     await expect(page).toHaveURL(new RegExp(`play=${id(6)}`), { timeout: 5_000 });
 
-    // MPEG-TS channels can't play in the browser: the player offers the TV.
+    // MPEG-TS channels play through mpegts.js; the mock's bytes aren't a real
+    // stream, so it ends in the error, which still offers the TV.
     await page.keyboard.press("5");
-    await expect(player.getByTestId("live-ts")).toBeVisible({ timeout: 10_000 });
+    await expect(player.getByTestId("live-error")).toBeVisible({ timeout: 15_000 });
     await expect(player.getByTestId("live-send-to-tv")).toBeVisible();
 
     await player.getByTestId("live-close").click();
