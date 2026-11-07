@@ -1,0 +1,21 @@
+/* ---- western: high noon, a tumbleweed, Cineko's wanted bill slapped up, letterbox bars */
+.wwi-sky { background-image: linear-gradient(180deg, #f6eedb 0%, #f1e4c6 45%, #e8cc98 100%); }
+@keyframes wwi-sun { from { opacity: .4; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+.wwi-sun { transform-origin: 1040px 170px; animation: wwi-sun 1.2s ease-out both; }
+@keyframes wwi-bar-top { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+@keyframes wwi-bar-bottom { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.wwi-bar-top { animation: wwi-bar-top .5s cubic-bezier(.3,.7,.3,1) .1s both; }
+.wwi-bar-bottom { animation: wwi-bar-bottom .5s cubic-bezier(.3,.7,.3,1) .1s both; }
+@keyframes wwi-roll { 0% { transform: translate3d(-120px,0,0); } 25% { transform: translate3d(240px,-34px,0); } 50% { transform: translate3d(600px,0,0); } 75% { transform: translate3d(960px,-26px,0); } 100% { transform: translate3d(1400px,0,0); } }
+@keyframes wwi-spin { to { transform: rotate(720deg); } }
+.wwi-roll { animation: wwi-roll 2.6s linear .2s both; }
+.wwi-spin { animation: wwi-spin 2.6s linear .2s both; }
+@keyframes wwi-slap { 0% { opacity: 0; transform: scale(1.6) rotate(6deg); } 60% { opacity: 1; transform: scale(.96) rotate(-1deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+.wwi-slap { position: relative; animation: wwi-slap .42s cubic-bezier(.3,.7,.3,1) both; }
+.wwi-bill {
+  padding: 26px 26px 22px; text-align: center; background: #f1dfb8;
+  box-shadow: inset 0 0 0 6px #f1dfb8, inset 0 0 0 8px rgba(96,60,30,.6), inset 0 0 50px rgba(120,70,24,.4), 0 16px 34px rgba(70,40,15,.45);
+}
+.wwi-photo { display: flex; justify-content: center; margin: 14px auto 0; width: 230px; padding-top: 8px; background: #e2c99a; box-shadow: inset 0 0 0 3px #4a2a14, inset 0 0 24px rgba(90,48,16,.5); }
+@keyframes wwi-nail { from { opacity: 0; transform: scale(2); } to { opacity: 1; transform: scale(1); } }
+.wwi-nail { position: absolute; top: 12px; width: 14px; height: 14px; border-radius: 50%; background: #4b3a2c; animation: wwi-nail .16s ease-out both; }

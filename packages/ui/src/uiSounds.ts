@@ -150,6 +150,16 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [], noise: [noise("highpass", 4200, 0.008, 0.35)] },
     click: { tones: [tone("triangle", 240, 140, 0.035, 0.3)], noise: [noise("highpass", 3800, 0.01, 0.4), noise("bandpass", 1400, 0.02, 0.3, 2, 0.025)] },
   },
+  // A spur's jingle on a move; a revolver hammer cocking (two dry clicks) on OK.
+  western: {
+    tick: { tones: [tone("triangle", 3200, 3000, 0.02, 0.12)], noise: [noise("bandpass", 5200, 0.016, 0.22, 6)] },
+    click: { tones: [], noise: [noise("bandpass", 2600, 0.012, 0.55, 3), noise("bandpass", 1900, 0.016, 0.6, 3, 0.05)] },
+  },
+  // Soft and slightly wrong: a low falling sine, and a rising one, as if played backwards.
+  redroom: {
+    tick: { tones: [tone("sine", 520, 440, 0.03, 0.3)], noise: [] },
+    click: { tones: [tone("sine", 330, 660, 0.08, 0.45), tone("triangle", 990, 990, 0.03, 0.08, 0.07)], noise: [] },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */
