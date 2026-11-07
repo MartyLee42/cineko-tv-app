@@ -114,8 +114,8 @@ func (s *Service) PlaylistIDs() []string {
 
 // ---------------------------------------------------------------- scheduling
 
-// Run refreshes playlists every RefreshHours, guides every EPGRefreshHours,
-// probes favorite/recent channels every 30 min and prunes old programmes.
+// Run refreshes playlists every RefreshHours, guides every EPGRefreshHours
+// and prunes old programmes; healthLoop checks streams alongside.
 func (s *Service) Run(ctx context.Context) {
 	_, _ = s.pool.Exec(ctx, `UPDATE iptv_playlists SET refresh_status = 'error', refresh_error = 'interrupted' WHERE refresh_status = 'running'`)
 	_, _ = s.pool.Exec(ctx, `UPDATE iptv_playlists SET epg_status = 'error', epg_error = 'interrupted' WHERE epg_status = 'running'`)
@@ -128,18 +128,15 @@ func (s *Service) Run(ctx context.Context) {
 	}
 	t := time.NewTicker(time.Minute)
 	defer t.Stop()
-	var lastProbe, lastPrune time.Time
+	var lastPrune time.Time
 	select {
 	case <-ctx.Done():
 		return
 	case <-time.After(30 * time.Second):
 	}
+	go s.healthLoop(ctx)
 	for {
 		s.tick(ctx)
-		if time.Since(lastProbe) > 30*time.Minute {
-			s.probeWatched(ctx)
-			lastProbe = time.Now()
-		}
 		if time.Since(lastPrune) > 6*time.Hour {
 			_, _ = s.pool.Exec(ctx, `DELETE FROM iptv_programmes WHERE stop_at < now() - interval '1 day'`)
 			lastPrune = time.Now()
@@ -330,4 +327,25 @@ func epgSourceID(u string) string {
 func hash8(s string) string {
 	h := sha256.Sum256([]byte(s))
 	return hex.EncodeToString(h[:4])
+}
+
+// healthLoop probes favorite/recent channels every 30 min and sweeps all
+// channels (each about daily, healthBatch per 10 min) — off the main loop,
+// a sweep can take minutes.
+func (s *Service) healthLoop(ctx context.Context) {
+	t := time.NewTicker(10 * time.Minute)
+	defer t.Stop()
+	var lastWatched time.Time
+	for {
+		if time.Since(lastWatched) > 30*time.Minute {
+			s.probeWatched(ctx)
+			lastWatched = time.Now()
+		}
+		s.checkDue(ctx)
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+		}
+	}
 }

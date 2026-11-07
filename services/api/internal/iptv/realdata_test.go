@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"martytv/api/internal/livecheck"
 )
 
 // TestRealData is a manual check against the public iptv-org Russia
@@ -144,12 +146,10 @@ func TestRealData(t *testing.T) {
 		if e.Referrer != "" {
 			h["Referer"] = e.Referrer
 		}
-		pctx, cancel := context.WithTimeout(ctx, 12*time.Second)
-		format, err := s.probe(pctx, e.URL, h)
-		cancel()
-		state := "ok " + format
-		if err != nil {
-			state = "FAIL " + err.Error()
+		res := livecheck.Check(ctx, s.short.direct, e.URL, h)
+		state := "ok " + res.Format + " " + res.Video + "/" + res.Audio
+		if res.Health != livecheck.HealthOK {
+			state = res.Health + " " + res.Cause
 		} else {
 			ok++
 		}

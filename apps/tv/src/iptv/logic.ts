@@ -1,6 +1,9 @@
 // Live TV (IPTV) helpers: EPG progress, group chips, channel switching and the
 // number-key input buffer. Pure, so they are unit-tested without React.
 import type { IptvChannel, IptvGroup, IptvProgramme } from "@martytv/contracts";
+import { BROKEN_GROUP, workingGroups } from "@martytv/media-types";
+
+export { offlineLabel } from "@martytv/media-types";
 
 /** Fraction (0…1) of a programme that has aired at `now`; null when unknown. */
 export function epgProgress(p: Pick<IptvProgramme, "start" | "stop"> | null | undefined, now: number): number | null {
@@ -47,21 +50,33 @@ export const KNOWN_GROUPS: readonly string[] = [
  * Chips for the channel screen: Все, Избранное (when there are favorites),
  * then the server's groups in its order.
  */
-export function buildChips(groups: readonly IptvGroup[], total: number, favorites: number): Chip[] {
+export function buildChips(groups: readonly IptvGroup[], total: number, favorites: number, broken = 0): Chip[] {
   const out: Chip[] = [{ id: "all", key: "iptv.group.all", name: "", count: total }];
   if (favorites > 0) out.push({ id: "favorites", key: "iptv.group.favorites", name: "", count: favorites });
   for (const g of groups) {
-    if (g.id === "all" || g.id === "favorites") continue;
+    if (g.id === "all" || g.id === "favorites" || g.id === BROKEN_GROUP) continue;
     out.push({ id: g.id, key: KNOWN_GROUPS.includes(g.id) ? `iptv.group.${g.id}` : null, name: g.name || g.id, count: g.count });
   }
+  if (broken > 0) out.push({ id: BROKEN_GROUP, key: "iptvplay.broken", name: "", count: broken });
   return out;
 }
 
-/** Channels of one chip (client-side filter of the full list). */
+/**
+ * Chips over the working channels (counts recounted), «Нерабочие» last
+ * when some channels are offline.
+ */
+export function channelChips(groups: readonly IptvGroup[], items: readonly IptvChannel[]): Chip[] {
+  const working = items.filter((c) => !c.offline);
+  return buildChips(workingGroups(groups, items), working.length, working.filter((c) => c.favorite).length, items.length - working.length);
+}
+
+/** Channels of one chip (client-side filter of the full list); broken channels only under their own chip. */
 export function filterGroup(items: readonly IptvChannel[], group: string): IptvChannel[] {
-  if (group === "all") return items.slice();
-  if (group === "favorites") return items.filter((c) => c.favorite);
-  return items.filter((c) => c.group_id === group);
+  if (group === BROKEN_GROUP) return items.filter((c) => c.offline);
+  const working = items.filter((c) => !c.offline);
+  if (group === "all") return working;
+  if (group === "favorites") return working.filter((c) => c.favorite);
+  return working.filter((c) => c.group_id === group);
 }
 
 /** The next/previous channel in `list` (wraps around); the first when `currentId` isn't there. */
@@ -71,6 +86,7 @@ export function stepChannel<T extends { id: string }>(list: readonly T[], curren
   if (i < 0) return list[0]!;
   return list[(i + dir + list.length) % list.length]!;
 }
+
 
 /**
  * The channel with this number, else the nearest higher one, else the

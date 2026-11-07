@@ -85,3 +85,4 @@ export * from "./smooth";
 export * from "./chapters";
 export * from "./filmTheme";
 export * from "./quickRate";
+export * from "./livePlay";

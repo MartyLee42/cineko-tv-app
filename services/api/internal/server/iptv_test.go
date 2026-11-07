@@ -422,13 +422,13 @@ func TestIPTVLivePlayback(t *testing.T) {
 		t.Fatalf("format not remembered %v", c)
 	}
 
-	// Health: three failures mark a channel offline; it stays playable.
+	// Health: a channel whose stream is gone (404) fails at once with a
+	// cause and is marked offline (dead); it stays listed.
 	dead := chanByName(t, items, "Dead")["id"].(string)
-	s = alice.Do("POST", "/api/v1/playback/sources", map[string]any{"kind": "iptv", "channel_id": dead}).Expect(201).JSON()
-	for i := 0; i < 3; i++ {
-		anon.Do("GET", s["stream_url"].(string), nil).Expect(502)
+	if code := alice.Do("POST", "/api/v1/playback/sources", map[string]any{"kind": "iptv", "channel_id": dead}).Expect(502).ErrorCode(); code != "channel_unavailable" {
+		t.Fatalf("dead channel: %s", code)
 	}
-	if c := chanByName(t, alice.Do("GET", "/api/v1/iptv/channels", nil).Expect(200).Items(), "Dead"); c["offline"] != true {
+	if c := chanByName(t, alice.Do("GET", "/api/v1/iptv/channels", nil).Expect(200).Items(), "Dead"); c["offline"] != true || c["health"] != "dead" {
 		t.Fatalf("dead channel not offline %v", c)
 	}
 	anon.Do("GET", stream, nil).Expect(200) // a success elsewhere doesn't touch it

@@ -3,18 +3,19 @@
 // up/down and number keys switch channels, an OSD shows now/next.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import type { IptvChannel } from "@martytv/contracts";
-import { Spinner, useI18n } from "@martytv/ui";
+import type { IptvChannel, PlaybackSource } from "@martytv/contracts";
+import { apiErrorCode, hasMediaSource, liveCodecProblem, liveFailureFromCode, mseTypeSupported, type LiveFailure } from "@martytv/media-types";
+import { reportError, Spinner, useI18n } from "@martytv/ui";
 import { AlertIcon, CastIcon, ChevronLeft, CloseIcon, FullscreenIcon, ListIcon, MuteIcon, PauseIcon, PlayIcon, VolumeIcon } from "../icons";
 import { enterFullscreen, exitFullscreen, fullscreenElement } from "../player/media";
 import { useActiveProfile } from "../watch/ActiveProfile";
-import { attachLive, type LiveHandle } from "./livehls";
+import { attachLive, attachLiveTs, type LiveHandle } from "./livehls";
 import { BEHIND_LIVE_SECONDS, channelByNumber, formatLag, liveLag, neighbour, typeDigit } from "./logic";
 import { createLiveSource, reportWatched } from "./queries";
 import { useSendChannel } from "./SendChannel";
 import { ChannelLogo, NowNext, useNow } from "./ui";
 
-type Status = { kind: "loading" } | { kind: "ready"; url: string } | { kind: "ts" } | { kind: "error" };
+type Status = { kind: "loading" } | { kind: "ready"; url: string; ts: boolean } | { kind: "error"; failure: LiveFailure; codec?: string };
 /** A status for one channel/attempt (a newer key means "loading"). */
 type Keyed = { key: string; status: Status };
 
@@ -55,41 +56,62 @@ export function LivePlayer({
   const [list, setList] = useState(false);
   const [digits, setDigits] = useState("");
 
-  // ---- source: a fresh token per channel; one silent re-POST on a fatal error.
+  // ---- source: a fresh token per channel; one silent re-POST on a fatal
+  // error (the server then tries the channel's mirrors and names the cause).
   const retried = useRef(false);
+  const toStatus = useCallback((src: PlaybackSource): Status => {
+    const ts = src.format === "ts";
+    if (!src.stream_url) return { kind: "error", failure: "broken" };
+    const el = video.current;
+    const native = ts ? el?.canPlayType("video/mp2t") : "";
+    if (ts && !hasMediaSource() && !native) return { kind: "error", failure: "format" };
+    // Through MSE (hls.js / mpegts.js) the browser must decode the codecs itself.
+    const codec = native ? null : liveCodecProblem(src, mseTypeSupported());
+    if (codec) return { kind: "error", failure: "codec", codec };
+    return { kind: "ready", url: src.stream_url, ts };
+  }, []);
+  const failed = useCallback((e: unknown): Status => ({ kind: "error", failure: liveFailureFromCode(apiErrorCode(e)) }), []);
   useEffect(() => {
     retried.current = false;
     let cancelled = false;
     const set = (s: Status) => !cancelled && setKeyed({ key, status: s });
     createLiveSource(channelId, profileId).then(
-      (src) => set(src.format === "ts" ? { kind: "ts" } : src.stream_url ? { kind: "ready", url: src.stream_url } : { kind: "error" }),
-      () => set({ kind: "error" }),
+      (src) => set(toStatus(src)),
+      (e) => set(failed(e)),
     );
     return () => {
       cancelled = true;
     };
-  }, [key, channelId, profileId]);
+  }, [key, channelId, profileId, toStatus, failed]);
 
   const onFatal = useCallback(() => {
     const set = (s: Status) => setKeyed({ key, status: s });
     if (retried.current) {
-      set({ kind: "error" });
+      set({ kind: "error", failure: "broken" });
       return;
     }
     retried.current = true;
     createLiveSource(channelId, profileId).then(
-      (src) => set(src.stream_url && src.format !== "ts" ? { kind: "ready", url: src.stream_url } : { kind: "error" }),
-      () => set({ kind: "error" }),
+      (src) => set(toStatus(src)),
+      (e) => set(failed(e)),
     );
-  }, [key, channelId, profileId]);
+  }, [key, channelId, profileId, toStatus, failed]);
+
+  // A failure goes to Admin → Errors with its cause (API failures are reported by the client middleware).
+  const failure = status.kind === "error" ? status : null;
+  useEffect(() => {
+    if (!failure || failure.failure === "geo" || failure.failure === "offline" || failure.failure === "timeout") return;
+    reportError("player", `live: ${failure.failure}${failure.codec ? ` (${failure.codec})` : ""}`, { component: "live", extra: { channel: channel?.name } });
+  }, [failure, channel?.name]);
 
   const url = status.kind === "ready" ? status.url : null;
+  const ts = status.kind === "ready" && status.ts;
   useEffect(() => {
     const el = video.current;
     if (!el || !url) return;
     let h: LiveHandle | null = null;
     let gone = false;
-    void attachLive(el, url, onFatal).then((x) => {
+    void (ts ? attachLiveTs(el, url, onFatal) : attachLive(el, url, onFatal)).then((x) => {
       if (gone) x.destroy();
       else {
         h = x;
@@ -107,7 +129,7 @@ export function LivePlayer({
       h?.destroy();
       handle.current = null;
     };
-  }, [url, onFatal]);
+  }, [url, ts, onFatal]);
 
   // ---- "watched channel" event after a few seconds of playback.
   useEffect(() => {
@@ -275,15 +297,16 @@ export function LivePlayer({
         </div>
       )}
 
-      {(status.kind === "ts" || status.kind === "error") && (
-        <div className="absolute inset-0 flex items-center justify-center p-6" data-testid={status.kind === "ts" ? "live-ts" : "live-error"}>
+      {status.kind === "error" && (
+        <div className="absolute inset-0 flex items-center justify-center p-6" data-testid="live-error" data-cause={status.failure}>
           <div className="max-w-sm space-y-4 rounded-2xl bg-white/10 p-5 text-center backdrop-blur">
             <AlertIcon className="mx-auto text-3xl text-white/80" />
-            <p className="text-white/90">{status.kind === "ts" ? t("iptv.ts_unsupported") : t("iptv.play_failed")}</p>
+            <p className="font-semibold text-white/90">{t(`iptvplay.err.${status.failure}`, { codec: status.codec ?? "" })}</p>
+            <p className="text-sm text-white/70">{t(status.failure === "codec" ? "iptvplay.hint.codec" : "iptvplay.hint.other")}</p>
             <div className="flex flex-wrap justify-center gap-2">
-              {status.kind === "error" && (
+              {status.failure !== "codec" && (
                 <button type="button" onClick={() => setAttempt((n) => n + 1)} className="min-h-[44px] rounded-xl bg-white/15 px-4 font-semibold hover:bg-white/25">
-                  {t("common.retry")}
+                  {t("iptvplay.retry")}
                 </button>
               )}
               <button

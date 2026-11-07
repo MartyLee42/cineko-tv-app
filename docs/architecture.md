@@ -2469,26 +2469,64 @@ state: `iptv_profile_channels` (favorite, hidden, number, position) and
 
 **Playback** (`playback/live.go`). `POST /playback/sources {kind: "iptv",
 channel_id}` checks the profile, asks `iptv` for the channel
-(`LiveProvider`), decides the format (stored after the first success; else
-by URL — `.m3u8` → hls, `.ts`/`udp` paths → ts — else an 8 s probe that
-sniffs `#EXTM3U` / the 0x47 TS sync byte / `video/*`) and returns a ready,
-row-less source: `stream_url` = `/api/v1/live/<token>/index.m3u8` or
-`/stream.ts`, token = `0x01 | channel uuid | expiry | HMAC` with its own key
-label (`martytv/playback/live-token/v1`, 12 h). The proxy re-reads the
-channel on every request (a disabled playlist stops at once), fetches
-playlists fresh and rewrites them with the online machinery
-(`rewritePlaylist`, refs signed per channel id with
-`martytv/playback/live-url/v1`), so sliding live windows just work;
-playlists are sent with `Cache-Control: no-cache, no-store`. Segments,
-keys and TS bytes stream through the idle-guarded reader (2 min) with the
-channel's User-Agent/Referer (the `#EXTVLCOPT` value, else the playlist's
-override). Live sources have no duration, no resume, no progress reports
-and no completion; clients send `POST /iptv/watched` once after ~5 s.
+(`LiveProvider`: URL, headers, codecs, **mirrors** — the playlist's later
+duplicates of the same tvg-id, stored in `iptv_channels.mirrors`, then the
+same tvg-id in other enabled playlists, ≤ 4) and **opens it** before
+answering: the URL that worked last for this channel first (an in-memory
+per-channel decision), then the channel's URL and its mirrors, ≤ 3 tries
+within 12 s, with a fast client (dial 4 s, TLS / response headers 6 s; VOD
+CDNs keep 15 s). The first answer is sniffed (`#EXTM3U` → hls, 0x47 /
+`video/*` → ts; an HTML page with a playlist type is not a stream); a
+fetched playlist serves the player's first `index.m3u8` (≤ 10 s). When all
+fail it answers 502 with a cause — `channel_geo_blocked` (403/451),
+`channel_timeout`, `channel_format_unsupported` (DASH, HTML…) or
+`channel_unavailable` (DNS, 404, refused, 5xx) — remembered for 45 s, so
+zapping back or a player's retry costs nothing. The source is row-less:
+`stream_url` = `/api/v1/live/<token>/index.m3u8` or `/stream.ts`, token =
+`0x01 | channel uuid | expiry | HMAC` with its own key label
+(`martytv/playback/live-token/v1`, 12 h); `video_codec` / `audio_codec`
+carry what the last health check saw. The proxy re-reads the channel on
+every request (a disabled playlist stops at once), fetches playlists fresh
+and rewrites them with the online machinery (`rewritePlaylist`, refs signed
+per channel id with `martytv/playback/live-url/v1`), so sliding live windows
+just work; playlists are sent with `Cache-Control: no-cache, no-store`.
+Nested playlists are recognised by type, extension **or content** (variant
+playlists without `.m3u8` sent as `text/plain`), a 206 to a plain GET is a
+whole body, and upstream URLs over 1 KB (Pluto TV puts a ~2 KB JWT in every
+URL; refs were capped at 2 KB and the request line at 4 KB) are kept
+server-side for an hour and referenced as `~<mac>.<ext>`. Segments, keys
+and TS bytes stream through the idle-guarded reader (2 min) with the
+playing URL's User-Agent/Referer (`#EXTVLCOPT`, else the playlist's
+override). `upstream_eof` in the stream log is a segment that ended
+normally. Live sources have no duration, no resume, no progress reports and
+no completion; clients send `POST /iptv/watched` once after ~5 s.
 
-**Health.** Failures of the entry playlist / TS stream count per channel;
-3 in a row set `offline` (listed dimmed, still playable), one success heals.
-Every 30 min the service probes favorites and channels watched in the last
-7 days (≤ 60, 4 at a time); other channels are judged lazily when played.
+**Health** (`internal/livecheck`, `iptv/live.go`, migration `00036`). The
+checker walks a channel like a player — entry → first variant → media
+playlist → a segment near the live edge (AES-128: the key) — and sniffs the
+codecs (CODECS attribute, the TS PAT/PMT stream types incl. AC-3/E-AC-3
+descriptors, fMP4 sample entries). Verdict `health`: `ok`; `codec` (plays,
+but browsers can't decode MPEG-2 and usually not HEVC / AC-3 / E-AC-3);
+`geo` (401/403/451); `dead` (DNS, 404, refused, 5xx, TLS, not a stream,
+DASH); `timeout`; plus `health_cause`, the codecs and the format. Every
+channel is checked about daily (150 per 10 min, 6 at a time, least recently
+checked first), favorites and channels watched in the last 7 days every
+30 min. `dead` / `geo` set `offline` at once, a `timeout` counts as one
+failure (3 in a row → offline), `ok` / `codec` heal; a start whose every URL
+failed with a definite cause is recorded the same way, and any successful
+start heals. Clients hide offline channels behind a «Нерабочие» chip (still
+playable from there or by search).
+
+**Measured (2026-11-08, dev box in Kazakhstan, `TestIPTVRealStreams`).**
+iptv-org ru 505 / kz 49 / ua 198 / by 27 / int 1 081 channels. Upstream
+verdicts: ok 1 311, timeout 162, dead 217, geo 125, codec 45 (HEVC 20,
+MPEG-2 17, AC-3/E-AC-3 8); 26 plain MPEG-TS channels. Through Cineko's
+pipeline before → after: ru 69 → 69 %, kz 47 → 49 %, ua 74 → 74 %,
+by 81 → 81 %, int 58 → 75 % (Pluto TV's long URLs: 185 channels; 206
+answers; nested playlists without `.m3u8`; runs vary by a few % with
+upstream flakiness); what still fails is dead, geo or timing out upstream. Plain http (≈ 37 %) and missing CORS (≈ 30 %) don't
+matter: every byte goes through the same-origin proxy. Re-run with
+`IPTV_STREAM_CHECK=ru,kz go test -run TestIPTVRealStreams ./internal/server/`.
 
 **Logos.** `GET /api/v1/iptv/logos/{id}` (public, like `/images`) fetches
 the channel's `tvg-logo` server-side — never a client URL — sniffs that it
@@ -2510,7 +2548,7 @@ shown with credentials masked.
 **Clients.** PWA: «ТВ» page `/tv-channels` (group chips, search by name or
 number, rows with logo/number/now-next progress/★, dimmed offline; a
 channel sheet with «Смотреть здесь» (hls.js live mode: seek only inside the
-live window, «В эфир»; MPEG-TS channels go to «Включить на ТВ») and
+live window, «В эфир»; MPEG-TS channels through mpegts.js) and
 «Включить на ТВ» (`iptv.play` through the usual TV picker and
 busy → force flow); a time × channel guide on desktop, a per-channel
 schedule on phones; a ⚙ sheet for `iptv_playlists`). «ТВ» sits in the
@@ -2521,8 +2559,18 @@ three designs, a channel grid by group (OK plays, hold OK = favorite menu),
 a live player (▲▼/ChannelUp/Down switch with wrap-around, digits jump to a
 number after 1.5 s or OK, a 5 s OSD with logo/now/next, OK = mini channel
 list, Back closes it then leaves), the «Продолжить смотреть ТВ» row on Home,
-and `DeviceState.live` while a channel plays. Not yet: UI for custom order
-and numbers (the API supports them), a playlist picker on the TV.
+and `DeviceState.live` while a channel plays. Both players pick engines
+with `liveEngines()` (`media-types/livePlay.ts`): HLS natively where the
+engine plays it (TVs, Safari) else hls.js; MPEG-TS natively where `<video>`
+plays `video/mp2t` else mpegts.js (lazy chunk); a failing engine falls
+through to the next, then the source is POSTed once more (mirrors), then
+the error stays — no retry loop. Errors name the cause («Канал недоступен в
+регионе сервера», «Канал сейчас не вещает», «Поток не отвечает», «Формат
+потока не поддерживается», «Браузер не умеет воспроизводить этот канал
+(ac3)» when MSE can't decode the checked codecs); API failures reach
+Admin → Errors through the client middleware, player failures as
+`player` errors with the format, codecs and engine. Not yet: UI for custom
+order and numbers (the API supports them), a playlist picker on the TV.
 
 **Real data (2026-10-29).** Playlists (dev machine): iptv-org Russia 502
 channels (0 skipped), Kazakhstan 49, International 1 049; `channels.json`

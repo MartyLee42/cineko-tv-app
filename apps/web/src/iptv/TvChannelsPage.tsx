@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { useSearchParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { IptvChannel } from "@martytv/contracts";
+import { BROKEN_GROUP, offlineLabel } from "@martytv/media-types";
 import { Spinner, useI18n } from "@martytv/ui";
 import { Button, ErrorText, Input, PageTitle } from "../components";
 import { CastIcon, CloseIcon, EyeIcon, GearIcon, PlayIcon, SearchIcon } from "../icons";
@@ -13,7 +14,7 @@ import { Sheet } from "../remote/SendToTv";
 import { useSettings, useUpdateSettings } from "../watch/queries";
 import { GuideGrid, ScheduleSheet } from "./Guide";
 import { LivePlayer } from "./LivePlayer";
-import { ALL, buildChips, filterChannels, togglePlaylist } from "./logic";
+import { ALL, channelChips, filterChannels, togglePlaylist } from "./logic";
 import { iptvKey, useChannelPrefs, useChannels, useIptvState } from "./queries";
 import { SendChannelProvider, useSendChannel } from "./SendChannel";
 import { ChannelLogo, NowNext, StarButton, useGroupLabel, useNow } from "./ui";
@@ -45,8 +46,7 @@ function TvChannels() {
   const desktop = useDesktop();
 
   const items = useMemo(() => channels.data?.items ?? [], [channels.data]);
-  const favorites = items.filter((c) => c.favorite).length;
-  const chips = buildChips(channels.data?.groups ?? [], items.length, favorites);
+  const chips = useMemo(() => channelChips(channels.data?.groups ?? [], items), [channels.data, items]);
   const shown = filterChannels(items, group, q);
   // The player zaps through what the list shows (falls back to every channel).
   const zapList = shown.some((c) => c.id === playing) ? shown : items;
@@ -125,7 +125,7 @@ function TvChannels() {
                 }`}
               >
                 {c.id === "favorites" && <span aria-hidden>★</span>}
-                {c.known ? label(c.id, c.name) : c.name}
+                {c.id === BROKEN_GROUP ? t("iptvplay.broken") : c.known ? label(c.id, c.name) : c.name}
                 <span className={`text-xs ${group === c.id ? "text-on-accent/75" : "text-muted"}`}>{c.count}</span>
               </button>
             ))}
@@ -233,7 +233,10 @@ function ChannelRow({ c, now, current, onOpen, onFavorite }: { c: IptvChannel; n
             <span className="truncate font-semibold" data-testid="channel-name">
               {c.name}
             </span>
-            {c.offline && <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">{t("iptv.offline")}</span>}
+            {c.offline && <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">{t(offlineLabel(c))}</span>}
+            {!c.offline && c.health === "codec" && (
+              <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">{t("iptvplay.health.codec")}</span>
+            )}
             {c.hidden && <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">{t("iptv.web.hidden")}</span>}
           </span>
           <span className="mt-0.5 block">
@@ -275,9 +278,8 @@ function ChannelSheet({
           <NowNext now={c.now} next={c.next} at={now} />
         </div>
       </div>
-      {c.format === "ts" && <p className="mb-3 rounded-xl bg-surface-2 px-3 py-2 text-sm text-muted">{t("iptv.ts_unsupported")}</p>}
       <div className="grid grid-cols-2 gap-2">
-        <Button onClick={onWatch} data-testid="channel-watch-here" disabled={c.format === "ts"} data-autofocus>
+        <Button onClick={onWatch} data-testid="channel-watch-here" data-autofocus>
           <PlayIcon /> {t("iptv.web.watch_here")}
         </Button>
         <Button variant="secondary" onClick={onTv} data-testid="channel-play-on-tv">

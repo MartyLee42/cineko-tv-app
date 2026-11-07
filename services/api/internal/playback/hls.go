@@ -63,12 +63,17 @@ func (s *urlSigner) mac(sourceID, u string) []byte {
 
 // ref builds the path segment for an upstream URL.
 func (s *urlSigner) ref(sourceID, u string) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(u)) + "." +
+		base64.RawURLEncoding.EncodeToString(s.mac(sourceID, u)) + "." + refExt(u)
+}
+
+// refExt is the URL's extension for a ref (players sniff it), else "bin".
+func refExt(u string) string {
 	ext := strings.TrimPrefix(path.Ext(pathOf(u)), ".")
 	if !safeExt.MatchString(ext) {
-		ext = "bin"
+		return "bin"
 	}
-	return base64.RawURLEncoding.EncodeToString([]byte(u)) + "." +
-		base64.RawURLEncoding.EncodeToString(s.mac(sourceID, u)) + "." + strings.ToLower(ext)
+	return strings.ToLower(ext)
 }
 
 var safeExt = regexp.MustCompile(`^[A-Za-z0-9]{1,5}$`)
@@ -191,7 +196,13 @@ func isPlaylist(contentType, u string) bool {
 // response headers within upstreamTimeout. Body reads are bounded by the
 // caller (idle reader / playlist cap).
 func newUpstreamClient(allowPrivate bool) *http.Client {
-	d := &net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}
+	return newUpstreamClientT(allowPrivate, 10*time.Second, upstreamTimeout)
+}
+
+// newUpstreamClientT is newUpstreamClient with its own dial/TLS and
+// response-header timeouts (live channels fail fast).
+func newUpstreamClientT(allowPrivate bool, dial, header time.Duration) *http.Client {
+	d := &net.Dialer{Timeout: dial, KeepAlive: 30 * time.Second}
 	if !allowPrivate {
 		d.Control = func(_, address string, _ syscall.RawConn) error {
 			host, _, err := net.SplitHostPort(address)
@@ -211,8 +222,8 @@ func newUpstreamClient(allowPrivate bool) *http.Client {
 		ForceAttemptHTTP2:     true,
 		MaxIdleConnsPerHost:   16,
 		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ResponseHeaderTimeout: upstreamTimeout,
+		TLSHandshakeTimeout:   header,
+		ResponseHeaderTimeout: header,
 	}
 	return &http.Client{
 		Transport: tr,
@@ -251,6 +262,9 @@ func fetchPlaylist(ctx context.Context, hc *http.Client, u string, headers map[s
 		return nil, nil, 0, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusPartialContent {
+		resp.StatusCode = http.StatusOK // some servers answer a plain GET with 206 (the whole body)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, nil, resp.StatusCode, nil
 	}
