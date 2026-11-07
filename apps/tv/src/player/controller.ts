@@ -89,7 +89,7 @@ import {
 } from "./data";
 import { nextEpisode as resolveNext, packCovers, prevEpisode as resolvePrev, type EpisodeRef } from "./episodes";
 import { episodeLabel, releaseRow } from "./format";
-import { loadTracker, stageOf } from "./loading";
+import { loadTracker, newAttempt, stageOf } from "./loading";
 import { normLang, pickPreferredAudio, trackLabel } from "./tracks";
 import { loadPreferences } from "../profile/settings";
 import { IDLE, isBusy, reduceFlow, type Flow, type FlowAction, type PlayContext } from "./session";
@@ -200,7 +200,12 @@ export class PlayerController {
   video: HTMLVideoElement | null = null;
 
   private gen = 0;
-  /** Bumped when the player is left: the next load of the same title starts its progress at 0. */
+  /**
+   * The load attempt (keys the loading screen's progress, loadKey): bumped
+   * when the player is left and when the user starts another title / episode
+   * / release (newAttempt) — never by internal restarts, failover or a late
+   * episode id.
+   */
   private loadSeq = 0;
   private listeners = new Set<Listener>();
   private mem: RouteMemory | undefined;
@@ -349,6 +354,7 @@ export class PlayerController {
     }
     const next = reduceFlow(prev, a);
     if (next === prev) return;
+    if (newAttempt(prev, a)) this.loadSeq++;
     const newSource = next.phase === "playing" && (prev.phase !== "playing" || prev.source.id !== next.source.id);
     if (prev.phase === "playing" && (next.phase !== "playing" || newSource)) this.endSession();
     this.flow = next;
@@ -643,13 +649,14 @@ export class PlayerController {
 
   /** Identifies one load attempt (the loading screen's progress restarts only for a new one). */
   loadKey(): string {
-    // Title + episode, not the attempt counter or the release: internal
-    // restarts (compat switch, reload, re-applied seek) and failing over to
-    // another release / source must not send the loading bar back to 0 —
-    // it only ever grows until the player is left.
+    // Only the attempt counter: internal restarts (compat switch, reload,
+    // re-applied seek), failing over to another release / source and the
+    // episode id arriving mid-load (a series from the phone) must not send
+    // the loading bar back to 0 — it only ever grows until the user starts
+    // something else or leaves.
     const f = this.flow;
     if (f.phase !== "preparing" && f.phase !== "playing") return `idle|${this.gen}`;
-    return `${f.ctx.media_id}|${f.ctx.episode_id ?? ""}|${this.loadSeq}`;
+    return `load|${this.loadSeq}`;
   }
 
   /** Leaving while it loads: the server stops loading the source too. */

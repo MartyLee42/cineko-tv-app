@@ -69,7 +69,8 @@ body { overflow: hidden; cursor: none; }
 .tv-spoiler { -webkit-filter: blur(18px); filter: blur(18px); transform: scale(1.15); }
 
 /* ---------------------------------------------------------------- loading screens */
-.tv-loader-ease { transition: transform 900ms cubic-bezier(.22,.61,.36,1); will-change: transform; }
+/* Progress steps arrive ~4/s (loading.ts SHOW_EVERY_MS): ease between them. */
+.tv-loader-ease { transition: transform 600ms cubic-bezier(.25,.6,.4,1); will-change: transform; }
 .tv-loader-fade { transition: opacity 900ms ease; }
 .tv-loader-title { font-size: 112px; line-height: 1.08; font-weight: 800; letter-spacing: -.01em; margin: 0; }
 /* Outline text: dim fill + stroke (prefixed for old engines). */

@@ -254,12 +254,14 @@ function PreparingOverlay({ flow }: { flow: Extract<Flow, { phase: "preparing" |
   const ctx = flow.ctx;
   const stage: LoadStage = flow.phase === "preparing" ? stageOf(flow.step, flow.source) : "starting";
   const source = flow.source;
-  const p = useLoadProgress(player.loadKey(), stage, source, player.metadata, `${ctx.media_id}|${ctx.episode_id ?? ""}`);
   // While the first seconds buffer (source ready), keep the numbers live —
   // held so «загружено N МБ из M» never goes back.
   const live = useLiveTorrent(source, flow.phase === "playing");
   const held = torrentHold.hold(source?.id ?? null, live, source?.file?.size_bytes ?? source?.release?.size_bytes ?? null);
   const torrent = held.torrent;
+  // The bar measures the same held numbers the text shows (one feed, not the raw polls).
+  const fed = source ? { id: source.id, torrent, file: source.file, release: source.release } : null;
+  const p = useLoadProgress(player.loadKey(), stage, fed, player.metadata, `${ctx.media_id}|${ctx.episode_id ?? ""}`);
   const cs = flow.phase === "playing" ? player.compatState() : null;
   // Tell phones following this load (device state) what the screen shows.
   const loadKey = player.loadKey();
