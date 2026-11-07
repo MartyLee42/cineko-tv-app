@@ -2,8 +2,9 @@
 // and audio codecs, probed with canPlayType / MediaSource.isTypeSupported.
 // Pure: the probe is injected, so the table is unit-tested.
 import type { MediaInfo, PlaybackSource, Release } from "@martytv/contracts";
-import { hlsMode, isHlsSource } from "@martytv/media-types";
+import { hlsMode, isHlsSource, releaseSmoothToken, smoothClass, smoothToken, type SmoothToken } from "@martytv/media-types";
 import { isWebView } from "../players/select";
+import { ROUGH_FACTOR, smoothFactor, type SmoothView } from "./smooth";
 
 export interface Probe {
   canPlayType(type: string): string;
@@ -374,6 +375,8 @@ export interface RankEnv {
   compat?: boolean;
   /** Title runtime (s) for releases without est_bitrate_bps. */
   runtime?: number | null;
+  /** Variants that stutter / decode in software here (smooth.ts). */
+  smooth?: SmoothView | null;
 }
 
 type Rankable = Pick<Release, "id" | "video_codec" | "audio_codecs" | "warnings" | "size_bytes" | "is_season_pack"> & {
@@ -381,6 +384,7 @@ type Rankable = Pick<Release, "id" | "video_codec" | "audio_codecs" | "warnings"
   est_bitrate_bps?: number | null;
   title?: string | null;
   hdr?: Release["hdr"];
+  resolution?: Release["resolution"];
 };
 
 /** Share of the measured rate a release may need (headroom for dips/seeks). */
@@ -438,14 +442,19 @@ export function heavyMbps(r: Rankable, env: RankEnv): number | null {
 /**
  * The TV's own order on top of the server ranking: the server score × the
  * bitrate penalty (vs the last measured rate) × the audio penalty × the
- * video penalty (10-bit H.264, XviD… this engine can't decode). Stable:
+ * video penalty (10-bit H.264, XviD… this engine can't decode) × the
+ * smoothness penalty (a variant that stutters here, smooth.ts). Stable:
  * equal factors keep the server's order.
  */
 export function rankForTv<R extends Rankable>(items: readonly R[], env: RankEnv): R[] {
   const n = items.length;
   const scored = items.map((r, i) => {
     const base = typeof r.score === "number" && r.score > 0 ? r.score : (n - i) / Math.max(1, n);
-    const f = bitrateFactor(releaseBitrateOf(r, env.runtime), env.rateBps) * audioFactor(r, env.probe, !!env.compat) * videoFactor(r, env.probe, !!env.compat);
+    const f =
+      bitrateFactor(releaseBitrateOf(r, env.runtime), env.rateBps) *
+      audioFactor(r, env.probe, !!env.compat) *
+      videoFactor(r, env.probe, !!env.compat) *
+      smoothFactor(r, env.smooth);
     return { r, i, s: base * f, f };
   });
   // Only re-order when a penalty applies somewhere (keep the server's tie-breaks otherwise).
@@ -521,4 +530,70 @@ export function engineProbe(video?: HTMLVideoElement | null): Probe {
     isTypeSupported: MS?.isTypeSupported ? (t) => !!MS.isTypeSupported!(t) : undefined,
     strict: isWebView(typeof navigator !== "undefined" ? navigator.userAgent : ""),
   };
+}
+
+const RES_RANK: Record<string, number> = { "2160p": 3, "1080p": 2, "720p": 1, "576p": 0, "480p": 0 };
+
+/** Resolution rank of a frame size, like a release's resolution (scope crops: 1920×800 is 1080p). */
+export function frameRank(width: number | null | undefined, height: number | null | undefined): number | null {
+  const w = width ?? 0;
+  const h = height ?? 0;
+  if (!w && !h) return null;
+  if (w >= 3000 || h >= 1600) return 3;
+  if (w >= 1700 || h >= 1000) return 2;
+  if (w >= 1200 || h >= 700) return 1;
+  return 0;
+}
+
+/**
+ * How hard a video is to decode, for «a lighter release»: resolution first,
+ * then the codec (H.264 < HEVC < AV1) and 10-bit / HDR. null when the
+ * resolution is unknown. `rank` (frameRank of the probed file) overrides the
+ * release's parsed resolution.
+ */
+export function decodeCost(r: ReleaseLike & { resolution?: Release["resolution"] }, rank?: number | null): number | null {
+  const res = rank ?? (r.resolution ? RES_RANK[r.resolution] : undefined);
+  if (res === undefined || res === null) return null;
+  return costOf(res, releaseVideoKey(r), !!r.hdr);
+}
+
+function costOf(res: number, vk: string | null, hdr: boolean): number {
+  const base = vk ? baseCodec(vk) : null;
+  const codec = base === "av1" ? 2 : base === "hevc" || base === "vp9" ? 1 : 0;
+  const ten = (vk ?? "").includes("10bit") || hdr ? 1 : 0;
+  return res * 10 + codec + ten;
+}
+
+type SourceLike = Pick<PlaybackSource, "media_info"> & { release: ReleaseLike & { resolution?: Release["resolution"] } };
+
+/** The playing file's decode cost: the probed codec / bit depth / frame when known, else the release's. */
+export function sourceDecodeCost(src: SourceLike): number | null {
+  const info = src.media_info;
+  if (!info?.video_codec) return decodeCost(src.release);
+  const rank = frameRank(info.width, info.height) ?? (src.release.resolution ? RES_RANK[src.release.resolution] : undefined);
+  return rank === undefined || rank === null ? null : costOf(rank, videoKey(info), !!src.release.hdr);
+}
+
+/** The playing file's smoothness token (smooth.ts): the probed video when known, else the release's. */
+export function sourceSmoothToken(src: SourceLike): SmoothToken | null {
+  const info = src.media_info;
+  if (!info?.video_codec) return releaseSmoothToken(src.release);
+  const vk = videoKey(info);
+  const cls = info.width || info.height ? smoothClass(null, info.width, info.height) : smoothClass(src.release.resolution ?? null);
+  return smoothToken(vk ? baseCodec(vk) : null, (vk ?? "").includes("10bit") || !!src.release.hdr, cls);
+}
+
+/**
+ * «Картинка подтормаживает — включить более лёгкую раздачу?»: the best-ranked
+ * untried release cheaper to decode than the playing one (`cost`: lower
+ * resolution, H.264 instead of HEVC / AV1, SDR) and not rough here; null
+ * when there is none (the picker then lets the viewer choose).
+ */
+export function smootherInstead<R extends Rankable>(cost: number | null, items: readonly R[], tried: readonly string[], env: RankEnv): R | null {
+  if (cost === null) return null;
+  const lighter = items.filter((r) => {
+    const c = decodeCost(r);
+    return c !== null && c < cost && smoothFactor(r, env.smooth) !== ROUGH_FACTOR;
+  });
+  return nextRelease(lighter, tried, [], env.probe, env);
 }
