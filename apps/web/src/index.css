@@ -291,6 +291,50 @@ html.design-pocketpet .aspect-\[2\/3\] { border-radius: 0; box-shadow: inset 0 0
 html.design-pocketpet :focus-visible { outline: none; box-shadow: 0 0 0 3px rgb(196, 208, 170), 0 -6px 0 3px rgb(24, 32, 18), 0 6px 0 3px rgb(24, 32, 18), -6px 0 0 3px rgb(24, 32, 18), 6px 0 0 3px rgb(24, 32, 18); }
 .design-swatch-pocketpet { background: #c4d0aa !important; box-shadow: inset 0 0 0 4px #f3c6dc, inset 0 0 0 5px #c7a6d6; }
 
+/* «Мультфильм» (light): warm gouache paper with soft paper hills at the bottom; posters and panels are
+   paper cut-outs (a cream edge, a soft lifted shadow); a brick focus ring. */
+html.design-mult body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-mult body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse 60% 16% at 22% 100%, #afbd8b 0, #afbd8b 96%, rgba(175, 189, 139, 0) 100%),
+    radial-gradient(ellipse 70% 20% at 86% 100%, #c3cea5 0, #c3cea5 96%, rgba(195, 206, 165, 0) 100%),
+    radial-gradient(ellipse 80% 40% at 15% 0%, rgba(244, 206, 170, 0.5), rgba(244, 206, 170, 0)),
+    radial-gradient(circle, rgba(96, 64, 40, 0.04) 0px, rgba(96, 64, 40, 0.04) 1px, rgba(96, 64, 40, 0) 1.6px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 6px 6px;
+}
+html.design-mult section.rounded-2xl.border { border: 4px solid #fffaf0; box-shadow: 0 4px 0 rgba(96, 64, 40, 0.1), 0 8px 18px rgba(96, 64, 40, 0.15); }
+html.design-mult .aspect-\[2\/3\] { border: 4px solid #fffaf0; border-radius: 10px; box-shadow: 0 3px 0 rgba(96, 64, 40, 0.12), 0 6px 12px rgba(96, 64, 40, 0.18); }
+html.design-mult header.sticky { box-shadow: 0 2px 0 rgba(184, 72, 40, 0.35); }
+html.design-mult :focus-visible { outline: 3px solid rgb(150, 52, 28); outline-offset: 3px; }
+/* «Созерцание»: dim slate with faint static rain; posters rest in sepia and get their colour back on hover / focus. */
+html.design-tarkovsky body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-tarkovsky body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(98deg, rgba(216, 210, 191, 0) 0px, rgba(216, 210, 191, 0) 13px, rgba(216, 210, 191, 0.035) 13px, rgba(216, 210, 191, 0.035) 14px),
+    linear-gradient(180deg, #1b1e1a 0%, #141613 60%, #0f110e 100%);
+}
+html.design-tarkovsky .aspect-\[2\/3\] img { -webkit-filter: sepia(0.6) saturate(0.6); filter: sepia(0.6) saturate(0.6); transition: filter 0.9s ease; }
+html.design-tarkovsky a:hover .aspect-\[2\/3\] img, html.design-tarkovsky a:focus-visible .aspect-\[2\/3\] img { -webkit-filter: none; filter: none; }
+html.design-tarkovsky section.rounded-2xl.border { border-color: rgba(226, 220, 203, 0.12); }
+html.design-tarkovsky :focus-visible { outline: 2px solid rgb(232, 216, 176); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  html.design-tarkovsky .aspect-\[2\/3\] img { transition: none; }
+}
+.design-swatch-mult { background-image: radial-gradient(ellipse 60% 30% at 28% 100%, #afbd8b 0, #afbd8b 96%, rgba(175, 189, 139, 0) 100%), radial-gradient(ellipse 75% 36% at 88% 100%, #c3cea5 0, #c3cea5 96%, rgba(195, 206, 165, 0) 100%), radial-gradient(circle at 80% 24%, #f4c586 0, #f4c586 12%, rgba(244, 197, 134, 0) 13%) !important; }
+.design-swatch-tarkovsky { background-image: repeating-linear-gradient(98deg, rgba(216, 210, 191, 0) 0px, rgba(216, 210, 191, 0) 6px, rgba(216, 210, 191, 0.16) 6px, rgba(216, 210, 191, 0.16) 7px), linear-gradient(180deg, rgba(0, 0, 0, 0) 64%, rgba(216, 210, 191, 0.16) 64%, rgba(216, 210, 191, 0) 68%) !important; }
+
 .design-swatch-stickerbook { background-image: radial-gradient(circle, rgba(255, 248, 239, 0.16) 0px, rgba(255, 248, 239, 0.16) 1px, rgba(255, 248, 239, 0) 1.6px), linear-gradient(-6deg, rgba(0, 0, 0, 0) 40%, rgba(255, 111, 165, 0.75) 40%, rgba(255, 111, 165, 0.75) 52%, rgba(0, 0, 0, 0) 52%); background-size: 7px 7px, 100% 100%; box-shadow: inset 0 0 0 3px #fffaf0; }
 /* «Одиссея»: station white with a faint symmetric corridor (two converging ribs and a soft ceiling
    glow, fixed behind everything); square panels with hairlines, wide light capitals in dark ink,

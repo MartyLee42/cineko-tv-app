@@ -12,4 +12,6 @@ export interface Look {
   pick?: { ms: number; start: (card: HTMLElement) => void };
   /** Drawn over the catalog (under the menu and overlays), e.g. Тамагочи's pixel pet. `onHome`: Home with nothing over it. */
   Companion?: ComponentType<{ onHome: boolean }>;
+  /** A static, unfocusable card after a row's last item (`row`, the item's size) and under a grid (`screen`), e.g. «Мультфильм»'s «Конец фильма». */
+  End?: ComponentType<{ kind: "row" | "screen"; width: number; height: number }>;
 }

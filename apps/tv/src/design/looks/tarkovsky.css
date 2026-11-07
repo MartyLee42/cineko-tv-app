@@ -1,0 +1,76 @@
+/* «tarkovsky»: this design's own rules (loaded with the design's chunk, design/looks).
+   ---------------------------------------------------------------- Созерцание (kinozal skeleton)
+   The calmest design, for evenings: a dim, low-contrast ground (wet slate over still water, static
+   rain), parchment text that still reads (≈13:1), candle-amber accents, a book serif for titles.
+   Pictures rest in sepia: a brown veil blended in «color» mode over each poster and backdrop; on
+   focus the poster's veil fades out (opacity only, slowly) and its colour returns. One slow mist
+   drift (stopped in calm motion); every other transition is a little slower than elsewhere. */
+.tk-ground {
+  background-color: rgb(20,22,19);
+  /* Flat ground colour where Home's / Details' artwork fades out (no seam), darker over the water. */
+  background-image: linear-gradient(180deg, rgb(20,22,19) 0%, rgb(20,22,19) 84%, #111310 92%, #0f110e 100%);
+}
+/* Still water: the bottom band (below where Details' artwork ends), a faint horizon and long reflections. */
+.tk-water {
+  top: 906px; height: 174px;
+  background-image:
+    linear-gradient(180deg, rgba(216,210,191,.07) 0px, rgba(216,210,191,0) 2px),
+    repeating-linear-gradient(180deg, rgba(216,210,191,0) 0px, rgba(216,210,191,0) 9px, rgba(216,210,191,.028) 9px, rgba(216,210,191,.028) 11px),
+    linear-gradient(180deg, rgba(127,154,140,.06) 0%, rgba(127,154,140,0) 100%);
+}
+.tk-mist {
+  position: absolute; left: 0; top: 860px; width: 3840px; height: 220px; pointer-events: none; opacity: .7;
+  background-image:
+    radial-gradient(ellipse 760px 90px at 420px 110px, rgba(200,204,190,.10), rgba(200,204,190,0)),
+    radial-gradient(ellipse 900px 120px at 1360px 150px, rgba(200,204,190,.09), rgba(200,204,190,0)),
+    radial-gradient(ellipse 600px 80px at 1820px 80px, rgba(200,204,190,.08), rgba(200,204,190,0));
+  background-size: 1920px 220px; background-repeat: repeat-x;
+}
+@keyframes tk-drift { from { transform: translate3d(0,0,0); } to { transform: translate3d(-1920px,0,0); } }
+.tk-mist-on { animation: tk-drift 240s linear infinite; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .tk-mist-on { animation: none; } }
+
+/* ---- sepia ↔ colour. The veil takes the hue of old photographic paper; «color» blending keeps the
+   picture's light and shade. Isolated per card, so it never tints what lies behind. */
+html.design-tarkovsky .mt-card { isolation: isolate; box-shadow: inset 0 0 0 1px rgba(226,220,203,.1); }
+html.design-tarkovsky .mt-card::after {
+  content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;
+  background: rgb(122,96,64); mix-blend-mode: color; opacity: .82; transition: opacity 1100ms ease;
+}
+html.design-tarkovsky .mt-card.is-focused::after { opacity: 0; transition-duration: 900ms; }
+/* Backdrops (Home hero, Details): gently desaturated all the time. */
+html.design-tarkovsky .k-fade-left::before {
+  content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;
+  background: rgb(122,96,64); mix-blend-mode: color; opacity: .55;
+}
+
+/* ---- focus: a soft candle-light frame, slower than elsewhere. */
+html.design-tarkovsky .tv-focus { transition: transform 260ms ease, box-shadow 260ms ease; }
+html.design-tarkovsky .tv-focus.is-focused { box-shadow: 0 0 0 6px rgb(20,22,19), 0 0 0 10px rgb(232,216,176), 0 0 34px rgba(232,216,176,.18); }
+html.design-tarkovsky .tv-track { transition-duration: 260ms; }
+
+/* ---- the rail: a darker strip with a single hairline; the focused item is parchment. */
+html.design-tarkovsky nav[data-design-nav="kinozal"] > div:first-child { background-color: rgb(16,18,15); box-shadow: inset -1px 0 0 rgba(226,220,203,.12); }
+html.design-tarkovsky .tv-menu-panel { background: linear-gradient(90deg, rgb(16,18,15) 0%, rgb(16,18,15) 72%, rgba(16,18,15,0) 100%); }
+html.design-tarkovsky .k-rail-focus { background: rgb(226,220,203); color: rgb(20,22,19); }
+html.design-tarkovsky .k-rail-active { background: rgba(200,164,106,.1); color: rgb(var(--mt-text)); box-shadow: inset 2px 0 0 rgb(200,164,106); }
+
+html.design-tarkovsky .k-primary { background: rgb(226,220,203); color: rgb(20,22,19); }
+html.design-tarkovsky .k-badge { background: rgba(226,220,203,.9); color: rgb(20,22,19); }
+html.design-tarkovsky .k-icon-btn { background: rgba(33,35,31,.92); box-shadow: inset 0 0 0 1px rgba(226,220,203,.2); }
+html.design-tarkovsky .tv-chip.is-focused { background: rgb(226,220,203); color: rgb(20,22,19); }
+html.design-tarkovsky .tv-rate-good, html.design-tarkovsky .tv-rate-mid, html.design-tarkovsky .tv-rate-bad { background: rgba(20,22,19,.84); box-shadow: inset 0 0 0 1px rgba(226,220,203,.35); }
+html.design-tarkovsky .tv-rate-good { color: rgb(170,200,170); }
+html.design-tarkovsky .tv-rate-mid { color: rgb(226,220,203); }
+html.design-tarkovsky .tv-rate-bad { color: rgb(226,160,140); }
+html.design-tarkovsky .tv-progress-fill, html.design-tarkovsky .tv-check { background: rgb(200,164,106); color: rgb(22,18,10); }
+html.design-tarkovsky .tv-panel, html.design-tarkovsky .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 1px rgba(226,220,203,.12); }
+html.design-tarkovsky .k-fade-left { background: linear-gradient(90deg, rgb(20,22,19) 0%, rgba(20,22,19,.94) 22%, rgba(20,22,19,.62) 42%, rgba(20,22,19,.16) 70%, rgba(20,22,19,0) 100%); }
+html.design-tarkovsky .k-fade-bottom { background: linear-gradient(0deg, rgb(20,22,19) 0%, rgba(20,22,19,.9) 20%, rgba(20,22,19,0) 62%); }
+
+/* Titles in the book serif; row titles a size up (its x-height is small), no bold. */
+html.design-tarkovsky h3 { font-family: var(--mt-font-display); font-weight: 600; letter-spacing: .02em; }
+html.design-tarkovsky h3.text-\[31px\] { font-size: 38px; }
+html.design-tarkovsky h3.text-\[34px\] { font-size: 41px; }
+html.design-tarkovsky [data-testid="hero"] h2, html.design-tarkovsky [data-media-id] h1 { letter-spacing: 0; line-height: 1.08; }
+html.design-tarkovsky [data-testid="hero"] p.uppercase { letter-spacing: .28em; font-weight: 500; }

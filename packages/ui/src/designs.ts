@@ -14,11 +14,13 @@ import { loadCvGlyphs } from "./cvIcons";
 //   stickerbook → kinozal skeleton (die-cut stickers, washi tape)   pocketpet → terminal skeleton (a pastel toy with an LCD)
 //   odyssey   → projector skeleton (late-60s space age: white ship corridors, symmetry, one red light as focus)
 // <html> gets `design-<id>` (tokens, skin CSS) and `skel-<skeleton>` (layout CSS).
-export type DesignSetting = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey";
+export type DesignSetting = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky";
 export type Skeleton = "kinozal" | "terminal" | "projector";
 
 /** All designs, in the order pickers show them (the contract's enum order). */
-export const DESIGNS: DesignSetting[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey"];
+export const DESIGNS: DesignSetting[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky"];
+//   mult      → kinozal skeleton (light: gouache, paper cut-outs, fog)   tarkovsky → kinozal skeleton (rain, water, sepia)
+
 export const SKELETONS: Skeleton[] = ["kinozal", "terminal", "projector"];
 
 export const DESIGN_SKELETON: Record<DesignSetting, Skeleton> = {
@@ -36,6 +38,8 @@ export const DESIGN_SKELETON: Record<DesignSetting, Skeleton> = {
   stickerbook: "kinozal",
   pocketpet: "terminal",
   odyssey: "projector",
+  mult: "kinozal",
+  tarkovsky: "kinozal",
 };
 
 /** The layout skeleton a design is drawn on (unknown values → Кинозал). */
@@ -64,6 +68,8 @@ export const DESIGN_SWATCH: Record<DesignSetting, { bg: string; surface: string;
   stickerbook: { bg: "#2a2438", surface: "#3a3250", accent: "#ff6fa5", accent2: "#5fd3c4", text: "#fff8ef" },
   pocketpet: { bg: "#f3c6dc", surface: "#b9c9a0", accent: "#2f3a24", accent2: "#8fd3e8", text: "#1f2818" },
   odyssey: { bg: "#eef1f4", surface: "#ffffff", accent: "#101318", accent2: "#e21e16", text: "#101318" },
+  mult: { bg: "#f3e9d6", surface: "#fffaf0", accent: "#c4532f", accent2: "#6f9fb4", text: "#3a2a20" },
+  tarkovsky: { bg: "#141613", surface: "#22241f", accent: "#c8a46a", accent2: "#7f9a8c", text: "#e2dccb" },
 };
 
 let onApply: ((design: DesignSetting) => void) | null = null;
