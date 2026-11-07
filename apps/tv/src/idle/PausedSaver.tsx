@@ -4,14 +4,19 @@
 // play).
 import { useEffect, useState } from "react";
 import { useAppliedDesign } from "@martytv/ui";
+import { player } from "../player/controller";
 import { Screensaver } from "./IdleLayer";
-import { pausedSaverDue, saverPref } from "./logic";
+import { pausedSaverDue, pausedSaverMs, saverPref } from "./logic";
 
 
-/** The on-screen player's video, paused (not ended, not loading). */
+/**
+ * The on-screen player's video, paused by the viewer (not ended, not
+ * loading; our own «Буферизация» pauses the element too — that's no pause).
+ */
 function pausedVideo(): boolean {
   const v = document.querySelector("video");
-  return !!v && v.paused && !v.ended && v.readyState > 0;
+  if (!v || !v.paused || v.ended || v.readyState === 0) return false;
+  return player.video === v ? player.userPaused() : true;
 }
 
 export function PausedSaver() {
@@ -38,7 +43,7 @@ export function PausedSaver() {
       const now = Date.now();
       if (!pausedVideo()) pausedAt = null;
       else if (pausedAt === null) pausedAt = now;
-      const due = saverPref.get() !== "off" && pausedSaverDue(pausedAt, lastKey, now);
+      const due = saverPref.get() !== "off" && pausedSaverDue(pausedAt, lastKey, now, pausedSaverMs());
       if (due !== shown) show(due);
     }, 1000);
     return () => {

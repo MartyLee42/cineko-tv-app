@@ -17,8 +17,14 @@ export type IdlePhase = "none" | "cat" | "saver";
  * Whether the paused-player screensaver is due: paused since `pausedAt`
  * (null while playing), no key since `lastKey`.
  */
-export function pausedSaverDue(pausedAt: number | null, lastKey: number, now: number): boolean {
-  return pausedAt !== null && now - Math.max(pausedAt, lastKey) >= PAUSED_SAVER_MS;
+export function pausedSaverDue(pausedAt: number | null, lastKey: number, now: number, after = PAUSED_SAVER_MS): boolean {
+  return pausedAt !== null && now - Math.max(pausedAt, lastKey) >= after;
+}
+
+/** PAUSED_SAVER_MS (e2e tests may shorten it). */
+export function pausedSaverMs(): number {
+  const o = (globalThis as { __martytvPausedSaverMs?: number }).__martytvPausedSaverMs;
+  return typeof o === "number" ? o : PAUSED_SAVER_MS;
 }
 
 /**
