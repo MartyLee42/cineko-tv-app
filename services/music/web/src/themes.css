@@ -222,6 +222,246 @@ html.design-matrix {
   --round: 0;
 }
 
+/* The later Cineko designs (palettes from packages/ui/src/theme.css). Where the design's accent would
+   not read as text on the panels, --accent is a text-safe shade of it and --accent-fill keeps the
+   design's colour for filled buttons (styles.css falls back to --accent / --on-accent). */
+
+html.design-stickerbook {
+  --bg: rgb(42, 36, 56);
+  --panel: rgb(58, 50, 80);
+  --panel-2: rgb(76, 66, 104);
+  --panel-3: color-mix(in srgb, rgb(76, 66, 104) 70%, rgb(112, 100, 146));
+  --line: rgb(112, 100, 146);
+  --text: rgb(255, 248, 239);
+  --muted: rgb(214, 205, 230);
+  --dim: color-mix(in srgb, rgb(204, 194, 222) 60%, rgb(42, 36, 56));
+  --accent: rgb(255, 150, 192);
+  --accent-2: rgb(95, 211, 196);
+  --on-accent: rgb(42, 12, 26);
+  --radius: 14px;
+  --radius-ctl: 16px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Caveat", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+/* «Тамагочи»: the panels are the toy's grey-green LCD with pixel ink, the page around them its pink shell. */
+html.design-pocketpet {
+  --bg: rgb(243, 198, 220);
+  --panel: rgb(196, 208, 170);
+  --panel-2: rgb(181, 195, 153);
+  --panel-3: rgb(166, 182, 138);
+  --line: rgb(72, 86, 56);
+  --text: rgb(24, 32, 18);
+  --muted: rgb(48, 60, 36);
+  --dim: rgb(84, 98, 66);
+  --accent: rgb(24, 32, 18);
+  --accent-2: rgb(150, 34, 92);
+  --on-accent: rgb(206, 218, 180);
+  --radius: 0px;
+  --radius-ctl: 0px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Press Start 2P", "JetBrains Mono", ui-monospace, monospace;
+  --font-label: "JetBrains Mono", ui-monospace, monospace;
+  --round: 0;
+}
+
+/* «Одиссея»: station white, dark ink, black-slab buttons; the only colour is a red light. */
+html.design-odyssey {
+  --bg: rgb(238, 241, 244);
+  --panel: rgb(255, 255, 255);
+  --panel-2: rgb(232, 236, 240);
+  --panel-3: rgb(218, 224, 230);
+  --line: rgb(180, 188, 198);
+  --text: rgb(16, 19, 24);
+  --muted: rgb(70, 80, 94);
+  --dim: rgb(120, 130, 142);
+  --accent: rgb(16, 19, 24);
+  --accent-2: rgb(200, 24, 16);
+  --on-accent: rgb(255, 255, 255);
+  --radius: 2px;
+  --radius-ctl: 2px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "JetBrains Mono", ui-monospace, monospace;
+  --round: 50%;
+}
+
+/* «Мультфильм»: warm gouache paper, umber ink, terracotta. */
+html.design-mult {
+  --bg: rgb(243, 233, 214);
+  --panel: rgb(255, 250, 240);
+  --panel-2: rgb(240, 229, 207);
+  --panel-3: rgb(230, 215, 188);
+  --line: rgb(196, 176, 144);
+  --text: rgb(58, 42, 32);
+  --muted: rgb(102, 80, 62);
+  --dim: rgb(150, 128, 104);
+  --accent: rgb(170, 64, 34);
+  --accent-2: rgb(62, 108, 128);
+  --on-accent: rgb(255, 248, 236);
+  --radius: 12px;
+  --radius-ctl: 14px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Neucha", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+/* «Созерцание»: wet slate and moss, parchment text, candle amber, a book serif. */
+html.design-tarkovsky {
+  --bg: rgb(20, 22, 19);
+  --panel: rgb(33, 35, 31);
+  --panel-2: rgb(45, 47, 42);
+  --panel-3: color-mix(in srgb, rgb(45, 47, 42) 70%, rgb(74, 76, 66));
+  --line: rgb(74, 76, 66);
+  --text: rgb(226, 220, 203);
+  --muted: rgb(164, 158, 140);
+  --dim: color-mix(in srgb, rgb(158, 152, 134) 60%, rgb(20, 22, 19));
+  --accent: rgb(206, 170, 112);
+  --accent-2: rgb(140, 168, 152);
+  --on-accent: rgb(22, 18, 10);
+  --radius: 4px;
+  --radius-ctl: 6px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+/* «Немое кино»: a black-and-white print, white intertitle cards, a period serif. */
+html.design-silent {
+  --bg: rgb(10, 10, 10);
+  --panel: rgb(22, 22, 22);
+  --panel-2: rgb(38, 38, 38);
+  --panel-3: rgb(54, 54, 54);
+  --line: rgb(120, 120, 120);
+  --text: rgb(244, 244, 244);
+  --muted: rgb(182, 182, 182);
+  --dim: rgb(120, 120, 120);
+  --accent: rgb(240, 240, 240);
+  --accent-2: rgb(255, 255, 255);
+  --on-accent: rgb(10, 10, 10);
+  --radius: 10px;
+  --radius-ctl: 6px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Old Standard TT", "Playfair Display", Georgia, serif;
+  --font-label: "Old Standard TT", "Playfair Display", Georgia, serif;
+  --round: 50%;
+}
+
+/* «Симметрия»: powder pink, cream, mustard and mint, raspberry ink, a Futura-like sans for everything. */
+html.design-anderson {
+  --bg: rgb(246, 214, 214);
+  --panel: rgb(251, 238, 230);
+  --panel-2: rgb(244, 226, 214);
+  --panel-3: rgb(236, 214, 198);
+  --line: rgb(196, 150, 70);
+  --text: rgb(58, 34, 44);
+  --muted: rgb(100, 66, 76);
+  --dim: rgb(160, 120, 110);
+  --accent: rgb(122, 34, 62);
+  --accent-2: rgb(143, 207, 184);
+  --on-accent: rgb(251, 238, 230);
+  --accent-fill: rgb(217, 165, 32);
+  --on-accent-fill: rgb(58, 34, 44);
+  --radius: 0px;
+  --radius-ctl: 0px;
+  --font-body: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+/* «Нуар»: monochrome night, paper-white light, typewriter type. */
+html.design-noir {
+  --bg: rgb(12, 12, 13);
+  --panel: rgb(24, 24, 25);
+  --panel-2: rgb(40, 40, 41);
+  --panel-3: rgb(54, 54, 55);
+  --line: rgb(96, 95, 92);
+  --text: rgb(235, 233, 227);
+  --muted: rgb(166, 163, 156);
+  --dim: rgb(110, 108, 104);
+  --accent: rgb(242, 239, 230);
+  --accent-2: rgb(255, 255, 255);
+  --on-accent: rgb(12, 12, 13);
+  --radius: 0px;
+  --radius-ctl: 0px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+  --font-label: "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+  --round: 0;
+}
+
+/* «Новая волна»: black screen, solid red / blue / white word cards. */
+html.design-vague {
+  --bg: rgb(10, 10, 12);
+  --panel: rgb(22, 22, 26);
+  --panel-2: rgb(38, 38, 44);
+  --panel-3: rgb(54, 54, 62);
+  --line: rgb(92, 92, 100);
+  --text: rgb(250, 250, 248);
+  --muted: rgb(176, 176, 182);
+  --dim: rgb(110, 110, 118);
+  --accent: rgb(255, 92, 80);
+  --accent-2: rgb(52, 92, 222);
+  --on-accent: rgb(10, 10, 12);
+  --accent-fill: rgb(218, 34, 26);
+  --on-accent-fill: rgb(255, 255, 255);
+  --radius: 0px;
+  --radius-ctl: 0px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 0;
+}
+
+/* «Вестерн»: a sun-bleached sky, aged paper bills, saddle-brown ink, rust red. */
+html.design-western {
+  --bg: rgb(236, 220, 188);
+  --panel: rgb(244, 230, 200);
+  --panel-2: rgb(232, 212, 172);
+  --panel-3: rgb(220, 194, 148);
+  --line: rgb(150, 106, 62);
+  --text: rgb(43, 26, 14);
+  --muted: rgb(92, 60, 34);
+  --dim: rgb(150, 112, 74);
+  --accent: rgb(146, 48, 20);
+  --accent-2: rgb(208, 138, 46);
+  --on-accent: rgb(255, 243, 222);
+  --radius: 3px;
+  --radius-ctl: 4px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Kelly Slab", Georgia, "Times New Roman", serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
+/* «Красная комната»: near-black, curtain red, ivory serif capitals. */
+html.design-redroom {
+  --bg: rgb(11, 6, 6);
+  --panel: rgb(34, 9, 11);
+  --panel-2: rgb(56, 14, 16);
+  --panel-3: rgb(74, 22, 24);
+  --line: rgb(110, 34, 36);
+  --text: rgb(244, 239, 230);
+  --muted: rgb(204, 186, 178);
+  --dim: rgb(140, 100, 96);
+  --accent: rgb(255, 104, 110);
+  --accent-2: rgb(240, 236, 228);
+  --on-accent: rgb(20, 4, 6);
+  --accent-fill: rgb(196, 18, 30);
+  --on-accent-fill: rgb(255, 255, 255);
+  --radius: 4px;
+  --radius-ctl: 0px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
 /* Headings use each design's display face, like Cineko. */
 html.design-deco h1, html.design-deco h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2,
