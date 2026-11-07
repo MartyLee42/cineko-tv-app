@@ -11,7 +11,7 @@ export interface Skin {
   /** Has a light colour mode (Кинозал only). */
   light: boolean;
   /** Full-screen background layer drawn behind screens (null = plain bg colour / skeleton default). */
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | null;
+  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "blinds" | "cards" | null;
   /** Animated background layers (transform-only); the calm mode stops them. */
   animatedLayers: 0 | 1;
   /** Headline size factor on the skeleton's sizes (wide display faces need less). */
@@ -39,6 +39,9 @@ export const SKINS: Record<DesignSetting, Skin> = {
   pocketpet: { id: "pocketpet", skeleton: "terminal", light: false, background: "lcd", titleScale: 0.6, animatedLayers: 0, ornaments: none },
   // Mono display type runs wide: titles a little smaller.
   matrix: { id: "matrix", skeleton: "terminal", light: false, background: "rain", titleScale: 0.86, animatedLayers: 0, ornaments: { ...none, cornerBrackets: true } },
+  // Typewriter mono runs wide: titles a little smaller. One slow rain layer on the window.
+  noir: { id: "noir", skeleton: "terminal", light: false, background: "blinds", titleScale: 0.84, animatedLayers: 1, ornaments: none },
+  vague: { id: "vague", skeleton: "terminal", light: false, background: "cards", titleScale: 1, animatedLayers: 0, ornaments: none },
 };
 
 export { DESIGNS };

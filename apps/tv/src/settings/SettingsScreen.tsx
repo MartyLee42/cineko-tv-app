@@ -46,7 +46,7 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
     r.design,
     r.surprise,
     ...(settings.design_surprise !== "off" ? [favorites(() => setPickingFavs(true))] : []),
-    ...(looks.includes("wireframe") || looks.includes("matrix") ? [r.motion] : []),
+    ...(looks.includes("wireframe") || looks.includes("matrix") || looks.includes("noir") || looks.includes("vague") ? [r.motion] : []),
     // Light colours exist for «Кинозал» only.
     ...(looks.includes("kinozal") ? [r.theme] : []),
     r.loading,

@@ -1,0 +1,63 @@
+/* ---------------------------------------------------------------- «Нуар» (terminal skeleton)
+   A 1940s film-noir homage (mood only): a monochrome night office, light falling through window
+   blinds, rain on the glass, typewriter type (IBM Plex Mono). Everything black, white and silver:
+   artwork turns black-and-white (a static filter), focus is a paper-white frame, the ticker a typed
+   paper strip. Cute touch: section headings type themselves out once when a screen opens. */
+.nr-room { background-color: rgb(12,12,13); overflow: hidden; }
+.nr-streak { position: absolute; display: block; width: 2px; border-radius: 1px; background: linear-gradient(180deg, rgba(242,239,230,0) 0%, rgba(242,239,230,.55) 85%, rgba(242,239,230,.9) 100%); -webkit-transform: rotate(8deg); transform: rotate(8deg); }
+/* A drop running down the glass (slowly; transform only; the calm mode keeps it still). */
+.nr-run { animation: nr-run 14s linear infinite; will-change: transform; }
+@keyframes nr-run {
+  from { -webkit-transform: translate3d(0,-200px,0) rotate(8deg); transform: translate3d(0,-200px,0) rotate(8deg); }
+  to { -webkit-transform: translate3d(-150px,1150px,0) rotate(8deg); transform: translate3d(-150px,1150px,0) rotate(8deg); }
+}
+html.design-noir .t-grid { background: rgb(var(--mt-bg)); }
+
+/* Black-and-white film: every picture desaturated (static filter, rasterised once). */
+html.design-noir img { -webkit-filter: grayscale(1) contrast(1.12); filter: grayscale(1) contrast(1.12); }
+html.design-noir .t-mono-img { -webkit-filter: grayscale(1) contrast(1.25) brightness(.8); filter: grayscale(1) contrast(1.25) brightness(.8); }
+html.design-noir .t-scanlines { background-image: none; }
+html.design-noir .t-band-fade { background: linear-gradient(0deg, rgb(12,12,13) 0%, rgba(12,12,13,.6) 38%, rgba(12,12,13,.15) 70%, rgba(12,12,13,.45) 100%); }
+
+/* Typewriter: mixed case for titles (a typed page, not a HUD), tighter label tracking. */
+html.design-noir .t-label { letter-spacing: .06em; }
+html.design-noir [data-testid="hero"] h2, html.design-noir [data-media-id] h1 { font-weight: 600; text-transform: none; letter-spacing: -.02em; line-height: 1.08; }
+html.design-noir [data-testid="hero"] > p.t-label:first-child { color: rgb(160,157,150); }
+
+/* The menu: a dark band with a hairline; the active tab underlined like a typed underscore. */
+html.design-noir nav[data-design-nav="terminal"] { background: linear-gradient(180deg, rgba(12,12,13,.96) 0%, rgba(12,12,13,.75) 70%, rgba(12,12,13,0) 100%); }
+html.design-noir nav[data-design-nav="terminal"] .t-tab.bg-text { background: rgb(242,239,230); color: rgb(12,12,13); }
+html.design-noir [data-testid="status-ticker"] { background: rgb(232,228,216); color: rgb(18,18,18); box-shadow: inset 0 2px 0 rgba(0,0,0,.25); }
+
+/* Focus: a paper-white frame over a black gap (no colour anywhere); white corner brackets. */
+html.design-noir .tv-focus.is-focused { box-shadow: 0 0 0 5px rgb(12,12,13), 0 0 0 10px rgb(242,239,230), 0 0 34px 8px rgba(242,239,230,.22); }
+html.design-noir .t-bracket, html.design-noir .t-bracket-tl, html.design-noir .t-bracket-tr, html.design-noir .t-bracket-bl, html.design-noir .t-bracket-br { border-color: rgb(242,239,230); }
+html.design-noir .t-hair { border-color: rgba(242,239,230,.2); }
+html.design-noir .t-tag { background: rgba(12,12,13,.9); }
+html.design-noir .t-seg-on { background: rgb(242,239,230); }
+html.design-noir .t-row-best { background: rgba(242,239,230,.08); }
+html.design-noir .t-row.is-focused { background: rgb(242,239,230); color: rgb(12,12,13); }
+html.design-noir .tv-rate-t-good { color: rgb(242,239,230); }
+html.design-noir .tv-rate-t-mid { color: rgb(170,167,160); }
+html.design-noir .tv-rate-t-bad { color: rgb(120,118,113); }
+html.design-noir .tv-chip.is-focused { background: rgb(242,239,230); color: rgb(12,12,13); }
+html.design-noir .tv-release.is-focused { background: rgb(242,239,230); color: rgb(12,12,13); }
+html.design-noir .tv-release.is-focused .text-text, html.design-noir .tv-release.is-focused .text-muted, html.design-noir .tv-release.is-focused .text-accent { color: rgb(12,12,13); }
+html.design-noir .tv-progress-fill, html.design-noir .tv-check { background: rgb(242,239,230); color: rgb(12,12,13); }
+html.design-noir .tv-panel, html.design-noir .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 1px rgba(242,239,230,.25); }
+html.design-noir .tv-key-hint { background: rgb(232,228,216); color: rgb(18,18,18); }
+
+/* Section headings type themselves out, a letter per step, once when a screen opens (only while the
+   screen is fresh: rows that mount later on scrolling don't retype). Plex Mono advances .6em a
+   letter + .06em tracking = .66em; 34 steps ≈ 0.58 s. Off in calm mode / reduced motion. */
+html.design-noir [data-design-shell]:not([data-calm]) .mt-screen[data-fresh] h3.t-label,
+html.design-noir [data-design-shell]:not([data-calm]) .mt-screen[data-fresh] h2.t-label {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: nr-type 580ms steps(34, end) backwards;
+}
+@keyframes nr-type { from { max-width: 0; } to { max-width: 22.44em; } }
+@media (prefers-reduced-motion: reduce) {
+  html.design-noir .mt-screen h3.t-label, html.design-noir .mt-screen h2.t-label { animation: none !important; }
+  html.design-noir .nr-run { animation: none; }
+}

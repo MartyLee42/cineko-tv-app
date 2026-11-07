@@ -15,6 +15,8 @@
      design-matrix             — «Матрица»: green phosphor digital rain, glowing mono type (terminal skeleton)
      design-stickerbook        — «Стикербук»: die-cut sticker posters, washi tape, cream/pink/mint on ink (kinozal skeleton)
      design-pocketpet          — «Тамагочи»: pastel toy shell around a grey-green LCD, pixel ink and type (terminal skeleton)
+     design-noir               — «Нуар»: 1940s film noir: monochrome, window-blind light, rain, typewriter type (terminal skeleton)
+     design-vague              — «Новая волна»: French New Wave: red/blue/white word cards, handwritten notes (terminal skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {
@@ -283,6 +285,46 @@ html.design-pocketpet {
   color-scheme: light;
 }
 
+/* «Нуар»: 1940s film noir (homage): monochrome night, paper-white light, silver greys; typewriter
+   type (IBM Plex Mono, a slab-serif mono with Cyrillic) for headings and labels, Onest body. */
+html.design-noir {
+  --mt-bg: 12, 12, 13;
+  --mt-surface: 28, 28, 29;
+  --mt-surface-2: 44, 44, 45;
+  --mt-border: 96, 95, 92;
+  --mt-text: 235, 233, 227;
+  --mt-muted: 160, 157, 150;
+  --mt-accent: 242, 239, 230;
+  --mt-accent-strong: 255, 255, 255;
+  --mt-on-accent: 12, 12, 13;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+  --mt-font-label: "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* «Новая волна»: the French New Wave (homage): a black screen, solid red, blue and white word cards
+   (like intertitles); heavy wide capitals (Unbounded) on the cards, handwritten notes (Caveat), Onest body. */
+html.design-vague {
+  --mt-bg: 10, 10, 12;
+  --mt-surface: 26, 26, 30;
+  --mt-surface-2: 42, 42, 48;
+  --mt-border: 92, 92, 100;
+  --mt-text: 250, 250, 248;
+  --mt-muted: 170, 170, 176;
+  --mt-accent: 230, 40, 30;
+  --mt-accent-strong: 52, 92, 222;
+  --mt-on-accent: 255, 255, 255;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
 /* Headings in the later designs use their display face (web and TV). */
 html.design-deco h1, html.design-deco h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2 { font-family: var(--mt-font-display); }
@@ -294,6 +336,8 @@ html.design-constructivism h1, html.design-constructivism h2 { font-family: var(
 html.design-matrix h1, html.design-matrix h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 0 10px rgba(0, 255, 65, .55); }
 html.design-stickerbook h1, html.design-stickerbook h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-pocketpet h1, html.design-pocketpet h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; line-height: 1.25; }
+html.design-noir h1, html.design-noir h2 { font-family: var(--mt-font-display); font-weight: 600; letter-spacing: -.01em; }
+html.design-vague h1, html.design-vague h2 { font-family: var(--mt-font-display); font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; }
 
 html, body, #root { height: 100%; }
 body {
@@ -321,7 +365,7 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--mt-muted), 0.7); }
 ::-webkit-scrollbar-corner { background: transparent; }
-html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb, html.design-matrix ::-webkit-scrollbar-thumb, html.design-pocketpet ::-webkit-scrollbar-thumb { border-radius: 0; }
+html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb, html.design-matrix ::-webkit-scrollbar-thumb, html.design-pocketpet ::-webkit-scrollbar-thumb, html.design-noir ::-webkit-scrollbar-thumb, html.design-vague ::-webkit-scrollbar-thumb { border-radius: 0; }
 
 /* ---------------------------------------------------------------- season layer (SeasonLayer.tsx)
    Pointer-events-free overlay; transform/opacity animations only, one
