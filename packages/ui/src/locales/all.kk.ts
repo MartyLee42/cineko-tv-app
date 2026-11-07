@@ -37,11 +37,7 @@ import { sleepKk } from "./sleep.kk";
 import { skipKk } from "./skip.kk";
 import { pocketpetKk } from "./pocketpet.kk";
 import { westernKk } from "./western.kk";
-<<<<<<< HEAD
-import { errorsUserKk } from "./errorsuser.kk";
-=======
 import { quickKk } from "./quick.kk";
->>>>>>> origin/main
 import { triviaKk } from "./trivia.kk";
 import { surpriseKk } from "./surprise.kk";
 import { smoothKk } from "./smooth.kk";
@@ -56,13 +52,10 @@ import { filmthemeKk } from "./filmtheme.kk";
 import { multtarkovskyKk } from "./multtarkovsky.kk";
 import { andersonKk } from "./anderson.kk";
 import { demoKk } from "./demo.kk";
+import { errorsUserKk } from "./errorsuser.kk";
 
 
 
-<<<<<<< HEAD
-export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk, ...soundtrackKk, ...themesKk, ...smoothKk, ...chaptersKk, ...companionKk, ...devsettingsKk, ...loadersKk, ...loaders2Kk, ...filmthemeKk, ...multtarkovskyKk, ...andersonKk, ...westernKk, ...errorsUserKk };
-=======
 
 
-export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk, ...soundtrackKk, ...themesKk, ...smoothKk, ...chaptersKk, ...companionKk, ...devsettingsKk, ...loadersKk, ...loaders2Kk, ...filmthemeKk, ...multtarkovskyKk, ...andersonKk, ...westernKk, ...quickKk, ...demoKk };
->>>>>>> origin/main
+export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk, ...soundtrackKk, ...themesKk, ...smoothKk, ...chaptersKk, ...companionKk, ...devsettingsKk, ...loadersKk, ...loaders2Kk, ...filmthemeKk, ...multtarkovskyKk, ...andersonKk, ...westernKk, ...quickKk, ...demoKk, ...errorsUserKk };
