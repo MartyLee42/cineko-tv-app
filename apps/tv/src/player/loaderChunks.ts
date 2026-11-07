@@ -6,6 +6,7 @@ import type { ComponentType } from "react";
 import { upcomingSurprise, type DesignSetting, type LoaderAnimation } from "@martytv/ui";
 import type { LoadingStyle } from "../profile/settings";
 import type { LoaderModel } from "./loaderParts";
+import { retrying } from "../retry";
 
 export type LoaderKind =
   | "minimal"
@@ -77,13 +78,10 @@ export function upcomingAnimation(setting: LoadingStyle): LoaderAnimation | null
   return setting === "surprise" ? upcomingSurprise() : setting;
 }
 
-const loads: Partial<Record<LoaderKind, Promise<StyleModule>>> = {};
+const loads: Partial<Record<LoaderKind, () => Promise<StyleModule>>> = {};
 
-/** Fetches a style's chunk (once; a failure is retried next time). */
+/** Fetches a style's chunk (once; retried on a flaky network, and again next time after a failure). */
 export function preloadLoader(kind: LoaderKind): Promise<unknown> {
   if (kind === "minimal") return Promise.resolve();
-  return (loads[kind] ??= imports[kind]().catch((e: unknown) => {
-    delete loads[kind];
-    throw e;
-  }));
+  return (loads[kind] ??= retrying(imports[kind]))();
 }

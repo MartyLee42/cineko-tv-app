@@ -20,6 +20,16 @@ if [ "${1:-}" = --build ] || ! dc pull -q "${OURS[@]}"; then
   echo "    building Cineko images from source"
   dc build --pull "${OURS[@]}"
 fi
+# Pages opened before this update (a TV runs one for days) keep loading their
+# release's lazy chunks: the new web container archives its own assets at
+# start; the release running now goes into the archive here first (its image
+# may predate the archive). Existing files are kept; copies are dated now.
+if [ -n "$(dc ps -q web 2>/dev/null)" ]; then
+  echo "==> asset archive"
+  dc exec -T web tar -C /srv -cf - web/assets tv/assets 2>/dev/null \
+    | dc run --rm -T --no-deps web seed \
+    || echo "    previous release's assets not archived (its pages reload once instead)" >&2
+fi
 echo "==> restarting"
 dc up -d --remove-orphans
 for i in $(seq 1 60); do

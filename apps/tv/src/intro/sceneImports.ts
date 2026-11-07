@@ -2,6 +2,7 @@
 // Tiny: App imports it to start the scene's download as soon as the intro is due.
 import type { ComponentType } from "react";
 import type { DesignSetting } from "@martytv/ui";
+import { watched } from "../chunkReload";
 
 export type SceneMod = { Scene: ComponentType };
 export const SCENE_IMPORTS: Record<DesignSetting, () => Promise<SceneMod>> = {
@@ -31,5 +32,5 @@ export const SCENE_IMPORTS: Record<DesignSetting, () => Promise<SceneMod>> = {
 
 /** Starts fetching a design's scene (the intro shell itself is lazy too). */
 export function preloadIntroScene(design: DesignSetting): void {
-  void (SCENE_IMPORTS[design] ?? SCENE_IMPORTS.kinozal)().catch(() => undefined);
+  void watched((SCENE_IMPORTS[design] ?? SCENE_IMPORTS.kinozal)()).catch(() => undefined);
 }

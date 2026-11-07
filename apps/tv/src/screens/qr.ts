@@ -1,11 +1,12 @@
 import type { QRCodeToDataURLOptions } from "qrcode";
+import { watched } from "../chunkReload";
 
 // The QR encoder (~20 KB) loads on demand: a paired TV starting at Home never
 // needs it. Call qrLoad() early (before awaiting the API) to fetch it in parallel.
 let mod: Promise<typeof import("qrcode")> | null = null;
 
 export function qrLoad() {
-  mod ??= import("qrcode").catch((e: unknown) => {
+  mod ??= watched(import("qrcode")).catch((e: unknown) => {
     mod = null;
     throw e;
   });

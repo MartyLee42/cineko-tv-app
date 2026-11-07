@@ -1,6 +1,7 @@
 import { Component, useEffect, useRef, type ErrorInfo, type ReactNode } from "react";
 import { detectLocale, translate } from "./i18n";
 import { reportError } from "./errors";
+import { isChunkLoadError } from "./chunkReload";
 
 /** First component name from React's componentStack ("\n    at Foo (…)"). */
 export function firstComponent(stack: string | null | undefined): string | undefined {
@@ -12,21 +13,37 @@ export function firstComponent(stack: string | null | undefined): string | undef
 interface Props {
   children: ReactNode;
   variant?: "web" | "tv";
+  /**
+   * A lazy chunk that failed to download (a newer release replaced it):
+   * resolves true when the page is reloading (chunkReload.ts). Meanwhile and
+   * then «Обновляем приложение…» shows instead of the crash screen.
+   */
+  recover?: (error: unknown) => Promise<boolean>;
 }
+
+type State = { failed: boolean; updating: boolean };
 
 /**
  * Catches render crashes, reports them (kind "react") and shows a friendly
  * reload screen instead of a blank/black page. The fallback depends on
  * nothing but React (inline styles, locale read straight from storage).
  */
-export class ErrorBoundary extends Component<Props, { failed: boolean }> {
-  state = { failed: false };
+export class ErrorBoundary extends Component<Props, State> {
+  state: State = { failed: false, updating: false };
 
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(): Partial<State> {
     return { failed: true };
   }
 
   componentDidCatch(error: unknown, info: ErrorInfo) {
+    const recover = this.props.recover;
+    if (recover && isChunkLoadError(error)) {
+      this.setState({ updating: true });
+      void recover(error).then(
+        (reloading) => !reloading && this.setState({ updating: false }),
+        () => this.setState({ updating: false }),
+      );
+    }
     reportError("react", error, {
       component: firstComponent(info.componentStack),
       extra: info.componentStack ? { component_stack: info.componentStack.slice(0, 1200) } : undefined,
@@ -34,7 +51,9 @@ export class ErrorBoundary extends Component<Props, { failed: boolean }> {
   }
 
   render() {
-    return this.state.failed ? <CrashScreen tv={this.props.variant === "tv"} /> : this.props.children;
+    const tv = this.props.variant === "tv";
+    if (this.state.updating) return <UpdatingScreen tv={tv} />;
+    return this.state.failed ? <CrashScreen tv={tv} /> : this.props.children;
   }
 }
 
@@ -52,6 +71,42 @@ function storedLocale() {
   } catch {
     return detectLocale(null);
   }
+}
+
+const screenStyle = (tv: boolean) =>
+  ({
+    position: tv ? "absolute" : "fixed",
+    top: 0,
+    left: 0,
+    width: tv ? 1920 : "100%",
+    height: tv ? 1080 : "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    boxSizing: "border-box",
+    textAlign: "center",
+    background: "rgb(var(--mt-bg, 8, 9, 12))",
+    color: "rgb(var(--mt-text, 242, 244, 248))",
+    fontFamily: "var(--mt-font-body, system-ui, sans-serif)",
+    zIndex: 1000,
+  }) as const;
+
+/**
+ * «Обновляем приложение…»: a newer release is loading (one reload, then the
+ * app continues where it was). Calm on purpose: no warning sign, no button.
+ */
+export function UpdatingScreen({ tv }: { tv: boolean }) {
+  const locale = storedLocale();
+  return (
+    <div role="status" data-testid="updating-screen" style={screenStyle(tv)}>
+      <h1 style={{ margin: 0, fontSize: tv ? 56 : 22, fontWeight: 600 }}>{translate(locale, "appupdate.title")}</h1>
+      <p style={{ margin: tv ? "28px 0 0" : "12px 0 0", maxWidth: tv ? 1100 : 420, fontSize: tv ? 32 : 15, lineHeight: 1.45, color: "rgb(var(--mt-muted, 154, 160, 170))" }}>
+        {translate(locale, "appupdate.body")}
+      </p>
+    </div>
+  );
 }
 
 function CrashScreen({ tv }: { tv: boolean }) {
