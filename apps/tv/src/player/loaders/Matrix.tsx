@@ -1,6 +1,6 @@
 // A loading style (its own chunk: fetched for the profile's style only, see loaderChunks.ts).
 import { useI18n } from "@martytv/ui";
-import { RainBackground } from "../../design/skins";
+import { RainBackground } from "../../design/looks/matrix";
 import { pct, Status, type LoaderModel } from "../loaderParts";
 
 const MX_CELLS = 40;

@@ -1,0 +1,2 @@
+/* «terminal»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
+html.design-terminal .tv-focus.is-focused { box-shadow: 0 0 0 5px rgb(var(--mt-bg)), 0 0 0 9px rgb(var(--mt-focus)); }

@@ -58,8 +58,16 @@ export const DESIGN_SWATCH: Record<DesignSetting, { bg: string; surface: string;
   matrix: { bg: "#000602", surface: "#04140a", accent: "#00ff41", accent2: "#c8ffd2", text: "#b4ffc4" },
 };
 
+let onApply: ((design: DesignSetting) => void) | null = null;
+
+/** An app's hook run by every applyDesign (the TV fetches the design's own chunk there). */
+export function onDesignApplied(fn: ((design: DesignSetting) => void) | null): void {
+  onApply = fn;
+}
+
 /** Applies a visual design: html.design-<id>, html.skel-<skeleton> and the tab icon. */
 export function applyDesign(design: DesignSetting): void {
+  onApply?.(design);
   setAppliedDesign(design);
   const root = document.documentElement;
   const skel = designSkeleton(design);

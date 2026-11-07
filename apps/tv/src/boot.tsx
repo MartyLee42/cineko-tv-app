@@ -1,7 +1,9 @@
 import { createRoot } from "react-dom/client";
 import { getCurrentFocusKey, init } from "@noriginmedia/norigin-spatial-navigation";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { apiErrorMiddleware, ErrorBoundary, I18nProvider, initialLocale, installErrorReporter, installKeySounds, loadLocale, parseDeviceModel } from "@martytv/ui";
+import { apiErrorMiddleware, ErrorBoundary, I18nProvider, initialLocale, installErrorReporter, installKeySounds, loadLocale, onDesignApplied, parseDeviceModel } from "@martytv/ui";
+import { loadLook } from "./design/looks/registry";
+import { themeCache } from "./profile/settings";
 import { queryClient } from "./catalog/queries";
 import { App } from "./App";
 import { api } from "./api";
@@ -70,10 +72,13 @@ fit();
 document.documentElement.style.removeProperty("background");
 document.documentElement.style.removeProperty("color");
 
-// The start language's strings first (preloaded by main.tsx: usually already here).
-// A failed download still renders (keys, then the provider retries).
-void loadLocale(initialLocale())
-  .catch(() => undefined)
+// Every applied design fetches its own chunk (CSS + drawings, design/looks).
+onDesignApplied((d) => void loadLook(d).catch(() => undefined));
+
+// The start language's strings and the saved design's chunk first (both
+// preloaded by main.tsx: usually already here). A failed download still
+// renders (keys / a plainer look; both are retried later).
+void Promise.all([loadLocale(initialLocale()).catch(() => undefined), loadLook(themeCache.design()).catch(() => undefined)])
   .then(() => {
     createRoot(document.getElementById("root")!).render(
       <QueryClientProvider client={queryClient}>
