@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -34,27 +35,30 @@ type config struct {
 	// RootStaticDir is the app built for "/" (Music on its own host,
 	// MUSIC_DOMAIN); empty = not served.
 	RootStaticDir string
-	CinekoURL     string // PUBLIC_BASE_URL: the main Cineko site
-	APIURL        string // Cineko API (session check)
-	DevUser       string // skips the session check (local development only)
-	InvidiousURL  string
-	ProwlarrURL   string
-	ProwlarrKey   string
-	TorrURL       string
-	TorrUser      string
-	TorrPass      string
-	DeezerURL     string
-	LyricsURL     string
-	ProxyURL      string // optional proxy for Deezer / LRCLIB / images
-	MaxTranscode  int
-	AIKey         string
-	AIBase        string
-	AIModel       string
-	AIPerDay      int
-	AIDayTokens   int   // DeepSeek tokens per Moscow day, all accounts (0 = unlimited)
-	CacheBytes    int64 // YouTube audio disk cache
-	Region        string
-	MetricsToken  string // GET /metrics bearer token; empty = 404
+	// ArchiveDir keeps earlier releases' hashed assets (assetarchive.go);
+	// empty = off.
+	ArchiveDir   string
+	CinekoURL    string // PUBLIC_BASE_URL: the main Cineko site
+	APIURL       string // Cineko API (session check)
+	DevUser      string // skips the session check (local development only)
+	InvidiousURL string
+	ProwlarrURL  string
+	ProwlarrKey  string
+	TorrURL      string
+	TorrUser     string
+	TorrPass     string
+	DeezerURL    string
+	LyricsURL    string
+	ProxyURL     string // optional proxy for Deezer / LRCLIB / images
+	MaxTranscode int
+	AIKey        string
+	AIBase       string
+	AIModel      string
+	AIPerDay     int
+	AIDayTokens  int   // DeepSeek tokens per Moscow day, all accounts (0 = unlimited)
+	CacheBytes   int64 // YouTube audio disk cache
+	Region       string
+	MetricsToken string // GET /metrics bearer token; empty = 404
 }
 
 func env(k, def string) string {
@@ -90,6 +94,7 @@ func loadConfig() config {
 		DataDir:       env("MUSIC_DATA_DIR", "/data"),
 		StaticDir:     env("MUSIC_STATIC_DIR", "/srv/music"),
 		RootStaticDir: env("MUSIC_ROOT_STATIC_DIR", "/srv/music-root"),
+		ArchiveDir:    archiveDir(env("MUSIC_ASSET_ARCHIVE", ""), env("MUSIC_DATA_DIR", "/data")),
 		CinekoURL:     strings.TrimRight(env("PUBLIC_BASE_URL", ""), "/"),
 		APIURL:        strings.TrimRight(env("MARTYTV_API_URL", "http://api:8080"), "/"),
 		DevUser:       env("MUSIC_DEV_USER", ""),
@@ -112,6 +117,17 @@ func loadConfig() config {
 		Region:        env("MUSIC_REGION", "RU"),
 		MetricsToken:  secret("METRICS_TOKEN"),
 	}
+}
+
+// archiveDir: MUSIC_ASSET_ARCHIVE ("off" disables), default <data>/asset-archive.
+func archiveDir(v, data string) string {
+	switch v {
+	case "off", "false", "0":
+		return ""
+	case "":
+		return filepath.Join(data, "asset-archive")
+	}
+	return v
 }
 
 func firstNonEmpty(v ...string) string {
@@ -146,6 +162,18 @@ func main() {
 	}
 	defer st.Close()
 
+	// Earlier releases' chunks stay available to pages opened before this deploy.
+	if cfg.ArchiveDir != "" {
+		now := time.Now()
+		for name, build := range map[string]string{"music": cfg.StaticDir, "music-root": cfg.RootStaticDir} {
+			if build == "" {
+				continue
+			}
+			if err := archiveAssets(build, filepath.Join(cfg.ArchiveDir, name), now); err != nil {
+				log.Warn("asset archive", "app", name, "err", err)
+			}
+		}
+	}
 	app := newApp(cfg, st, log)
 	srv := &http.Server{
 		Addr:              cfg.Listen,

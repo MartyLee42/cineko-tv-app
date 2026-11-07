@@ -30,6 +30,34 @@
 	}
 }
 
+# An app's hashed assets (/assets/*, immutable): this build's, else the asset
+# archive's — earlier releases' files, which pages opened before a deploy
+# still ask for (deployments/web-entrypoint.sh fills it) — else a 404 that is
+# never cached and never the app's index.html.
+# {args[0]}: the build, {args[1]}: its directory in the archive.
+(hashed_assets) {
+	@current file {
+		root {args[0]}
+	}
+	@archived file {
+		root {args[1]}
+	}
+	handle @current {
+		root * {args[0]}
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+	handle @archived {
+		root * {args[1]}
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+	handle {
+		header Cache-Control "no-store"
+		respond 404
+	}
+}
+
 # The Cineko API (both sites: Music signs in and reads settings through it).
 (api) {
 	# Video stream proxy: flush immediately, no buffering, no timeouts
@@ -82,24 +110,28 @@
 
 	# TV app (built with base /tv/).
 	handle_path /tv/* {
-		root * /srv/tv
-		@tvassets path /assets/*
-		header @tvassets Cache-Control "public, max-age=31536000, immutable"
-		# The start page must always be re-checked, or TV browsers keep
-		# running an old build after a deploy.
-		@tvhtml not path /assets/*
-		header @tvhtml Cache-Control "no-cache"
-		try_files {path} /index.html
-		file_server
+		handle /assets/* {
+			import hashed_assets /srv/tv /srv/asset-archive/tv
+		}
+		handle {
+			root * /srv/tv
+			# The start page must always be re-checked, or TV browsers keep
+			# running an old build after a deploy.
+			header Cache-Control "no-cache"
+			try_files {path} /index.html
+			file_server
+		}
 	}
 
 	# PWA.
+	handle /assets/* {
+		import hashed_assets /srv/web /srv/asset-archive/web
+	}
 	handle {
 		root * /srv/web
-		@assets path /assets/*
-		header @assets Cache-Control "public, max-age=31536000, immutable"
-		@sw path /sw.js /registerSW.js /manifest.webmanifest /index.html
-		header @sw Cache-Control "no-cache"
+		# index.html (also for app routes), sw.js, the manifest: always
+		# re-checked after a deploy.
+		header Cache-Control "no-cache"
 		try_files {path} /index.html
 		file_server
 	}

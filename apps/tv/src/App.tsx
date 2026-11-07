@@ -60,9 +60,12 @@ import { PillLayer } from "./design/PillDialog";
 import { PausedSaver } from "./idle/PausedSaver";
 import { introEnv, shouldShowIntro } from "./intro/logic";
 import { preloadIntroScene } from "./intro/sceneImports";
+import { beforeChunkReload, watched } from "./chunkReload";
+import { ChunkBoundary } from "./ChunkBoundary";
+import { playToResume, saveResume, takeResume, type Resume } from "./resume";
 
 // The startup animation is its own chunk: TVs with it switched off never fetch it.
-const StartupIntro = lazy(() => import("./intro/StartupIntro").then((m) => ({ default: m.StartupIntro })));
+const StartupIntro = lazy(() => watched(import("./intro/StartupIntro")).then((m) => ({ default: m.StartupIntro })));
 
 type Screen =
   | { kind: "boot" }
@@ -176,8 +179,12 @@ export function App() {
   const [toast, setToast] = useState<Toast | null>(null);
   /** Home's Back at the root asks «Выйти из Cineko?» — never a silent exit / reload. */
   const [exitAsk, setExitAsk] = useState(false);
-  // Startup intro: once per app start, in the design this TV last showed.
-  const [intro, setIntro] = useState(() => (shouldShowIntro(introEnv()) ? themeCache.design() : null));
+  // Where the app was before a chunk reload (resume.ts): run once Home is up.
+  const [resume] = useState<Resume | null>(takeResume);
+  const resumed = useRef(false);
+  // Startup intro: once per app start, in the design this TV last showed
+  // (not when coming back from a chunk reload: straight back to the film).
+  const [intro, setIntro] = useState(() => (!resume && shouldShowIntro(introEnv()) ? themeCache.design() : null));
   const endIntro = useCallback(() => setIntro(null), []);
   // The intro's scene is its own chunk: fetch it with the intro shell.
   useEffect(() => {
@@ -192,6 +199,8 @@ export function App() {
   const stackRef = useRef(stack);
   const detailsRef = useRef(details);
   const pendingRef = useRef<Pending | null>(null);
+  /** Resuming after a reload: no «Открыто…» toast. */
+  const quietRef = useRef(false);
   const { t, locale } = useI18n();
   // «Язык» is one of this TV's own options (a phone may change it).
   useTvOwnLanguage();
@@ -370,6 +379,7 @@ export function App() {
   const onDetailsInfo = useCallback((key: number, info: DetailsInfo) => setDetails({ key, info }), []);
 
   const openedToast = useCallback((sender: Sender, title?: string | null) => {
+    if (quietRef.current) return;
     const tt = tRef.current;
     setToast({ label: sender ? tt("remote.opened_by", { name: sender }) : tt("remote.tv.opened"), text: title ?? undefined, ms: 4500 });
   }, []);
@@ -555,6 +565,41 @@ export function App() {
     pendingRef.current = null;
     return p && Date.now() - p.at < PENDING_TTL ? p : null;
   }, []);
+
+  // A chunk reload (chunkReload.ts: a newer release replaced this one's code)
+  // comes back to the title being started / played, at the same spot and
+  // source, or else to the Details on top.
+  useEffect(
+    () =>
+      beforeChunkReload(() => {
+        const play = playToResume(player.flow, player.position());
+        if (play) return saveResume({ play });
+        const top = stackRef.current[stackRef.current.length - 1];
+        if (top?.route.name !== "details") return saveResume(null);
+        const open: OpenRequest = { media_id: top.route.id };
+        if (top.route.season !== undefined) open.season_number = top.route.season;
+        if (top.route.episode !== undefined) open.episode_number = top.route.episode;
+        saveResume({ open });
+      }),
+    [],
+  );
+  useEffect(() => {
+    const r = resume;
+    if (!r || resumed.current || (screen.kind !== "home" && screen.kind !== "profiles")) return;
+    resumed.current = true;
+    if (screen.kind === "profiles") {
+      // A PIN profile: like a phone's request, it runs once the profile is chosen.
+      pendingRef.current = "play" in r ? { req: { media_id: r.play.media_id }, play: r.play, sender: null, at: Date.now() } : { req: r.open, sender: null, at: Date.now() };
+      return;
+    }
+    quietRef.current = true;
+    try {
+      if ("play" in r) startRemotePlay(r.play, null, screen.profile);
+      else applyOpen(stackRef.current, r.open, null);
+    } finally {
+      quietRef.current = false;
+    }
+  }, [resume, screen, startRemotePlay, applyOpen]);
 
   // Executes commands from phones and acknowledges every one of them.
   // (The callbacks used here are stable, so this runs once per app start.)
@@ -867,9 +912,11 @@ export function App() {
       <PillLayer onRed={() => setIntro("matrix")} />
       <PausedSaver />
       {intro && (
-        <Suspense fallback={<div data-testid="startup-intro-wait" className="absolute left-0 top-0 h-[1080px] w-[1920px]" style={{ background: DESIGN_SWATCH[intro].bg, zIndex: 80 }} />}>
-          <StartupIntro design={intro} onDone={endIntro} />
-        </Suspense>
+        <ChunkBoundary onFail={endIntro}>
+          <Suspense fallback={<div data-testid="startup-intro-wait" className="absolute left-0 top-0 h-[1080px] w-[1920px]" style={{ background: DESIGN_SWATCH[intro].bg, zIndex: 80 }} />}>
+            <StartupIntro design={intro} onDone={endIntro} />
+          </Suspense>
+        </ChunkBoundary>
       )}
     </div>
     </DeviceProvider>

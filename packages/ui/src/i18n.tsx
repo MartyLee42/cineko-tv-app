@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAppliedDesign } from "./designs";
 import { detectLocale, LOCALE_KEY as STORAGE_KEY, readStoredLocale as readStored, type Locale } from "./localeDetect";
+import { reportChunkFailure } from "./chunkReload";
 
 export { detectLocale, type Locale };
 
@@ -33,6 +34,7 @@ export function loadLocale(l: Locale): Promise<void> {
     },
     (e: unknown) => {
       delete loading[l];
+      reportChunkFailure(e);
       throw e;
     },
   ));

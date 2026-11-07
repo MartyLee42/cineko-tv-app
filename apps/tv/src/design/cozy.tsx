@@ -8,9 +8,11 @@ import { lazy, Suspense, useEffect } from "react";
 import { cozyRender, useCozyPalette, useReducedMotion, useVideoPlaying } from "@martytv/ui";
 import { useSettings } from "../profile/settings";
 import { useCalmMotion } from "./skins";
+import { watched } from "../chunkReload";
+import { ChunkBoundary } from "../ChunkBoundary";
 
 // The ambience (and its Web Audio engine) is its own chunk: fetched only in cozy mode.
-const CozyLayer = lazy(() => import("@martytv/ui/cozy-layer").then((m) => ({ default: m.CozyLayer })));
+const CozyLayer = lazy(() => watched(import("@martytv/ui/cozy-layer")).then((m) => ({ default: m.CozyLayer })));
 
 /** html.mt-wobble while the profile wants the poster hop (and motion isn't reduced). */
 function useWobbleClass(on: boolean) {
@@ -33,8 +35,10 @@ export function TvCozyLayer({ onHome }: { onHome: boolean }) {
   const render = cozyRender({ on: settings.cozy_mode, ambience, onHome, playing, reducedMotion: reduced, calmMotion: calm });
   if (render === "none" || ambience === "off") return null;
   return (
-    <Suspense fallback={null}>
-      <CozyLayer ambience={ambience} mode={render} platform="tv" fixed={false} sound={settings.cozy_sound} />
-    </Suspense>
+    <ChunkBoundary>
+      <Suspense fallback={null}>
+        <CozyLayer ambience={ambience} mode={render} platform="tv" fixed={false} sound={settings.cozy_sound} />
+      </Suspense>
+    </ChunkBoundary>
   );
 }
