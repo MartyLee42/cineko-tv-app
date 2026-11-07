@@ -15,6 +15,7 @@ other software has to be installed first.
 | `flaresolverr` | Gets Prowlarr past Cloudflare checks on some trackers | internal |
 | `torrserver` | Streams torrents over HTTP while they download | internal; UI on `127.0.0.1:8090` |
 | `invidious`, `invidious-db`, `companion` | YouTube for the «Видео» tab and music audio | internal |
+| `restart-proxy` | Docker socket proxy that lets the API restart Invidious + companion nightly ([below](#nightly-invidious-restart)) — nothing else | internal |
 | `gluetun` *(profile `vpn`, optional)* | VPN client offering an HTTP proxy, for places where TMDB / YouTube are blocked | internal |
 
 Only Caddy is published. The Prowlarr and TorrServer web UIs listen on the
@@ -221,6 +222,35 @@ nano gluetun.env          # VPN_SERVICE_PROVIDER=…, WIREGUARD_PRIVATE_KEY=…,
 
 Torrent traffic (TorrServer, Prowlarr) does **not** go through it. Check:
 **Admin → Сервер** shows TMDB and «Видео (Invidious)» status.
+
+## Nightly Invidious restart
+
+Invidious gets slower and runs into YouTube's limits (stale connections,
+rate limiting, growing memory) the longer it runs; its own docs recommend
+restarting it regularly. Cineko does it every night at **03:00** in the
+server's timezone, so it is fresh before anyone watches:
+
+- The API restarts `companion`, then `invidious` (under a minute of «Видео»
+  downtime).
+- **Never mid-video**: if a YouTube video streamed in the last 5 minutes, the
+  restart waits and checks again every 15 minutes; if someone is still watching
+  at 05:00 it is skipped until the next night. (Music played from YouTube for
+  the first time isn't counted.)
+- Settings in `.env`: `INVIDIOUS_RESTART_AT=03:00` (`off` disables it);
+  the timezone is `INVIDIOUS_RESTART_TZ`, else `TZ` (install.sh sets it from
+  the host), else `NEW_EPISODES_TZ`, else UTC.
+- The restart goes through `restart-proxy`
+  ([wollomatic/socket-proxy](https://github.com/wollomatic/socket-proxy)),
+  which mounts the Docker socket and allows exactly
+  `POST /containers/<project>-{companion,invidious}-1/restart`, only from the
+  `api` container, on a network of their own. The API itself never sees the
+  socket. Rootless Docker or a socket elsewhere: `DOCKER_SOCKET=/run/user/1000/docker.sock`.
+- Check: `scripts/cineko.sh logs api | grep -i 'invidious restart'` (the
+  schedule is logged at start, every restart or postponement when it happens);
+  blocked requests show in `scripts/cineko.sh logs restart-proxy`.
+
+No host cron or systemd timer is needed; it starts with the stack (also after
+`scripts/update.sh`). The dev stack (`make dev`) has no proxy, so it is off there.
 
 ## Domain, HTTPS and reverse proxies
 

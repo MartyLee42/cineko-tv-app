@@ -376,6 +376,7 @@ func (h *Handlers) videoStream(c fiber.Ctx) error {
 		}
 		return httpx.NewError(fiber.StatusForbidden, code, msg)
 	}
+	noteVideoStream()
 	m := videoName.FindStringSubmatch(name)
 	if m == nil {
 		return httpx.NotFound()
@@ -655,7 +656,7 @@ func (h *Handlers) videoBytes(c fiber.Ctx, id string, itag int, progressive bool
 		kind = "video_mp4"
 	}
 	body := newIdleReader(resp.Body, cancel, s.t.StreamIdle, newStreamMeta(c, log, kind))
-	return c.SendStream(body, size)
+	return c.SendStream(activityReader{body}, size)
 }
 
 // videoCaption proxies one VTT caption track.
