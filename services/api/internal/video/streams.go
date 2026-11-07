@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -126,12 +127,8 @@ func (s *Service) toStreams(v *ivVideo) *playback.VideoStreams {
 			out.Audio = append(out.Audio, t)
 		}
 	}
-	// Best AAC first (itag 140 = 128 kbit/s is the usual one).
-	for i := 1; i < len(out.Audio); i++ {
-		for j := i; j > 0 && out.Audio[j].Bandwidth > out.Audio[j-1].Bandwidth; j-- {
-			out.Audio[j], out.Audio[j-1] = out.Audio[j-1], out.Audio[j]
-		}
-	}
+	// The player takes the first AAC track: the viewer's language first.
+	sortAudio(out.Audio, s.client.lang)
 	for _, f := range v.FormatStreams {
 		mime, codecs := mimeAndCodecs(f.Type)
 		u, ok := onOrigin(f.URL)
@@ -158,4 +155,74 @@ func mustPath(u string) string {
 		return ""
 	}
 	return p.Path
+}
+
+// audioTag reads YouTube's audio track tag from a stream URL's xtags
+// ("acont=dubbed:lang=ja", "acont=original:drc=1:lang=en"). Videos with
+// several audio tracks (YouTube's auto-dubs) list them all under itag 140.
+// A track without a tag is the only, original one.
+func audioTag(raw string) (lang string, original, drc bool) {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return "", true, false
+	}
+	x := u.Query().Get("xtags")
+	if x == "" {
+		return "", true, false
+	}
+	original = true
+	for _, kv := range strings.Split(x, ":") {
+		k, v, _ := strings.Cut(kv, "=")
+		switch k {
+		case "lang":
+			lang = strings.ToLower(v)
+		case "acont":
+			original = v == "original"
+		case "drc":
+			drc = v == "1"
+		}
+	}
+	return lang, original, drc
+}
+
+// sortAudio orders AAC tracks for the player, which plays the first: the
+// viewer's language (original or dub), then the original audio, then
+// English, then the rest; the plain (not volume-levelled) copy and the
+// higher bitrate first within each.
+func sortAudio(ts []playback.VideoTrack, want string) {
+	rank := func(t playback.VideoTrack) (int, int) {
+		lang, original, drc := audioTag(t.URL)
+		base, _, _ := strings.Cut(lang, "-")
+		r := 3
+		switch {
+		case want != "" && base == want:
+			r = 0
+		case original:
+			r = 1
+		case base == "en":
+			r = 2
+		}
+		d := 0
+		if drc {
+			d = 1
+		}
+		return r, d
+	}
+	slices.SortStableFunc(ts, func(a, b playback.VideoTrack) int {
+		ra, da := rank(a)
+		rb, db := rank(b)
+		if ra != rb {
+			return ra - rb
+		}
+		if da != db {
+			return da - db
+		}
+		switch {
+		case a.Bandwidth > b.Bandwidth:
+			return -1
+		case a.Bandwidth < b.Bandwidth:
+			return 1
+		}
+		return 0
+	})
 }

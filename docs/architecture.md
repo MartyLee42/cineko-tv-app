@@ -2653,7 +2653,9 @@ hence the small separate table.
 offers no HLS, only DASH (separate fMP4 video/audio files, each with an init
 range and a `sidx`). `POST /playback/sources {kind: "video"}` picks the best
 H.264 track ≤ the cap (request `quality` → profile `video_quality` → 720) and
-AAC itag 140, and returns `/api/v1/vstream/<token>/master.m3u8`. The token
+AAC itag 140 — auto-dubbed videos list one itag 140 per language, told apart
+only by the URL's `xtags` (`acont=dubbed:lang=ja`): `VIDEO_LANG` (original or
+dub) first, then the original track, then English — and returns `/api/v1/vstream/<token>/master.m3u8`. The token
 (own HMAC label, 12 h) binds the video id and the cap. The proxy builds the
 master (one variant + one audio rendition) and VOD media playlists from the
 parsed sidx: every fragment is an `EXT-X-BYTERANGE` of the same

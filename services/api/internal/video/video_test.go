@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"martytv/api/internal/playback"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -313,5 +315,63 @@ func TestOriginalsBounded(t *testing.T) {
 	}
 	if len(o.titles) > maxOrigTitles {
 		t.Fatalf("%d titles kept", len(o.titles))
+	}
+}
+
+// Auto-dubbed videos list every language under itag 140; the player plays
+// the first track, so the viewer's language (then the original) comes first.
+func TestSortAudioByLanguage(t *testing.T) {
+	tr := func(xtags string, bw int64) playback.VideoTrack {
+		u := "http://invidious:3000/videoplayback?itag=140"
+		if xtags != "" {
+			u += "&xtags=" + url.QueryEscape(xtags)
+		}
+		return playback.VideoTrack{Itag: 140, URL: u, Bandwidth: bw}
+	}
+	lang := func(ts []playback.VideoTrack) []string {
+		var out []string
+		for _, x := range ts {
+			l, orig, drc := audioTag(x.URL)
+			if orig {
+				l += "*"
+			}
+			if drc {
+				l += "~"
+			}
+			out = append(out, l)
+		}
+		return out
+	}
+	mk := func() []playback.VideoTrack {
+		return []playback.VideoTrack{
+			tr("acont=dubbed:lang=ja", 133990), tr("acont=original:drc=1:lang=en", 133800), tr("acont=dubbed:lang=de", 133950),
+			tr("acont=original:lang=en", 133700), tr("acont=dubbed:lang=ru", 133600), tr("acont=dubbed:lang=pt-BR", 133980),
+		}
+	}
+	cases := []struct {
+		want string
+		head []string
+	}{
+		{"ru", []string{"ru", "en*", "en*~"}},    // Russian dub, then the original (plain before levelled)
+		{"pt", []string{"pt-br", "en*", "en*~"}}, // region variants count
+		{"fr", []string{"en*", "en*~"}},          // no French: the original
+		{"", []string{"en*", "en*~"}},
+	}
+	for _, c := range cases {
+		ts := mk()
+		sortAudio(ts, c.want)
+		if got := lang(ts)[:len(c.head)]; strings.Join(got, ",") != strings.Join(c.head, ",") {
+			t.Errorf("want %q: %v", c.want, lang(ts))
+		}
+	}
+	// A dubbed-only list without the viewer's language: English before the rest.
+	ts := []playback.VideoTrack{tr("acont=dubbed:lang=ja", 2), tr("acont=dubbed:lang=en", 1)}
+	sortAudio(ts, "ru")
+	if l, _, _ := audioTag(ts[0].URL); l != "en" {
+		t.Errorf("dubs only: %v", lang(ts))
+	}
+	// Single-track videos carry no xtags: the original.
+	if l, orig, _ := audioTag(tr("", 1).URL); l != "" || !orig {
+		t.Errorf("untagged: %q %v", l, orig)
 	}
 }
