@@ -15,4 +15,6 @@ export const loadersEn = {
   "loaders.catch.caught": "Caught: {n}",
   "settings.loading.surprise": "Surprise",
   "settings.loading.surprise_hint": "A different loading animation every time, at random (never the same one twice in a row).",
+  "settings.loading.match": "Match the film",
+  "settings.loading.match_hint": "The animation suits the film: space gets the odyssey, time travel 88 mph, cartoons balloons or the fish bowl, comedies popcorn. The same film always gets the same one.",
 };

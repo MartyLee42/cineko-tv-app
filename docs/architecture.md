@@ -2707,7 +2707,23 @@ up to 2 h, then it is skipped for the night. The restart is a
 - **Loading animation** (`loading_style`, TV and web player): «Попкорн»,
   «Заполняющееся название», «Проявление постера», «Киноплёнка»,
   «Минимальная», «Cineko» (`marty`: Cineko's loading loop + a progress bar,
-  he cheers at 100 %) and «Cineko с попкорном» (`marty_popcorn`).
+  he cheers at 100 %), «Cineko с попкорном» (`marty_popcorn`), «Матрица»,
+  the drawn ones — «Следы лапок» (`paws`), «Аквариум» (`aquarium`), «Назад в
+  будущее» (`speed88`), «Космическая одиссея» (`odyssey`, one quiet note at
+  100 % only with «Звуки интерфейса» on), «Вверх» (`balloons`) — the waiting
+  game «Лови!» (`catch`: the arrows move Cineko's basket; PlayerLayer hands
+  only ◀▶▲▼ to it while loading, `player/loaderKeys.ts`), and two pickers
+  resolved once per load attempt (`loaderPick` in @martytv/ui): «Сюрприз»
+  (`surprise`, random, never twice in a row) and «Под фильм» (`match`,
+  `loaderMatch.ts`: themes in the title/overview, then genres, else a stable
+  pick per title). The drawn art is shared (`@martytv/ui/loaders/*`); on the
+  TV each style is its own chunk and the drawn ones play a short end
+  flourish over the starting film (`useFinale`, FINALE_MS).
+  The percentage has one owner per load attempt: `LoadTracker`
+  (`player/loading.ts`) keyed by `PlayerController.loadKey` — bumped only
+  when the user starts something (`newAttempt`) or leaves — on one scale
+  (preparing 0–0.15, preload 0.15–0.9 against the same goal as the
+  «N МБ из M» line, first frame 0.9–1), monotonic, stepping ≤ 4×/s.
 - **Web header**: Главная, ТВ, Видео, Обзор, Новые серии, История, Спросить
   ИИ; below `xl` the tail moves into «Ещё ▾» (Новые серии/История below
   `lg`). Search is an icon; Devices, Settings and Admin live in the avatar

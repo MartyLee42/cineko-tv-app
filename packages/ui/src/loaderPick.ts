@@ -2,7 +2,9 @@
 // when the profile's loading_style is "surprise" (a different one each load,
 // never the same twice in a row, remembered per device) — resolved once per
 // load attempt, so the loader never changes mid-load. Shared by the TV and
-// the web player; pure parts tested in loaderPick.test.ts.
+// the web player; pure parts tested in loaderPick.test.ts. «Под фильм»
+// ("match") resolves the same way with loaderMatch.ts.
+import { matchLoader, type MatchInfo } from "./loaderMatch";
 
 /** Every concrete loading animation (what "surprise" picks from). */
 export const LOADER_ANIMATIONS = [
@@ -24,7 +26,7 @@ export const LOADER_ANIMATIONS = [
 export type LoaderAnimation = (typeof LOADER_ANIMATIONS)[number];
 
 /** Settings values that pick an animation per load. */
-export const LOADER_PICKERS = ["surprise"] as const;
+export const LOADER_PICKERS = ["surprise", "match"] as const;
 export type LoaderPicker = (typeof LOADER_PICKERS)[number];
 
 export function isLoaderPicker(s: string): s is LoaderPicker {
@@ -91,12 +93,13 @@ export class LoaderPick {
   private style: LoaderAnimation = "popcorn";
   constructor(private store: SurpriseStore = localSurpriseStore, private rnd: () => number = Math.random) {}
 
-  resolve(setting: string, attempt: string): LoaderAnimation {
+  /** `info`: what is loading, for «Под фильм» (read only when the attempt is new). */
+  resolve(setting: string, attempt: string, info?: () => MatchInfo | null): LoaderAnimation {
     if (!isLoaderPicker(setting)) return valid(setting) ?? "popcorn";
     const key = `${setting}|${attempt}`;
     if (key !== this.key) {
       this.key = key;
-      this.style = takeSurprise(this.store, this.rnd);
+      this.style = setting === "surprise" ? takeSurprise(this.store, this.rnd) : matchLoader(info?.() ?? null);
     }
     return this.style;
   }

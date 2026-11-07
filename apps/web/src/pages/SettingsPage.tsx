@@ -705,6 +705,16 @@ export function LoadingPreview({ style }: { style: LoadingStyle }) {
           <span className="relative text-5xl font-black text-accent">?</span>
         </span>
       )}
+      {style === "match" && (
+        <span className="absolute inset-0 flex items-center justify-center text-accent">
+          {/* «Под фильм»: a clapperboard */}
+          <svg width="56" height="52" viewBox="0 0 64 60" aria-hidden>
+            <path d="M4 20 H60 V56 H4 Z" fill="currentColor" />
+            <path d="M3 8 L58 2 L60 14 L5 20 Z" fill="currentColor" />
+            <path d="M14 7 L22 18 M27 5.5 L35 16.5 M40 4 L48 15" stroke="#141822" strokeWidth="4" />
+          </svg>
+        </span>
+      )}
       {(style === "marty" || style === "marty_popcorn") && (
         <span className="absolute inset-0 flex flex-col items-center justify-center gap-1">
           <Mascot size={56} mood={style === "marty" ? "loading" : "popcorn"} animated hat={null} />

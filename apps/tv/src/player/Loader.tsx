@@ -116,7 +116,16 @@ function PickTile({ picker }: { picker: LoaderPicker }) {
           style={{ transform: `translate3d(${-180 + (i - 1) * 200}px,0,0) rotate(${r}deg)`, opacity: 0.35 + i * 0.2 }}
         />
       ))}
-      <p className="absolute left-0 right-0 top-[260px] text-center text-[300px] font-black leading-none text-accent">?</p>
+      {picker === "surprise" ? (
+        <p className="absolute left-0 right-0 top-[260px] text-center text-[300px] font-black leading-none text-accent">?</p>
+      ) : (
+        // «Под фильм»: a clapperboard.
+        <svg className="absolute left-1/2 top-[250px] -translate-x-1/2 text-accent" width="320" height="300" viewBox="0 0 64 60" aria-hidden>
+          <path d="M4 20 H60 V56 H4 Z" fill="currentColor" />
+          <path d="M3 8 L58 2 L60 14 L5 20 Z" fill="currentColor" />
+          <path d="M14 7 L22 18 M27 5.5 L35 16.5 M40 4 L48 15" stroke="rgb(var(--mt-bg))" strokeWidth="4" />
+        </svg>
+      )}
       <p className="absolute left-0 right-0 top-[760px] text-center text-7xl font-bold">{t(`settings.loading.${picker}`)}</p>
     </div>
   );

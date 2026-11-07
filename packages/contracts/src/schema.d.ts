@@ -4941,11 +4941,13 @@ export interface components {
              *     odyssey = «Космическая одиссея»: a dark monolith rises as a moon and a sun line up; at 100 % one quiet note (only with the device's interface sounds on);
              *     balloons = «Вверх»: balloons get tied to a little house one by one; at 100 % it floats off;
              *     catch = «Лови!»: a waiting game in an LCD-handheld look — Cineko catches pieces rolling down four chutes, the TV remote's arrows move the basket, a miss cracks (a soft sound only with interface sounds on); the big number is the load's percentage, playback never waits for it;
-             *     surprise = «Сюрприз»: a different one of the styles above for each load (random, never the same twice in a row; remembered per device), fixed for the whole load. A design with its own loader (matrix, constructivism) still shows that one.
+             *     surprise = «Сюрприз»: a different one of the styles above for each load (random, never the same twice in a row; remembered per device), fixed for the whole load;
+             *     match = «Под фильм»: the style that suits the title, from what the client already has (genres, kind, title and overview text): hackers / virtual reality → matrix, time travel → speed88, space → odyssey, cats / animals → paws, animation / family → balloons or aquarium, horror / thriller → minimal, comedy → popcorn, documentary / drama → film_reel or poster_reveal, else a stable pick per title; fixed for the whole load.
+             *     A design with its own loader (matrix, constructivism) still shows that one for surprise and match.
              * @default popcorn
              * @enum {string}
              */
-            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix" | "paws" | "aquarium" | "speed88" | "odyssey" | "balloons" | "catch" | "surprise";
+            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix" | "paws" | "aquarium" | "speed88" | "odyssey" | "balloons" | "catch" | "surprise" | "match";
             /**
              * @description «О моих вкусах»: the viewer's own description of their tastes (trimmed, at most 600 characters; "" clears it).
              *     Sent to DeepSeek only as delimited data (`viewer_note`) in the AI collections and Ask AI prompts. A change

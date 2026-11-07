@@ -36,7 +36,9 @@ export function loaderKind(style: LoaderAnimation, design: DesignSetting, previe
 }
 
 /** The animation the next load will show for a setting (for fetching its chunk ahead): «Сюрприз» has one waiting. */
-export function upcomingAnimation(setting: LoadingStyle): LoaderAnimation {
+export function upcomingAnimation(setting: LoadingStyle): LoaderAnimation | null {
+  // «Под фильм» depends on the title: fetched when the load starts.
+  if (setting === "match") return null;
   return setting === "surprise" ? upcomingSurprise() : setting;
 }
 
