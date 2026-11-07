@@ -12,7 +12,7 @@ import {
   type IptvChannel,
 } from "@martytv/contracts";
 import { catalogLang } from "@martytv/media-types";
-import { applyDesign, applyTheme, Centered, CV_OFFLINE, DESIGN_SWATCH, Logo, Spinner, useI18n } from "@martytv/ui";
+import { applyDesign, applyTheme, Centered, CV_OFFLINE, DESIGN_SWATCH, Logo, Spinner, useEffectiveDesign, useI18n } from "@martytv/ui";
 import { api, onUnauthorized, realtime } from "./api";
 import { credentialStore, exitApp, isBackKey, profileStore } from "./platform";
 import { FocusButton, rememberFocus } from "./focus";
@@ -197,12 +197,14 @@ export function App() {
   const settings = useLoadedSettings();
   const known = !!profileId && !!settings;
   const theme = known ? settings.theme : themeCache.get();
-  const design = known ? settings.design : themeCache.design();
+  // «Сюрприз»: today's / this week's pick from the favourites (rolls over at midnight while running).
+  const shown = useEffectiveDesign(known ? settings : null, profileId);
+  const design = known && shown ? shown : themeCache.design();
   useEffect(() => {
-    if (known) {
-      themeCache.set(theme);
-      themeCache.setDesign(design);
-    }
+    if (known) themeCache.setDesign(design, settings, profileId);
+  }, [known, design, settings, profileId]);
+  useEffect(() => {
+    if (known) themeCache.set(theme);
     // A design switch waits for the design's own chunk (CSS + drawings), so it never shows half-styled.
     let live = true;
     let undo: (() => void) | undefined;

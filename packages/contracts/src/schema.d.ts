@@ -4697,6 +4697,17 @@ export interface components {
              */
             design: "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet";
             /**
+             * @description «Сюрприз»: off = always `design`; day / week = the apps show a design picked from design_favorites per local calendar day / ISO week (deterministic per profile, computed client-side — packages/ui surprise.ts; never the same design two periods in a row). `design` stays the chosen design and is used when there are fewer than 2 candidates.
+             * @default off
+             * @enum {string}
+             */
+            design_surprise: "off" | "day" | "week";
+            /**
+             * @description «Избранные оформления»: the designs «Сюрприз» picks from (deduped; empty = all designs). Unknown ids → 422.
+             * @default []
+             */
+            design_favorites: ("kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet")[];
+            /**
              * @description Hide Japanese animation (TMDB genre Animation + original language ja) everywhere in the catalog.
              * @default false
              */

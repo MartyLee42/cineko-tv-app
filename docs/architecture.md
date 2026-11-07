@@ -2464,6 +2464,19 @@ subscribe, uploads with continuation paging. Settings → profile:
   classes the app sets — and `#root` holds a small «marty tv» splash until
   React mounts; `boot.tsx` drops the inline colours once the app CSS is in.
   No white page and no dark→light flash for a light «Кинозал» on slow links.
+- **«Сюрприз»** (2026-11): `design_surprise` (`off`|`day`|`week`) and
+  `design_favorites` (empty = all) in the profile settings. The pick is
+  computed client-side by `effectiveDesign` (`packages/ui/src/surprise.ts`):
+  per local calendar day / ISO week (Monday), a seeded shuffle of the
+  favourites per run of n periods (seed = profile id + run), so each
+  favourite shows once per run and never twice in a row; fewer than two
+  candidates → the chosen `design`. TV (`App.tsx`) and PWA (`useThemeSync`)
+  apply the effective design and roll over at the boundary (timer +
+  visibility/focus). `design` stays the «home» design shown in pickers; the
+  TV also caches the surprise inputs (`martytv.design_surprise`) so the next
+  start (intro, first chunk) shows today's pick. Settings: TV «Сюрприз» row +
+  «Избранные оформления» checklist (`settings/DesignFavorites.tsx`), PWA
+  period buttons + a star per design card; both show «Сегодня: …».
   E2E `tv-startup-slow.spec.ts` serves the production bundle (build it first:
   `pnpm --filter @martytv/tv build`; skipped without `apps/tv/dist`) at
   ~1.5 Mbit/s + 300 ms with CPU ×6, screenshots every 400 ms and fails on
