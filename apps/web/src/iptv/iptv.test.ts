@@ -4,6 +4,7 @@ import {
   blockSpan,
   buildChips,
   channelByNumber,
+  channelChips,
   coverage,
   dayOffset,
   filterChannels,
@@ -158,5 +159,31 @@ describe("settings and admin helpers", () => {
   it("computes EPG coverage", () => {
     expect(coverage({ channels: 200, with_programmes: 150 })).toBe(75);
     expect(coverage({ channels: 0, with_programmes: 0 })).toBe(0);
+  });
+});
+
+describe("broken channels («Нерабочие»)", () => {
+  const items = [
+    ch("a", 1, "Первый", { group_id: "news" }),
+    ch("b", 2, "Россия", { group_id: "news", offline: true, health: "dead" }),
+    ch("c", 3, "Спорт", { group_id: "sports", offline: true, health: "geo" }),
+  ];
+  const groups = [
+    { id: "news", name: "News", count: 2 },
+    { id: "sports", name: "Sports", count: 1 },
+  ];
+  it("get their own last chip; the rest are recounted", () => {
+    expect(channelChips(groups, items).map((c) => [c.id, c.count])).toEqual([
+      ["all", 1],
+      ["favorites", 0],
+      ["news", 1],
+      ["broken", 2],
+    ]);
+  });
+  it("show only under it, or when searched for", () => {
+    expect(filterChannels(items, "all", "").map((c) => c.id)).toEqual(["a"]);
+    expect(filterChannels(items, "broken", "").map((c) => c.id)).toEqual(["b", "c"]);
+    expect(filterChannels(items, "all", "росс").map((c) => c.id)).toEqual(["b"]);
+    expect(filterChannels(items, "sports", "росс")).toEqual([]);
   });
 });

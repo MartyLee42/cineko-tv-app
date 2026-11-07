@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IptvChannel } from "@martytv/contracts";
-import { buildChips, channelByNumber, channelInitials, digitKey, epgProgress, filterGroup, minutesLeft, NumberInput, stepChannel } from "./logic";
+import { buildChips, channelByNumber, channelChips, channelInitials, digitKey, epgProgress, filterGroup, minutesLeft, NumberInput, offlineLabel, stepChannel } from "./logic";
 
 const ch = (id: string, number: number, o: Partial<IptvChannel> = {}): IptvChannel => ({
   id,
@@ -59,6 +59,30 @@ describe("grouping", () => {
     expect(filterGroup(items, "all")).toHaveLength(3);
     expect(filterGroup(items, "favorites").map((c) => c.id)).toEqual(["a"]);
     expect(filterGroup(items, "sports").map((c) => c.id)).toEqual(["b"]);
+  });
+  it("keeps broken channels behind «Нерабочие»", () => {
+    const list = [...items, ch("d", 4, { offline: true, health: "dead", group_id: "sports" }), ch("e", 5, { offline: true, favorite: true })];
+    const groups = [
+      { id: "news", name: "News", count: 2 },
+      { id: "sports", name: "Sports", count: 2 },
+      { id: "g:local", name: "Local", count: 1 },
+    ];
+    const chips = channelChips(groups, list);
+    expect(chips.map((c) => [c.id, c.count])).toEqual([
+      ["all", 3],
+      ["favorites", 1],
+      ["news", 1],
+      ["sports", 1],
+      ["g:local", 1],
+      ["broken", 2],
+    ]);
+    expect(chips[5]!.key).toBe("iptvplay.broken");
+    expect(filterGroup(list, "all").map((c) => c.id)).toEqual(["a", "b", "c"]);
+    expect(filterGroup(list, "favorites").map((c) => c.id)).toEqual(["a"]);
+    expect(filterGroup(list, "broken").map((c) => c.id)).toEqual(["d", "e"]);
+    expect(channelChips(groups, items).map((c) => c.id)).not.toContain("broken");
+    expect(offlineLabel({ health: "geo" })).toBe("iptvplay.health.geo");
+    expect(offlineLabel({ health: null })).toBe("iptv.offline");
   });
 });
 

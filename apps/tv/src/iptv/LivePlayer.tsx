@@ -6,12 +6,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-spatial-navigation";
 import type { IptvChannel } from "@martytv/contracts";
-import { Spinner, useI18n } from "@martytv/ui";
+import {
+  apiErrorCode,
+  hasMediaSource,
+  isAndroid,
+  liveCodecProblem,
+  liveEngines,
+  liveFailureFromCode,
+  mseTypeSupported,
+  type LiveEngine,
+  type LiveFailure,
+} from "@martytv/media-types";
+import { reportError, Spinner, useI18n } from "@martytv/ui";
 import { ChannelLogo, EpgBar } from "./ChannelLogo";
 import { useDesign, type Design } from "../design/context";
 import { playerKey, registerMediaKeys } from "../player/keys";
 import { tvVolume } from "../player/volume";
-import { attachHlsJs, streamMode, type HlsHandle } from "../player/stream";
+import { attachHlsJs, type HlsHandle } from "../player/stream";
+import { attachMpegts } from "../player/mpegts";
 import { claimKeys } from "../remote/keyOwner";
 import { ProgramPanel, useChannelProgram } from "./ProgramPanel";
 import { channelByNumber, dayStatuses, digitKey, epgProgress, hhmm, NumberInput, stepChannel } from "./logic";
@@ -29,6 +41,7 @@ const ROW_H = 104;
 const LIST_ROWS = 9;
 
 type Phase = "loading" | "playing" | "error";
+type Failure = { kind: LiveFailure; codec?: string };
 
 export function LivePlayer() {
   const session = useLive();
@@ -49,6 +62,7 @@ function LiveInner() {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [phase, setPhase] = useState<Phase>("loading");
+  const [failure, setFailure] = useState<Failure | null>(null);
   const [osd, setOsd] = useState(true);
   const [digits, setDigits] = useState("");
   const [listIdx, setListIdx] = useState<number | null>(null);
@@ -79,20 +93,25 @@ function LiveInner() {
     osdTimer.current = setTimeout(() => setOsd(false), OSD_MS);
   }, [session.seq]);
 
-  // ---- the stream: a fresh source per switch (debounced), one retry on a fatal error.
+  // ---- the stream: a fresh source per switch (debounced). The engines of
+  // liveEngines() are tried in order (native → hls.js / mpegts.js); when all
+  // fail the source is POSTed once more (the server tries the channel's
+  // mirrors and answers with a cause), then the error stays — no retry loop.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     const id = session.channel.id;
     let cancelled = false;
-    let hls: HlsHandle | null = null;
-    let retried = false;
+    let handle: HlsHandle | null = null;
+    let reposted = false;
     let watched: ReturnType<typeof setTimeout> | undefined;
+    let ctx: { format?: string | null; video?: string | null; audio?: string | null; engine?: LiveEngine } = {};
     setPhase("loading");
+    setFailure(null);
 
     const reset = () => {
-      hls?.destroy();
-      hls = null;
+      handle?.destroy();
+      handle = null;
       v.removeAttribute("src");
       try {
         v.load();
@@ -100,39 +119,61 @@ function LiveInner() {
         // ignore
       }
     };
-    const fatal = () => {
+    const fail = (f: Failure) => {
       if (cancelled) return;
       clearTimeout(watched);
       reset();
-      if (!retried) {
-        retried = true;
-        void start();
+      setFailure(f);
+      setPhase("error");
+      // geo / offline / timeout come from the API (its middleware reports them).
+      if (f.kind === "codec" || f.kind === "format" || f.kind === "broken") {
+        reportError("player", `live: ${f.kind}${f.codec ? ` (${f.codec})` : ""}`, { component: "live", extra: { ...ctx, channel: session.channel.name } });
+      }
+    };
+    let engines: LiveEngine[] = [];
+    let url = "";
+    const next = () => {
+      if (cancelled) return;
+      clearTimeout(watched);
+      watched = undefined;
+      reset();
+      setPhase("loading");
+      const e = engines.shift();
+      if (e) return void play(e);
+      if (!reposted) {
+        reposted = true;
+        return void start();
+      }
+      fail({ kind: "broken" });
+    };
+    const play = async (e: LiveEngine) => {
+      ctx = { ...ctx, engine: e };
+      if (e === "native") {
+        v.src = url;
+        void v.play().catch(() => undefined);
         return;
       }
-      setPhase("error");
+      const h = await (e === "mpegts" ? attachMpegts(v, url, next) : attachHlsJs(v, url, next)).catch(() => null);
+      if (cancelled) return h?.destroy();
+      if (!h) return next();
+      handle = h;
+      void v.play().catch(() => undefined);
     };
     const start = async () => {
       let src;
       try {
         src = await createLiveSource(id);
-      } catch {
-        if (!cancelled) setPhase("error");
-        return;
+      } catch (e) {
+        return fail({ kind: liveFailureFromCode(apiErrorCode(e)) });
       }
       if (cancelled) return;
-      const url = src.stream_url;
-      const mode = src.format === "ts" ? "native" : streamMode(src, v);
-      if (!url || mode === "none") return setPhase("error");
-      if (mode === "native") {
-        v.src = url;
-        void v.play().catch(() => undefined);
-      } else {
-        const h = await attachHlsJs(v, url, fatal).catch(() => null);
-        if (cancelled) return h?.destroy();
-        if (!h) return fatal();
-        hls = h;
-        void v.play().catch(() => undefined);
-      }
+      ctx = { format: src.format, video: src.video_codec, audio: src.audio_codec };
+      url = src.stream_url ?? "";
+      engines = liveEngines(src.format, v, hasMediaSource(), isAndroid());
+      // Only MSE engines (no native player): the browser must decode the codecs.
+      const codec = engines.includes("native") ? null : liveCodecProblem(src, mseTypeSupported());
+      if (!url || engines.length === 0 || codec) return fail(codec ? { kind: "codec", codec } : { kind: "format" });
+      next();
     };
     const onPlaying = () => {
       if (cancelled) return;
@@ -140,7 +181,10 @@ function LiveInner() {
       if (watched === undefined) watched = setTimeout(() => reportWatched(id), WATCHED_AFTER);
     };
     const onWaiting = () => !cancelled && setPhase((p) => (p === "error" ? p : "loading"));
-    const onError = () => fatal();
+    // Native playback errors (hls.js / mpegts.js report their own).
+    const onError = () => {
+      if (!handle) next();
+    };
     v.addEventListener("playing", onPlaying);
     v.addEventListener("waiting", onWaiting);
     v.addEventListener("error", onError);
@@ -154,7 +198,7 @@ function LiveInner() {
       v.removeEventListener("error", onError);
       reset();
     };
-  }, [session.seq, session.channel.id]);
+  }, [session.seq, session.channel.id, session.channel.name]);
 
   // ---- the phone remote: pause / resume, the TV's saved volume.
   useEffect(() => {
@@ -296,7 +340,9 @@ function LiveInner() {
         <div data-testid="live-error" className="absolute left-0 top-0 flex h-full w-full items-center justify-center">
           <div className="tv-key-hint max-w-[1100px] rounded-card px-14 py-10 text-center">
             <p className="text-[40px] font-bold text-text">{channel.name}</p>
-            <p className="mt-4 text-[30px] text-muted">{t("iptv.play_failed")}</p>
+            <p data-testid="live-error-cause" data-cause={failure?.kind} className="mt-4 text-[30px] text-muted">
+              {t(`iptvplay.err.${failure?.kind ?? "broken"}`, { codec: failure?.codec ?? "" })}
+            </p>
             <p className="mt-6 text-[24px] text-muted">{t("iptv.tv.error_hint")}</p>
           </div>
         </div>

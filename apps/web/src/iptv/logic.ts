@@ -1,4 +1,5 @@
 // Pure live-TV helpers (no React, no I/O) so they can be unit tested.
+import { BROKEN_GROUP, workingGroups } from "@martytv/media-types";
 import type { IptvChannel, IptvGroup, IptvProgramme } from "@martytv/contracts";
 
 /** Group ids the server assigns to known categories; each has an `iptv.group.<id>` string. */
@@ -54,7 +55,7 @@ export interface Chip {
  * viewer-friendly order (news, movies, sports, kids…), the playlist's own
  * groups by size, «Другое» last.
  */
-export function buildChips(groups: IptvGroup[], total: number, favorites: number): Chip[] {
+export function buildChips(groups: IptvGroup[], total: number, favorites: number, broken = 0): Chip[] {
   const rank = (g: IptvGroup) => {
     if (g.id === "other") return 10_000;
     const i = (KNOWN_GROUPS as readonly string[]).indexOf(g.id);
@@ -67,7 +68,14 @@ export function buildChips(groups: IptvGroup[], total: number, favorites: number
     { id: ALL, known: true, name: ALL, count: total },
     { id: FAVORITES, known: true, name: FAVORITES, count: favorites },
     ...sorted.map((g) => ({ id: g.id, known: isKnownGroup(g.id), name: g.name, count: g.count })),
+    ...(broken > 0 ? [{ id: BROKEN_GROUP, known: false, name: "", count: broken }] : []),
   ];
+}
+
+/** Chips over the working channels (counts recounted), «Нерабочие» last when some are offline. */
+export function channelChips(groups: IptvGroup[], items: IptvChannel[]): Chip[] {
+  const working = items.filter((c) => !c.offline);
+  return buildChips(workingGroups(groups, items), working.length, working.filter((c) => c.favorite).length, items.length - working.length);
 }
 
 /** Lowercase, ё → е, collapsed spaces: for name search. */
@@ -75,12 +83,17 @@ export function normalizeName(s: string): string {
   return s.toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ").trim();
 }
 
-/** Client-side filter of the full list: group chip + search (name or number prefix). */
+/**
+ * Client-side filter of the full list: group chip + search (name or number
+ * prefix). Broken (offline) channels show only under «Нерабочие» — or when
+ * searched for.
+ */
 export function filterChannels(items: IptvChannel[], group: string, q: string): IptvChannel[] {
   const query = normalizeName(q);
   const byNumber = /^\d{1,4}$/.test(query);
   return items.filter((c) => {
-    if (group === FAVORITES ? !c.favorite : group !== ALL && c.group_id !== group) return false;
+    const outside = group === FAVORITES ? !c.favorite : group !== ALL && c.group_id !== group;
+    if (group === BROKEN_GROUP ? !c.offline : (c.offline && !query) || outside) return false;
     if (!query) return true;
     if (byNumber && String(c.number).startsWith(query)) return true;
     return normalizeName(c.name).includes(query);
