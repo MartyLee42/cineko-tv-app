@@ -97,6 +97,10 @@ services:
       TRANSCODER_SECRET: ${TRANSCODER_SECRET:?set TRANSCODER_SECRET in .env (run ./install.sh)}
       TRANSCODER_MAX_JOBS: ${TRANSCODER_MAX_JOBS:-3}
       TRANSCODER_HLS_MAX_SESSION_MB: ${TRANSCODER_HLS_MAX_SESSION_MB:-3072}
+      # Re-encoding on a GPU: auto uses NVENC / VAAPI / QSV when a test encode
+      # works, else the CPU (libx264). none = always the CPU.
+      TRANSCODER_HWACCEL: ${TRANSCODER_HWACCEL:-auto}
+      TRANSCODER_HWACCEL_DEVICE: ${TRANSCODER_HWACCEL_DEVICE:-}
     read_only: true
     tmpfs: [/tmp]
     volumes:
@@ -105,6 +109,18 @@ services:
     <<: *hardening
     mem_limit: 1536m
     networks: [internal, media]
+    # GPU, opt-in (docs/deployment.md "GPU transcoding"); copy what you need
+    # into deployments/compose.override.yaml under services.transcoder.
+    # Intel / AMD (VAAPI, QSV): the render node + its group id on the host
+    # (`getent group render | cut -d: -f3`):
+    #   devices: ["/dev/dri:/dev/dri"]
+    #   group_add: ["${RENDER_GID:-109}"]
+    # NVIDIA (nvidia-container-toolkit; the stock image's ffmpeg has no NVENC):
+    #   environment: { NVIDIA_DRIVER_CAPABILITIES: "compute,video,utility" }
+    #   deploy:
+    #     resources:
+    #       reservations:
+    #         devices: [{ driver: nvidia, count: 1, capabilities: [gpu, video] }]
 
   # Music at /music: its own app; reads the same .env (PROWLARR_*, TORRSERVER_*).
   music:

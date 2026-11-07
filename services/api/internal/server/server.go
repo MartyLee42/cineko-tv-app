@@ -453,6 +453,7 @@ func transcoderStats(p *playback.Service) func(context.Context) *sysmon.Transcod
 			return &sysmon.TranscoderStats{}
 		}
 		return &sysmon.TranscoderStats{OK: true, ActiveJobs: m.ActiveJobs, ActiveSubtitleJobs: m.ActiveSubtitleJobs, MaxJobs: m.MaxJobs,
-			JobsStarted: m.JobsStarted, JobsRejected: m.JobsRejected, JobsFailed: m.JobsFailed}
+			JobsStarted: m.JobsStarted, JobsRejected: m.JobsRejected, JobsFailed: m.JobsFailed,
+			VideoEncoder: m.VideoEncoder, VideoEncoderFallback: m.VideoEncoderFallback}
 	}
 }

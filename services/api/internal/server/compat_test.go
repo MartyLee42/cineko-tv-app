@@ -49,7 +49,7 @@ func newFakeTranscoder(t *testing.T) *fakeTranscoder {
 	key := m.Sum(nil)
 	f.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics" {
-			writeJSON(w, map[string]any{"active_jobs": 1, "active_subtitle_jobs": 0, "max_jobs": 3, "jobs_started": 7, "jobs_rejected": 1, "jobs_failed": 0})
+			writeJSON(w, map[string]any{"active_jobs": 1, "active_subtitle_jobs": 0, "max_jobs": 3, "jobs_started": 7, "jobs_rejected": 1, "jobs_failed": 0, "video_encoder": "vaapi"})
 			return
 		}
 		if rest, ok := strings.CutPrefix(r.URL.Path, "/v1/hls/"); ok && (r.Method == "GET" || r.Method == "HEAD") {
@@ -314,7 +314,7 @@ func TestCompatStream(t *testing.T) {
 	admin, _ := pe.NewUserClient("root", "admin")
 	app := admin.Do("GET", "/api/v1/admin/system", nil).Expect(200).JSON()["app"].(map[string]any)
 	tcs, _ := app["transcoder"].(map[string]any)
-	if tcs == nil || tcs["ok"] != true || tcs["active_jobs"].(float64) != 1 || tcs["max_jobs"].(float64) != 3 {
+	if tcs == nil || tcs["ok"] != true || tcs["active_jobs"].(float64) != 1 || tcs["max_jobs"].(float64) != 3 || tcs["video_encoder"] != "vaapi" {
 		t.Fatalf("admin transcoder %v", app["transcoder"])
 	}
 
