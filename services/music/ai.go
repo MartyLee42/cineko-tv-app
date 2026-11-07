@@ -522,10 +522,25 @@ func (a *App) hAIPlaylist(w http.ResponseWriter, r *http.Request, u *User) error
 	if pl.Refused {
 		return refuse(pl.Answer)
 	}
-	tracks := make([]Track, len(pl.Tracks))
+	out := a.matchAITracks(ctx, pl.Tracks)
+	res := map[string]any{"title": pl.Title, "description": pl.Description, "prompt": prompt, "creativity": b.Creativity, "tracks": out}
+	if data, err := json.Marshal(res); err == nil {
+		a.st.SetAICache(r.Context(), key, data)
+	}
+	res["createdAt"] = now()
+	res["cached"] = false
+	writeJSON(w, 200, res)
+	return nil
+}
+
+// matchAITracks matches the model's tracks to the catalog like an import
+// (4 at a time); a track the catalog lacks becomes a "yq:" track. Order is
+// kept, duplicates dropped.
+func (a *App) matchAITracks(ctx context.Context, ai []aiTrack) []Track {
+	tracks := make([]Track, len(ai))
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, 4)
-	for i, t := range pl.Tracks {
+	for i, t := range ai {
 		wg.Add(1)
 		go func(i int, t aiTrack) {
 			defer wg.Done()
@@ -549,12 +564,5 @@ func (a *App) hAIPlaylist(w http.ResponseWriter, r *http.Request, u *User) error
 		seen[t.ID] = true
 		out = append(out, t)
 	}
-	res := map[string]any{"title": pl.Title, "description": pl.Description, "prompt": prompt, "creativity": b.Creativity, "tracks": out}
-	if data, err := json.Marshal(res); err == nil {
-		a.st.SetAICache(r.Context(), key, data)
-	}
-	res["createdAt"] = now()
-	res["cached"] = false
-	writeJSON(w, 200, res)
-	return nil
+	return out
 }
