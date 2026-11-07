@@ -11,7 +11,7 @@ export interface Skin {
   /** Has a light colour mode (Кинозал only). */
   light: boolean;
   /** Full-screen background layer drawn behind screens (null = plain bg colour / skeleton default). */
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | "intertitle" | "symmetry" | "gouache" | "rainwater" | null;
+  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | "intertitle" | "symmetry" | "gouache" | "rainwater" | "blinds" | "cards" | null;
   /** Animated background layers (transform-only); the calm mode stops them. */
   animatedLayers: 0 | 1;
   /** Headline size factor on the skeleton's sizes (wide display faces need less). */
@@ -48,6 +48,9 @@ export const SKINS: Record<DesignSetting, Skin> = {
   silent: { id: "silent", skeleton: "projector", light: false, background: "intertitle", titleScale: 0.9, animatedLayers: 1, ornaments: { ...none, heroEdges: true, titlePlate: true } },
   // Jost runs narrow and geometric; the hero title is centred.
   anderson: { id: "anderson", skeleton: "projector", light: false, background: "symmetry", titleScale: 0.9, animatedLayers: 0, ornaments: { ...none, heroEdges: true, titlePlate: true } },
+  // Typewriter mono runs wide: titles a little smaller. One slow rain layer on the window.
+  noir: { id: "noir", skeleton: "terminal", light: false, background: "blinds", titleScale: 0.84, animatedLayers: 1, ornaments: none },
+  vague: { id: "vague", skeleton: "terminal", light: false, background: "cards", titleScale: 1, animatedLayers: 0, ornaments: none },
 };
 
 export { DESIGNS };

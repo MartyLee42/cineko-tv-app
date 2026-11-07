@@ -291,6 +291,12 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 .dt-anderson .dt-title { left: 27%; width: 46%; background: #3a222c !important; box-shadow: 0 0 0 4px #fbeee6, 0 0 0 5px #d9a520; }
 .dt-anderson .dt-accent { left: 40%; }
 .dt-anderson .dt-poster { border-radius: 0; border: 3px solid #fbeee6 !important; box-shadow: 0 0 0 1px #d9a520; }
+/* «Нуар»: light through blinds; grey posters. «Новая волна»: red and blue cards at the edges. */
+.dt-noir { background-image: repeating-linear-gradient(-32deg, rgba(242,239,230,0) 0px, rgba(242,239,230,0) 8px, rgba(242,239,230,.16) 8px, rgba(242,239,230,.16) 15px) !important; }
+.dt-noir .dt-poster { border-radius: 0; }
+.dt-vague { background-image: linear-gradient(90deg, #e6281e 0, #e6281e 5%, rgba(0,0,0,0) 5%) !important; }
+.dt-vague .dt-poster { border-radius: 0; }
+.dt-vague .dt-title { background: #345cde !important; }
 
 /* Проектор-skeleton flat elements never scale on focus (any skin). The doubled
    class outweighs the skins' focus rules, which load later (design/looks/*.css). */

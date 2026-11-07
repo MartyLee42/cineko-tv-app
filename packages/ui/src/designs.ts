@@ -14,12 +14,14 @@ import { loadCvGlyphs } from "./cvIcons";
 //   stickerbook → kinozal skeleton (die-cut stickers, washi tape)   pocketpet → terminal skeleton (a pastel toy with an LCD)
 //   odyssey   → projector skeleton (late-60s space age: white ship corridors, symmetry, one red light as focus)
 //   silent    → projector skeleton (silent-film intertitles)   anderson → projector skeleton (pastel symmetry, chapter cards)
+//   noir      → terminal skeleton (1940s film noir: blinds, rain, typewriter)
+//   vague     → terminal skeleton (French New Wave: red/blue/white word cards, jump cuts)
 // <html> gets `design-<id>` (tokens, skin CSS) and `skel-<skeleton>` (layout CSS).
-export type DesignSetting = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson";
+export type DesignSetting = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson" | "noir" | "vague";
 export type Skeleton = "kinozal" | "terminal" | "projector";
 
 /** All designs, in the order pickers show them (the contract's enum order). */
-export const DESIGNS: DesignSetting[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson"];
+export const DESIGNS: DesignSetting[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson", "noir", "vague"];
 //   mult      → kinozal skeleton (light: gouache, paper cut-outs, fog)   tarkovsky → kinozal skeleton (rain, water, sepia)
 
 export const SKELETONS: Skeleton[] = ["kinozal", "terminal", "projector"];
@@ -43,6 +45,8 @@ export const DESIGN_SKELETON: Record<DesignSetting, Skeleton> = {
   tarkovsky: "kinozal",
   silent: "projector",
   anderson: "projector",
+  noir: "terminal",
+  vague: "terminal",
 };
 
 /** The layout skeleton a design is drawn on (unknown values → Кинозал). */
@@ -75,6 +79,8 @@ export const DESIGN_SWATCH: Record<DesignSetting, { bg: string; surface: string;
   tarkovsky: { bg: "#141613", surface: "#22241f", accent: "#c8a46a", accent2: "#7f9a8c", text: "#e2dccb" },
   silent: { bg: "#0c0c0c", surface: "#1c1c1c", accent: "#f2f2f2", accent2: "#9a9a9a", text: "#f4f4f4" },
   anderson: { bg: "#f6d6d6", surface: "#fbeee6", accent: "#d9a520", accent2: "#8fcfb8", text: "#3a2a2e" },
+  noir: { bg: "#0c0c0d", surface: "#1c1c1d", accent: "#f2efe6", accent2: "#8c8a84", text: "#ebe9e3" },
+  vague: { bg: "#0a0a0c", surface: "#345cde", accent: "#e6281e", accent2: "#fafaf8", text: "#fafaf8" },
 };
 
 let onApply: ((design: DesignSetting) => void) | null = null;

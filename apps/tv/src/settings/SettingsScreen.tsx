@@ -19,7 +19,7 @@ import { useHealthPref } from "../health/agent";
 import { tvOwn } from "./tvOwn";
 
 /** Designs with a moving background layer: the «Движение фона» row shows for them. */
-const MOTION_DESIGNS = new Set<string>(["wireframe", "matrix", "mult", "tarkovsky", "silent"]);
+const MOTION_DESIGNS = new Set<string>(["wireframe", "matrix", "mult", "tarkovsky", "silent", "noir", "vague"]);
 
 /**
  * Settings (side menu): the profile's settings (saved on the server, applied
