@@ -17,6 +17,8 @@ export const DESIGNS = [
   { id: "stickerbook", name: "Стикербук", bg: "#2a2438", surface: "#3a3250", accent: "#ff6fa5", accent2: "#5fd3c4" },
   { id: "pocketpet", name: "Тамагочи", bg: "#f3c6dc", surface: "#b9c9a0", accent: "#2f3a24", accent2: "#8fd3e8" },
   { id: "odyssey", name: "Одиссея", bg: "#eef1f4", surface: "#ffffff", accent: "#101318", accent2: "#e21e16", id: "mult", name: "Мультфильм", bg: "#f3e9d6", surface: "#fffaf0", accent: "#c4532f", accent2: "#6f9fb4", id: "tarkovsky", name: "Созерцание", bg: "#141613", surface: "#22241f", accent: "#c8a46a", accent2: "#7f9a8c" },
+  { id: "silent", name: "Немое кино", bg: "#0c0c0c", surface: "#1c1c1c", accent: "#f2f2f2", accent2: "#9a9a9a" },
+  { id: "anderson", name: "Симметрия", bg: "#f6d6d6", surface: "#fbeee6", accent: "#d9a520", accent2: "#8fcfb8" },
   // Music-only: the classic Winamp 2 skin.
   { id: "winamp", name: "Winamp", bg: "#2b2b3d", surface: "#000000", accent: "#00e000", accent2: "#ffcc2e" },
   // Music-only: post-punk black and white, a pulsar ridge plot (Joy Division mood).

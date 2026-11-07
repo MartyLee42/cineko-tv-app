@@ -1,0 +1,101 @@
+/* ---------------------------------------------------------------- «Симметрия» (projector skeleton)
+   A pastel storybook in perfect symmetry: powder pink wall, cream paper, mustard frames, mint
+   stripes, raspberry ink. Jost (geometric, Futura-like) in spaced capitals for headings. The hero
+   is a centred title card; Details and screen titles are centred too. Focus = a cream mat in a
+   raspberry rule (plus a gentle scale). Static except the chapter card's fade-in. */
+
+.an-wall { background-color: rgb(246,214,214); }
+
+/* The chapter card (looks/anderson.tsx): «ЧАСТЬ 5» over the section's name. */
+.an-chapter {
+  display: inline-block;
+  padding: 8px 40px 10px;
+  background: #fbeee6;
+  color: #3a222c;
+  box-shadow: 0 0 0 3px #d9a520, 0 0 0 7px #fbeee6, 0 0 0 9px #d9a520, 0 6px 0 9px rgba(122,34,62,.18);
+  font-family: var(--mt-font-display);
+  text-align: center;
+  line-height: 1.1;
+}
+.an-chapter-n { display: block; font-size: 18px; font-weight: 500; letter-spacing: .42em; text-transform: uppercase; color: #9a6b10; }
+.an-chapter-name { display: block; margin-top: 4px; font-size: 30px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; }
+/* One line («ЧАСТЬ 5 · ФИЛЬМЫ») off Home, where the screen's title sits just below. */
+.an-chapter-line { padding: 5px 30px 6px; box-shadow: 0 0 0 2px #d9a520, 0 0 0 5px #fbeee6, 0 0 0 7px #d9a520; }
+.an-chapter-line .an-chapter-n, .an-chapter-line .an-chapter-name { display: inline; margin: 0; font-size: 20px; letter-spacing: .3em; }
+.an-chapter-line .an-chapter-n::after { content: " · "; color: #d9a520; }
+@keyframes an-chapter-in { from { opacity: 0; transform: translate3d(0, -14px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+.an-chapter-in { animation: an-chapter-in 320ms cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .an-chapter-in { animation: none; } }
+
+/* Scrims: pink, symmetric (both sides and the bottom). */
+html.design-anderson .p-scrim-left { background: linear-gradient(90deg, rgba(246,214,214,.8) 0%, rgba(246,214,214,.25) 22%, rgba(246,214,214,0) 36%, rgba(246,214,214,0) 64%, rgba(246,214,214,.25) 78%, rgba(246,214,214,.8) 100%); }
+html.design-anderson .p-scrim-bottom { background: linear-gradient(0deg, rgb(246,214,214) 0%, rgba(246,214,214,.92) 30%, rgba(246,214,214,0) 58%); }
+html.design-anderson .p-scrim-top { background: linear-gradient(180deg, rgba(246,214,214,.7) 0%, rgba(246,214,214,0) 100%); }
+html.design-anderson .p-card-shade { background: linear-gradient(0deg, rgba(58,34,44,.82) 0%, rgba(58,34,44,.3) 36%, rgba(58,34,44,0) 62%); }
+
+/* The menu: a cream pill in a mustard rule; spaced capitals; focused = raspberry, open = mustard. */
+html.design-anderson .p-bar { background: #fbeee6; border-radius: 0; box-shadow: 0 0 0 3px #d9a520, 0 0 0 7px #fbeee6, 0 0 0 9px #d9a520; }
+html.design-anderson .p-tab { border-radius: 0; padding-left: 16px; padding-right: 16px; color: #3a222c; font-family: var(--mt-font-display); font-weight: 500; font-size: 22px; letter-spacing: .06em; text-transform: uppercase; }
+html.design-anderson .p-tab-on { background: #d9a520; color: #3a222c; }
+html.design-anderson nav .p-tab.is-focused { background: #7a223e; color: #fbeee6; }
+html.design-anderson nav[data-design-nav="projector"] > div > span.text-white { color: #3a222c; letter-spacing: .08em; }
+
+/* Home's hero: a centred title card (shrink-wrapped, cream, mustard double rule). */
+html.design-anderson [data-testid="hero"] {
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: -webkit-fit-content;
+  width: fit-content;
+  max-width: 1300px;
+  padding: 26px 64px 34px;
+  background: rgba(251,238,230,.96);
+  box-shadow: 0 0 0 3px #d9a520, 0 0 0 9px rgba(251,238,230,.96), 0 0 0 11px #d9a520;
+  text-align: center;
+}
+html.design-anderson [data-testid="hero"] > .flex { -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; }
+html.design-anderson [data-testid="hero"] h2, html.design-anderson [data-media-id] h1, html.design-anderson h1.p-wide {
+  color: #3a222c; font-family: var(--mt-font-display); font-weight: 500; letter-spacing: .14em;
+}
+html.design-anderson [data-testid="hero"] h2 { margin-left: auto; margin-right: auto; }
+html.design-anderson [data-testid="hero"] > p, html.design-anderson [data-media-id] p.text-white\/90, html.design-anderson [data-media-id] p.text-white\/85 { color: #5a3a46; }
+/* Eyebrows: mustard spaced capitals between two little rules. */
+html.design-anderson [data-testid="hero"] > p:first-child, html.design-anderson [data-media-id] .tracking-\[\.18em\].text-accent {
+  color: #9a6b10; letter-spacing: .4em; font-weight: 500;
+}
+
+/* Details: the header block centred (title, meta, buttons) on the pink. */
+html.design-anderson [data-media-id] .left-\[96px\].top-\[210px\] {
+  left: 360px; padding: 30px 50px 40px; text-align: center;
+  background: rgba(251,238,230,.96); box-shadow: 0 0 0 3px #d9a520, 0 0 0 9px rgba(251,238,230,.96), 0 0 0 11px #d9a520;
+}
+html.design-anderson [data-media-id] .left-\[96px\].top-\[210px\] .flex { -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center; }
+html.design-anderson [data-media-id] .left-\[96px\].top-\[210px\] .w-\[760px\] { margin-left: auto; margin-right: auto; }
+html.design-anderson [data-media-id] h1 .text-white\/90 { color: #5a3a46; }
+html.design-anderson [data-media-id] .text-white, html.design-anderson [data-media-id] h1 { color: #3a222c; }
+
+/* Screen titles and row headings: centred spaced capitals. */
+html.design-anderson h1.p-wide { text-align: center; }
+html.design-anderson h3 { font-family: var(--mt-font-display); font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: #3a222c; }
+
+/* Cards: a cream mat with a mustard hairline; focus: a raspberry rule around the mat, a gentle scale. */
+html.design-anderson .mt-card { border-radius: 0; }
+html.design-anderson .mt-card::after { content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 6px solid #fbeee6; box-shadow: inset 0 0 0 2px #d9a520; pointer-events: none; }
+html.design-anderson .mt-card:not(.is-focused) { box-shadow: 0 5px 0 rgba(122,34,62,.16); }
+html.design-anderson .mt-card .text-white { color: #fbeee6; }
+html.design-anderson .tv-focus.is-focused { transform: scale(1.04); box-shadow: 0 0 0 4px #fbeee6, 0 0 0 9px #7a223e, 0 10px 0 9px rgba(122,34,62,.22); }
+html.design-anderson .tv-flat.is-focused { transform: none; }
+
+/* Buttons: mustard primary, cream secondary, square; focus raspberry. */
+html.design-anderson .p-primary { border-radius: 0; background: #d9a520; color: #3a222c; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; box-shadow: 0 0 0 3px #fbeee6, 0 0 0 5px #d9a520; }
+html.design-anderson .p-glass { border-radius: 0; background: #fbeee6; color: #3a222c; letter-spacing: .08em; box-shadow: inset 0 0 0 2px #d9a520; }
+html.design-anderson .p-primary.is-focused, html.design-anderson .p-glass.is-focused { background: #7a223e; color: #fbeee6; box-shadow: 0 0 0 4px #fbeee6, 0 0 0 8px #7a223e; }
+html.design-anderson .p-outline { border-color: #d9a520; color: #3a222c; border-radius: 0; }
+html.design-anderson .tv-rate-chip { border-color: #fbeee6; background: rgba(58,34,44,.6); color: #fbeee6; border-radius: 0; }
+html.design-anderson .tv-chip.is-focused { background: #7a223e; color: #fbeee6; }
+html.design-anderson .tv-release.is-focused { box-shadow: 0 0 0 4px #fbeee6, 0 0 0 9px #7a223e; }
+html.design-anderson .tv-progress-fill, html.design-anderson .tv-check { background: #7a223e; color: #fbeee6; }
+html.design-anderson .tv-progress { background: rgba(58,34,44,.25); }
+html.design-anderson .tv-key-hint { background: #fbeee6; color: #3a222c; box-shadow: 0 0 0 2px #d9a520; border-radius: 0; }
+html.design-anderson .tv-panel:not(.is-focused), html.design-anderson .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 2px rgba(217,165,32,.6); }

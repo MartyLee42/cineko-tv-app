@@ -452,7 +452,7 @@ export function CatalogShell({
       {/* «Конструктивизм»: «очередь за дефицитом» over a popular title opened in the catalog (not from the phone). */}
       {route.name === "details" && skin === "constructivism" && route.preview && <CvQueue key={top.key} entryKey={String(top.key)} media={route.preview} />}
       {/* The skin's companion (Тамагочи's pixel pet), over the content, under the menu. */}
-      {chrome && <SkinCompanion onHome={route.name === "home" && !settings && !guide && !quiz} />}
+      {chrome && <SkinCompanion onHome={route.name === "home" && !settings && !guide && !quiz} section={settings || guide || quiz ? null : nav.active} />}
       {/* Details is full-screen in every design (the PDF's p5/p8/p11): Back returns. */}
       {chrome && design === "kinozal" && <KinozalRail {...nav} />}
       {chrome && design === "terminal" && (

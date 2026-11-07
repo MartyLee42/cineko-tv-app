@@ -20,6 +20,8 @@
      design-odyssey            — «Одиссея»: late-60s space age: white ship corridors, symmetry, dark ink, one red light as focus (projector skeleton)
      design-mult               — «Мультфильм»: LIGHT warm gouache paper, cut-out hills, soft fog, terracotta (kinozal skeleton)
      design-tarkovsky          — «Созерцание»: dim rain and water, sepia posters, candle amber, book serif (kinozal skeleton)
+     design-silent             — «Немое кино»: black and white, film grain, art-nouveau intertitle cards (projector skeleton)
+     design-anderson           — «Симметрия»: pastel pink, mustard and mint, centred and symmetric, chapter cards (projector skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {
@@ -353,6 +355,49 @@ html.design-tarkovsky {
   color-scheme: dark;
 }
 
+/* «Немое кино»: a silent-film print: pure black and white (no sepia), white intertitle type in a
+   period serif (Old Standard TT, has Cyrillic), the body stays Onest for legibility; the accent is
+   white too, so lit buttons read as white intertitle cards. Photos turn grey (TV look / PWA). */
+html.design-silent {
+  --mt-bg: 10, 10, 10;
+  --mt-surface: 26, 26, 26;
+  --mt-surface-2: 44, 44, 44;
+  --mt-border: 120, 120, 120;
+  --mt-text: 244, 244, 244;
+  --mt-muted: 178, 178, 178;
+  --mt-accent: 240, 240, 240;
+  --mt-accent-strong: 255, 255, 255;
+  --mt-on-accent: 10, 10, 10;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "Old Standard TT", "Playfair Display", Georgia, serif;
+  --mt-font-label: "Old Standard TT", "Playfair Display", Georgia, serif;
+  --mt-radius-card: 10px;
+  --mt-radius-control: 6px;
+  color-scheme: dark;
+}
+
+/* «Симметрия»: a pastel storybook: powder pink ground, cream paper, mustard and mint, a deep
+   raspberry ink for text (contrast at 3 m), a dark mustard accent (accent text reads on pink); a geometric Futura-like sans (Jost, has Cyrillic) for
+   everything, headings in spaced capitals. */
+html.design-anderson {
+  --mt-bg: 246, 214, 214;
+  --mt-surface: 251, 238, 230;
+  --mt-surface-2: 242, 222, 210;
+  --mt-border: 196, 150, 70;
+  --mt-text: 58, 34, 44;
+  --mt-muted: 112, 78, 88;
+  --mt-accent: 154, 107, 16;
+  --mt-accent-strong: 143, 207, 184;
+  --mt-on-accent: 251, 238, 230;
+  --mt-focus: 122, 34, 62;
+  --mt-font-body: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-display: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: light;
+}
+
 /* Headings in the later designs use their display face (web and TV). */
 html.design-deco h1, html.design-deco h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2 { font-family: var(--mt-font-display); }
@@ -367,6 +412,8 @@ html.design-pocketpet h1, html.design-pocketpet h2 { font-family: var(--mt-font-
 html.design-odyssey h1, html.design-odyssey h2 { font-family: var(--mt-font-display); font-weight: 300; text-transform: uppercase; letter-spacing: .14em; }
 html.design-mult h1, html.design-mult h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .01em; }
 html.design-tarkovsky h1, html.design-tarkovsky h2 { font-family: var(--mt-font-display); font-weight: 600; letter-spacing: .01em; }
+html.design-silent h1, html.design-silent h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .02em; }
+html.design-anderson h1, html.design-anderson h2 { font-family: var(--mt-font-display); font-weight: 500; text-transform: uppercase; letter-spacing: .12em; }
 
 html, body, #root { height: 100%; }
 body {

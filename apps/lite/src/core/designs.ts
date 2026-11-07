@@ -1,9 +1,9 @@
 // The main app's visual designs (tokens vendored in ../shared/theme.css).
 // <html> gets `design-<id>` + `skel-<skeleton>`; Кинозал alone has a light mode.
-export type DesignId = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky";
+export type DesignId = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson";
 export type Skeleton = "kinozal" | "terminal" | "projector";
 
-export const DESIGNS: DesignId[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky"];
+export const DESIGNS: DesignId[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson"];
 
 
 export const DESIGN_SKELETON: Record<DesignId, Skeleton> = {
@@ -23,6 +23,8 @@ export const DESIGN_SKELETON: Record<DesignId, Skeleton> = {
   odyssey: "projector",
   mult: "kinozal",
   tarkovsky: "kinozal",
+  silent: "projector",
+  anderson: "projector",
 };
 
 export const DESIGN_NAMES: Record<DesignId, { ru: string; kk: string; en: string }> = {
@@ -42,6 +44,8 @@ export const DESIGN_NAMES: Record<DesignId, { ru: string; kk: string; en: string
   odyssey: { ru: "Одиссея", kk: "Одиссея", en: "Odyssey" },
   mult: { ru: "Мультфильм", kk: "Мультфильм", en: "Cartoon" },
   tarkovsky: { ru: "Созерцание", kk: "Толғаныс", en: "Contemplation" },
+  silent: { ru: "Немое кино", kk: "Үнсіз кино", en: "Silent Film" },
+  anderson: { ru: "Симметрия", kk: "Симметрия", en: "Symmetry" },
 };
 
 export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; accent: string; accent2: string; text: string }> = {
@@ -61,6 +65,8 @@ export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; acce
   odyssey: { bg: "#eef1f4", surface: "#ffffff", accent: "#101318", accent2: "#e21e16", text: "#101318" },
   mult: { bg: "#f3e9d6", surface: "#fffaf0", accent: "#c4532f", accent2: "#6f9fb4", text: "#3a2a20" },
   tarkovsky: { bg: "#141613", surface: "#22241f", accent: "#c8a46a", accent2: "#7f9a8c", text: "#e2dccb" },
+  silent: { bg: "#0c0c0c", surface: "#1c1c1c", accent: "#f2f2f2", accent2: "#9a9a9a", text: "#f4f4f4" },
+  anderson: { bg: "#f6d6d6", surface: "#fbeee6", accent: "#d9a520", accent2: "#8fcfb8", text: "#3a2a2e" },
 };
 
 export function isDesign(v: unknown): v is DesignId {

@@ -21,6 +21,8 @@ export const SCENE_IMPORTS: Record<DesignSetting, () => Promise<SceneMod>> = {
   odyssey: () => import("./scenes/odyssey"),
   mult: () => import("./scenes/mult"),
   tarkovsky: () => import("./scenes/tarkovsky"),
+  silent: () => import("./scenes/silent"),
+  anderson: () => import("./scenes/anderson"),
 };
 
 /** Starts fetching a design's scene (the intro shell itself is lazy too). */

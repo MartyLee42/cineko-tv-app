@@ -47,6 +47,14 @@ const LOADING_LABEL = {
 } as const;
 
 /** The focused style's one-line explanation (styles that need one). */
+/** The «Движение фона» hint per design (what moves there). */
+const MOTION_HINT: Partial<Record<string, MessageKey>> = {
+  matrix: "designs.motion_hint_matrix",
+  mult: "mult.motion_hint",
+  tarkovsky: "tarkovsky.motion_hint",
+  silent: "designs.motion_hint_silent",
+};
+
 const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
   popcorn: "settings.loading.popcorn_hint",
   paws: "settings.loading.paws_hint",
@@ -138,7 +146,7 @@ export function useSettingRows() {
       kind: "choice",
       key: "calm_motion",
       label: t("designs.motion"),
-      hint: t(settings.design === "matrix" ? "designs.motion_hint_matrix" : settings.design === "mult" ? "mult.motion_hint" : settings.design === "tarkovsky" ? "tarkovsky.motion_hint" : "designs.motion_hint"),
+      hint: t(MOTION_HINT[settings.design] ?? "designs.motion_hint"),
       choices: [
         { value: false, label: t("designs.motion.on") },
         { value: true, label: t("designs.motion.calm") },

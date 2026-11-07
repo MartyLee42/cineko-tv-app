@@ -1,0 +1,123 @@
+/* ---------------------------------------------------------------- «Немое кино» (projector skeleton)
+   A silent-comedy print: pure black and white (photos greyed by a static filter), static grain,
+   a vignette, intertitle cards (black, white serif, an art-nouveau double frame drawn as a
+   border-image) for the big headings. Focus = a white double rule like the cards' frame, and
+   the focused card opens like an iris (one transform/opacity animation on a pseudo-element;
+   off in the calm mode, while scrolling fast and with reduced motion). Rules here load after
+   the core CSS (design chunk). */
+
+.sl-film { background-color: #0a0a0a; }
+/* Grain: a static noise tile (SVG turbulence rasterised once). */
+.sl-grain {
+  opacity: .16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.6 0 0 0 -.62'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+}
+/* The projector gate: darker corners, a slightly brighter centre. */
+.sl-vignette { background: radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 52%, rgba(0,0,0,.55) 88%, rgba(0,0,0,.85) 100%); }
+/* Projector flicker: a white veil stepping between a few faint levels (opacity only). */
+@keyframes sl-flicker {
+  0% { opacity: 0; } 9% { opacity: .05; } 13% { opacity: 0; } 31% { opacity: .03; } 36% { opacity: .07; }
+  41% { opacity: 0; } 63% { opacity: .04; } 67% { opacity: 0; } 82% { opacity: .06; } 86% { opacity: .02; } 100% { opacity: 0; }
+}
+.sl-flicker { background: #fff; opacity: 0; animation: sl-flicker 1.7s steps(1, end) infinite; }
+
+/* Photos and placeholders in black and white. */
+html.design-silent img {
+  -webkit-filter: grayscale(1) contrast(1.12) brightness(.92);
+  filter: grayscale(1) contrast(1.12) brightness(.92);
+}
+html.design-silent .mt-card { background: #1c1c1c !important; }
+
+/* Scrims: black, a deeper left side for the intertitle; the left one also carries the grain (Home and Details). */
+html.design-silent .p-scrim-left { background-size: 220px 220px, 100% 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .5 0 0 0 -.19'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"), linear-gradient(90deg, rgba(10,10,10,.95) 0%, rgba(10,10,10,.7) 32%, rgba(10,10,10,.12) 64%, rgba(10,10,10,0) 82%); }
+html.design-silent .p-scrim-bottom { background: linear-gradient(0deg, rgba(10,10,10,1) 0%, rgba(10,10,10,.8) 24%, rgba(10,10,10,0) 52%); }
+html.design-silent .p-card-shade { background: linear-gradient(0deg, rgba(0,0,0,.86) 0%, rgba(0,0,0,.3) 36%, rgba(0,0,0,0) 62%); }
+
+/* The menu: a black card with a double white rule; serif tabs; the focused tab is a white card. */
+html.design-silent .p-bar { background: #0a0a0a; box-shadow: 0 0 0 2px #f2f2f2, 0 0 0 6px #0a0a0a, 0 0 0 7px rgba(242,242,242,.7); }
+html.design-silent .p-tab { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .02em; color: #e6e6e6; }
+html.design-silent .p-tab-on { background: #0a0a0a; color: #fff; box-shadow: inset 0 0 0 2px #f2f2f2; }
+html.design-silent nav .p-tab.is-focused { background: #f2f2f2; color: #0a0a0a; box-shadow: inset 0 0 0 2px #f2f2f2, inset 0 0 0 4px #0a0a0a; }
+html.design-silent nav[data-design-nav="projector"] > div > span.text-white { font-family: var(--mt-font-display); }
+/* The profile avatar in grey too (one small static filter). */
+html.design-silent nav[data-design-nav="projector"] > div:last-child .rounded-full { -webkit-filter: grayscale(1); filter: grayscale(1); }
+
+/* Intertitle cards: black card, centred white serif, the art-nouveau frame (double rule + whiplash
+   corners). Hero title, Details title, screen titles (grid) and Settings. */
+html.design-silent [data-testid="hero"] h2,
+html.design-silent [data-media-id] h1,
+html.design-silent h1.p-wide,
+html.design-silent .sl-intertitle {
+  display: -webkit-box;
+  width: -webkit-fit-content;
+  width: fit-content;
+  max-width: 100%;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 6px 40px 12px;
+  border-style: solid;
+  border-width: 34px;
+  border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120' fill='none' stroke='%23f2f2f2'%3E%3Crect x='3.5' y='3.5' width='113' height='113' stroke-width='4'/%3E%3Crect x='12' y='12' width='96' height='96' stroke-width='2'/%3E%3Cg stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M12 36c9 0 16-6 16-15 0-6-5-9-9-6-3 2-1 7 3 6M36 12c0 9-6 16-15 16'/%3E%3Cpath d='M108 36c-9 0-16-6-16-15 0-6 5-9 9-6 3 2 1 7-3 6M84 12c0 9 6 16 15 16'/%3E%3Cpath d='M12 84c9 0 16 6 16 15 0 6-5 9-9 6-3-2-1-7 3-6M36 108c0-9-6-16-15-16'/%3E%3Cpath d='M108 84c-9 0-16 6-16 15 0 6 5 9 9 6 3-2 1-7-3-6M84 108c0-9 6-16 15-16'/%3E%3C/g%3E%3Cg fill='%23f2f2f2' stroke='none'%3E%3Ccircle cx='28' cy='28' r='4'/%3E%3Ccircle cx='92' cy='28' r='4'/%3E%3Ccircle cx='28' cy='92' r='4'/%3E%3Ccircle cx='92' cy='92' r='4'/%3E%3C/g%3E%3C/svg%3E") 40 stretch;
+  background-color: rgba(10,10,10,.94);
+  color: #f4f4f4;
+  text-align: center;
+  font-family: var(--mt-font-display);
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: none;
+  text-shadow: none;
+}
+html.design-silent [data-media-id] h1 .p-wide { font-family: var(--mt-font-display); letter-spacing: .03em; text-transform: none; }
+html.design-silent [data-media-id] h1 .p-wide + span { text-transform: none; letter-spacing: .08em; font-family: var(--mt-font-display); font-style: normal; }
+html.design-silent h1.p-wide { padding: 0 26px 2px; border-width: 18px; }
+/* Eyebrows and row headings: small serif capitals, like a title card's credit line. */
+html.design-silent [data-testid="hero"] > p:first-child, html.design-silent [data-media-id] .tracking-\[\.18em\].text-accent {
+  font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .32em; color: #d8d8d8;
+}
+html.design-silent h3 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .03em; }
+
+/* Cards: a thin white rule inside a black gap (the frame of a print); focus: the double rule. */
+html.design-silent .mt-card:not(.is-focused) { box-shadow: 0 0 0 2px #0a0a0a, 0 0 0 3px rgba(242,242,242,.45); }
+html.design-silent .tv-focus.is-focused { transform: scale(1.035); box-shadow: 0 0 0 4px #0a0a0a, 0 0 0 7px #f4f4f4, 0 0 0 11px #0a0a0a, 0 0 0 13px #f4f4f4; }
+html.design-silent .tv-flat.is-focused { transform: none; }
+
+/* The iris-in: a black disc with a hole (a soft radial gradient) on the newly focused card opens
+   from a small circle to beyond the corners, then fades. The pseudo is one card-width square
+   (cheap raster) scaled up by the compositor; the card's overflow: hidden clips it. */
+@keyframes sl-iris {
+  0% { opacity: 1; transform: translate3d(-50%, -50%, 0) scale(1.5); }
+  18% { opacity: 1; transform: translate3d(-50%, -50%, 0) scale(1.7); }
+  85% { opacity: 1; transform: translate3d(-50%, -50%, 0) scale(6); }
+  100% { opacity: 0; transform: translate3d(-50%, -50%, 0) scale(6.4); }
+}
+html.design-silent .mt-card.is-focused::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
+  background: radial-gradient(circle closest-side, rgba(10,10,10,0) 0%, rgba(10,10,10,0) 24%, rgba(10,10,10,.96) 29%, #0a0a0a 100%);
+  pointer-events: none;
+  opacity: 0;
+  animation: sl-iris 340ms cubic-bezier(.45,.05,.55,.95) both;
+}
+html.design-silent.sl-calm .mt-card.is-focused::after, html.design-silent.mt-fast .mt-card.is-focused::after { animation: none; content: none; }
+@media (prefers-reduced-motion: reduce) {
+  html.design-silent .mt-card.is-focused::after { animation: none; content: none; }
+  .sl-flicker { animation: none; }
+}
+
+/* Buttons: the lit one is a white card, the others black cards with a white rule. Serif labels. */
+html.design-silent .p-primary { background: #f2f2f2; color: #0a0a0a; font-family: var(--mt-font-display); font-weight: 700; box-shadow: inset 0 0 0 2px #f2f2f2, inset 0 0 0 4px #0a0a0a; }
+html.design-silent .p-glass { background: #0a0a0a; color: #f2f2f2; font-family: var(--mt-font-display); box-shadow: inset 0 0 0 2px #f2f2f2; }
+html.design-silent .p-primary.is-focused, html.design-silent .p-glass.is-focused { background: #fff; color: #000; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 4px #000, 0 0 0 4px #0a0a0a, 0 0 0 7px #fff; }
+html.design-silent .p-outline { border-color: #f2f2f2; }
+html.design-silent .tv-rate-chip { border-color: #f2f2f2; background: #0a0a0a; color: #f2f2f2; }
+html.design-silent .tv-chip.is-focused { background: #f2f2f2; color: #0a0a0a; }
+html.design-silent .tv-release.is-focused { box-shadow: 0 0 0 4px #0a0a0a, 0 0 0 7px #f4f4f4, 0 0 0 11px #0a0a0a, 0 0 0 13px #f4f4f4; }
+html.design-silent .tv-progress-fill, html.design-silent .tv-check { background: #f2f2f2; color: #0a0a0a; }
+html.design-silent .tv-key-hint { background: #0a0a0a; color: #f2f2f2; box-shadow: 0 0 0 2px #f2f2f2; font-family: var(--mt-font-display); }
+html.design-silent .tv-panel:not(.is-focused), html.design-silent .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 1px rgba(242,242,242,.4); }
