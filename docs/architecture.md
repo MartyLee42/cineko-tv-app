@@ -1241,6 +1241,19 @@ phone, on the computer and on each TV of the household. Migration
   per-profile keys of any PUT always go to the base. A new TV or class starts
   from the base. «Сюрприз» works per layer: its inputs are layered and the
   daily pick is computed client-side from the effective settings.
+- **New TVs start in «Каркас».** Pairing (`pairing.Service.Exchange`) marks
+  each new device with `devices.settings.default_design` = `NEW_TV_DESIGN`
+  (default `wireframe`; `NEW_TV_DESIGN=` or `off` = no mark). For a TV, the
+  raw layer read by `RawLayer` gets that design when it has no `design` key
+  (`profiles.WithDeviceDefault`), so every profile on it shows «Каркас» and
+  «Настройки ТВ» lists it as the TV's own. Picking a design there writes the
+  layer as usual and wins; «Как в профиле» (reset `design` on a TV layer)
+  stores `design: null`, which follows the profile and keeps the default
+  away. TVs paired before have no mark: nothing changes for them. On the TV,
+  a fresh install (no `martytv.design`, no credential) paints the first
+  frame in «Каркас» (`index.html`) and `main.tsx` caches it
+  (`src/design/newTv.ts`), so pairing and the profile picker stay in it; a
+  paired TV without a cache still falls back to «Кинозал».
 - **A TV's own options** (`devices.settings`, all profiles): `screensaver`,
   `ui_sounds`, `startup_intro`, `calm_motion`, `language`, `health_report`,
   `slow_hint`, `show_prebuffer`, `speedtest`. They were localStorage-only; the
