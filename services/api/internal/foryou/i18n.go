@@ -46,6 +46,8 @@ func rowTitle(lang, kind string, r ReasonOut) string {
 		return tr(lang, "Пересмотреть любимое", "Rewatch your favorites")
 	case RowAI:
 		return deref(r.CollectionTitle)
+	case RowTheme:
+		return themeText(lang, r)
 	case RowPopular:
 		return tr(lang, "Популярное сейчас", "Popular right now")
 	}
@@ -77,6 +79,14 @@ func reasonText(lang string, r ReasonOut) string {
 		return tr(lang, "Сейчас в тренде и в вашем вкусе", "Trending and up your alley")
 	case ReasonAI:
 		return tr(lang, "Из подборки ", "From the collection ") + quote(lang, deref(r.CollectionTitle))
+	case ReasonTheme:
+		if r.KeywordName == nil {
+			if len(r.GenreNames) == 0 {
+				return tr(lang, "В вашем вкусе", "Up your alley")
+			}
+			return tr(lang, "Ваши жанры: ", "Your genres: ") + strings.Join(r.GenreNames, ", ")
+		}
+		return themeText(lang, r)
 	case ReasonRewatch:
 		return tr(lang, "Одно из ваших любимых", "One of your favorites")
 	case ReasonPopular:
@@ -88,6 +98,16 @@ func reasonText(lang string, r ReasonOut) string {
 		return tr(lang, "Под настроение", "For the mood")
 	}
 	return ""
+}
+
+// themeText: «Вам нравятся фильмы про ограбления» when the keyword has a
+// Russian name, else «Ваша тема: heist».
+func themeText(lang string, r ReasonOut) string {
+	name := deref(r.KeywordName)
+	if lang == "ru" && r.KeywordLocalized {
+		return "Вам нравятся фильмы про " + name
+	}
+	return tr(lang, "Ваша тема: ", "A theme you love: ") + name
 }
 
 func deref(s *string) string {

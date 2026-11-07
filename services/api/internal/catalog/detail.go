@@ -96,6 +96,8 @@ type detailRecord struct {
 	tr                         translation
 	cast, crew                 []credit
 	seasons                    []tmdb.SeasonSummary
+	// keywords is nil when TMDB didn't append them (kept as stored).
+	keywords []tmdb.Keyword
 }
 
 type credit struct {
@@ -115,9 +117,9 @@ func (s *Service) fetchDetail(ctx context.Context, kind string, tmdbID int, lang
 	path := fmt.Sprintf("/%s/%d", tmdb.MediaType(kind), tmdbID)
 	if kind == "series" {
 		// aggregate_credits: series-wide cast (plain credits = latest season only).
-		q.Set("append_to_response", "aggregate_credits,external_ids,videos")
+		q.Set("append_to_response", "aggregate_credits,external_ids,videos,keywords")
 	} else {
-		q.Set("append_to_response", "credits,external_ids,videos")
+		q.Set("append_to_response", "credits,external_ids,videos,keywords")
 	}
 	body, err := s.tmdb.Get(ctx, path, q)
 	if err != nil {
@@ -159,6 +161,9 @@ func fromMovie(m *tmdb.Movie, lang string) *detailRecord {
 	}
 	r.tr = translation{Title: orDefault(m.Title, m.OriginalTitle), Overview: m.Overview, Tagline: m.Tagline,
 		PosterPath: r.poster, BackdropPath: r.backdrop, Trailer: pickTrailer(m.Videos.Results, lang)}
+	if m.Keywords != nil {
+		r.keywords = nonNil(m.Keywords.All())
+	}
 
 	cast := slices.Clone(m.Credits.Cast)
 	slices.SortStableFunc(cast, func(a, b tmdb.CastCredit) int { return a.Order - b.Order })
@@ -202,6 +207,9 @@ func fromTV(t *tmdb.TV, lang string) *detailRecord {
 	}
 	r.tr = translation{Title: orDefault(t.Name, t.OriginalName), Overview: t.Overview, Tagline: t.Tagline,
 		PosterPath: r.poster, BackdropPath: r.backdrop, Trailer: pickTrailer(t.Videos.Results, lang)}
+	if t.Keywords != nil {
+		r.keywords = nonNil(t.Keywords.All())
+	}
 
 	cast := slices.Clone(t.AggregateCredits.Cast)
 	slices.SortStableFunc(cast, func(a, b tmdb.AggregateCast) int { return a.Order - b.Order })
@@ -358,6 +366,11 @@ func (s *Service) saveDetail(ctx context.Context, lang string, r *detailRecord) 
 
 		if err := saveCredits(ctx, tx, mediaID, lang, r); err != nil {
 			return err
+		}
+		if r.keywords != nil {
+			if err := saveKeywords(ctx, tx, mediaID, r.keywords); err != nil {
+				return err
+			}
 		}
 		return saveSeasonSummaries(ctx, tx, mediaID, lang, r.seasons)
 	})
