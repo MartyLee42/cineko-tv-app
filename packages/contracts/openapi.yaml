@@ -1118,6 +1118,141 @@ paths:
         "401": { $ref: "#/components/responses/Error" }
         "404": { $ref: "#/components/responses/Error" }
         "502": { $ref: "#/components/responses/Error" }
+  /media/{id}/companion:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [catalog]
+      operationId: getMediaCompanion
+      description: |
+        Which watch-companion buttons the profile gets on this title (internal/companion).
+        «Ранее в сериале» (`recap.available`): a series with completed episodes, last
+        touched ≥ 7 days ago. «После титров» (`after_credits.available`): a completed
+        movie, or a series whose season finale is completed (`scope: season`, or
+        `series` for the final season of an ended show). Both false while AI is off
+        (no DeepSeek key, or the admin switch `companion_ai`).
+      parameters:
+        - { $ref: "#/components/parameters/Lang" }
+        - { name: profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Availability.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaCompanion" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+  /media/{id}/recap:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [catalog]
+      operationId: postMediaRecap
+      description: |
+        «Ранее в сериале»: ≤ 5 lines built by DeepSeek ONLY from the TMDB synopses of the
+        episodes this profile completed (the furthest 12; nothing past the last watched
+        one is sent). Cached by the exact episodes used (a repeat press is free, `cached`).
+        409 `not_eligible` (no break yet / nothing completed), 422 `no_synopses`,
+        429 `companion_limit` (FORYOU_COMPANION_DAILY_PER_PROFILE per Moscow day, uncached
+        answers only) or `ai_budget`, 502 `ai_failed` (not counted), 503 `ai_disabled`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CompanionRequest" }
+      responses:
+        "200":
+          description: The recap.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SeriesRecap" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+        "502": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
+  /media/{id}/after-credits:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [catalog]
+      operationId: postMediaAfterCredits
+      description: |
+        «После титров» (spoilers): `topic: ending` «Объяснение финала» or `significance`
+        «Почему это важно» (told to stay general, avoid unverifiable facts and say when it
+        doesn't know: `known: false`). Only for what the profile finished; never past that
+        season. Cached per title, scope and language. Errors as for /recap.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/CompanionRequest"
+                - type: object
+                  required: [topic]
+                  properties:
+                    topic: { type: string, enum: [ending, significance] }
+      responses:
+        "200":
+          description: The text.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AfterCredits" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+        "502": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
+  /media/{id}/after-credits/chat:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [catalog]
+      operationId: getMediaAfterCreditsChat
+      description: The profile's spoiler chat about what it finished (empty when none, or when it was about an earlier season).
+      parameters:
+        - { $ref: "#/components/parameters/Lang" }
+        - { name: profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: The chat.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AfterCreditsChat" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [catalog]
+      operationId: postMediaAfterCreditsChat
+      description: |
+        Sends one message (2–300 characters) and returns the chat with the answer
+        (1–4 sentences, about this title only; off-topic or injection → `refused`).
+        At most 6 messages per chat (409 `chat_full`); `reset: true` starts over
+        (with or without a message). Each message counts toward the daily limit.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/CompanionRequest"
+                - type: object
+                  properties:
+                    message: { type: string, maxLength: 300 }
+                    reset: { type: boolean }
+      responses:
+        "200":
+          description: The chat.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AfterCreditsChat" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+        "502": { $ref: "#/components/responses/Error" }
+        "503": { $ref: "#/components/responses/Error" }
   /people/{tmdb_id}:
     get:
       tags: [catalog]
@@ -2857,7 +2992,7 @@ paths:
     put:
       tags: [foryou]
       operationId: adminSetForYouAI
-      description: Sets the DeepSeek temperatures (app_settings `ai_temperature`) and the AI «Факты» switch (`ai_facts`). Omitted fields keep their value; at least one of the two is required. Admin only.
+      description: Sets the DeepSeek temperatures (app_settings `ai_temperature`), the AI «Факты» switch (`ai_facts`) and the AI feature switches themes_ai, picks_ai and companion_ai (`ai_feature_themes`, `ai_feature_picks`, `ai_feature_companion`). Omitted fields keep their value; at least one is required. Admin only.
       requestBody:
         required: true
         content:
@@ -2872,9 +3007,11 @@ paths:
                     ask: { type: number, minimum: 0, maximum: 1.5 }
                     music: { type: number, minimum: 0, maximum: 1.5 }
                     facts: { type: number, minimum: 0, maximum: 1.5 }
+                    companion: { type: number, minimum: 0, maximum: 1.5 }
                 facts_ai: { type: boolean, description: "False: «Факты» show only Kinopoisk's (stored AI ones are hidden)." }
                 themes_ai: { type: boolean, description: "False: the daily run doesn't ask the model to group the scorer's candidates into theme rubrics." }
                 picks_ai: { type: boolean, description: "False: no AI re-ranking of «Подобрано для вас» (stored picks still apply until they expire, 48 h)." }
+                companion_ai: { type: boolean, description: "False: no «Ранее в сериале» / «После титров» (buttons hidden)." }
       responses:
         "200":
           description: The new settings.
@@ -4301,6 +4438,80 @@ components:
         source: { type: [string, "null"], enum: [kinopoisk, ai, null], description: "ai = written by DeepSeek (label it, may be inaccurate)." }
         source_url: { type: [string, "null"] }
         lang: { type: string, enum: [ru, en] }
+    MediaCompanion:
+      type: object
+      required: [ai_enabled, daily_limit, used_today, recap, after_credits]
+      properties:
+        ai_enabled: { type: boolean }
+        daily_limit: { type: integer }
+        used_today: { type: integer }
+        recap:
+          type: object
+          required: [available, last_watched_at, through, cached]
+          properties:
+            available: { type: boolean }
+            last_watched_at: { type: [string, "null"], format: date-time }
+            through:
+              description: "The furthest completed episode."
+              oneOf: [{ $ref: "#/components/schemas/EpisodeRef" }, { type: "null" }]
+            cached: { type: boolean, description: "Pressing is free (already generated for these episodes)." }
+        after_credits:
+          type: object
+          required: [available, scope, season]
+          properties:
+            available: { type: boolean }
+            scope: { type: string, enum: [movie, season, series, ""] }
+            season: { type: [integer, "null"] }
+    EpisodeRef:
+      type: object
+      required: [season, episode]
+      properties:
+        season: { type: integer }
+        episode: { type: integer }
+    CompanionRequest:
+      type: object
+      required: [profile_id]
+      properties:
+        profile_id: { type: string, format: uuid }
+        lang: { type: string, enum: [en, ru] }
+    SeriesRecap:
+      type: object
+      required: [lines, through, episodes, cached, generated_at]
+      properties:
+        lines: { type: array, maxItems: 5, items: { type: string }, description: "Plain text, one sentence each." }
+        through: { $ref: "#/components/schemas/EpisodeRef" }
+        episodes: { type: integer, description: "Synopses it was built from." }
+        cached: { type: boolean }
+        generated_at: { type: string, format: date-time }
+    AfterCredits:
+      type: object
+      required: [topic, known, paragraphs, scope, season, cached, generated_at]
+      properties:
+        topic: { type: string, enum: [ending, significance] }
+        known: { type: boolean, description: "False: the model doesn't know this title well enough (paragraphs empty)." }
+        paragraphs: { type: array, maxItems: 4, items: { type: string } }
+        scope: { type: string, enum: [movie, season, series] }
+        season: { type: [integer, "null"] }
+        cached: { type: boolean }
+        generated_at: { type: string, format: date-time }
+    AfterCreditsChat:
+      type: object
+      required: [messages, followups, limit, remaining, scope, season, refused]
+      properties:
+        messages:
+          type: array
+          items:
+            type: object
+            required: [role, text]
+            properties:
+              role: { type: string, enum: [user, assistant] }
+              text: { type: string }
+        followups: { type: array, maxItems: 3, items: { type: string }, description: "Suggested next questions." }
+        limit: { type: integer, description: "Messages per chat (6)." }
+        remaining: { type: integer }
+        scope: { type: string, enum: [movie, season, series] }
+        season: { type: [integer, "null"] }
+        refused: { type: boolean, description: "The last message was off-topic and declined." }
     MediaDetail:
       allOf:
         - $ref: "#/components/schemas/MediaSummary"
@@ -5726,13 +5937,14 @@ components:
         duration_ms: { type: [integer, "null"] }
     ForYouAIStatus:
       type: object
-      required: [enabled, model, tokens_today, daily_budget, run_budget, balance, temperature, facts_ai]
+      required: [enabled, model, tokens_today, daily_budget, run_budget, balance, temperature, facts_ai, companion_ai]
       properties:
         enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
         temperature: { $ref: "#/components/schemas/AITemperature" }
         facts_ai: { type: boolean, description: "DeepSeek may write «Факты» for titles Kinopoisk has none for (admin switch, default true)." }
         themes_ai: { type: boolean, description: "The daily run groups each profile's good unseen candidates into AI theme rubrics (admin switch, default true)." }
         picks_ai: { type: boolean, description: "The daily run re-ranks «Подобрано для вас» with a personal reason per title (admin switch, default true)." }
+        companion_ai: { type: boolean, description: "«Ранее в сериале» / «После титров» allowed (admin switch, default true)." }
         model: { type: string }
         tokens_today: { type: integer, description: "Tokens used today (Moscow date)." }
         daily_budget: { type: integer }
@@ -5743,12 +5955,13 @@ components:
     AITemperature:
       type: object
       description: "The admin's DeepSeek temperature per feature (0–1.5, default 1.0)."
-      required: [collections, ask, music, facts]
+      required: [collections, ask, music, facts, companion]
       properties:
         collections: { type: number, minimum: 0, maximum: 1.5, description: "AI collections (daily run)." }
         ask: { type: number, minimum: 0, maximum: 1.5, description: "«Спросить ИИ»." }
         music: { type: number, minimum: 0, maximum: 1.5, description: "Cineko Music AI playlists." }
         facts: { type: number, minimum: 0, maximum: 1.5, description: "AI-written «Факты» (default 0.7)." }
+        companion: { type: number, minimum: 0, maximum: 1.5, description: "«Ранее в сериале» / «После титров» (default 0.3)." }
     AICreativity:
       type: string
       enum: [precise, normal, bold]
@@ -5756,13 +5969,14 @@ components:
       description: "The viewer's nudge on the admin's temperature («Точнее / Обычно / Смелее»): −0.4 / 0 / +0.4, clamped to 0–1.5."
     ForYouAISettings:
       type: object
-      required: [enabled, temperature, facts_ai, creativity, min, max]
+      required: [enabled, temperature, facts_ai, companion_ai, creativity, min, max]
       properties:
         enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
         temperature: { $ref: "#/components/schemas/AITemperature" }
         facts_ai: { type: boolean, description: "AI-written «Факты» allowed (admin switch)." }
         themes_ai: { type: boolean, description: "AI theme rubrics allowed (admin switch)." }
         picks_ai: { type: boolean, description: "AI re-ranking of «Подобрано для вас» allowed (admin switch)." }
+        companion_ai: { type: boolean, description: "«Ранее в сериале» / «После титров» allowed (admin switch)." }
         creativity:
           type: object
           description: "Offset each creativity adds to the temperature."

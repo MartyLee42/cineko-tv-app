@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MyNote } from "../../foryou/MyNote";
 import { ApiError, type CatalogConfig, type Episode, type MediaDetail, type MediaSummary, type Profile, type Release, type WatchProgress } from "@martytv/contracts";
 import { catalogLang, episodeCode, formatDate, formatRuntime, imageUrl, placeholderColor, variantRelease } from "@martytv/media-types";
-import { GenreReaction, showQuotesButton, useI18n } from "@martytv/ui";
+import { GenreReaction, showAfterButton, showQuotesButton, showRecapButton, useI18n } from "@martytv/ui";
 import { FocusBlock, FocusButton, FocusLine, getCurrentFocusKey, offsetWithin, setFocus, useInitialFocus } from "../../focus";
 import { playerKey } from "../../player/keys";
 import { cardKey } from "../../catalog/focusKeys";
@@ -31,6 +31,8 @@ import { AwardsPanel } from "../../design/awards";
 import { FactsPanel, QuotesPanel } from "../../design/trivia";
 import { SoundtrackPanel } from "../../design/soundtrack";
 import { useFacts, useQuotes } from "../../catalog/trivia";
+import { useCompanion } from "../../catalog/companion";
+import { AfterCreditsPanel, RecapPanel } from "../../design/companion";
 import { indexTag } from "../../design/format";
 import { useMediaProgress, useSetWatched } from "../../watch/api";
 import { watchOnlineItems } from "../../player/online";
@@ -288,6 +290,15 @@ export function DetailsScreen({
   useEffect(() => {
     if (!hasQuotes && getCurrentFocusKey() === "d-quotes") setFocus("d-facts");
   }, [hasQuotes]);
+  // «Ранее в сериале» / «После титров»: chips only when the profile qualifies (refetched as progress changes).
+  const companionQ = useCompanion(id, profile.id, !!d, progressQ.dataUpdatedAt);
+  const [companionOpen, setCompanionOpen] = useState<"recap" | "after" | null>(null);
+  const hasRecap = showRecapButton(companionQ.data);
+  const hasAfter = showAfterButton(companionQ.data);
+  useEffect(() => {
+    const fk = getCurrentFocusKey();
+    if ((!hasRecap && fk === "d-recap") || (!hasAfter && fk === "d-after")) setFocus("d-facts");
+  }, [hasRecap, hasAfter]);
 
 
   // Recommended by someone: their note, and opening Details marks it seen.
@@ -418,6 +429,10 @@ export function DetailsScreen({
     onAwards: d?.awards?.length ? () => setAwardsOpen(true) : null,
     onQuotes: d && hasQuotes ? () => setTriviaOpen("quotes") : null,
     onFacts: d ? () => setTriviaOpen("facts") : null,
+    extras: [
+      ...(d && hasRecap ? [{ focusKey: "d-recap", testId: "tv-recap-button", label: `↺ ${t("companion.recap")}`, onPress: () => setCompanionOpen("recap") }] : []),
+      ...(d && hasAfter ? [{ focusKey: "d-after", testId: "tv-after-button", label: `◐ ${t("companion.after")}`, onPress: () => setCompanionOpen("after") }] : []),
+    ],
   };
   const playOnline = (c: OnlineChoice) => {
     setOnlineOpen(false);
@@ -586,6 +601,19 @@ export function DetailsScreen({
       {awardsOpen && d?.awards?.length ? <AwardsPanel title={d.title} awards={d.awards} onClose={() => setAwardsOpen(false)} /> : null}
       {triviaOpen === "quotes" && d && <QuotesPanel title={d.title} q={quotesQ} onClose={() => setTriviaOpen(null)} />}
       {triviaOpen === "facts" && d && <FactsPanel title={d.title} q={factsQ} onClose={() => setTriviaOpen(null)} />}
+      {companionOpen === "recap" && d && (
+        <RecapPanel id={d.id} title={d.title} profileId={profile.id} lastWatched={companionQ.data?.recap.last_watched_at ?? null} onClose={() => setCompanionOpen(null)} />
+      )}
+      {companionOpen === "after" && d && companionQ.data && (
+        <AfterCreditsPanel
+          id={d.id}
+          title={d.title}
+          profileId={profile.id}
+          scope={companionQ.data.after_credits.scope}
+          season={companionQ.data.after_credits.season ?? null}
+          onClose={() => setCompanionOpen(null)}
+        />
+      )}
       {soundtrackOpen && d && <SoundtrackPanel mediaId={d.id} title={d.title} onClose={() => setSoundtrackOpen(false)} />}
       {onlineOpen && d && (
         <OnlinePicker
