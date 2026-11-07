@@ -1,4 +1,5 @@
-// «Загрузки»: the caller's server downloads with progress, pin, pause/resume and delete.
+// «Загрузки»: what is saved on this device (offline/ui.tsx), then the caller's
+// server downloads with progress, pin, pause/resume and delete.
 import { useState } from "react";
 import { Link } from "react-router";
 import { isAdminRole } from "@martytv/contracts";
@@ -12,8 +13,7 @@ import { errorKey, isActive, keepDaysFrom, sizeLine, type Download } from "../do
 import { useDeleteDownload, useDownloads, usePatchDownload } from "../downloads/queries";
 import { ConfirmSheet, DownloadProgress, PinIcon, ServerDownloadIcon, StatusChip, TrashIcon, useNow } from "../downloads/ui";
 import { PauseIcon, PlayIcon } from "../icons";
-import { DeviceList } from "../offline/ui";
-import { deviceSupported } from "../offline/device";
+import { DeviceCard } from "../offline/ui";
 
 export function DownloadsPage() {
   const { t } = useI18n();
@@ -28,14 +28,10 @@ export function DownloadsPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-4" data-testid="downloads-page">
       <PageTitle>{t("downloads.title")}</PageTitle>
-      {deviceSupported && (
-        <Card className="space-y-3">
-          <p id="device" className="font-semibold">
-            {t("offline.device.title")}
-          </p>
-          <DeviceList />
-        </Card>
-      )}
+      <DeviceCard />
+      <p className="px-1 text-xs leading-relaxed text-muted" data-testid="downloads-explain">
+        {t("devicedl.explain")}
+      </p>
       <Card className="flex gap-3 text-sm leading-relaxed text-muted">
         <ServerDownloadIcon className="mt-0.5 shrink-0 text-lg text-accent" />
         <div className="min-w-0 space-y-1">
