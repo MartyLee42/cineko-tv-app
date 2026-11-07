@@ -76,3 +76,29 @@ func TestLayerOnlyAndClass(t *testing.T) {
 		}
 	}
 }
+
+func TestWithDeviceDefault(t *testing.T) {
+	design := func(layer []byte) string {
+		return *MergeLayers([]byte(`{"design":"deco"}`), layer).Design
+	}
+	if got := design(WithDeviceDefault(nil, "wireframe")); got != "wireframe" {
+		t.Fatalf("empty layer: %s", got)
+	}
+	if got := design(WithDeviceDefault([]byte(`{"theme":"light"}`), "wireframe")); got != "wireframe" {
+		t.Fatalf("layer without design: %s", got)
+	}
+	if got := design(WithDeviceDefault([]byte(`{"design":"matrix"}`), "wireframe")); got != "matrix" {
+		t.Fatalf("the TV's own pick wins: %s", got)
+	}
+	if got := design(WithDeviceDefault([]byte(`{"design":null}`), "wireframe")); got != "deco" {
+		t.Fatalf("null = follow the profile: %s", got)
+	}
+	for _, def := range []string{"", "bogus"} {
+		if got := design(WithDeviceDefault(nil, def)); got != "deco" {
+			t.Fatalf("default %q: %s", def, got)
+		}
+	}
+	if o := LayerOnly(WithDeviceDefault(nil, "wireframe")); o.Design == nil || *o.Design != "wireframe" {
+		t.Fatalf("shown as the TV's own %+v", o)
+	}
+}
