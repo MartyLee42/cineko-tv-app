@@ -18,6 +18,8 @@ export const SCENE_IMPORTS: Record<DesignSetting, () => Promise<SceneMod>> = {
   matrix: () => import("./scenes/matrix"),
   stickerbook: () => import("./scenes/stickerbook"),
   pocketpet: () => import("./scenes/pocketpet"),
+  silent: () => import("./scenes/silent"),
+  anderson: () => import("./scenes/anderson"),
 };
 
 /** Starts fetching a design's scene (the intro shell itself is lazy too). */
