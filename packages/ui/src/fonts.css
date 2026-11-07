@@ -31,6 +31,9 @@
 @import "@fontsource/oswald/latin-500.css";
 @import "@fontsource/oswald/cyrillic-700.css";
 @import "@fontsource/oswald/latin-700.css";
+/* «Одиссея» headings (Unbounded Light: wide, letter-spaced space-age capitals). */
+@import "@fontsource/unbounded/cyrillic-300.css";
+@import "@fontsource/unbounded/latin-300.css";
 /* «Стикербук» headings and tape labels (handwritten). */
 @import "@fontsource/caveat/cyrillic-700.css";
 @import "@fontsource/caveat/latin-700.css";

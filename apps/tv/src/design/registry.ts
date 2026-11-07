@@ -11,7 +11,7 @@ export interface Skin {
   /** Has a light colour mode (Кинозал only). */
   light: boolean;
   /** Full-screen background layer drawn behind screens (null = plain bg colour / skeleton default). */
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | null;
+  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | null;
   /** Animated background layers (transform-only); the calm mode stops them. */
   animatedLayers: 0 | 1;
   /** Headline size factor on the skeleton's sizes (wide display faces need less). */
@@ -37,6 +37,8 @@ export const SKINS: Record<DesignSetting, Skin> = {
   stickerbook: { id: "stickerbook", skeleton: "kinozal", light: false, background: "stickers", titleScale: 1, animatedLayers: 0, ornaments: { ...none, heroEdges: true, titlePlate: true } },
   // Press Start 2P is a wide monospaced pixel face: titles much smaller.
   pocketpet: { id: "pocketpet", skeleton: "terminal", light: false, background: "lcd", titleScale: 0.6, animatedLayers: 0, ornaments: none },
+  // Wide letter-spaced capitals (Unbounded Light): titles a size smaller. A static white corridor.
+  odyssey: { id: "odyssey", skeleton: "projector", light: false, background: "corridor", titleScale: 0.7, animatedLayers: 0, ornaments: none },
   // Mono display type runs wide: titles a little smaller.
   matrix: { id: "matrix", skeleton: "terminal", light: false, background: "rain", titleScale: 0.86, animatedLayers: 0, ornaments: { ...none, cornerBrackets: true } },
 };

@@ -262,6 +262,13 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 .dt-pocketpet.dt-on { box-shadow: inset 0 0 0 6px #f3c6dc, inset 0 0 0 8px #c7a6d6, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
 .dt-pocketpet .dt-nav { left: 6px; top: 6px; width: calc(100% - 12px); background: rgba(24,32,18,.12) !important; }
 .dt-pocketpet .dt-poster { border-radius: 0; border-color: #182012 !important; background: #b5c399 !important; }
+/* «Одиссея»: a white corridor in perspective (converging ribs), a black door at the end, a red-lit tile. */
+.dt-odyssey { background-image: linear-gradient(90deg, rgba(0,0,0,0) 47%, #101318 47%, #101318 53%, rgba(0,0,0,0) 53%), linear-gradient(26deg, rgba(0,0,0,0) 49%, rgba(150,160,172,.7) 49.5%, rgba(0,0,0,0) 50.5%), linear-gradient(-26deg, rgba(0,0,0,0) 49%, rgba(150,160,172,.7) 49.5%, rgba(0,0,0,0) 50.5%), linear-gradient(180deg, #f6f8fa 0%, #e6eaee 50%, #cfd5dc 100%) !important; background-size: 100% 30%, 100% 100%, 100% 100%, 100% 100% !important; background-position: 0 50%, 0 0, 0 0, 0 0 !important; background-repeat: no-repeat !important; }
+.dt-odyssey .dt-nav, .dt-odyssey .dt-title, .dt-odyssey .dt-accent, .dt-odyssey .dt-poster { border-radius: 1px; }
+.dt-odyssey .dt-nav { background: #fff !important; box-shadow: inset 0 0 0 1px rgba(16,19,24,.25); }
+.dt-odyssey .dt-title { height: 5%; }
+.dt-odyssey .dt-poster { border-width: 1px; border-color: rgba(16,19,24,.3) !important; background: #fff !important; }
+.dt-odyssey .dt-accent + .dt-poster { border-color: #e21e16 !important; box-shadow: 0 0 6px 2px rgba(255,40,28,.55); }
 
 /* Проектор-skeleton flat elements never scale on focus (any skin). The doubled
    class outweighs the skins' focus rules, which load later (design/looks/*.css). */
