@@ -257,18 +257,26 @@ function ContinueCard({ item, onOpen, onGo, hasTv }: { item: ContinueItem; onOpe
 
 // ---------------------------------------------------------------- lists & rating
 
-export function ListToggles({ m, className = "" }: { m: MediaSummary; className?: string }) {
+/** The title page's personal toolbar buttons: smaller than the play row; icon-only on phones. */
+export const TOOL_BTN =
+  "inline-flex h-11 min-w-[44px] items-center justify-center gap-1.5 rounded-lg border px-2.5 text-sm font-semibold backdrop-blur transition sm:h-10 sm:min-w-[40px] sm:px-3";
+export const TOOL_OFF = "border-border bg-surface/70 text-text hover:border-accent";
+/** A toolbar label: visually hidden on phones (the icon + aria stay). */
+export const TOOL_LABEL = "max-sm:sr-only";
+
+export function ListToggles({ m, className = "", compact = false }: { m: MediaSummary; className?: string; compact?: boolean }) {
   const { t } = useI18n();
   const { profileId } = useActiveProfile();
   const toggle = useToggleList();
   if (!profileId) return null;
   const inList = !!m.me?.in_watchlist;
   const fav = !!m.me?.favorite;
-  const base =
-    "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border px-3.5 text-sm font-semibold backdrop-blur transition";
-  const off = "border-border bg-surface/70 text-text hover:border-accent";
+  const base = compact
+    ? TOOL_BTN
+    : "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border px-3.5 text-sm font-semibold backdrop-blur transition";
+  const off = TOOL_OFF;
   return (
-    <div className={`flex flex-wrap gap-2 ${className}`}>
+    <div className={compact ? "contents" : `flex flex-wrap gap-2 ${className}`}>
       <button
         type="button"
         aria-pressed={inList}
@@ -277,7 +285,7 @@ export function ListToggles({ m, className = "" }: { m: MediaSummary; className?
         className={`${base} ${inList ? "border-accent bg-accent/15 text-accent-strong" : off}`}
       >
         <BookmarkIcon filled={inList} className="text-lg" />
-        {inList ? t("lists.in_watchlist") : t("lists.watchlist")}
+        <span className={compact ? TOOL_LABEL : ""}>{inList ? t("lists.in_watchlist") : t("lists.watchlist")}</span>
       </button>
       <button
         type="button"
@@ -286,17 +294,17 @@ export function ListToggles({ m, className = "" }: { m: MediaSummary; className?
         title={fav ? t("lists.remove_favorite") : t("lists.add_favorite")}
         data-testid="toggle-favorite"
         onClick={() => toggle.mutate({ list: "favorites", mediaId: m.id, on: !fav })}
-        className={`${base} w-11 px-0 ${fav ? "border-rose-500/60 bg-rose-500/15 text-rose-500" : off}`}
+        className={`${base} ${compact ? "w-11 !px-0 sm:w-10" : "w-11 px-0"} ${fav ? "border-rose-500/60 bg-rose-500/15 text-rose-500" : off}`}
       >
         <HeartIcon filled={fav} className="text-lg" />
       </button>
-      <RatingControl m={m} />
+      <RatingControl m={m} compact={compact} />
     </div>
   );
 }
 
 /** "Rate" button with a floating 1–10 popover (never changes the layout). */
-export function RatingControl({ m }: { m: MediaSummary }) {
+export function RatingControl({ m, compact = false }: { m: MediaSummary; compact?: boolean }) {
   const { t } = useI18n();
   const rate = useRate();
   const [open, setOpen] = useState(false);
@@ -360,12 +368,20 @@ export function RatingControl({ m }: { m: MediaSummary }) {
           setPicked(null);
           setWhy(false);
         }}
-        className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border px-3.5 text-sm font-semibold backdrop-blur transition ${
+        aria-label={compact ? (rating != null ? t("lists.your_rating", { n: rating }) : t("lists.rate")) : undefined}
+        title={compact ? (rating != null ? t("lists.your_rating", { n: rating }) : t("lists.rate")) : undefined}
+        className={`${compact ? TOOL_BTN : "inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border px-3.5 text-sm font-semibold backdrop-blur transition"} ${
           rating != null ? "border-accent bg-accent/15 text-accent-strong" : "border-border bg-surface/70 text-text hover:border-accent"
         }`}
       >
         <StarIcon className={rating != null ? "text-accent" : "text-muted"} />
-        {rating != null ? t("lists.your_rating", { n: rating }) : t("lists.rate")}
+        {!compact ? (
+          rating != null ? t("lists.your_rating", { n: rating }) : t("lists.rate")
+        ) : rating != null ? (
+          <span className="tabular-nums" aria-hidden>{rating}</span>
+        ) : (
+          <span className={TOOL_LABEL} aria-hidden>{t("lists.rate")}</span>
+        )}
       </button>
       {open &&
         pos &&

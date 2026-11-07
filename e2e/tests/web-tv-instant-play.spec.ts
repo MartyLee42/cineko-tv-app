@@ -147,6 +147,8 @@ test("«На ТВ»: the TV opens its loading screen at once and shows peers / s
 
     // «Play on TV» (best release): the phone sends right away.
     await phone.getByTestId("play-on-tv").first().click();
+    // It asks where: this TV.
+    await phone.getByTestId("play-menu").getByTestId("play-tv").filter({ hasText: deviceName }).click();
     const tvPicker = phone.getByTestId("tv-picker");
     const playerPicker = phone.getByTestId("player-picker");
     const progress = phone.getByTestId("play-progress");

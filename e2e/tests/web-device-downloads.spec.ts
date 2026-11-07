@@ -257,6 +257,7 @@ test.describe("phone", () => {
     const m = await mockAll(page);
     m.dropFirst = true;
     await page.goto(`/title/${MOVIE}`);
+    await page.getByTestId("play-more").click(); // «Скачать на устройство» is in the play menu (stays open)
     const box = page.getByTestId("save-device");
     await expect(box.getByTestId("save-device-button")).toHaveText("Скачать на устройство");
     await box.getByTestId("save-device-button").click();
@@ -290,6 +291,7 @@ test.describe("phone", () => {
     await login(page);
     const m = await mockAll(page);
     await page.goto(`/title/${MOVIE}`);
+    await page.getByTestId("play-more").click(); // «Скачать на устройство» is in the play menu (stays open)
     const box = page.getByTestId("save-device");
     await box.getByTestId("save-device-button").click();
     await expect(box).toHaveAttribute("data-status", "failed", { timeout: 20_000 });
@@ -341,6 +343,7 @@ test.describe("phone", () => {
       info: { container: "matroska,webm", video_codec: "h264", width: 320, height: 180, duration_seconds: 90, audio: [{ index: 1, codec: "ac3", language: "rus", title: null, channels: 2, default: true }], subtitles: [] },
     };
     await page.goto(`/title/${MOVIE}`);
+    await page.getByTestId("play-more").click();
     await page.getByTestId("save-device-button").click();
     await expect(page.getByTestId("save-device")).toHaveAttribute("data-status", "saved", { timeout: 30_000 });
     await page.evaluate(() => navigator.serviceWorker.ready);

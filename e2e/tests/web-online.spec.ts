@@ -153,6 +153,7 @@ test.describe("watch online (web)", () => {
     const log = await mockOnline(page, media.id, MOVIE_ITEMS);
 
     await page.goto(`/title/${media.id}`);
+    await page.getByTestId("play-more").click(); // in the play button's menu
     const btn = page.getByTestId("watch-online");
     await expect(btn).toBeVisible();
     await expect(btn).toHaveText(/Смотреть онлайн/);
@@ -194,6 +195,7 @@ test.describe("watch online (web)", () => {
     const { media } = await setup(page, "The Matrix", "movie");
     await mockOnline(page, media.id, MOVIE_ITEMS);
     await page.goto(`/title/${media.id}`);
+    await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
     await page.getByTestId("choose-release").click();
     const sheet = page.getByTestId("release-sheet");
     const online = sheet.locator("[data-testid=online-group][data-kind=online]");
@@ -214,6 +216,8 @@ test.describe("watch online (web)", () => {
       await page.goto(`/title/${media.id}`);
       await answered;
       await expect(page.getByTestId("play-on-tv")).toBeVisible();
+      await page.getByTestId("play-more").click();
+      await expect(page.getByTestId("play-menu")).toBeVisible();
       await expect(page.getByTestId("watch-online")).toHaveCount(0);
     });
   }
@@ -232,6 +236,7 @@ test.describe("watch online (web)", () => {
     const log = await mockOnline(page, media.id, items, nextUp);
 
     await page.goto(`/title/${media.id}`);
+    await page.getByTestId("play-more").click();
     await page.getByTestId("watch-online").click();
     expect(log.onlineQueries.at(-1)?.get("season")).toBe("1");
     const picker = page.getByTestId("online-picker");

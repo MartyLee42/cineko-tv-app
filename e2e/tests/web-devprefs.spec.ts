@@ -240,6 +240,7 @@ test("phone: a TV's max resolution changes the release order for that TV", async
   const rows = page.getByTestId("release-sheet").getByTestId("release-row");
   const openReleases = async () => {
     await page.goto(`/title/${movie.id}`);
+    await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
     await page.getByTestId("choose-release").click();
     await expect(rows).toHaveCount(2, { timeout: 20_000 });
   };
