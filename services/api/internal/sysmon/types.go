@@ -64,17 +64,25 @@ type NetIface struct {
 	TxTotal uint64  `json:"tx_total"`
 }
 
-// Process is one process or a friendly group of them (Count > 1).
+// Process is one process or a friendly group of them (Count > 1), per
+// container: two postgres containers are two rows.
 type Process struct {
-	Name       string  `json:"name"`
-	PID        int     `json:"pid"` // the group's biggest member
-	Count      int     `json:"count"`
+	Name      string `json:"name"`
+	Container string `json:"container,omitempty"` // Docker container name (hostmon only)
+	PID       int    `json:"pid"`                 // the group's biggest member
+	Count     int    `json:"count"`
+	// RSSBytes is the group's memory with shared pages counted once: the sum
+	// of each member's private resident memory plus the largest member's
+	// shared part (plain RSS would count shared_buffers once per backend).
 	RSSBytes   uint64  `json:"rss_bytes"`
 	CPUPercent float64 `json:"cpu_percent"` // of one core, like top
+
+	containerID string // from /proc/[pid]/cgroup; named by Hostmon.Status
 }
 
 // Container is one Docker container's usage (hostmon only).
 type Container struct {
+	ID            string  `json:"-"`
 	Name          string  `json:"name"`
 	State         string  `json:"state"`
 	CPUPercent    float64 `json:"cpu_percent"` // of one core
