@@ -168,15 +168,42 @@ to it; the bundled one then just idles (or remove it in the override file).
 ## TorrServer
 
 TorrServer downloads the pieces a player asks for and serves them over HTTP to
-the API and the transcoder; clients never talk to it. Its settings (cache
-size, connection limits, preload) are in its UI:
+the API and the transcoder; clients never talk to it.
+
+Three of its settings come from `.env` and are applied by
+`scripts/torrserver-settings.sh` (install.sh and update.sh run it; flags
+`--ts-cache-mb`, `--ts-remove-cache-on-drop`, `--ts-rutor-search` of
+install.sh write them):
+
+| `.env` | Default | TorrServer setting |
+|---|---|---|
+| `TORRSERVER_CACHE_MB` | `128` | `CacheSize` (bytes): RAM cache per torrent |
+| `TORRSERVER_REMOVE_CACHE_ON_DROP` | `true` | `RemoveCacheOnDrop`: free a torrent's cache when it closes |
+| `TORRSERVER_RUTOR_SEARCH` | `false` | `EnableRutorSearch`: TorrServer's own rutor search (Cineko uses Prowlarr / Jacred) |
+
+The script reads TorrServer's full settings, changes only these fields and
+writes the whole object back; everything else you set in its UI stays. It
+writes nothing when they already match, because every change makes
+TorrServer drop its open torrents and reconnect (whatever is streaming —
+Cineko, Lampa, MSX — has to restart). New values apply at once; no restart
+is needed (`--restart` restarts it anyway). With basic auth it uses
+`TORRSERVER_USERNAME` / `TORRSERVER_PASSWORD`.
+
+```sh
+scripts/torrserver-settings.sh                    # bundled TorrServer
+scripts/torrserver-settings.sh --url http://127.0.0.1:8090   # your own one, from this machine (curl/wget)
+scripts/torrserver-settings.sh --container NAME   # your own one in container NAME
+```
+
+The rest (connection limits, preload, …) is in its UI:
 
 ```sh
 ssh -L 8090:127.0.0.1:8090 you@your-server      # then http://localhost:8090
 ```
 
-- **Cache**: the default RAM cache is small; 256–1024 MB is a good range. Keep
-  it below the container's `mem_limit` (2 GB).
+- **Cache**: 128 MB per torrent suits a few simultaneous streams; up to
+  256–1024 MB helps on slow torrents. Keep (cache × streams) below the
+  container's `mem_limit` (2 GB).
 - **Incoming peers** (faster starts on poorly seeded torrents): set a fixed
   "peer port" in its settings and publish it in
   `deployments/compose.override.yaml`:

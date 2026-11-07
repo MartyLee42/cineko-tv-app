@@ -30,6 +30,10 @@ ADMIN_PASSWORD=${CINEKO_ADMIN_PASSWORD:-}
 BUILD_MODE=${CINEKO_BUILD:-auto}     # auto | build | pull
 INDEXERS=${CINEKO_INDEXERS:-rutor,thepiratebay,1337x:fs,yts,eztv,limetorrents}
 SKIP_PROWLARR=${CINEKO_SKIP_PROWLARR:-0}
+TS_CACHE_MB=${CINEKO_TS_CACHE_MB:-}  # TorrServer settings; empty = keep .env / default
+TS_DROP=${CINEKO_TS_REMOVE_CACHE_ON_DROP:-}
+TS_RUTOR=${CINEKO_TS_RUTOR_SEARCH:-}
+SKIP_TORRSERVER=${CINEKO_SKIP_TORRSERVER:-0}
 NO_START=0
 
 usage() {
@@ -54,6 +58,12 @@ Usage: ./install.sh [options]
                          suffix ":fs" = via FlareSolverr). Default:
                          rutor,thepiratebay,1337x:fs,yts,eztv,limetorrents
   --skip-prowlarr        don't configure Prowlarr
+  --ts-cache-mb N        TorrServer RAM cache per torrent, MB (default 128)
+  --ts-remove-cache-on-drop true|false
+                         drop a torrent's cache when it closes (default true)
+  --ts-rutor-search true|false
+                         TorrServer's own rutor search (default false)
+  --skip-torrserver      don't apply TorrServer settings
   --build                build images from this checkout
   --pull                 only use prebuilt images from GHCR (fail otherwise)
   --no-start             only write .env
@@ -62,7 +72,7 @@ Usage: ./install.sh [options]
 
 Every option also has an environment variable (CINEKO_DOMAIN, CINEKO_LAN=1,
 CINEKO_TMDB, CINEKO_PROXY, CINEKO_ADMIN_USER, CINEKO_ADMIN_PASSWORD,
-CINEKO_YES=1, CINEKO_BUILD=build|pull, …).
+CINEKO_YES=1, CINEKO_BUILD=build|pull, CINEKO_TS_CACHE_MB, …).
 EOF
 }
 
@@ -83,6 +93,10 @@ while [ $# -gt 0 ]; do
     --admin-password-file) ADMIN_PASSWORD=$(head -n1 "${2:?}"); shift ;;
     --indexers) INDEXERS=${2:?}; shift ;;
     --skip-prowlarr) SKIP_PROWLARR=1 ;;
+    --ts-cache-mb) TS_CACHE_MB=${2:?}; shift ;;
+    --ts-remove-cache-on-drop) TS_DROP=${2:?}; shift ;;
+    --ts-rutor-search) TS_RUTOR=${2:?}; shift ;;
+    --skip-torrserver) SKIP_TORRSERVER=1 ;;
     --build) BUILD_MODE=build ;;
     --pull) BUILD_MODE=pull ;;
     --no-start) NO_START=1 ;;
@@ -258,6 +272,15 @@ ok "secrets present (generated where missing)"
 # Fixed service wiring (only written when missing, so your edits stay).
 env_default PROWLARR_URL http://prowlarr:9696
 env_default TORRSERVER_URL http://torrserver:8090
+# TorrServer settings (applied after start by scripts/torrserver-settings.sh):
+# a flag replaces the .env value, otherwise yours stays.
+[[ -z $TS_CACHE_MB || $TS_CACHE_MB =~ ^[0-9]+$ ]] || die "--ts-cache-mb must be a number of megabytes"
+for v in "$TS_DROP" "$TS_RUTOR"; do
+  [[ -z $v || $v =~ ^(true|false)$ ]] || die "--ts-remove-cache-on-drop / --ts-rutor-search take true or false"
+done
+if [ -n "$TS_CACHE_MB" ]; then env_set TORRSERVER_CACHE_MB "$TS_CACHE_MB"; else env_default TORRSERVER_CACHE_MB 128; fi
+if [ -n "$TS_DROP" ]; then env_set TORRSERVER_REMOVE_CACHE_ON_DROP "$TS_DROP"; else env_default TORRSERVER_REMOVE_CACHE_ON_DROP true; fi
+if [ -n "$TS_RUTOR" ]; then env_set TORRSERVER_RUTOR_SEARCH "$TS_RUTOR"; else env_default TORRSERVER_RUTOR_SEARCH false; fi
 if [ -z "$(env_get TZ)" ]; then
   tz=$(cat /etc/timezone 2>/dev/null || timedatectl show -p Timezone --value 2>/dev/null || true)
   env_set TZ "${tz:-Etc/UTC}"
@@ -392,7 +415,18 @@ if [ "$SKIP_PROWLARR" != 1 ]; then
   wait_for "API healthy" 120 api_healthy || true
 fi
 
-# --- 5. first administrator ------------------------------------------------------------
+# --- 5. TorrServer settings ---------------------------------------------------------
+# Cache size, cache cleanup and rutor search from .env. Written only when they
+# differ (a change makes TorrServer reconnect, interrupting open streams).
+if [ "$SKIP_TORRSERVER" != 1 ]; then
+  step "TorrServer settings"
+  if ! CINEKO_ENV_FILE="$ENV_FILE" sh "$ROOT/scripts/torrserver-settings.sh"; then
+    warn "TorrServer settings not applied (see above)"
+    note "Apply TorrServer's settings: scripts/torrserver-settings.sh"
+  fi
+fi
+
+# --- 6. first administrator ------------------------------------------------------------
 step "Administrator account"
 if [ -z "$ADMIN_USER" ] && interactive && confirm "Create a super admin account now?" "$([ "$FIRST_RUN" = 1 ] && echo y || echo n)"; then
   ask ADMIN_USER "Username" "admin"
@@ -421,7 +455,7 @@ else
   ok "skipped (create one later: scripts/cineko.sh exec api /martytv admin create --username NAME --role super_admin)"
 fi
 
-# --- 6. status and summary -------------------------------------------------------------
+# --- 7. status and summary -------------------------------------------------------------
 step "Status"
 dc ps --format 'table {{.Service}}\t{{.Status}}'
 ready=$(dc exec -T web wget -qO- http://api:8080/readyz 2>/dev/null || true)
