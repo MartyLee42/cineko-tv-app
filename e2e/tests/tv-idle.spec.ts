@@ -65,12 +65,34 @@ test("TV screensaver: the DVD logo reaches every edge at a fixed angle", async (
     // A still picture: nothing animates inside it.
     expect(await logo.evaluate((el) => el.getAnimations({ subtree: true }).length)).toBe(0);
 
-    // ~40 s of bouncing: the box touches all four walls; between bounces it
+    // 40 s of bouncing: the box touches all four walls; between bounces it
     // moves as far across as down (one angle, never changing).
     let minX = 1e9, minY = 1e9, maxR = 0, maxB = 0;
+    // CSS animations (GPU, no JavaScript): they don't follow the test clock,
+    // so step the logo's two axis animations by hand, 100 ms at a time.
+    const seek = (ms: number) =>
+      logo.evaluate((el, t) => {
+        for (const a of document.getAnimations()) {
+          const target = (a.effect as KeyframeEffect | null)?.target;
+          if (target instanceof Element && target.contains(el) && (a as CSSAnimation).animationName.startsWith("idle-dvd")) {
+            a.pause();
+            a.currentTime = t;
+          }
+        }
+      }, ms);
+    const axes = await logo.evaluate((el) =>
+      document
+        .getAnimations()
+        .filter((a) => ((a.effect as KeyframeEffect | null)?.target as Element | null)?.contains(el))
+        .map((a) => (a as CSSAnimation).animationName)
+        .filter((n) => n.startsWith("idle-dvd"))
+        .sort(),
+    );
+    expect(axes).toEqual(["idle-dvd-x", "idle-dvd-y"]);
+    await seek(0);
     let prev = await logo.boundingBox();
-    for (let i = 0; i < 400; i++) {
-      await tv.clock.runFor(100);
+    for (let i = 1; i <= 400; i++) {
+      await seek(i * 100);
       const b = (await logo.boundingBox())!;
       minX = Math.min(minX, b.x);
       minY = Math.min(minY, b.y);

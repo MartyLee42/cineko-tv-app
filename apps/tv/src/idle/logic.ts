@@ -100,47 +100,7 @@ export class CodeMatcher {
   }
 }
 
-// ---------------------------------------------------------------- DVD bounce
-
-export interface Bounce {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-}
-
-/**
- * One step of the bouncing logo (px, px/s) inside a w×h box for an item of
- * iw×ih; `bounced` when it hit a wall (the logo changes colour then).
- */
-export function dvdStep(b: Bounce, dtMs: number, w: number, h: number, iw: number, ih: number): Bounce & { bounced: boolean } {
-  const dt = Math.min(Math.max(dtMs, 0), 250) / 1000;
-  let { x, y, vx, vy } = b;
-  x += vx * dt;
-  y += vy * dt;
-  let bounced = false;
-  const maxX = Math.max(0, w - iw);
-  const maxY = Math.max(0, h - ih);
-  if (x <= 0) {
-    x = 0;
-    vx = Math.abs(vx);
-    bounced = true;
-  } else if (x >= maxX) {
-    x = maxX;
-    vx = -Math.abs(vx);
-    bounced = true;
-  }
-  if (y <= 0) {
-    y = 0;
-    vy = Math.abs(vy);
-    bounced = true;
-  } else if (y >= maxY) {
-    y = maxY;
-    vy = -Math.abs(vy);
-    bounced = true;
-  }
-  return { x, y, vx, vy, bounced };
-}
+// ---------------------------------------------------------------- DVD logo
 
 /** The colours the DVD logo cycles through, one per bounce. */
 export const DVD_COLORS = ["#ff4f4f", "#ffd23a", "#4fff8a", "#3ce8ff", "#7a6bff", "#ff4fd8", "#ffffff"];

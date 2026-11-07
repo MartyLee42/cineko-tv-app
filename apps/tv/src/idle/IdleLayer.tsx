@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { applyDesign, DESIGNS, getAppliedDesign, Mascot, SovietEmblem, useAppliedDesign, useVideoPlaying } from "@martytv/ui";
 import { useCalmMotion } from "../design/skins";
-import { CodeMatcher, codeKey, DVD_COLORS, dvdStep, idlePhase, saverPref, type IdlePhase } from "./logic";
+import { CodeMatcher, codeKey, DVD_COLORS, idlePhase, saverPref, type IdlePhase } from "./logic";
 import "./idle.css";
 
 /** How long each look shows in the secret design show. */
@@ -139,6 +139,12 @@ function Dance({ cv }: { cv: boolean }) {
 
 export function Screensaver({ cv }: { cv: boolean }) {
   const [style] = useState(() => saverPref.get());
+  // Everything under it is hidden and its animations pause (idle.css): nothing else to paint.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute("data-saver-on", "");
+    return () => root.removeAttribute("data-saver-on");
+  }, []);
   return (
     <div data-testid="screensaver" data-saver={style} className="idle-saver absolute left-0 top-0 z-[60]" style={{ width: 1920, height: 1080 }}>
       {style === "dvd" ? <DvdLogo cv={cv} /> : <SleepingCineko cv={cv} />}
@@ -167,34 +173,42 @@ const DVD_H = 180;
 /** «Конструктивизм»: the emblem (a disc) instead. */
 const CV_SIZE = 170;
 
+/** Logo speed on each axis (px/s): equal, so it travels at 45°. */
+const DVD_SPEED = 140;
+/** Where it starts (px from the top-left). */
+const DVD_START = { x: 300, y: 200 };
+
 /**
- * A still picture (no animation inside) bouncing between the edges at a
- * fixed angle — 45°-ish, like the original — with a new colour on every wall.
+ * A still picture bouncing edge to edge at 45°, with a new colour on every
+ * wall. CSS only (GPU, no per-frame JavaScript): the outer layer slides
+ * left↔right, the inner one up↕down, each `alternate` forever; their
+ * periods differ, so together they bounce like the classic. Every
+ * animationiteration (bubbling up from either axis) is one wall hit.
  */
 function DvdLogo({ cv }: { cv: boolean }) {
-  const box = useRef<HTMLDivElement>(null);
   const [color, setColor] = useState(0);
   const w = cv ? CV_SIZE : DVD_W;
   const h = cv ? CV_SIZE : DVD_H;
-  useEffect(() => {
-    let b = { x: 300, y: 200, vx: 140, vy: 140 };
-    let last = 0;
-    let raf = 0;
-    const frame = (t: number) => {
-      const s = dvdStep(b, last ? t - last : 0, 1920, 1080, w, h);
-      last = t;
-      b = s;
-      if (s.bounced) setColor((c) => (c + 1) % DVD_COLORS.length);
-      if (box.current) box.current.style.transform = `translate3d(${Math.round(s.x)}px,${Math.round(s.y)}px,0)`;
-      raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
-  }, [w, h]);
+  const rx = 1920 - w;
+  const ry = 1080 - h;
+  const axis = (range: number, start: number) => ({
+    WebkitAnimationDuration: `${range / DVD_SPEED}s`,
+    animationDuration: `${range / DVD_SPEED}s`,
+    WebkitAnimationDelay: `-${start / DVD_SPEED}s`,
+    animationDelay: `-${start / DVD_SPEED}s`,
+  });
   const c = DVD_COLORS[color]!;
   return (
-    <div ref={box} data-testid="dvd-logo" data-color={color} className="idle-dvd absolute left-0 top-0" style={{ width: w, height: h, color: c }}>
-      {cv ? <SovietEmblem size={CV_SIZE} color={c} /> : <DvdMark />}
+    <div
+      className={`idle-dvd idle-dvd-x${cv ? " idle-dvd-cv" : ""} absolute left-0 top-0`}
+      style={axis(rx, DVD_START.x)}
+      onAnimationIteration={() => setColor((n) => (n + 1) % DVD_COLORS.length)}
+    >
+      <div className="idle-dvd idle-dvd-y" style={axis(ry, DVD_START.y)}>
+        <div data-testid="dvd-logo" data-color={color} style={{ width: w, height: h, color: c }}>
+          {cv ? <SovietEmblem size={CV_SIZE} color={c} /> : <DvdMark />}
+        </div>
+      </div>
     </div>
   );
 }
