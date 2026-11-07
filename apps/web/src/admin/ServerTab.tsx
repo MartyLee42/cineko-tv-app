@@ -451,11 +451,12 @@ function ProcessesTable({ s }: { s: SystemStatus }) {
       </div>
       <Table testId="processes-table" head={[t("admin.server.col.name"), t("admin.server.col.cpu"), t("admin.server.col.memory")]}>
         {s.processes.map((p) => (
-          <tr key={p.name}>
+          <tr key={`${p.container ?? ""}/${p.name}`}>
             <td className="max-w-0 py-1.5">
               <span className="block truncate">
                 {p.name}
                 {p.count > 1 && <span className="text-xs text-muted"> ×{p.count}</span>}
+                {p.container && <span className="text-xs text-muted"> · {p.container}</span>}
               </span>
             </td>
             <td className="whitespace-nowrap py-1.5 pl-3 text-right tabular-nums">{formatPercent(p.cpu_percent, locale)}</td>

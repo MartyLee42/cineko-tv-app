@@ -5155,13 +5155,18 @@ export interface components {
                 /** Format: int64 */
                 tx_total: number;
             }[];
-            /** @description Top 12 by resident memory, grouped by friendly name (e.g. all postgres backends). Names only, never command lines. */
+            /** @description Top 12 by memory, grouped by friendly name per container (e.g. one container's postgres backends). Names only, never command lines. */
             processes: {
                 name: string;
+                /** @description Docker container name (hostmon only; absent for host processes). */
+                container?: string;
                 /** @description The group's biggest process. */
                 pid: number;
                 count: number;
-                /** Format: int64 */
+                /**
+                 * Format: int64
+                 * @description Resident memory with shared pages counted once per group: the members' private memory plus the largest member's shared part.
+                 */
                 rss_bytes: number;
                 /** @description 100 = one full core. */
                 cpu_percent: number;
