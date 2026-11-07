@@ -32,21 +32,24 @@ export function bufferedAhead(ranges: readonly [number, number][], t: number): n
   return 0;
 }
 
-export type ResumeReason = "threshold" | "canplaythrough" | "end" | "plateau";
+export type ResumeReason = "threshold" | "canplaythrough" | "end" | "plateau" | "cap";
 
 /** The buffered end hasn't grown for this long: the engine stopped fetching. */
 export const PLATEAU_MS = 5_000;
 /** …and at least this much (or the whole target) is buffered: play it. */
 export const PLATEAU_MIN_AHEAD = 4;
-/** Nothing arrives for this long with (almost) nothing buffered: the stream is dead — reload it here. */
-export const DEAD_STALL_MS = 25_000;
+/** A «Буферизация» on this long plays whatever is buffered (≥ CAP_MIN_AHEAD): never a wait without end. */
+export const REBUFFER_CAP_MS = 20_000;
+export const CAP_MIN_AHEAD = 1;
 
 /**
  * Whether a rebuffer is over, and why. `end`: the buffer reaches the end of
  * the file. `plateau`: a paused engine stopped fetching below the target
  * (Android WebView caps what a paused progressive stream preloads): the
- * percentage sat at 99 % «forever» — play what is there instead. Times
- * absolute; `stuckMs`: since the buffered end last grew.
+ * percentage sat at 99 % «forever» — play what is there instead. `cap`:
+ * on for REBUFFER_CAP_MS (a slow torrent): play what is there. Times
+ * absolute; `stuckMs`: since the buffered end last grew; `elapsedMs`: since
+ * the rebuffer began. A stream that delivers nothing at all is starve.ts's.
  */
 export function rebufferDone(o: {
   ahead: number;
@@ -55,18 +58,15 @@ export function rebufferDone(o: {
   time: number;
   duration: number | null | undefined;
   stuckMs?: number;
+  elapsedMs?: number;
 }): ResumeReason | null {
   if (o.duration && o.duration > 0 && o.time + o.ahead >= o.duration - 0.5) return "end";
   // «99 %» is as good as there: play instead of hanging on it.
   if (o.ahead >= o.target * 0.99) return "threshold";
   if (o.canPlayThrough) return "canplaythrough";
   if ((o.stuckMs ?? 0) >= PLATEAU_MS && o.ahead >= Math.min(PLATEAU_MIN_AHEAD, o.target)) return "plateau";
+  if ((o.elapsedMs ?? 0) >= REBUFFER_CAP_MS && o.ahead >= CAP_MIN_AHEAD) return "cap";
   return null;
-}
-
-/** The stream died during a rebuffer: nothing new for DEAD_STALL_MS and less than PLATEAU_MIN_AHEAD buffered. */
-export function rebufferDead(ahead: number, stuckMs: number): boolean {
-  return stuckMs >= DEAD_STALL_MS && ahead < PLATEAU_MIN_AHEAD;
 }
 
 /** «Буферизация… N%»: progress towards the target (0–99 until done). */

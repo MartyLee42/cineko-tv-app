@@ -57,7 +57,6 @@ import {
   sessionSample,
   slowHintPref,
   rateStore,
-  rebufferDead,
   rebufferDone,
   rebufferOutrun,
   rebufferPercent,
@@ -71,6 +70,7 @@ import {
   type RateSample,
   type SlowHintLog,
 } from "./rebuffer";
+import { keyReopens, shouldReopen, spinnerWanted, stallWatch0, watchStep, type StallWatch } from "./starve";
 import { devicePrefs } from "../settings/devicePrefs";
 import { clearStutter, noteStutter, provenSmooth, readFrames, STUTTER0, stutterStep, thisSmoothView, type FrameCounters, type StutterState } from "./smooth";
 import {
@@ -277,7 +277,16 @@ export class PlayerController {
   /** `shown`: the highest «Буферизация N%» shown in this rebuffer (the buffered end may shrink: never back). */
   private advancing = false;
   private lastTickTime = 0;
-  private lastBusy = false;
+  /** The spinner's state at the last tick (a redraw when it flips without a media event). */
+  private lastSpin = false;
+  /** The stall watchdog (starve.ts): when the picture / the data last moved. */
+  private stallW: StallWatch = stallWatch0(0);
+  /** When the viewer last resumed a pause (a dead connection is likely then). */
+  private resumedAt = 0;
+  /** A reopen of a stuck stream is under way (until its load). */
+  private reopenAt: number | null = null;
+  /** Watchdog reopens since the picture last moved (each waits longer). */
+  private reopens = 0;
   private rebuf: { since: number; target: number; canPlayThrough: boolean; shown: number; end: number; grewAt: number; at: number } | null = null;
   /** Rebuffers ended on a plateau lately (each makes the next plateau wait longer). */
   private plateaus = 0;
@@ -1405,6 +1414,11 @@ export class PlayerController {
     this.rebuf = null;
     this.stallAt = null;
     this.seekedAt = Date.now();
+    // Nothing carries over from the previous stream (another episode starts at 0).
+    this.stallW = stallWatch0(this.seekedAt);
+    this.reopenAt = null;
+    this.advancing = false;
+    this.lastTickTime = Number.POSITIVE_INFINITY;
     this.rateSamples = [];
     const f = this.flow;
     // Online HLS on Android: hls.js (its native HLS seeks badly), see stream.ts.
@@ -1938,10 +1952,12 @@ export class PlayerController {
     this.emit("playback");
   }
 
-  /** OK while «Буферизация…»: play now. */
+  /** OK while «Буферизация…»: play now (a stream that delivers nothing is reopened). */
   resumeNow(): boolean {
     if (!this.rebuf) return false;
-    this.endRebuffer(true);
+    this.resumedAt = Date.now();
+    if (this.stuckForKey()) this.reopen();
+    else this.endRebuffer(true);
     return true;
   }
 
@@ -1983,21 +1999,41 @@ export class PlayerController {
     if (!v || f.phase !== "playing" || f.ctx.player !== "builtin" || this.loadedUrl === null || this.compatPending !== null) return;
     const now = Date.now();
     if (!this.started) {
-      if (!this.compat && !f.source.live && f.source.kind !== "online") this.watchFirstLoad(v, now);
-      return;
+      // Some engines skip canplay / playing for a new src (the next episode): the picture moving is enough.
+      const t0 = v.currentTime;
+      const moved = !v.paused && !v.seeking && this.pendingSeek === null && v.readyState >= 2 && t0 > this.lastTickTime + 0.05 && t0 < this.lastTickTime + 3;
+      this.lastTickTime = t0;
+      if (!moved) {
+        if (!this.compat && !f.source.live && f.source.kind !== "online") this.watchFirstLoad(v, now);
+        return;
+      }
+      this.started = true;
+      this.emit("progress");
     }
     this.watchFrames(v, now, f.source);
     // The picture moves on: never «buffering», whatever readyState says (some TV engines resume after a long pause
-    // with only timeupdates and a stale readyState). And redraw when that state flips without a media event.
+    // with only timeupdates and a stale readyState).
     const t = v.currentTime;
     this.advancing = !v.paused && t > this.lastTickTime + 0.05;
     this.lastTickTime = t;
-    const busy = !this.advancing && (v.seeking || v.readyState < 3);
-    if (busy !== this.lastBusy) {
-      this.lastBusy = busy;
+    // A recovery is over once it plays near the spot (a keyframe a few seconds early never «reaches» it).
+    if (this.resumeAt !== null && this.advancing && this.pendingSeek === null && !v.seeking && Math.abs(this.abs(v) - this.resumeAt) < 15) {
+      this.resumeAt = null;
       this.emit("playback");
     }
     const ahead = bufferedAhead(rangesOf(v), v.currentTime);
+    // The stall watchdog: should play (not the viewer's pause; our own «Буферизация» counts), and did anything move?
+    const dur = this.duration();
+    const nearEnd = !!dur && this.abs(v) >= dur - 1;
+    const wants = (!v.paused || !!this.rebuf) && !v.ended && !nearEnd && !f.source.live && (typeof document === "undefined" || document.visibilityState !== "hidden");
+    this.stallW = watchStep(this.stallW, { wants, advancing: this.advancing, end: this.abs(v) + ahead, now });
+    if (this.advancing) this.reopens = 0;
+    // Redraw when the spinner's state flips without a media event.
+    const spin = this.stalled();
+    if (spin !== this.lastSpin) {
+      this.lastSpin = spin;
+      this.emit("playback");
+    }
     const bitrate = this.bitrate();
     // Buffer growth measures the link only while the engine is still
     // fetching; with a comfortable buffer the link isn't the limit.
@@ -2030,6 +2066,13 @@ export class PlayerController {
         this.startRebuffer(now, rebufferTarget(this.quiet ? this.lastStall : null, !this.quiet));
       }
     }
+    // Stuck: the picture and the data stand still (a dead connection, a wedged engine, a «Буферизация» that
+    // can't finish) — reopen the stream at the spot, like Stop + Play would.
+    if (wants && shouldReopen(this.stallW, { now, resumedAgoMs: now - this.resumedAt, rebufferMs: this.rebuf ? now - this.rebuf.since : null, tries: this.reopens })) {
+      this.reopens++;
+      this.reopen();
+      return;
+    }
     const r = this.rebuf;
     if (!r) return;
     // Playing again without us (phone resume, play key, the engine after a long pause): the rebuffer is over.
@@ -2050,19 +2093,13 @@ export class PlayerController {
     // (no play/pause loop every few seconds).
     if (now - this.plateauAt > 60_000) this.plateaus = 0;
     const stuckMs = (now - r.grewAt) / 2 ** Math.min(this.plateaus, 3);
-    const done = rebufferDone({ ahead, target: r.target, canPlayThrough: r.canPlayThrough, time: this.abs(v), duration: this.duration(), stuckMs });
+    const done = rebufferDone({ ahead, target: r.target, canPlayThrough: r.canPlayThrough, time: this.abs(v), duration: this.duration(), stuckMs, elapsedMs: now - r.since });
     if (done) {
       if (done === "plateau") {
         this.plateaus++;
         this.plateauAt = now;
       }
       this.endRebuffer(true);
-      return;
-    }
-    if (rebufferDead(ahead, now - r.grewAt) && !f.source.live) {
-      this.resumeAt = this.trustedPosition();
-      this.rebuf = null;
-      this.recoverPrematureEnd();
       return;
     }
     this.emit("playback");
@@ -2073,9 +2110,47 @@ export class PlayerController {
     return this.advancing;
   }
 
-  /** A short native stall after a played-out rebuffer: keep the picture, no spinner. */
-  quietStall(): boolean {
-    return this.quiet && !this.rebuf && !this.video?.seeking;
+  /**
+   * The spinner over the picture (starve.ts spinnerWanted): the film should
+   * play and doesn't move. Not for the viewer's pause; a short native stall
+   * after a played-out «Буферизация» stays quiet for a moment.
+   */
+  stalled(): boolean {
+    const v = this.video;
+    if (!v) return true;
+    return spinnerWanted({
+      userPaused: this.userPaused(),
+      advancing: this.advancing,
+      seeking: v.seeking,
+      readyState: v.readyState,
+      quiet: this.quiet && !this.rebuf,
+      stuckMs: Date.now() - this.stallW.movedAt,
+    });
+  }
+
+  /** OK / ▶ now would find the film stuck (starve.ts keyReopens): reopen instead of waiting or pausing. */
+  private stuckForKey(): boolean {
+    const v = this.video;
+    if (!v || this.flow.phase !== "playing" || !this.started || this.loadedUrl === null || this.compatPending !== null || this.flow.source.live) return false;
+    if (v.ended || (v.paused && !this.rebuf)) return false;
+    return keyReopens(this.stallW, { now: Date.now(), readyState: v.readyState });
+  }
+
+  /**
+   * Reopens a stuck stream at the trusted spot with a fresh URL (what Stop +
+   * Play did by hand). Not counted against MAX_RECOVERIES (the watchdog
+   * backs off instead of failing the playback). One at a time.
+   */
+  private reopen() {
+    const now = Date.now();
+    if (this.flow.phase !== "playing" || !this.video) return;
+    if (this.reopenAt !== null && now - this.reopenAt < 30_000) return;
+    this.reopenAt = now;
+    this.resumeAt = this.trustedPosition();
+    this.rebuf = null;
+    this.stallAt = null;
+    this.stallW = stallWatch0(now);
+    this.recoverPrematureEnd(false);
   }
 
   /** «Буферизация… N%» with seconds ahead and Mbit/s; null when not rebuffering. */
@@ -2202,14 +2277,14 @@ export class PlayerController {
   }
 
   /** Premature end / jump: show loading, fresh URL, continue at the trusted spot. */
-  private recoverPrematureEnd() {
+  private recoverPrematureEnd(count = true) {
     const f = this.flow;
     const v = this.video;
     if (f.phase !== "playing" || !v) return;
     const at = this.resumeAt ?? this.lastGood;
     this.resumeAt = at;
     this.recoverFrom = at;
-    if (++this.recoveries > MAX_RECOVERIES) {
+    if (count && ++this.recoveries > MAX_RECOVERIES) {
       this.recoveries = 0;
       return this.dispatch({ type: "fail", code: "network" });
     }
@@ -2256,7 +2331,10 @@ export class PlayerController {
   resume(): boolean {
     if (!this.isPlaying()) return false;
     const v = this.video!;
-    // Play while rebuffering: the user resumes early.
+    // The picture is stuck (a dead connection): reopen the stream here instead of waiting on it.
+    if (this.stuckForKey()) return this.reopen(), true;
+    // Play while rebuffering: the user resumes early (if that doesn't move soon either, the watchdog reopens it).
+    this.resumedAt = Date.now();
     if (this.rebuf) return this.endRebuffer(true), true;
     if (v.ended) v.currentTime = 0;
     this.play();
@@ -2264,8 +2342,9 @@ export class PlayerController {
     return true;
   }
 
+  /** OK: pause / play. A stuck picture (the spinner for a while) counts as not playing: OK plays it. */
   toggle() {
-    if (this.video?.paused) this.resume();
+    if (this.video?.paused || this.stuckForKey()) this.resume();
     else this.pause();
   }
 
