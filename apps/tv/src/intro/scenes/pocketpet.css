@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/press-start-2p.css"; /* not in the startup CSS */
 /* ---- pocketpet: a pastel egg-shaped toy pops in; on its LCD a pixel egg wobbles, cracks and hatches
    Cineko (two-frame bob), four hearts fill up, «Cineko» types in. Pixel motion = steps(), transform/opacity only. */
 @keyframes in-pp-toy { 0% { opacity: 0; transform: scale(.7); } 100% { opacity: 1; transform: scale(1); } }

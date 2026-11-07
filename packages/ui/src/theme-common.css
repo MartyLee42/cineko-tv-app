@@ -1,0 +1,245 @@
+/* Shared by every design (after the design token blocks, see theme.css). */
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: rgb(var(--mt-bg));
+  color: rgb(var(--mt-text));
+  font-family: var(--mt-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Slim, theme-coloured scrollbars (the browser default is a bright grey bar
+   that clashes with every design). Firefox uses scrollbar-*, WebKit/Blink the
+   pseudo-elements (also on old TV engines). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--mt-border), 1) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--mt-border), 1);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--mt-muted), 0.7); }
+::-webkit-scrollbar-corner { background: transparent; }
+html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb, html.design-matrix ::-webkit-scrollbar-thumb, html.design-pocketpet ::-webkit-scrollbar-thumb, html.design-noir ::-webkit-scrollbar-thumb, html.design-vague ::-webkit-scrollbar-thumb { border-radius: 0; }
+
+/* ---------------------------------------------------------------- season layer (SeasonLayer.tsx)
+   Pointer-events-free overlay; transform/opacity animations only, one
+   element per particle; no inset / gap / aspect-ratio / backdrop-filter
+   (old TV engines). Moving particles are full-height columns translated by
+   their own height (%), so the same keyframes fit any viewport. */
+.mt-ss { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; contain: strict; }
+.mt-ss-fixed { position: fixed; z-index: 15; }
+.mt-ss[data-paused] *, .mt-ss[data-paused] { animation-play-state: paused !important; }
+.mt-ss-p { position: absolute; top: 0; height: 100%; will-change: transform; animation-timing-function: linear; animation-iteration-count: infinite; }
+.mt-ss-p > svg { position: absolute; left: 0; }
+.mt-ss-fall > svg { bottom: 100%; }
+.mt-ss-rise > svg { top: 100%; }
+.mt-ss-fall-a { animation-name: mt-ss-fall-a; }
+.mt-ss-fall-b { animation-name: mt-ss-fall-b; }
+.mt-ss-fall-c { animation-name: mt-ss-fall-c; }
+.mt-ss-rise-a { animation-name: mt-ss-rise-a; }
+.mt-ss-rise-b { animation-name: mt-ss-rise-b; }
+.mt-ss-rise-c { animation-name: mt-ss-rise-c; }
+@keyframes mt-ss-fall-a {
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(22px, 27%, 0); }
+  50% { transform: translate3d(-4px, 54%, 0); }
+  75% { transform: translate3d(18px, 81%, 0); }
+  100% { transform: translate3d(0, 112%, 0); }
+}
+@keyframes mt-ss-fall-b {
+  0% { transform: translate3d(0, 0, 0); }
+  30% { transform: translate3d(-26px, 33%, 0); }
+  65% { transform: translate3d(8px, 72%, 0); }
+  100% { transform: translate3d(-14px, 112%, 0); }
+}
+@keyframes mt-ss-fall-c {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(14px, 56%, 0); }
+  100% { transform: translate3d(-8px, 112%, 0); }
+}
+@keyframes mt-ss-rise-a {
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(18px, -27%, 0); }
+  50% { transform: translate3d(-6px, -54%, 0); }
+  75% { transform: translate3d(16px, -81%, 0); }
+  100% { transform: translate3d(0, -112%, 0); }
+}
+@keyframes mt-ss-rise-b {
+  0% { transform: translate3d(0, 0, 0); }
+  35% { transform: translate3d(-22px, -38%, 0); }
+  70% { transform: translate3d(6px, -77%, 0); }
+  100% { transform: translate3d(-12px, -112%, 0); }
+}
+@keyframes mt-ss-rise-c {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-12px, -56%, 0); }
+  100% { transform: translate3d(10px, -112%, 0); }
+}
+/* The rocket: a full-width strip, the sprite starts left of it and crosses in ~30% of a 30 s loop. */
+.mt-ss-fly { position: absolute; left: 0; width: 100%; will-change: transform; animation: mt-ss-fly 24s linear -4s infinite; }
+.mt-ss-fly > svg { position: absolute; right: 100%; top: 0; }
+@keyframes mt-ss-fly {
+  0% { transform: translate3d(0, 40px, 0); }
+  30% { transform: translate3d(118%, -50px, 0); }
+  100% { transform: translate3d(118%, -50px, 0); }
+}
+.mt-ss-star, .mt-ss-dot { position: absolute; display: block; line-height: 0; }
+.mt-ss-tw { will-change: opacity; animation: mt-ss-tw 3.4s ease-in-out infinite alternate; }
+@keyframes mt-ss-tw { from { opacity: 0.25; } to { opacity: 1; } }
+.mt-ss-still .mt-ss-star { opacity: 0.8; }
+/* New Year's garland: the wire plus two bulb sets blinking in turn. */
+.mt-ss-garland { position: absolute; left: 0; top: 0; width: 100%; }
+.mt-ss-garland-svg { position: absolute; left: 0; top: 0; display: block; }
+.mt-ss-blink-a { will-change: opacity; animation: mt-ss-blink 2.4s ease-in-out infinite alternate; }
+.mt-ss-blink-b { will-change: opacity; animation: mt-ss-blink 2.4s ease-in-out -1.2s infinite alternate; }
+@keyframes mt-ss-blink { from { opacity: 1; } to { opacity: 0.35; } }
+/* День Победы: the St George ribbon along the top edge (3 black, 2 orange stripes). */
+.mt-ss-ribbon {
+  position: absolute; left: 0; top: 0; width: 100%; height: 15px;
+  background: linear-gradient(to bottom, #141414 0, #141414 20%, #e8811a 20%, #e8811a 40%, #141414 40%, #141414 60%, #e8811a 60%, #e8811a 80%, #141414 80%, #141414 100%);
+}
+.mt-ss-web .mt-ss-ribbon { height: 7px; }
+.mt-ss-badge {
+  position: absolute; left: 50%; display: inline-block; white-space: nowrap; transform: translateX(-50%);
+  border: 1px solid rgba(232, 129, 26, 0.55); background: rgba(12, 12, 12, 0.8); color: #f4f1ea; font-weight: 600; letter-spacing: 0.01em;
+}
+.mt-ss-badge > svg, .mt-ss-badge-text { display: inline-block; vertical-align: middle; }
+.mt-ss-badge-tv { top: 34px; padding: 8px 26px 8px 18px; border-radius: 999px; font-size: 26px; }
+.mt-ss-badge-tv .mt-ss-badge-text { margin-left: 12px; }
+.mt-ss-badge-web { top: 62px; padding: 3px 12px 3px 8px; border-radius: 999px; font-size: 12px; }
+.mt-ss-badge-web .mt-ss-badge-text { margin-left: 6px; }
+/* Terminal / Cyberpunk and Projector / Wireframe have their tab bars at the top: the badge sits below them. */
+html.skel-terminal .mt-ss-badge-tv, html.skel-projector .mt-ss-badge-tv { top: 150px; }
+/* Maslenitsa: a warm glow rising from the bottom (static). */
+.mt-ss-warm { position: absolute; left: 0; bottom: 0; width: 100%; height: 45%; background: radial-gradient(ellipse at 50% 100%, rgba(255, 166, 60, 0.22), rgba(255, 166, 60, 0) 70%); }
+.mt-ss-corner { position: absolute; line-height: 0; }
+.mt-ss-tl { left: 0; top: 0; }
+.mt-ss-tr { right: 0; top: 0; }
+.mt-ss-br { right: 10px; bottom: 4px; }
+.mt-ss-web .mt-ss-br { right: 8px; bottom: 8px; }
+.mt-ss-flip > svg { transform: scaleX(-1); }
+.mt-ss-tv .mt-ss-tl { left: 120px; } /* clear of Кинозал's rail */
+/* The greeting toast (TV: top centre; web: under the header, with ×). */
+.mt-ss-toast {
+  position: absolute; left: 50%; white-space: nowrap; transform: translateX(-50%);
+  background: rgba(var(--mt-surface-2), 0.96); color: rgb(var(--mt-text)); font-weight: 700; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  animation: mt-ss-toast-in 0.5s ease-out both;
+}
+.mt-ss-toast > * { display: inline-block; vertical-align: middle; }
+.mt-ss-toast-icon { line-height: 0; }
+.mt-ss-toast-tv { top: 40px; padding: 16px 36px 16px 24px; border-radius: 999px; font-size: 34px; }
+.mt-ss-toast-tv .mt-ss-toast-icon { margin-right: 16px; }
+html.skel-terminal .mt-ss-toast-tv, html.skel-projector .mt-ss-toast-tv { top: 150px; }
+.mt-ss-toast-web { top: 68px; padding: 8px 8px 8px 14px; border-radius: 999px; font-size: 14px; pointer-events: auto; }
+.mt-ss-toast-web .mt-ss-toast-icon { margin-right: 8px; }
+.mt-ss-toast-x { margin-left: 8px; width: 28px; height: 28px; border-radius: 999px; font-size: 18px; line-height: 28px; color: rgb(var(--mt-muted)); background: transparent; cursor: pointer; }
+.mt-ss-toast-x:hover { color: rgb(var(--mt-text)); background: rgba(var(--mt-text), 0.08); }
+@keyframes mt-ss-toast-in { from { opacity: 0; transform: translate(-50%, -12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.mt-ss-toast-soon { font-weight: 600; opacity: 0.92; }
+/* Light theme (Кинозал light / web): a soft outline so white snow, stars and confetti still read. */
+html.theme-light .mt-ss-p > svg, html.theme-light .mt-ss-dot > svg, html.theme-light .mt-ss-star > svg { filter: drop-shadow(0 0 1.5px rgba(20, 50, 90, 0.55)); }
+.mt-ss-web .mt-ss-tr { top: 56px; } /* under the web header */
+
+/* ---------------------------------------------------------------- cozy mode (CozyLayer.tsx, cozy.ts)
+   «Уютный режим» (ProfileSettings.cozy_mode): html.mt-cozy turns any design
+   into warm, dimmed amber/ember colours (lower contrast, always dark) and
+   lays a faint warm veil over the page. The doubled class outranks every
+   html.design-* / .theme-light token block. The Home ambience follows the
+   season layer's rules: transform/opacity keyframes only, no filters. */
+html.mt-cozy.mt-cozy.mt-cozy {
+  --mt-bg: 22, 15, 11;
+  --mt-surface: 37, 27, 20;
+  --mt-surface-2: 49, 36, 27;
+  --mt-border: 76, 58, 44;
+  --mt-text: 236, 221, 200;
+  --mt-muted: 170, 147, 122;
+  --mt-accent: 238, 160, 70;
+  --mt-accent-strong: 252, 192, 118;
+  --mt-on-accent: 32, 17, 6;
+  --mt-focus: 255, 212, 158;
+  --mt-ok: 150, 196, 110;
+  --mt-warn: 240, 176, 72;
+  color-scheme: dark;
+}
+html.mt-cozy body::after {
+  content: ""; position: fixed; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2147483000;
+  background: rgba(70, 30, 0, 0.12);
+}
+.mt-cz { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; contain: strict; }
+.mt-cz-fixed { position: fixed; z-index: 14; }
+.mt-cz[data-paused] *, .mt-cz[data-paused] { animation-play-state: paused !important; }
+/* Rain: a cool haze at the top, streaks running down, a few drops sliding on the glass. */
+.mt-cz-haze { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(130, 150, 180, 0.12), rgba(130, 150, 180, 0) 45%); }
+.mt-cz-streak {
+  position: absolute; top: 0; width: 2px; will-change: transform; animation: mt-cz-fall 1.2s linear infinite;
+  background: linear-gradient(to bottom, rgba(210, 222, 240, 0), rgba(210, 222, 240, 0.85));
+}
+.mt-cz-web .mt-cz-streak { width: 1px; animation-name: mt-cz-fall-web; }
+@keyframes mt-cz-fall { from { transform: translate3d(0, -140px, 0); } to { transform: translate3d(0, 1240px, 0); } }
+@keyframes mt-cz-fall-web { from { transform: translate3d(0, -100px, 0); } to { transform: translate3d(0, 110vh, 0); } }
+.mt-cz-drop {
+  position: absolute; border-radius: 50% 50% 46% 46%;
+  background: radial-gradient(circle at 36% 30%, rgba(255, 255, 255, 0.6), rgba(205, 218, 236, 0.2) 42%, rgba(30, 36, 46, 0.18) 68%, rgba(30, 36, 46, 0) 72%);
+}
+.mt-cz-slide { will-change: transform, opacity; animation: mt-cz-slide 20s ease-in infinite; }
+@keyframes mt-cz-slide {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  8% { opacity: 0.55; }
+  70% { transform: translate3d(0, 10px, 0); opacity: 0.55; }
+  94% { transform: translate3d(0, 170px, 0); opacity: 0.45; }
+  100% { transform: translate3d(0, 190px, 0); opacity: 0; }
+}
+/* Fireplace: two ember glows at the bottom flickering out of step, sparks drifting up. */
+.mt-cz-glow { position: absolute; left: 0; bottom: 0; width: 100%; height: 48%; will-change: opacity; }
+.mt-cz-glow-a { background: radial-gradient(ellipse 75% 100% at 50% 100%, rgba(255, 118, 28, 0.32), rgba(255, 84, 20, 0.12) 45%, rgba(255, 84, 20, 0) 76%); animation: mt-cz-flicker 3.3s ease-in-out infinite; }
+.mt-cz-glow-b { background: radial-gradient(ellipse 42% 70% at 44% 100%, rgba(255, 186, 86, 0.24), rgba(255, 186, 86, 0) 72%); animation: mt-cz-flicker 4.7s ease-in-out -1.6s infinite; }
+@keyframes mt-cz-flicker {
+  0% { opacity: 0.84; } 13% { opacity: 1; } 22% { opacity: 0.76; } 38% { opacity: 0.95; }
+  51% { opacity: 0.8; } 66% { opacity: 1; } 81% { opacity: 0.82; } 100% { opacity: 0.84; }
+}
+.mt-cz-spark {
+  position: absolute; bottom: 0; border-radius: 50%; will-change: transform, opacity;
+  background: radial-gradient(circle, #ffe2a6 0%, #ff9a3c 55%, rgba(255, 110, 30, 0) 72%);
+  animation: mt-cz-rise-a 7s ease-out infinite;
+}
+.mt-cz-spark-b { animation-name: mt-cz-rise-b; }
+@keyframes mt-cz-rise-a {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12% { opacity: 0.95; }
+  55% { transform: translate3d(26px, -220px, 0); }
+  100% { transform: translate3d(8px, -420px, 0); opacity: 0; }
+}
+@keyframes mt-cz-rise-b {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12% { opacity: 0.9; }
+  50% { transform: translate3d(-30px, -190px, 0); }
+  100% { transform: translate3d(-6px, -380px, 0); opacity: 0; }
+}
+.mt-cz-web .mt-cz-spark { animation-name: mt-cz-rise-web; }
+@keyframes mt-cz-rise-web {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12% { opacity: 0.9; }
+  55% { transform: translate3d(14px, -130px, 0); }
+  100% { transform: translate3d(-4px, -250px, 0); opacity: 0; }
+}
+.mt-cz-still .mt-cz-glow { animation: none; opacity: 0.9; }
+@media (prefers-reduced-motion: reduce) {
+  .mt-cz *, .mt-cz { animation: none !important; }
+}
+
+/* «Конструктивизм» pictograms (cvIcons.tsx): the red part; on a red slab it turns black. */
+.cv-ic-a { fill: var(--cv-ic-a, #d7261e); }
+
+/* «Матрица»: the waiting spinner (Spinner) — three phosphor blocks lighting up in turn. */
+.mx-spin-cell { display: inline-block; background: #00ff41; box-shadow: 0 0 8px rgba(0, 255, 65, .7); opacity: .18; -webkit-animation: mx-spin 1.05s steps(1, end) infinite; animation: mx-spin 1.05s steps(1, end) infinite; }
+.mx-spin-1 { -webkit-animation-delay: .35s; animation-delay: .35s; }
+.mx-spin-2 { -webkit-animation-delay: .7s; animation-delay: .7s; }
+@-webkit-keyframes mx-spin { 0% { opacity: 1; } 33% { opacity: .18; } }
+@keyframes mx-spin { 0% { opacity: 1; } 33% { opacity: .18; } }
+

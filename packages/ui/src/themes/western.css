@@ -1,0 +1,26 @@
+/* «western» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Вестерн»: a spaghetti-western homage on a sun-bleached desert: pale sand sky, dusty ochre, dark
+   saddle-brown ink, a rust-red «wanted» accent; wood-type slab headings (Kelly Slab, has Cyrillic),
+   body text Onest. Light, like Тамагочи: the kinozal skeleton reads its tokens. */
+html.design-western {
+  --mt-bg: 236, 220, 188;
+  --mt-surface: 224, 199, 154;
+  --mt-surface-2: 210, 180, 130;
+  --mt-border: 150, 106, 62;
+  --mt-text: 43, 26, 14;
+  --mt-muted: 98, 66, 40;
+  --mt-accent: 163, 58, 28;
+  --mt-accent-strong: 208, 138, 46;
+  --mt-on-accent: 255, 243, 222;
+  --mt-focus: 43, 26, 14;
+  --mt-danger: 178, 34, 34;
+  --mt-ok: 46, 125, 50;
+  --mt-warn: 168, 98, 10;
+  --mt-font-display: "Kelly Slab", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 3px;
+  --mt-radius-control: 4px;
+  color-scheme: light;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-western h1, html.design-western h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .02em; }

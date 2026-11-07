@@ -1,0 +1,25 @@
+/* «anderson» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Симметрия»: a pastel storybook: powder pink ground, cream paper, mustard and mint, a deep
+   raspberry ink for text (contrast at 3 m), a dark mustard accent (accent text reads on pink); a geometric Futura-like sans (Jost, has Cyrillic) for
+   everything, headings in spaced capitals. */
+html.design-anderson {
+  --mt-bg: 246, 214, 214;
+  --mt-surface: 251, 238, 230;
+  --mt-surface-2: 242, 222, 210;
+  --mt-border: 196, 150, 70;
+  --mt-text: 58, 34, 44;
+  --mt-muted: 112, 78, 88;
+  --mt-accent: 154, 107, 16;
+  --mt-accent-strong: 143, 207, 184;
+  --mt-on-accent: 251, 238, 230;
+  --mt-focus: 122, 34, 62;
+  --mt-font-body: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-display: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: light;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-anderson h1, html.design-anderson h2 { font-family: var(--mt-font-display); font-weight: 500; text-transform: uppercase; letter-spacing: .12em; }

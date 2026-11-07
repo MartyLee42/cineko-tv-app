@@ -1,3 +1,5 @@
+@import "@martytv/ui/fonts/old-standard-tt.css"; /* not in the startup CSS */
+@import "@martytv/ui/fonts/playfair-display.css"; /* not in the startup CSS */
 /* ---- silent: a film leader counts 3-2-1, a white flash, the intertitle card, Cineko peeks in, an iris-out.
    Everything black and white; transform / opacity only. */
 @keyframes sli-leader { 0%, 96% { opacity: 1; } 100% { opacity: 0; } }

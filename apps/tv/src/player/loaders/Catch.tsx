@@ -1,5 +1,6 @@
 // A loading style (its own chunk: fetched for the profile's style only, see loaderChunks.ts).
 import { CatchArt } from "@martytv/ui/loaders/catch";
+import "@martytv/ui/fonts/pixelify-sans.css"; // its score type (not in the startup CSS)
 import { useCalmMotion } from "../../design/skins";
 import { bindLoaderKeys } from "../loaderKeys";
 import { ArtLayout, pct, useStatus, type LoaderModel } from "../loaderParts";

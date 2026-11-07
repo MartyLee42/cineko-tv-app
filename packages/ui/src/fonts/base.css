@@ -1,0 +1,14 @@
+/* The base UI fonts (every design, every client): Onest (text), Unbounded bold (Кинозал headings),
+   JetBrains Mono (labels, codes). Latin + Cyrillic only. */
+@import "@fontsource/onest/cyrillic-400.css";
+@import "@fontsource/onest/latin-400.css";
+@import "@fontsource/onest/cyrillic-500.css";
+@import "@fontsource/onest/latin-500.css";
+@import "@fontsource/onest/cyrillic-700.css";
+@import "@fontsource/onest/latin-700.css";
+@import "@fontsource/unbounded/cyrillic-700.css";
+@import "@fontsource/unbounded/latin-700.css";
+@import "@fontsource/unbounded/cyrillic-800.css";
+@import "@fontsource/unbounded/latin-800.css";
+@import "@fontsource/jetbrains-mono/cyrillic-500.css";
+@import "@fontsource/jetbrains-mono/latin-500.css";

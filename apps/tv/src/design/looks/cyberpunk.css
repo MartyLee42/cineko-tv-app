@@ -1,3 +1,4 @@
+@import "@martytv/ui/themes/cyberpunk.css"; /* the design's tokens (not in the startup CSS) */
 /* «cyberpunk»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
 /* ---------------------------------------------------------------- Киберпанк (terminal skeleton) */
 .cp-city {

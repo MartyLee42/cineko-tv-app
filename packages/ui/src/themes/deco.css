@@ -1,0 +1,21 @@
+/* «deco» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Ар-деко»: black lacquer, gold, ivory; Playfair Display headings. */
+html.design-deco {
+  --mt-bg: 11, 10, 8;
+  --mt-surface: 27, 24, 18;
+  --mt-surface-2: 40, 35, 26;
+  --mt-border: 96, 80, 46;
+  --mt-text: 244, 236, 216;
+  --mt-muted: 184, 170, 142;
+  --mt-accent: 201, 165, 76;
+  --mt-accent-strong: 232, 207, 138;
+  --mt-on-accent: 16, 12, 4;
+  --mt-focus: 232, 207, 138;
+  --mt-font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 2px;
+  --mt-radius-control: 3px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-deco h1, html.design-deco h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
