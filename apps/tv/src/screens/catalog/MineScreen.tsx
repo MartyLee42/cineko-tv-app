@@ -71,6 +71,7 @@ export function MineScreen({ mem, onOpen, onHome }: { mem: RouteMemory; onOpen: 
           mem.set("ty", v);
         }}
         onSelect={(it) => onOpen(it, t("tvd.mine.title"))}
+        quick={(it) => ({ item: it, onOpen: () => onOpen(it, t("tvd.mine.title")) })}
         renderItem={(it, focused, i) => <GridCard item={it} cfg={cfg.data} g={g} focused={focused} index={i} />}
       />
     );

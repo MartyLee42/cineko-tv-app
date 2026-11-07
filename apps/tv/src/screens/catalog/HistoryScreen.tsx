@@ -190,6 +190,7 @@ function HistoryList({
           onIndex(i);
         }}
         onPress={() => onSelect(h)}
+        quick={() => ({ item: h.media, onOpen: () => onSelect(h) })}
       >
         {(focused) => renderItem(h, focused)}
       </Slot>,

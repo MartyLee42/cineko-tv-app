@@ -337,6 +337,14 @@ html.mt-wobble .mt-hop { animation: mt-hop 480ms cubic-bezier(.3, .7, .4, 1) bot
 /* Scrolling fast (arrows repeating, design/fastNav.ts): skip the per-card hop. */
 html.mt-fast .mt-hop { animation: none; }
 
+/* Quick actions (hold OK / ☰ / Info, quick/QuickMenu.tsx): «•••» top-centre on the focused card,
+   fading in after a beat so fast scrolling never flashes it. Opacity only (old engines). */
+.tv-quick-hint { z-index: 2; top: 10px; left: 50%; width: 46px; margin-left: -23px; animation: tv-quick-hint 200ms ease-out 700ms backwards; pointer-events: none; }
+@keyframes tv-quick-hint { from { opacity: 0; } to { opacity: 1; } }
+html.mt-fast .tv-quick-hint { visibility: hidden; }
+/* The profile's own rating under the ✓ / ♥ marks. */
+.tv-my-rating { background: rgba(0,0,0,.7); color: #ffd25e; }
+
 /* «Конструктивизм» extras: the poster loader's turning ring, the «Рекомендуем к просмотру» card, «VOICE OF AMERICA». */
 @keyframes cvl-turn { to { transform: rotate(360deg); } }
 .cvl-ring { border: 6px dashed rgba(239,228,204,.55); animation: cvl-turn 14s linear infinite; }

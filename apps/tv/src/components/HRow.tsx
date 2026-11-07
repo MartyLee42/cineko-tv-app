@@ -3,10 +3,11 @@ import { FocusContext, getCurrentFocusKey, useFocusable } from "@noriginmedia/no
 import { lineResolver, useFocusRecorder } from "../focus";
 import { clamp, rowWindow, trackedIndex, trackOffset } from "../catalog/virtual";
 import { SkinEnd, useHasSkinEnd } from "../design/skins";
+import { Hold } from "../remote/hold";
+import { QuickHintContext, quickMenu, type QuickTarget } from "../quick/store";
 
 /** Room around the cards for the focus ring and scale-up (rows clip overflow). */
 export const ROW_PAD = 24;
-const LONG_PRESS_MS = 700;
 
 /**
  * A horizontally scrolling, virtualized row. Only items around the focused
@@ -28,6 +29,7 @@ export function HRow<T>({
   onIndexChange,
   onSelect,
   onLongPress,
+  quick,
   renderItem,
   tail: ownTail,
 }: {
@@ -48,6 +50,8 @@ export function HRow<T>({
   onSelect?: (item: T, index: number) => void;
   /** Holding OK (secondary action); without it OK acts on press. */
   onLongPress?: (item: T, index: number) => void;
+  /** Poster cards: holding OK (or ☰ / Info) opens the quick actions (♥, «Буду смотреть», rating) for this title. */
+  quick?: (item: T, index: number) => QuickTarget | null;
   renderItem: (item: T, focused: boolean, index: number) => ReactNode;
   /** Not focusable, after the last item (e.g. «loading more» / a load error), one item wide. */
   tail?: ReactNode;
@@ -98,6 +102,7 @@ export function HRow<T>({
         }}
         onPress={() => onSelect?.(item, i)}
         onLongPress={onLongPress ? () => onLongPress(item, i) : undefined}
+        quick={quick ? () => quick(item, i) : undefined}
       >
         {(focused) => renderItem(item, focused, i)}
       </Slot>,
@@ -132,6 +137,7 @@ export function Slot({
   onFocus,
   onPress,
   onLongPress,
+  quick,
   children,
 }: {
   focusKey: string;
@@ -141,41 +147,46 @@ export function Slot({
   onFocus: () => void;
   onPress: () => void;
   onLongPress?: () => void;
+  /** Quick actions for the card: the long press (unless `onLongPress` is given) and ☰ / Info open them. */
+  quick?: () => QuickTarget | null;
   children: (focused: boolean) => ReactNode;
 }) {
   const record = useFocusRecorder();
+  const openQuick = quick
+    ? () => {
+        const q = quick();
+        if (q) quickMenu.open(q);
+      }
+    : undefined;
+  const longPress = onLongPress ?? openQuick;
+  // ☰ / Info read the card's latest state (its `me` changes after a quick action).
+  const latest = useRef(quick);
+  useEffect(() => {
+    latest.current = quick;
+  });
   // With a long-press action, OK acts on release (holding it = long press).
-  const hold = useRef<{ timer?: ReturnType<typeof setTimeout>; down: boolean; long: boolean }>({ down: false, long: false });
-  useEffect(() => () => clearTimeout(hold.current.timer), []);
+  const [hold] = useState(() => new Hold());
+  useEffect(() => () => hold.reset(), [hold]);
   const { ref, focused } = useFocusable({
     focusKey,
     onFocus: () => {
       record?.(focusKey);
+      if (quick) quickMenu.focus(focusKey, () => latest.current?.() ?? null);
       onFocus();
     },
+    onBlur: () => hold.reset(),
     onEnterPress: () => {
-      if (!onLongPress) return onPress();
-      const h = hold.current;
-      if (h.down) return;
-      h.down = true;
-      h.long = false;
-      h.timer = setTimeout(() => {
-        h.long = true;
-        onLongPress();
-      }, LONG_PRESS_MS);
+      if (!longPress) return onPress();
+      hold.down(longPress);
     },
     onEnterRelease: () => {
-      if (!onLongPress) return;
-      const h = hold.current;
-      clearTimeout(h.timer);
-      const was = h.down;
-      h.down = false;
-      if (was && !h.long) onPress();
+      if (longPress && hold.up()) onPress();
     },
   });
-  return (
+  const body = (
     <div ref={ref} data-focus-key={focusKey} onClick={onPress} className="absolute" style={{ left, top, width }}>
       {children(focused)}
     </div>
   );
+  return quick ? <QuickHintContext.Provider value>{body}</QuickHintContext.Provider> : body;
 }

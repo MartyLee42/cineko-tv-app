@@ -43,6 +43,7 @@ import { SkinBackground } from "./design/skins";
 import { getLook, loadLook } from "./design/looks/registry";
 import { parseMessageEvent } from "./messages/queue";
 import { RateLayer } from "./watch/RatePrompt";
+import { QuickLayer } from "./quick/QuickMenu";
 import { messageQueue } from "./watch/stores";
 import { invalidateForYou } from "./foryou/queries";
 import { askInbox, parseAskEvent } from "./foryou/askLogic";
@@ -779,6 +780,7 @@ export function App() {
       )}
       <VolumeOsd />
       {screen.kind === "home" && <RateLayer enabled={flow.phase === "idle" && !liveSession && !videoOn} />}
+      {screen.kind === "home" && <QuickLayer />}
       {screen.kind === "home" && <MessageLayer playing={screen.kind === "home" && player.busy() && !player.handedOff()} onPause={pauseForMessage} />}
       {exitAsk && (
         <ActionMenu
