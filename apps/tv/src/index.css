@@ -42,8 +42,10 @@ body { overflow: hidden; cursor: none; }
 @keyframes tv-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 .tv-pulse { animation: tv-pulse 1.4s ease-in-out infinite; }
 
-/* Backdrop scrims for hero/details. */
-.tv-scrim-left { background: linear-gradient(90deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), .92) 30%, rgba(var(--mt-bg), .55) 60%, rgba(var(--mt-bg), .1) 100%); }
+/* Backdrop scrims for hero/details. All the skeletons' scrims (tv-, k-fade-, t-band-fade, p-scrim-) keep
+   text on ≥ ~85% ground colour whatever the picture (a white sky behind white type): designs that tint
+   them keep these stops. */
+.tv-scrim-left { background: linear-gradient(90deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), .95) 30%, rgba(var(--mt-bg), .85) 48%, rgba(var(--mt-bg), .4) 72%, rgba(var(--mt-bg), 0) 100%); }
 .tv-scrim-bottom { background: linear-gradient(0deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), .85) 25%, rgba(var(--mt-bg), 0) 60%); }
 
 /* Chips: invert colors on focus instead of scaling text. */
@@ -115,16 +117,16 @@ body { overflow: hidden; cursor: none; }
 /* ================================================================ designs */
 
 /* Rating badge on posters (top-right). */
-.tv-rate-good { background: #2f9e44; color: #fff; }
+.tv-rate-good { background: #237a35; color: #fff; }
 .tv-rate-mid { background: #5c6066; color: #fff; }
 .tv-rate-bad { background: #c92a2a; color: #fff; }
 .tv-rate-t-good { color: #6fdc8c; }
 .tv-rate-t-mid { color: rgb(var(--mt-text)); }
 .tv-rate-t-bad { color: #ff7a7a; }
-.tv-rate-chip { border: 2px solid rgba(255,255,255,.7); background: rgba(0,0,0,.45); color: #fff; }
+.tv-rate-chip { border: 2px solid rgba(255,255,255,.7); background: rgba(0,0,0,.66); color: #fff; }
 
 /* Кинозал: hero backdrop fades into the background on the left and bottom. */
-.k-fade-left { background: linear-gradient(90deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), .94) 22%, rgba(var(--mt-bg), .6) 42%, rgba(var(--mt-bg), .12) 70%, rgba(var(--mt-bg), 0) 100%); }
+.k-fade-left { background: linear-gradient(90deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), .95) 30%, rgba(var(--mt-bg), .85) 48%, rgba(var(--mt-bg), .4) 72%, rgba(var(--mt-bg), 0) 100%); }
 .k-fade-bottom { background: linear-gradient(0deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), .9) 20%, rgba(var(--mt-bg), 0) 62%); }
 .k-badge { background: #fff; color: #0a0c08; }
 .k-primary { background: #fff; color: #0a0c08; }
@@ -163,18 +165,18 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 /* Desaturated backdrop band with static scanlines. */
 .t-mono-img { -webkit-filter: grayscale(1) contrast(1.05); filter: grayscale(1) contrast(1.05); }
 .t-scanlines { background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.34) 0px, rgba(0,0,0,.34) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 4px); }
-.t-band-fade { background: linear-gradient(0deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), .55) 35%, rgba(var(--mt-bg), .15) 70%, rgba(var(--mt-bg), .35) 100%); }
+.t-band-fade { background: linear-gradient(0deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), .86) 35%, rgba(var(--mt-bg), .84) 70%, rgba(var(--mt-bg), .9) 100%); }
 /* Status ticker: one long strip, moved with a transform only. */
 @keyframes t-ticker { from { transform: translate3d(0,0,0); } to { transform: translate3d(-50%,0,0); } }
 .t-ticker-track { animation-name: t-ticker; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
 
 /* Проектор */
-.p-scrim-left { background: linear-gradient(90deg, rgba(3,6,8,.92) 0%, rgba(3,6,8,.7) 30%, rgba(3,6,8,.2) 60%, rgba(3,6,8,0) 80%); }
-.p-scrim-bottom { background: linear-gradient(0deg, rgba(3,6,8,.96) 0%, rgba(3,6,8,.72) 22%, rgba(3,6,8,0) 50%); }
-.p-scrim-top { background: linear-gradient(180deg, rgba(3,6,8,.55) 0%, rgba(3,6,8,0) 100%); }
+.p-scrim-left { background: linear-gradient(90deg, rgba(3,6,8, .95) 0%, rgba(3,6,8, .88) 34%, rgba(3,6,8, .76) 55%, rgba(3,6,8, .3) 74%, rgba(3,6,8, 0) 90%); }
+.p-scrim-bottom { background: linear-gradient(0deg, rgba(3,6,8, .97) 0%, rgba(3,6,8, .8) 24%, rgba(3,6,8, 0) 52%); }
+.p-scrim-top { background: linear-gradient(180deg, rgba(3,6,8, .86) 0%, rgba(3,6,8, .72) 50%, rgba(3,6,8, 0) 100%); }
 .p-bar { background: rgba(10,14,16,.62); }
 .p-glass { background: rgba(40,46,50,.72); color: #fff; }
-.p-card-shade { background: linear-gradient(0deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.3) 34%, rgba(0,0,0,0) 60%); }
+.p-card-shade { background: linear-gradient(0deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,.72) 32%, rgba(0,0,0,0) 64%); }
 .p-outline { border: 2px solid rgba(255,255,255,.75); }
 .p-wide { letter-spacing: .14em; }
 

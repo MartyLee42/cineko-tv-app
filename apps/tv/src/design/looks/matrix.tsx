@@ -35,7 +35,7 @@ export function RainBackground() {
   // «Фон движется»: every 8th column slowly falls (transform only); «Спокойно» keeps all still.
   const calm = useCalmMotion();
   return (
-    <div data-skin-bg="rain" data-motion={calm ? "calm" : "on"} className={`mx-rain ${layer}`}>
+    <div aria-hidden data-skin-bg="rain" data-motion={calm ? "calm" : "on"} className={`mx-rain ${layer}`}>
       {RAIN.map((c, i) => (
         <div
           key={c.x}

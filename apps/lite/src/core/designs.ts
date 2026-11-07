@@ -64,7 +64,7 @@ export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; acce
   cyberpunk: { bg: "#06060a", surface: "#14141c", accent: "#f5f03c", accent2: "#ff2e88", text: "#eef6ff" },
   deco: { bg: "#0b0a08", surface: "#1a1712", accent: "#c9a54c", accent2: "#e8cf8a", text: "#f3ead6" },
   retro80: { bg: "#0b0e2a", surface: "#1a1f4a", accent: "#ff7a1a", accent2: "#16e0d0", text: "#fff4e6" },
-  retro90: { bg: "#006e6e", surface: "#101870", accent: "#ffe85c", accent2: "#c0c0c0", text: "#ffffff" },
+  retro90: { bg: "#006060", surface: "#101870", accent: "#ffe85c", accent2: "#c0c0c0", text: "#ffffff" },
   popart: { bg: "#143a96", surface: "#0e2262", accent: "#ffd600", accent2: "#ff2d3c", text: "#ffffff" },
   constructivism: { bg: "#181412", surface: "#28221e", accent: "#d7261e", accent2: "#efe4cc", text: "#f3ead6" },
   matrix: { bg: "#000602", surface: "#04140a", accent: "#00ff41", accent2: "#c8ffd2", text: "#b4ffc4" },

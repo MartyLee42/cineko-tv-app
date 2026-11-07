@@ -184,7 +184,7 @@ export function InboxButton() {
         {unread > 0 && (
           <span
             data-testid="inbox-badge"
-            className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-danger px-1 text-[11px] font-bold leading-none text-white ring-2 ring-bg"
+            className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-danger px-1 text-[11px] font-bold leading-none text-bg ring-2 ring-bg"
           >
             {unread > 9 ? "9+" : unread}
           </span>

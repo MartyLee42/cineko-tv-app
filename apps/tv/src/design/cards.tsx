@@ -113,9 +113,9 @@ export function PosterCard({
           style={{ width, height, background: legacyColor(placeholderColor(item.id)) }}
         >
           {/* Placeholder: visible until the poster loads, and if it never does. */}
-          <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-4">
             <p className="line-clamp-4 text-2xl font-bold leading-tight text-white">{item.title}</p>
-            {item.year && <p className="mt-1 text-xl text-white/70">{item.year}</p>}
+            {item.year && <p className="mt-1 text-xl text-white/80">{item.year}</p>}
           </div>
           <Img src={imageUrl(cfg, item.poster_path, "w342")} className="absolute left-0 top-0 h-full w-full object-cover" />
           {overlay}
@@ -222,7 +222,7 @@ export function WideCard({
           className={`tv-focus mt-card relative overflow-hidden ${square ? "" : "rounded-card"} ${focused ? "is-focused" : ""}`}
           style={{ width, height, background: legacyColor(placeholderColor(media.id)) }}
         >
-          <p className="absolute bottom-6 left-5 right-5 line-clamp-2 text-2xl font-bold text-white">{title}</p>
+          <p className="absolute bottom-6 left-5 right-5 line-clamp-2 bg-black/60 px-2 text-2xl font-bold text-white">{title}</p>
           <Img src={img} className="absolute left-0 top-0 h-full w-full object-cover" />
           {overlay}
           {!overlay && square && index !== undefined && <span className="t-tag absolute left-0 top-0 px-2 py-0.5 font-mono text-[17px] text-accent">{indexTag(index)}</span>}

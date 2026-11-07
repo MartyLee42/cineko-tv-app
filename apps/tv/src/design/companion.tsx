@@ -211,7 +211,7 @@ export function AfterCreditsPanel({
       <Shell
         testId="tv-after-panel"
         heading={`◐ ${t("companion.after_title", { title })}`}
-        badge={<span className="ml-6 shrink-0 rounded-full bg-danger px-5 py-1 text-[24px] font-bold text-white">{t("companion.spoilers")}</span>}
+        badge={<span className="ml-6 shrink-0 rounded-full bg-danger px-5 py-1 text-[24px] font-bold text-bg">{t("companion.spoilers")}</span>}
         footer={
           <>
             <span className="min-w-0 truncate">

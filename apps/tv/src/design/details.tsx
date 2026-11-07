@@ -255,11 +255,11 @@ export function TerminalHeader({ item, detail, from, profileName, progress, sour
   const gap = compact ? "ml-[12px]" : "ml-[18px]";
   return (
     <div className="relative" style={{ height: HEADER_H.terminal }}>
-      <p className="t-label absolute left-[96px] top-[52px] text-[21px] text-text/70">
+      <p className="t-label absolute left-[96px] top-[52px] text-[21px] text-muted">
         ← {t("tvd.back")}
         {from ? ` · ${from}` : ""}
       </p>
-      <p className="t-label absolute right-[96px] top-[52px] text-[21px] text-text/70">TMDB/{item.tmdb_id}</p>
+      <p className="t-label absolute right-[96px] top-[52px] text-[21px] text-muted">TMDB/{item.tmdb_id}</p>
       <div className="absolute left-[96px] top-[230px] w-[900px]">
         <h1 className="line-clamp-2 font-display font-extrabold uppercase leading-[1.0]" style={{ fontSize: item.title.length > 22 ? 64 : 88 }}>
           {item.title}

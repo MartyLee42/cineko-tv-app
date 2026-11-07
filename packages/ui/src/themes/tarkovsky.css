@@ -16,6 +16,7 @@ html.design-tarkovsky {
   --mt-radius-card: 4px;
   --mt-radius-control: 6px;
   color-scheme: dark;
+  --mt-danger: 244, 104, 96;
 }
 
 /* Headings use the display face (web and TV). */

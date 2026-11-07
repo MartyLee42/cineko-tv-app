@@ -64,14 +64,14 @@ export function CvNewsStrip({ top }: { top: number }) {
 export function CvPlanPlaque({ plan, hero, left, top }: { plan: Plan; hero: { name: string; count: number } | null; left: number; top: number }) {
   return (
     <div data-testid="cv-plan" className="cv-plan pointer-events-none absolute w-[400px] px-6 py-4" style={{ left, top }}>
-      <p className="text-[19px] font-bold uppercase tracking-[.16em] text-[#d7261e]" style={{ fontFamily: grot }}>
+      <p className="text-[19px] font-bold uppercase tracking-[.16em] text-[#a8170f]" style={{ fontFamily: grot }}>
         Пятилетка {plan.year}
       </p>
       <p className="mt-1 text-[30px] font-bold uppercase leading-tight" style={{ fontFamily: grot }}>
         {plan.done} из {plan.target} · {plan.pct}%
       </p>
       <div className="relative mt-2 h-[10px] bg-[#1a1512]/20">
-        <div className="absolute left-0 top-0 h-full w-full origin-left bg-[#d7261e]" style={{ transform: `scaleX(${Math.min(1, plan.done / plan.target)})` }} />
+        <div className="absolute left-0 top-0 h-full w-full origin-left bg-[#cd221c]" style={{ transform: `scaleX(${Math.min(1, plan.done / plan.target)})` }} />
       </div>
       {hero && (
         <p data-testid="cv-stakhanov" className="mt-2 truncate text-[19px] font-bold uppercase" style={{ fontFamily: grot }}>

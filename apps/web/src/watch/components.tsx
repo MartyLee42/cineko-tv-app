@@ -205,7 +205,7 @@ function ContinueCard({ item, onOpen, onGo, hasTv }: { item: ContinueItem; onOpe
           className="absolute inset-0 h-full w-full object-cover"
           fallback={null}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
         {/* Tap the card → the title page (pick a season/episode); ▶ → resume now (here or on TV). */}
         <button
           type="button"

@@ -19,7 +19,7 @@
   text-align: center;
   line-height: 1.1;
 }
-.an-chapter-n { display: block; font-size: 18px; font-weight: 500; letter-spacing: .42em; text-transform: uppercase; color: #9a6b10; }
+.an-chapter-n { display: block; font-size: 18px; font-weight: 500; letter-spacing: .42em; text-transform: uppercase; color: #865c0c; }
 .an-chapter-name { display: block; margin-top: 4px; font-size: 30px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; }
 /* One line («ЧАСТЬ 5 · ФИЛЬМЫ») off Home, where the screen's title sits just below. */
 .an-chapter-line { padding: 5px 30px 6px; box-shadow: 0 0 0 2px #d9a520, 0 0 0 5px #fbeee6, 0 0 0 7px #d9a520; }
@@ -33,7 +33,7 @@
 html.design-anderson .p-scrim-left { background: linear-gradient(90deg, rgba(246,214,214,.8) 0%, rgba(246,214,214,.25) 22%, rgba(246,214,214,0) 36%, rgba(246,214,214,0) 64%, rgba(246,214,214,.25) 78%, rgba(246,214,214,.8) 100%); }
 html.design-anderson .p-scrim-bottom { background: linear-gradient(0deg, rgb(246,214,214) 0%, rgba(246,214,214,.92) 30%, rgba(246,214,214,0) 58%); }
 html.design-anderson .p-scrim-top { background: linear-gradient(180deg, rgba(246,214,214,.7) 0%, rgba(246,214,214,0) 100%); }
-html.design-anderson .p-card-shade { background: linear-gradient(0deg, rgba(58,34,44,.82) 0%, rgba(58,34,44,.3) 36%, rgba(58,34,44,0) 62%); }
+html.design-anderson .p-card-shade { background: linear-gradient(0deg, rgba(58,34,44,.9) 0%, rgba(58,34,44,.72) 32%, rgba(58,34,44,0) 64%); }
 
 /* The menu: a cream pill in a mustard rule; spaced capitals; focused = raspberry, open = mustard. */
 html.design-anderson .p-bar { background: #fbeee6; border-radius: 0; box-shadow: 0 0 0 3px #d9a520, 0 0 0 7px #fbeee6, 0 0 0 9px #d9a520; }
@@ -64,7 +64,7 @@ html.design-anderson [data-testid="hero"] h2 { margin-left: auto; margin-right: 
 html.design-anderson [data-testid="hero"] > p, html.design-anderson [data-media-id] p.text-white\/90, html.design-anderson [data-media-id] p.text-white\/85 { color: #5a3a46; }
 /* Eyebrows: mustard spaced capitals between two little rules. */
 html.design-anderson [data-testid="hero"] > p:first-child, html.design-anderson [data-media-id] .tracking-\[\.18em\].text-accent {
-  color: #9a6b10; letter-spacing: .4em; font-weight: 500;
+  color: #865c0c; letter-spacing: .4em; font-weight: 500;
 }
 
 /* Details: the header block centred (title, meta, buttons) on the pink. */
@@ -94,7 +94,7 @@ html.design-anderson .p-primary { border-radius: 0; background: #d9a520; color: 
 html.design-anderson .p-glass { border-radius: 0; background: #fbeee6; color: #3a222c; letter-spacing: .08em; box-shadow: inset 0 0 0 2px #d9a520; }
 html.design-anderson .p-primary.is-focused, html.design-anderson .p-glass.is-focused { background: #7a223e; color: #fbeee6; box-shadow: 0 0 0 4px #fbeee6, 0 0 0 8px #7a223e; }
 html.design-anderson .p-outline { border-color: #d9a520; color: #3a222c; border-radius: 0; }
-html.design-anderson .tv-rate-chip { border-color: #fbeee6; background: rgba(58,34,44,.6); color: #fbeee6; border-radius: 0; }
+html.design-anderson .tv-rate-chip { border-color: #fbeee6; background: rgba(58,34,44,.82); color: #fbeee6; border-radius: 0; }
 html.design-anderson .tv-chip.is-focused { background: #7a223e; color: #fbeee6; }
 html.design-anderson .tv-release.is-focused { box-shadow: 0 0 0 4px #fbeee6, 0 0 0 9px #7a223e; }
 html.design-anderson .tv-progress-fill, html.design-anderson .tv-check { background: #7a223e; color: #fbeee6; }

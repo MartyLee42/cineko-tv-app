@@ -84,7 +84,7 @@ export function NowOnTvBar() {
     <>
       <div className="h-16 md:hidden" aria-hidden />
       <div className="pointer-events-none fixed inset-x-0 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-3 md:inset-x-auto md:bottom-6 md:right-6 md:px-0">
-        <div className="pointer-events-auto flex w-full max-w-md items-center gap-1.5 rounded-2xl border border-border bg-surface-2/95 p-2 shadow-2xl shadow-black/50 backdrop-blur transition hover:border-accent md:w-[26rem]">
+        <div className="pointer-events-auto flex w-full max-w-md items-center gap-1.5 rounded-2xl border border-border bg-surface-2 p-2 shadow-2xl shadow-black/50 transition hover:border-accent md:w-[26rem]">
         <Link
           to={`/remote/${tv.device.id}`}
           data-testid="now-on-tv-bar"

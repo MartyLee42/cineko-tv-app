@@ -26,10 +26,10 @@
 }
 
 /* ---- the projector skeleton in red, black and ivory. */
-html.design-redroom .p-scrim-left { background: linear-gradient(90deg, rgba(14,4,5,.94) 0%, rgba(14,4,5,.72) 30%, rgba(14,4,5,.2) 60%, rgba(14,4,5,0) 80%); }
-html.design-redroom .p-scrim-bottom { background: linear-gradient(0deg, rgba(14,4,5,.97) 0%, rgba(14,4,5,.74) 22%, rgba(14,4,5,0) 50%); }
-html.design-redroom .p-scrim-top { background: linear-gradient(180deg, rgba(14,4,5,.7) 0%, rgba(14,4,5,0) 100%); }
-html.design-redroom .p-card-shade { background: linear-gradient(0deg, rgba(10,3,4,.88) 0%, rgba(10,3,4,.34) 36%, rgba(10,3,4,0) 62%); }
+html.design-redroom .p-scrim-left { background: linear-gradient(90deg, rgba(14,4,5, .95) 0%, rgba(14,4,5, .88) 34%, rgba(14,4,5, .76) 55%, rgba(14,4,5, .3) 74%, rgba(14,4,5, 0) 90%); }
+html.design-redroom .p-scrim-bottom { background: linear-gradient(0deg, rgba(14,4,5, .97) 0%, rgba(14,4,5, .8) 24%, rgba(14,4,5, 0) 52%); }
+html.design-redroom .p-scrim-top { background: linear-gradient(180deg, rgba(14,4,5, .86) 0%, rgba(14,4,5, .72) 50%, rgba(14,4,5, 0) 100%); }
+html.design-redroom .p-card-shade { background: linear-gradient(0deg, rgba(10,3,4,.9) 0%, rgba(10,3,4,.72) 32%, rgba(10,3,4,0) 64%); }
 html.design-redroom .p-bar { background: rgba(12,4,5,.88); box-shadow: inset 0 0 0 2px rgba(210,31,42,.7); }
 html.design-redroom .p-tab { color: rgba(244,239,230,.88); }
 html.design-redroom .p-tab-on { background: rgb(178,16,26); color: #fff; }

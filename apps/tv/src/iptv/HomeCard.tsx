@@ -38,7 +38,7 @@ export function LiveCard({ channel: c, focused, w, h, caption }: { channel: Iptv
           <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center" style={{ paddingBottom: projector ? 64 : 12 }}>
             <ChannelLogo channel={c} w={Math.round(w * 0.42)} h={Math.round(h * 0.5)} />
           </div>
-          <span className={`absolute left-4 top-4 rounded-full bg-danger px-3 text-[17px] font-bold uppercase leading-[28px] text-white ${terminal ? "t-label rounded-none" : ""}`}>
+          <span className={`absolute left-4 top-4 rounded-full bg-danger px-3 text-[17px] font-bold uppercase leading-[28px] text-bg ${terminal ? "t-label rounded-none" : ""}`}>
             ● {t("iptv.title")}
           </span>
           {projector && (
