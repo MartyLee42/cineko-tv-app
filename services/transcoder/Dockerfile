@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
-# martytv-transcoder: Go service + Alpine's ffmpeg (video copy, or libx264 for
-# codecs players can't decode; audio → AAC).
+# martytv-transcoder: Go service + Alpine's ffmpeg (video copy, or H.264 for
+# codecs players can't decode — libx264, or a GPU when one works: hwaccel.go;
+# audio → AAC).
 
 FROM golang:1.27-bookworm AS build
 WORKDIR /src
@@ -20,9 +21,17 @@ ENV PATH=/usr/local/go/bin:$PATH CGO_ENABLED=0 GOFLAGS=-buildvcs=false GOCACHE=/
 CMD ["go", "test", "-count=1", "./..."]
 
 # ffmpeg is pinned to the 8.1.3 series of Alpine 3.24 (any -rN rebuild of it),
-# so a rebuild never silently changes the major version.
+# so a rebuild never silently changes the major version. Its build has the
+# VAAPI and QSV encoders (no NVENC). VA_DRIVERS: the user-space GPU drivers;
+# "auto" = Intel's on x86_64 (iHD + i965 + oneVPL, ~+75 MB), nothing on arm64.
+# AMD: --build-arg VA_DRIVERS=mesa-va-gallium (~+225 MB, LLVM); none: "".
 FROM alpine:3.24 AS runtime
-RUN apk add --no-cache "ffmpeg~8.1.3" \
+ARG VA_DRIVERS=auto
+RUN drivers="$VA_DRIVERS" \
+ && if [ "$drivers" = auto ]; then case "$(apk --print-arch)" in \
+      x86_64) drivers="intel-media-driver libva-intel-driver onevpl-intel-gpu" ;; \
+      *) drivers="" ;; esac; fi \
+ && apk add --no-cache "ffmpeg~8.1.3" $drivers \
  && addgroup -S -g 65532 transcoder \
  && adduser -S -D -H -u 65532 -G transcoder transcoder \
  && mkdir -p /var/cache/martytv-hls && chown 65532:65532 /var/cache/martytv-hls && chmod 700 /var/cache/martytv-hls \

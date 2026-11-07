@@ -73,6 +73,8 @@ type Config struct {
 
 	// Video: the YouTube «Видео» tab via Invidious (config/video.go).
 	Video VideoConfig
+	// InvidiousRestart: the nightly Invidious restart (config/invidiousrestart.go).
+	InvidiousRestart InvidiousRestartConfig
 }
 
 // TranscoderConfig points at services/transcoder on the internal network.
@@ -283,6 +285,7 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 	c.Kinopoisk.ProxyURL = proxyURL("KINOPOISK_PROXY_URL", secret("KINOPOISK_PROXY_URL"), &errs)
 	c.ForYou = loadForYou(get, secret, &errs)
 	c.NewEpisodes = loadNewEpisodes(get, &errs)
+	c.InvidiousRestart = loadInvidiousRestart(get, &errs)
 	c.Library = loadLibrary(get, &errs)
 	c.Transcoder = TranscoderConfig{URL: strings.TrimRight(get("TRANSCODER_URL", ""), "/"), Secret: secret("TRANSCODER_SECRET")}
 	if c.Transcoder.URL != "" {

@@ -1,0 +1,43 @@
+/* «retro90»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
+/* ---------------------------------------------------------------- Ретро 90-е (terminal skeleton)
+   Windows 95: a teal desktop, a grey bevelled menu bar and taskbar (black
+   text), navy "windows" with grey bevels, the navy selection; focus = white
+   + navy rings and a dotted focus rectangle. Static, no filters. */
+.r9-desktop {
+  background-color: rgb(0,110,110);
+  background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.035) 0px, rgba(0,0,0,.035) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 4px);
+}
+html.design-retro90 .t-grid { background: rgb(var(--mt-bg)); }
+/* Windows used mixed case; Pixelify's capitals blur «Б/6», «О/0» at TV distance. */
+html.design-retro90 .t-label, html.design-retro90 .uppercase { text-transform: none; letter-spacing: .02em; }
+/* The menu bar: grey, raised (white top-left, dark bottom-right), black text. */
+html.design-retro90 nav[data-design-nav="terminal"] { background: #c0c0c0; box-shadow: inset 0 -3px 0 #808080, inset 0 -5px 0 #404040, inset 0 2px 0 #ffffff; height: 112px !important; padding-top: 26px !important; }
+html.design-retro90 nav[data-design-nav="terminal"] > span:first-child { color: #000; font-family: "Pixelify Sans", "JetBrains Mono", monospace; font-weight: 600; }
+html.design-retro90 nav[data-design-nav="terminal"] .t-tab { color: #000; }
+html.design-retro90 nav[data-design-nav="terminal"] .t-tab.text-muted { color: #303030; }
+html.design-retro90 nav[data-design-nav="terminal"] .t-tab.bg-text { background: #000080; color: #fff; }
+html.design-retro90 nav[data-design-nav="terminal"] .t-tab .bg-accent { background: #000080; }
+html.design-retro90 nav[data-design-nav="terminal"] .text-accent { color: #000080; }
+html.design-retro90 nav[data-design-nav="terminal"] .text-text { color: #000; }
+html.design-retro90 nav[data-design-nav="terminal"] .ml-auto > span:last-child { padding: 2px 12px; box-shadow: inset 2px 2px 0 #808080, inset -2px -2px 0 #ffffff; }
+/* The taskbar (status ticker): grey, raised, black text. */
+html.design-retro90 [data-testid="status-ticker"] { background: #c0c0c0; color: #000; box-shadow: inset 0 3px 0 #ffffff, inset 0 2px 0 #dfdfdf; }
+/* Cards: a raised grey bevel; focus: white + navy rings and the dotted focus rectangle. */
+html.design-retro90 .mt-card::after { content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; box-shadow: inset 3px 3px 0 #ffffff, inset -3px -3px 0 #404040, inset 5px 5px 0 #dfdfdf, inset -5px -5px 0 #808080; }
+html.design-retro90 .tv-focus.is-focused { box-shadow: 0 0 0 5px #ffffff, 0 0 0 10px #000080; outline: 3px dotted #ffffff; outline-offset: 14px; }
+html.design-retro90 .t-bracket { border-color: #ffffff; }
+html.design-retro90 .t-hair { border-color: rgba(255,255,255,.35); }
+html.design-retro90 .t-tag { background: #c0c0c0; color: #000; box-shadow: inset 2px 2px 0 #ffffff, inset -2px -2px 0 #808080; }
+html.design-retro90 .tv-rate-t-good, html.design-retro90 .tv-rate-t-mid, html.design-retro90 .tv-rate-t-bad { color: #000; }
+html.design-retro90 .t-row-best { background: rgba(255,232,92,.16); }
+html.design-retro90 .t-row.is-focused { background: #000080; color: #fff; }
+html.design-retro90 .t-seg-on { background: #000080; }
+html.design-retro90 .t-scanlines { background-image: none; }
+html.design-retro90 .t-band-fade { background: linear-gradient(0deg, rgb(0,110,110) 0%, rgba(0,110,110,.6) 35%, rgba(0,110,110,0) 75%); }
+/* Buttons: Windows' grey push buttons (black text, raised); the focused one turns navy. */
+html.design-retro90 .bg-accent.tv-focus:not(.is-focused), html.design-retro90 [data-focus-key="d-play"]:not(.is-focused) { background: #c0c0c0; color: #000; box-shadow: inset 3px 3px 0 #ffffff, inset -3px -3px 0 #404040, inset -5px -5px 0 #808080; }
+html.design-retro90 .tv-chip.is-focused { background: #000080; color: #fff; }
+html.design-retro90 .tv-progress-fill, html.design-retro90 .tv-check { background: #000080; color: #fff; }
+html.design-retro90 .tv-progress { background: #c0c0c0; box-shadow: inset 2px 2px 0 #808080; }
+html.design-retro90 .tv-key-hint { background: #c0c0c0; color: #000; box-shadow: inset 2px 2px 0 #ffffff, inset -2px -2px 0 #808080; }
+html.design-retro90 .tv-panel, html.design-retro90 .tv-release:not(.is-focused) { box-shadow: inset 2px 2px 0 #c0c0c0, inset -2px -2px 0 #404040; }

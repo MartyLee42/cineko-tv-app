@@ -169,6 +169,9 @@ type TranscoderMetrics struct {
 	JobsStarted        int64 `json:"jobs_started"`
 	JobsRejected       int64 `json:"jobs_rejected"`
 	JobsFailed         int64 `json:"jobs_failed"`
+	// VideoEncoder: cpu | nvenc | vaapi | qsv (empty from older transcoders).
+	VideoEncoder         string `json:"video_encoder"`
+	VideoEncoderFallback bool   `json:"video_encoder_fallback"`
 }
 
 // CompatConfigured reports whether compat streams are offered.

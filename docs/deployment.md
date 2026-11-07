@@ -15,6 +15,7 @@ other software has to be installed first.
 | `flaresolverr` | Gets Prowlarr past Cloudflare checks on some trackers | internal |
 | `torrserver` | Streams torrents over HTTP while they download | internal; UI on `127.0.0.1:8090` |
 | `invidious`, `invidious-db`, `companion` | YouTube for the «Видео» tab and music audio | internal |
+| `restart-proxy` | Docker socket proxy that lets the API restart Invidious + companion nightly ([below](#nightly-invidious-restart)) — nothing else | internal |
 | `gluetun` *(profile `vpn`, optional)* | VPN client offering an HTTP proxy, for places where TMDB / YouTube are blocked | internal |
 
 Only Caddy is published. The Prowlarr and TorrServer web UIs listen on the
@@ -137,6 +138,49 @@ recreates the containers whose settings changed.
 - **Memory**: every container has a `mem_limit`. On a small server lower
   TorrServer's cache in its settings and `TRANSCODER_MAX_JOBS`.
 
+## GPU transcoding
+
+Most compatibility streams copy the video; only old codecs (XviD / DivX,
+MPEG-2, VC-1 ≤ 1080p) are re-encoded to H.264. That runs on the CPU
+(libx264) unless the transcoder finds a working GPU encoder at startup.
+`TRANSCODER_HWACCEL=auto` (default) tries, in order, NVIDIA NVENC, VAAPI
+(Intel / AMD) and Intel QSV; a backend is used only when ffmpeg has its
+encoder **and** a one-second test encode succeeds. Otherwise — and with
+`TRANSCODER_HWACCEL=none` — it stays on the CPU. `nvenc` / `vaapi` / `qsv`
+restricts the probe to that backend (still falling back to the CPU).
+Output is the same on every backend: H.264 High 4.0, 8-bit 4:2:0, a keyframe
+every 2 s, AAC audio. A GPU job that fails before any output is retried on the
+CPU; if that works, the CPU is used for the next 10 minutes.
+
+The GPU has to be passed into the container — add to
+`deployments/compose.override.yaml`:
+
+```yaml
+services:
+  transcoder:
+    # Intel / AMD: the render nodes, readable by the `render` group's id on the host.
+    devices: ["/dev/dri:/dev/dri"]
+    group_add: ["${RENDER_GID:-109}"]     # getent group render | cut -d: -f3
+```
+
+- **Intel**: the amd64 image includes the drivers (iHD for Broadwell and newer,
+  i965 for older, oneVPL for QSV).
+- **AMD**: needs Mesa's VA driver, which is large (~225 MB), so it is not in
+  the published image: build it with
+  `build: { context: ../services/transcoder, target: runtime, args: { VA_DRIVERS: mesa-va-gallium } }`
+  in the override and `scripts/cineko.sh up -d --build transcoder`.
+- **NVIDIA**: the stock image's ffmpeg (Alpine) has no NVENC encoder, so `auto`
+  skips it. The detection supports it for a custom image (`FFMPEG_PATH` to an
+  ffmpeg with `h264_nvenc`) with the nvidia-container-toolkit, see the
+  commented example in `deployments/compose.yaml`.
+
+Check the choice: `scripts/cineko.sh logs transcoder | grep "video encoder"`,
+or run the probe again with every attempt shown:
+`scripts/cineko.sh exec transcoder martytv-transcoder probe`. The
+transcoder's `/metrics` (`video_encoder`, `video_encoder_fallback`) is in the
+API's admin system stats too. `TRANSCODER_HWACCEL_DEVICE=/dev/dri/renderD129`
+picks another GPU.
+
 ## Torrent indexers (Prowlarr)
 
 Cineko searches through Prowlarr. Open its UI through an SSH tunnel:
@@ -168,15 +212,42 @@ to it; the bundled one then just idles (or remove it in the override file).
 ## TorrServer
 
 TorrServer downloads the pieces a player asks for and serves them over HTTP to
-the API and the transcoder; clients never talk to it. Its settings (cache
-size, connection limits, preload) are in its UI:
+the API and the transcoder; clients never talk to it.
+
+Three of its settings come from `.env` and are applied by
+`scripts/torrserver-settings.sh` (install.sh and update.sh run it; flags
+`--ts-cache-mb`, `--ts-remove-cache-on-drop`, `--ts-rutor-search` of
+install.sh write them):
+
+| `.env` | Default | TorrServer setting |
+|---|---|---|
+| `TORRSERVER_CACHE_MB` | `128` | `CacheSize` (bytes): RAM cache per torrent |
+| `TORRSERVER_REMOVE_CACHE_ON_DROP` | `true` | `RemoveCacheOnDrop`: free a torrent's cache when it closes |
+| `TORRSERVER_RUTOR_SEARCH` | `false` | `EnableRutorSearch`: TorrServer's own rutor search (Cineko uses Prowlarr / Jacred) |
+
+The script reads TorrServer's full settings, changes only these fields and
+writes the whole object back; everything else you set in its UI stays. It
+writes nothing when they already match, because every change makes
+TorrServer drop its open torrents and reconnect (whatever is streaming —
+Cineko, Lampa, MSX — has to restart). New values apply at once; no restart
+is needed (`--restart` restarts it anyway). With basic auth it uses
+`TORRSERVER_USERNAME` / `TORRSERVER_PASSWORD`.
+
+```sh
+scripts/torrserver-settings.sh                    # bundled TorrServer
+scripts/torrserver-settings.sh --url http://127.0.0.1:8090   # your own one, from this machine (curl/wget)
+scripts/torrserver-settings.sh --container NAME   # your own one in container NAME
+```
+
+The rest (connection limits, preload, …) is in its UI:
 
 ```sh
 ssh -L 8090:127.0.0.1:8090 you@your-server      # then http://localhost:8090
 ```
 
-- **Cache**: the default RAM cache is small; 256–1024 MB is a good range. Keep
-  it below the container's `mem_limit` (2 GB).
+- **Cache**: 128 MB per torrent suits a few simultaneous streams; up to
+  256–1024 MB helps on slow torrents. Keep (cache × streams) below the
+  container's `mem_limit` (2 GB).
 - **Incoming peers** (faster starts on poorly seeded torrents): set a fixed
   "peer port" in its settings and publish it in
   `deployments/compose.override.yaml`:
@@ -221,6 +292,35 @@ nano gluetun.env          # VPN_SERVICE_PROVIDER=…, WIREGUARD_PRIVATE_KEY=…,
 
 Torrent traffic (TorrServer, Prowlarr) does **not** go through it. Check:
 **Admin → Сервер** shows TMDB and «Видео (Invidious)» status.
+
+## Nightly Invidious restart
+
+Invidious gets slower and runs into YouTube's limits (stale connections,
+rate limiting, growing memory) the longer it runs; its own docs recommend
+restarting it regularly. Cineko does it every night at **03:00** in the
+server's timezone, so it is fresh before anyone watches:
+
+- The API restarts `companion`, then `invidious` (under a minute of «Видео»
+  downtime).
+- **Never mid-video**: if a YouTube video streamed in the last 5 minutes, the
+  restart waits and checks again every 15 minutes; if someone is still watching
+  at 05:00 it is skipped until the next night. (Music played from YouTube for
+  the first time isn't counted.)
+- Settings in `.env`: `INVIDIOUS_RESTART_AT=03:00` (`off` disables it);
+  the timezone is `INVIDIOUS_RESTART_TZ`, else `TZ` (install.sh sets it from
+  the host), else `NEW_EPISODES_TZ`, else UTC.
+- The restart goes through `restart-proxy`
+  ([wollomatic/socket-proxy](https://github.com/wollomatic/socket-proxy)),
+  which mounts the Docker socket and allows exactly
+  `POST /containers/<project>-{companion,invidious}-1/restart`, only from the
+  `api` container, on a network of their own. The API itself never sees the
+  socket. Rootless Docker or a socket elsewhere: `DOCKER_SOCKET=/run/user/1000/docker.sock`.
+- Check: `scripts/cineko.sh logs api | grep -i 'invidious restart'` (the
+  schedule is logged at start, every restart or postponement when it happens);
+  blocked requests show in `scripts/cineko.sh logs restart-proxy`.
+
+No host cron or systemd timer is needed; it starts with the stack (also after
+`scripts/update.sh`). The dev stack (`make dev`) has no proxy, so it is off there.
 
 ## Domain, HTTPS and reverse proxies
 

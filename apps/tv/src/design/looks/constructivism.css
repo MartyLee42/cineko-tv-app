@@ -1,0 +1,118 @@
+/* «constructivism»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
+/* ---------------------------------------------------------------- Конструктивизм (terminal skeleton)
+   A 1920s–30s avant-garde film poster (graphic style only): black-brown ground, signal red and
+   cream paper, diagonals, wedges and circles, heavy condensed capitals (Oswald). The menu is a cream
+   paper band, the ticker a red strip; focus = a cream frame with a red slab offset down-right and
+   a red wedge in the poster's corner. Photos turn into a red-black duotone (a static filter). */
+.cv-poster {
+  background-color: rgb(24,20,18);
+  background-image: repeating-linear-gradient(135deg, rgba(243,234,214,.022) 0px, rgba(243,234,214,.022) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 9px);
+}
+html.design-constructivism .t-grid { background: rgb(var(--mt-bg)); }
+html.design-constructivism .t-label { font-weight: 500; letter-spacing: .06em; }
+/* The menu: a cream paper band with black capitals; a red diagonal wedge under the logo. */
+html.design-constructivism nav[data-design-nav="terminal"] { background: rgb(239,228,204); height: 112px !important; padding-top: 26px !important; box-shadow: inset 0 -6px 0 rgb(215,38,30); }
+html.design-constructivism nav[data-design-nav="terminal"]::before { content: ""; position: absolute; left: 0; top: 0; width: 300px; height: 106px; background: rgb(215,38,30); -webkit-clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%); clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%); }
+html.design-constructivism nav[data-design-nav="terminal"] > span:first-child { position: relative; margin-right: 44px; color: rgb(248,240,222); font-weight: 700; letter-spacing: .04em; }
+html.design-constructivism nav[data-design-nav="terminal"] > span:first-child .text-accent { color: #1a1512; }
+html.design-constructivism nav[data-design-nav="terminal"] .t-tab { color: #1a1512; font-weight: 600; }
+html.design-constructivism nav[data-design-nav="terminal"] .t-tab.text-muted { color: #5a4c40; }
+html.design-constructivism nav[data-design-nav="terminal"] .t-tab.bg-text { background: #1a1512; color: rgb(239,228,204); }
+html.design-constructivism nav[data-design-nav="terminal"] .t-tab .bg-accent { background: rgb(215,38,30); height: 5px; }
+html.design-constructivism nav[data-design-nav="terminal"] .text-accent { color: rgb(215,38,30); }
+html.design-constructivism nav[data-design-nav="terminal"] .text-text { color: #1a1512; }
+html.design-constructivism [data-testid="status-ticker"] { font-family: var(--mt-font-label); letter-spacing: .12em; }
+/* Cards: square; focus = cream frame + red slab offset down-right; a red wedge cuts the corner. */
+html.design-constructivism .mt-card::after { content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; background: linear-gradient(135deg, rgba(215,38,30,0) 0%, rgba(215,38,30,0) 84%, rgb(215,38,30) 84%); opacity: 0; transition: opacity 140ms ease; }
+html.design-constructivism .mt-card.is-focused::after { opacity: 1; }
+html.design-constructivism .tv-focus.is-focused { box-shadow: 0 0 0 4px rgb(24,20,18), 0 0 0 9px rgb(243,234,214), 12px 12px 0 9px rgb(215,38,30); }
+/* Brackets → one red wedge under the focused card's bottom-left corner. */
+html.design-constructivism .t-bracket-tl, html.design-constructivism .t-bracket-tr, html.design-constructivism .t-bracket-br { display: none; }
+html.design-constructivism .t-bracket-bl { width: 0; height: 0; left: -22px; bottom: -22px; border-style: solid; border-width: 0 0 46px 46px; border-color: transparent transparent rgb(215,38,30) transparent; }
+html.design-constructivism .t-bracket-sm.t-bracket-bl { left: -18px; bottom: -18px; border-width: 0 0 34px 34px; }
+html.design-constructivism .t-hair { border-color: rgba(243,234,214,.22); }
+html.design-constructivism .t-tag { background: rgb(215,38,30); color: rgb(248,240,222); }
+html.design-constructivism .t-seg-on { background: rgb(215,38,30); }
+html.design-constructivism .t-row-best { background: rgba(215,38,30,.18); }
+html.design-constructivism .t-row.is-focused { background: rgb(243,234,214); color: #1a1512; }
+html.design-constructivism .tv-rate-t-good { color: rgb(243,234,214); }
+html.design-constructivism .tv-rate-t-mid { color: rgb(190,178,156); }
+html.design-constructivism .tv-rate-t-bad { color: #ff8a7a; }
+/* Photomontage: the Details band as a red-black duotone, no scanlines. */
+html.design-constructivism .t-mono-img { -webkit-filter: grayscale(1) sepia(1) hue-rotate(-38deg) saturate(3.2) contrast(1.2) brightness(.82); filter: grayscale(1) sepia(1) hue-rotate(-38deg) saturate(3.2) contrast(1.2) brightness(.82); }
+html.design-constructivism .t-scanlines { background-image: none; }
+html.design-constructivism .t-band-fade { background: linear-gradient(0deg, rgb(24,20,18) 0%, rgba(24,20,18,.55) 35%, rgba(24,20,18,.1) 70%, rgba(24,20,18,.3) 100%); }
+/* Poster type: the headline set on a slight diagonal; the eyebrow a red label. */
+html.design-constructivism [data-testid="hero"] h2, html.design-constructivism [data-media-id] h1 { font-weight: 700; line-height: 1.04; letter-spacing: .01em; transform: rotate(-2.5deg); transform-origin: 0 100%; }
+html.design-constructivism [data-testid="hero"] > p.t-label:first-child { display: inline-block; max-width: 100%; background: rgb(215,38,30); color: rgb(248,240,222); padding: 2px 16px; }
+/* ---- Buttons: one style. Flat rectangular slabs in heavy condensed capitals. Primary = a red slab
+   with cream text, secondary = a cream slab with black text and a 2px black rule; both on a black
+   offset block. Focus = the cream frame + the red offset slab, lifted up-left. (No :is()/:has():
+   old TV engines drop the whole rule.) */
+html.design-constructivism .tv-focus[role=button],
+html.design-constructivism .tv-focus[data-action],
+html.design-constructivism .tv-chip,
+html.design-constructivism .tv-release,
+html.design-constructivism .tv-panel,
+html.design-constructivism .k-primary,
+html.design-constructivism .k-icon-btn,
+html.design-constructivism .tv-focus.rounded-full,
+html.design-constructivism .tv-focus .rounded-full { border-radius: 0 !important; }
+html.design-constructivism .tv-focus.bg-accent:not(.mt-card),
+html.design-constructivism .tv-chip.bg-accent,
+html.design-constructivism .k-primary { background: rgb(215,38,30); color: rgb(248,240,222); font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; box-shadow: 8px 8px 0 #000; --cv-ic-a: #1a1512; }
+html.design-constructivism .tv-focus[role=button].bg-surface-2:not(.mt-card),
+html.design-constructivism .tv-focus[role=button].bg-surface:not(.mt-card),
+html.design-constructivism .tv-focus[role=button].border-2:not(.mt-card),
+html.design-constructivism .tv-focus[data-action].bg-surface-2,
+html.design-constructivism .tv-chip.bg-surface-2,
+html.design-constructivism .tv-chip.bg-surface,
+html.design-constructivism .k-icon-btn { background: rgb(239,228,204); color: #1a1512; font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; border: 0; box-shadow: inset 0 0 0 2px #1a1512, 8px 8px 0 #000; }
+html.design-constructivism .tv-focus[role=button].bg-surface-2 .text-muted,
+html.design-constructivism .tv-focus[role=button].bg-surface .text-muted,
+html.design-constructivism .tv-chip.bg-surface-2 .text-muted,
+html.design-constructivism .tv-chip.bg-surface .text-muted { color: #5a4c40; }
+html.design-constructivism .tv-focus[role=button].bg-surface-2 .text-text,
+html.design-constructivism .tv-chip.bg-surface-2 .text-text,
+html.design-constructivism .tv-chip.bg-surface .text-text { color: #1a1512; }
+html.design-constructivism .tv-chip.bg-surface-2 .text-accent,
+html.design-constructivism .tv-focus[role=button].bg-surface-2 .text-accent { color: rgb(215,38,30); }
+html.design-constructivism .tv-focus[role=button].is-focused:not(.mt-card),
+html.design-constructivism .tv-focus[data-action].is-focused,
+html.design-constructivism .tv-chip.is-focused,
+html.design-constructivism .k-primary.is-focused,
+html.design-constructivism .k-icon-btn.is-focused { -webkit-transform: translate(-4px,-4px); transform: translate(-4px,-4px); box-shadow: 0 0 0 4px rgb(24,20,18), 0 0 0 9px rgb(243,234,214), 14px 14px 0 9px rgb(215,38,30); }
+html.design-constructivism .tv-focus.bg-accent.is-focused:not(.mt-card),
+html.design-constructivism .tv-chip.bg-accent.is-focused { background: rgb(215,38,30); color: rgb(248,240,222); }
+html.design-constructivism .tv-focus.bg-accent.is-focused:not(.mt-card) { box-shadow: 0 0 0 4px rgb(24,20,18), 0 0 0 9px rgb(243,234,214), 14px 14px 0 9px #000; }
+html.design-constructivism .tv-chip.bg-surface-2.is-focused,
+html.design-constructivism .tv-chip.bg-surface.is-focused { background: rgb(239,228,204); color: #1a1512; }
+/* Setting / release rows (choices, switches, text fields): capitals; focused = a cream slab on the red offset. */
+html.design-constructivism .tv-release { font-family: var(--mt-font-display); text-transform: uppercase; letter-spacing: .03em; }
+html.design-constructivism .tv-release.is-focused { -webkit-transform: translate(-4px,-4px); transform: translate(-4px,-4px); background: rgb(239,228,204); color: #1a1512; box-shadow: inset 0 0 0 3px #1a1512, 12px 12px 0 rgb(215,38,30); }
+html.design-constructivism .tv-release.is-focused .text-text, html.design-constructivism .tv-release.is-focused .text-muted { color: #1a1512; }
+html.design-constructivism .tv-release.is-focused .text-accent { color: rgb(215,38,30); }
+html.design-constructivism .tv-focus.opacity-50, html.design-constructivism .tv-chip.opacity-50 { box-shadow: none; -webkit-filter: grayscale(1); filter: grayscale(1); }
+html.design-constructivism .tv-progress-fill, html.design-constructivism .tv-check { background: rgb(215,38,30); color: rgb(248,240,222); }
+html.design-constructivism .tv-key-hint { background: rgb(239,228,204); color: #1a1512; }
+html.design-constructivism .tv-panel, html.design-constructivism .tv-release:not(.is-focused) { box-shadow: inset 4px 0 0 rgb(215,38,30); }
+.cv-lenin { background: rgb(215,38,30); color: rgb(248,240,222); }
+.cv-lenin-wedge { background: #1a1512; -webkit-clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%); clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%); }
+.cv-voa { font-family: var(--mt-font-display); color: rgb(239,228,204); background: rgb(215,38,30); transform: rotate(-4deg); transform-origin: 100% 0; box-shadow: 10px 10px 0 #1a1512; }
+/* «Конструктивизм»: instead of the hop, a short stiff «parade step» (a firm lift, a halt, a stamp). */
+html.design-constructivism.mt-wobble .mt-hop { animation: cv-parade 420ms steps(1, end) both; }
+@keyframes cv-parade {
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(0, -12px, 0); }
+  50% { transform: translate3d(0, -12px, 0) rotate(-1.5deg); }
+  75% { transform: translate3d(0, 2px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.design-constructivism.mt-wobble .mt-hop { animation: none; }
+}
+html.design-constructivism.mt-fast .mt-hop { animation: none; }
+.cv-news { background: rgb(215,38,30); color: rgb(248,240,222); font-family: var(--mt-font-display); text-transform: uppercase; letter-spacing: .08em; }
+.cv-plan { background: rgb(239,228,204); color: #1a1512; box-shadow: 10px 10px 0 rgb(215,38,30); }
+.cv-toast { background: rgb(215,38,30); color: rgb(248,240,222); box-shadow: 12px 12px 0 #1a1512; transform: rotate(-3deg); }
+.cv-queue { background: rgba(24,20,18,.94); }

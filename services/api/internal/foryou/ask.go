@@ -136,7 +136,8 @@ const shingle = 8
 
 var promptShingles = func() map[string]bool {
 	out := map[string]bool{}
-	for _, p := range []string{askSystemPrompt, systemPrompt, recapSystemPrompt, endingSystemPrompt, significanceSystemPrompt, companionChatSystemPrompt} {
+	for _, p := range []string{askSystemPrompt, systemPrompt, themesSystemPrompt, picksSystemPrompt,
+		recapSystemPrompt, endingSystemPrompt, significanceSystemPrompt, companionChatSystemPrompt} {
 		w := strings.Fields(normTitle(p))
 		for i := 0; i+shingle <= len(w); i++ {
 			out[strings.Join(w[i:i+shingle], " ")] = true

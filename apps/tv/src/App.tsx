@@ -39,6 +39,7 @@ import { MessageLayer } from "./messages/MessageLayer";
 import { DesignProvider, DeviceProvider } from "./design/context";
 import { runBackFirst } from "./design/topJump";
 import { SkinBackground } from "./design/skins";
+import { getLook, loadLook } from "./design/looks/registry";
 import { parseMessageEvent } from "./messages/queue";
 import { RateLayer } from "./watch/RatePrompt";
 import { messageQueue } from "./watch/stores";
@@ -55,6 +56,7 @@ import { qualityInPlace, videoControl } from "./video/remote";
 import { PillLayer } from "./design/PillDialog";
 import { PausedSaver } from "./idle/PausedSaver";
 import { introEnv, shouldShowIntro } from "./intro/logic";
+import { preloadIntroScene } from "./intro/sceneImports";
 
 // The startup animation is its own chunk: TVs with it switched off never fetch it.
 const StartupIntro = lazy(() => import("./intro/StartupIntro").then((m) => ({ default: m.StartupIntro })));
@@ -107,6 +109,10 @@ export function App() {
   // Startup intro: once per app start, in the design this TV last showed.
   const [intro, setIntro] = useState(() => (shouldShowIntro(introEnv()) ? themeCache.design() : null));
   const endIntro = useCallback(() => setIntro(null), []);
+  // The intro's scene is its own chunk: fetch it with the intro shell.
+  useEffect(() => {
+    if (intro) preloadIntroScene(intro);
+  }, [intro]);
   // Screen stack inside the signed-in area (Home → Details → …). Kept here,
   // outside the "home" screen, so switching profiles and coming back keeps it.
   const [stack, setStack] = useState<StackEntry[]>(initialStack);
@@ -197,9 +203,21 @@ export function App() {
       themeCache.set(theme);
       themeCache.setDesign(design);
     }
-    applyDesign(design);
-    // Light colours exist for «Кинозал» only; the other designs are dark.
-    return applyTheme(design === "kinozal" ? theme : "dark");
+    // A design switch waits for the design's own chunk (CSS + drawings), so it never shows half-styled.
+    let live = true;
+    let undo: (() => void) | undefined;
+    const apply = () => {
+      if (!live) return;
+      applyDesign(design);
+      // Light colours exist for «Кинозал» only; the other designs are dark.
+      undo = applyTheme(design === "kinozal" ? theme : "dark");
+    };
+    if (getLook(design)) apply();
+    else void loadLook(design).catch(() => undefined).then(apply);
+    return () => {
+      live = false;
+      undo?.();
+    };
   }, [theme, design, known]);
 
   // Admin messages: unread ones once at start (and after pairing).

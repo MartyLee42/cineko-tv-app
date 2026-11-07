@@ -78,6 +78,27 @@ type CrewCredit struct {
 	Department   string  `json:"department"`
 }
 
+// Keyword is a TMDB keyword ("heist", "time loop"); names are English only.
+type Keyword struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// Keywords is /movie/{id}/keywords ("keywords") or /tv/{id}/keywords
+// ("results"); also appended to details with append_to_response=keywords.
+type Keywords struct {
+	Keywords []Keyword `json:"keywords"`
+	Results  []Keyword `json:"results"`
+}
+
+// All returns the list whichever key TMDB used.
+func (k Keywords) All() []Keyword {
+	if len(k.Keywords) > 0 {
+		return k.Keywords
+	}
+	return k.Results
+}
+
 type Credits struct {
 	Cast []CastCredit `json:"cast"`
 	Crew []CrewCredit `json:"crew"`
@@ -115,7 +136,7 @@ type AggregateCrew struct {
 	TotalEpisodeCount int `json:"total_episode_count"`
 }
 
-// Movie is /movie/{id}?append_to_response=credits,external_ids,videos.
+// Movie is /movie/{id}?append_to_response=credits,external_ids,videos,keywords.
 type Movie struct {
 	ID                  int      `json:"id"`
 	Title               string   `json:"title"`
@@ -139,6 +160,7 @@ type Movie struct {
 	Credits     Credits     `json:"credits"`
 	ExternalIDs ExternalIDs `json:"external_ids"`
 	Videos      Videos      `json:"videos"`
+	Keywords    *Keywords   `json:"keywords"`
 }
 
 type SeasonSummary struct {
@@ -151,7 +173,7 @@ type SeasonSummary struct {
 	PosterPath   *string `json:"poster_path"`
 }
 
-// TV is /tv/{id}?append_to_response=aggregate_credits,external_ids,videos.
+// TV is /tv/{id}?append_to_response=aggregate_credits,external_ids,videos,keywords.
 type TV struct {
 	ID               int      `json:"id"`
 	Name             string   `json:"name"`
@@ -185,6 +207,7 @@ type TV struct {
 	AggregateCredits AggregateCredits `json:"aggregate_credits"`
 	ExternalIDs      ExternalIDs      `json:"external_ids"`
 	Videos           Videos           `json:"videos"`
+	Keywords         *Keywords        `json:"keywords"`
 }
 
 type Episode struct {

@@ -1,0 +1,13 @@
+/* ---- projector: film leader countdown, then the beam */
+@keyframes in-sweep { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes in-count { 0% { opacity: 0; } 4%, 96% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes in-leader-out { to { opacity: 0; transform: scale(1.15); } }
+@keyframes in-beam { 0% { opacity: 0; } 60% { opacity: .9; } 70% { opacity: .6; } 80% { opacity: .85; } 100% { opacity: .75; } }
+@keyframes in-flicker { 0% { opacity: 0; } 30% { opacity: 1; } 40% { opacity: .55; } 55% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes in-perf { from { transform: translateY(0); } to { transform: translateY(-64px); } }
+.in-sweep { transform-origin: 640px 330px; animation: in-sweep .5s linear 3 both; }
+.in-count { opacity: 0; animation: in-count .5s linear both; }
+.in-leader { animation: in-leader-out .35s ease 1.5s forwards; transform-origin: 640px 330px; }
+.in-beam { opacity: 0; animation: in-beam .9s ease 1.55s both; }
+.in-flicker { opacity: 0; animation: in-flicker .8s ease 1.7s both; }
+.in-perf { animation: in-perf .4s linear infinite; }

@@ -25,6 +25,8 @@ export interface PlaybackAuto {
   audio?: string[];
   /** Playable containers: mkv, mp4, ts. */
   containers?: string[];
+  /** Decoded but not smoothly (smooth.ts tokens: "hevc_10bit_2160p"…). */
+  rough?: string[];
   hls?: boolean;
   /** The server offers compat streams (AAC transcode). */
   compat?: boolean;
@@ -68,6 +70,8 @@ export interface EffectivePrefs {
   /** Decodable codecs (null = unknown: don't judge). */
   video: string[] | null;
   audio_codecs: string[] | null;
+  /** Variants that don't play smoothly (null = none known). */
+  rough: string[] | null;
   compat: boolean;
   default_player: DefaultPlayer | null;
 }
@@ -130,6 +134,7 @@ export function effectivePrefs(p: PlaybackPrefsLike | null | undefined): Effecti
     prefer_smaller: !!m.prefer_smaller,
     video: a.video && a.video.length > 0 ? a.video : null,
     audio_codecs: a.audio && a.audio.length > 0 ? a.audio : null,
+    rough: a.rough && a.rough.length > 0 ? a.rough : null,
     compat: !!a.compat,
     default_player: m.default_player ?? null,
   };

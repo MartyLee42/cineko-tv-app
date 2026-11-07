@@ -29,6 +29,7 @@ import { HEADER_H, KinozalBackdrop, KinozalHeader, ProjectorBackdrop, ProjectorH
 import { TrailerLayer } from "../../design/TrailerLayer";
 import { AwardsPanel } from "../../design/awards";
 import { FactsPanel, QuotesPanel } from "../../design/trivia";
+import { SoundtrackPanel } from "../../design/soundtrack";
 import { useFacts, useQuotes } from "../../catalog/trivia";
 import { useCompanion } from "../../catalog/companion";
 import { AfterCreditsPanel, RecapPanel } from "../../design/companion";
@@ -281,6 +282,7 @@ export function DetailsScreen({
   const [awardsOpen, setAwardsOpen] = useState(false);
   // «Цитаты»: prefetched (none found → no button); «Факты»: loaded on open.
   const [triviaOpen, setTriviaOpen] = useState<"quotes" | "facts" | null>(null);
+  const [soundtrackOpen, setSoundtrackOpen] = useState(false);
   const quotesQ = useQuotes(id, !!d);
   const factsQ = useFacts(id, triviaOpen === "facts");
   const hasQuotes = showQuotesButton(quotesQ);
@@ -404,6 +406,7 @@ export function DetailsScreen({
         label: mp.movie?.completed ? `○  ${t("watch.mark_unwatched")}` : `✓  ${t("watch.mark_watched")}`,
         onPress: () => (setMenu(null), setWatched.mutate({ watched: !mp.movie?.completed })),
       });
+    actions.push({ key: "soundtrack", label: `♫  ${t("soundtrack.tv_menu")}`, onPress: () => (setMenu(null), setSoundtrackOpen(true)) });
     setMenu({ title: d.title, subtitle: t("tvd.more.title"), testId: "more-menu", actions });
   };
   const toggleWatch = () => {
@@ -611,6 +614,7 @@ export function DetailsScreen({
           onClose={() => setCompanionOpen(null)}
         />
       )}
+      {soundtrackOpen && d && <SoundtrackPanel mediaId={d.id} title={d.title} onClose={() => setSoundtrackOpen(false)} />}
       {onlineOpen && d && (
         <OnlinePicker
           title={d.title}

@@ -27,5 +27,9 @@ for i in $(seq 1 60); do
   sleep 3
   [ "$i" -lt 60 ] || { echo "api not healthy after 3 minutes: scripts/cineko.sh logs api" >&2; exit 1; }
 done
+# TorrServer settings from .env (TORRSERVER_CACHE_MB, …): a no-op unless
+# they changed; never restarts TorrServer.
+echo "==> TorrServer settings"
+sh "$ROOT/scripts/torrserver-settings.sh" || echo "    not applied (above): scripts/torrserver-settings.sh" >&2
 dc ps --format 'table {{.Service}}\t{{.Status}}'
 echo "Old images can be removed with: docker image prune   (removes all dangling images)"

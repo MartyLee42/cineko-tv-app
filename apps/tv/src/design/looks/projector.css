@@ -1,0 +1,2 @@
+/* «projector»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
+html.design-projector .tv-focus.is-focused { transform: scale(1.04); box-shadow: 0 0 0 3px rgb(var(--mt-focus)), 0 0 44px 8px rgba(var(--mt-accent), .42); }

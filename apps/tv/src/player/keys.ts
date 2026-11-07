@@ -1,5 +1,6 @@
 // Remote keys inside the player: arrows/OK, Back and media keys across TV
 // platforms (browser `key` names and Tizen/webOS key codes).
+import { snapToChapter, type Chapter } from "@martytv/media-types";
 import { isBackKey } from "../platform";
 
 export type PlayerKey =
@@ -156,6 +157,8 @@ export interface SeekPreview {
   target: number;
   count: number;
   dir: -1 | 1;
+  /** The step stopped at a chapter start. */
+  snapped?: boolean;
 }
 
 /**
@@ -171,4 +174,17 @@ export function accumulateSeek(prev: SeekPreview | null, from: number, dir: -1 |
   const max = duration && isFinite(duration) && duration > 0 ? Math.max(0, duration - 3) : Infinity;
   target = Math.max(0, Math.min(max, target));
   return { target, count, dir };
+}
+
+/**
+ * ◀▶ in a file with chapters: the same step (and acceleration), but a step
+ * that passes a chapter start stops there — tapping or holding ◀▶ walks
+ * chapter by chapter where chapters are close, and seeks as usual inside
+ * long ones. Never further than the plain step.
+ */
+export function chapterSeek(prev: SeekPreview | null, from: number, dir: -1 | 1, duration: number | null, chapters: readonly Chapter[] | null): SeekPreview {
+  const next = accumulateSeek(prev, from, dir, duration);
+  const start = prev ? prev.target : from;
+  const snap = snapToChapter(chapters, start, next.target);
+  return snap === null ? next : { ...next, target: snap, snapped: true };
 }

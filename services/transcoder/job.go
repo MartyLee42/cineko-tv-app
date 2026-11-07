@@ -54,6 +54,8 @@ type Job struct {
 
 	// threads: libx264 threads (Config.VideoThreads), set by the server.
 	threads int
+	// enc: the video encoder of a re-encoding job (hwaccel.go), set by the server.
+	enc Encoder
 }
 
 const (

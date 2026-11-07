@@ -45,14 +45,16 @@ export function ReleasePicker({ ctx, tried }: { ctx: PlayContext; tried: readonl
   // The server ranks for this TV's playback profile (decodable codecs, its
   // throughput, manual limits). On top of that the TV re-orders by bitrate
   // only: in «Выбрать раздачу полегче» (the rate just measured), or when the
-  // server had no profile to apply (its last measured rate). Audio is judged
+  // server had no profile to apply (its last measured rate; then also the
+  // variants that stutter here, smooth.ts). Audio is judged
   // by the server profile and the row warnings, not re-ordered here.
   const env = useMemo(() => player.rankEnv(ctx), [ctx]);
   const fit = list.data?.device ?? null;
   const items = useMemo(() => {
     const raw = list.data?.items ?? [];
     if (showAll || (fit && !player.lighterRate)) return raw;
-    return rankForTv(raw, { ...env, probe: undefined });
+    // Smoothness (auto.rough) is in the server's ranking when it had the profile.
+    return rankForTv(raw, { ...env, probe: undefined, smooth: fit ? undefined : env.smooth });
   }, [list.data, env, fit, showAll]);
   const fitText = constraintsText(fit?.constraints, (k, v) => t(k as MessageKey, v)) || null;
   // «Сеть сейчас ~8 Мбит/с — без рывков пойдут 1080p до ~4 ГБ»: a recent

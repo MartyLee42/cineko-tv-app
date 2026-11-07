@@ -8,7 +8,7 @@ import { ChevronLeft } from "../icons";
 import { NoProfile } from "../pages/HistoryPage";
 import { PreferencesPanel } from "../tastequiz/GenerateFromHistory";
 import { useActiveProfile } from "../watch/ActiveProfile";
-import { arcPath, divergingBar, histogramBars, percent, splitAffinities } from "./logic";
+import { arcPath, divergingBar, histogramBars, likedThemes, percent, splitAffinities, themeAffinities } from "./logic";
 import { useTaste, type TasteDNA } from "./queries";
 
 type Affinity = TasteDNA["genres"][number];
@@ -88,6 +88,7 @@ export function TastePage() {
               </Panel>
             )}
           </div>
+          {!!d.themes?.length && <Themes items={d.themes} />}
           <div className="grid gap-5 lg:grid-cols-2">
             <Panel title={t("fy.taste.directors")} testId="taste-directors">
               <People items={d.directors} />
@@ -95,6 +96,19 @@ export function TastePage() {
             <Panel title={t("fy.taste.actors")}>
               <People items={d.actors} />
             </Panel>
+            {(
+              [
+                ["themes.writers", d.writers],
+                ["themes.cinematographers", d.cinematographers],
+                ["themes.composers", d.composers],
+              ] as const
+            ).map(([title, items]) =>
+              items?.length ? (
+                <Panel key={title} title={t(title)} testId={`taste-${title.slice(7)}`}>
+                  <People items={items} />
+                </Panel>
+              ) : null,
+            )}
           </div>
           {!!d.adjustments?.length && (
             <Panel title={t("taste.adjust.title")} testId="taste-adjustments">
@@ -115,6 +129,22 @@ export function TastePage() {
         </div>
       )}
     </div>
+  );
+}
+
+/** «Темы»: «Вам нравятся фильмы про …» plus the liked / disliked TMDB keywords. */
+function Themes({ items }: { items: NonNullable<TasteDNA["themes"]> }) {
+  const { t } = useI18n();
+  const liked = likedThemes(items, 3);
+  return (
+    <Panel title={t("themes.taste_title")} testId="taste-themes">
+      {liked && <p className="mb-3 text-base font-semibold">{t(liked.localized ? "themes.taste_summary" : "themes.reason", liked.localized ? { list: liked.text } : { name: liked.text })}</p>}
+      <Affinities items={themeAffinities(items)} />
+      <p className="mt-3 text-xs text-muted">
+        {t("themes.taste_hint")}
+        {items.some((x) => !x.localized) && ` ${t("themes.taste_hint_untranslated")}`}
+      </p>
+    </Panel>
   );
 }
 

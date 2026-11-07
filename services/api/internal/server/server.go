@@ -32,6 +32,7 @@ import (
 	"martytv/api/internal/integrations/tmdb"
 	"martytv/api/internal/integrations/torrserver"
 	"martytv/api/internal/iptv"
+	"martytv/api/internal/ivrestart"
 	"martytv/api/internal/messages"
 	"martytv/api/internal/pairing"
 	"martytv/api/internal/playback"
@@ -92,6 +93,8 @@ type Server struct {
 	Video *video.Service
 	// Trivia: «Цитаты» / «Факты» of a title.
 	Trivia *trivia.Service
+	// InvidiousRestart: the nightly Invidious restart (Run).
+	InvidiousRestart *ivrestart.Restarter
 }
 
 // New builds the HTTP application.
@@ -311,7 +314,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 
 	api.Use(func(c fiber.Ctx) error { return httpx.NotFound() })
 
-	return &Server{App: app, Auth: authSvc, Pairing: pairSvc, Hub: hub, Catalog: catalogSvc, Playback: playbackSvc, Watch: watchSvc, Sysmon: sysmonSvc, Ratings: ratingsSvc, Awards: awardsSvc, Sources: srcReg, Online: onlineSvc, ClientLog: clientLog, Imports: importSvc, ForYou: forYouSvc, Curated: curatedSvc, Downloads: downloadsSvc, IPTV: iptvSvc, Video: videoSvc, Trivia: triviaSvc}
+	return &Server{App: app, Auth: authSvc, Pairing: pairSvc, Hub: hub, Catalog: catalogSvc, Playback: playbackSvc, Watch: watchSvc, Sysmon: sysmonSvc, Ratings: ratingsSvc, Awards: awardsSvc, Sources: srcReg, Online: onlineSvc, ClientLog: clientLog, Imports: importSvc, ForYou: forYouSvc, Curated: curatedSvc, Downloads: downloadsSvc, IPTV: iptvSvc, Video: videoSvc, Trivia: triviaSvc,
+		InvidiousRestart: ivrestart.New(cfg.InvidiousRestart, playback.LastVideoStream, log)}
 }
 
 // RunCleanup periodically prunes expired sessions and pairing requests.
@@ -457,6 +461,7 @@ func transcoderStats(p *playback.Service) func(context.Context) *sysmon.Transcod
 			return &sysmon.TranscoderStats{}
 		}
 		return &sysmon.TranscoderStats{OK: true, ActiveJobs: m.ActiveJobs, ActiveSubtitleJobs: m.ActiveSubtitleJobs, MaxJobs: m.MaxJobs,
-			JobsStarted: m.JobsStarted, JobsRejected: m.JobsRejected, JobsFailed: m.JobsFailed}
+			JobsStarted: m.JobsStarted, JobsRejected: m.JobsRejected, JobsFailed: m.JobsFailed,
+			VideoEncoder: m.VideoEncoder, VideoEncoderFallback: m.VideoEncoderFallback}
 	}
 }
