@@ -4839,7 +4839,7 @@ components:
           description: 'Which sources this profile searches (GET /sources lists them). Default {"enabled": "all"}. Unknown ids → 422. Replaced as a whole on PUT.' 
         loading_style:
           type: string
-          enum: [popcorn, fill_title, poster_reveal, film_reel, minimal, marty, marty_popcorn]
+          enum: [popcorn, fill_title, poster_reveal, film_reel, minimal, marty, marty_popcorn, matrix]
           default: popcorn
           description: |
             Animation shown while a stream is first preparing/preloading (later
@@ -4850,7 +4850,8 @@ components:
             film_reel = film-strip frames light up one by one along a running reel;
             minimal = backdrop with a thin progress line and status text;
             marty = Cineko the mascot's loading loop with a progress bar; he cheers at 100%;
-            marty_popcorn = the same with Cineko munching popcorn while it loads.
+            marty_popcorn = the same with Cineko munching popcorn while it loads;
+            matrix = «Матрица»: «> Загрузка конструкта…», the percentage counting up in green and a block bar over the digital rain (also what the matrix design always shows).
         taste_note:
           type: string
           maxLength: 600

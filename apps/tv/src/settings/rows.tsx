@@ -24,6 +24,7 @@ const LOADING_LABEL = {
   minimal: "settings.loading.minimal",
   marty: "settings.loading.marty",
   marty_popcorn: "settings.loading.marty_popcorn",
+  matrix: "settings.loading.matrix",
 } as const;
 
 export function useSettingRows() {

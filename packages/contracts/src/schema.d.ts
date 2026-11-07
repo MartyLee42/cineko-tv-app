@@ -4746,11 +4746,12 @@ export interface components {
              *     film_reel = film-strip frames light up one by one along a running reel;
              *     minimal = backdrop with a thin progress line and status text;
              *     marty = Cineko the mascot's loading loop with a progress bar; he cheers at 100%;
-             *     marty_popcorn = the same with Cineko munching popcorn while it loads.
+             *     marty_popcorn = the same with Cineko munching popcorn while it loads;
+             *     matrix = «Матрица»: «> Загрузка конструкта…», the percentage counting up in green and a block bar over the digital rain (also what the matrix design always shows).
              * @default popcorn
              * @enum {string}
              */
-            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn";
+            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix";
             /**
              * @description «О моих вкусах»: the viewer's own description of their tastes (trimmed, at most 600 characters; "" clears it).
              *     Sent to DeepSeek only as delimited data (`viewer_note`) in the AI collections and Ask AI prompts. A change

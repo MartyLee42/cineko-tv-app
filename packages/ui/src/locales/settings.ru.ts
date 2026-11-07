@@ -23,6 +23,7 @@ export const settingsRu: Record<keyof typeof settingsEn, string> = {
   "settings.loading.film_reel": "Киноплёнка",
   "settings.loading.marty": "Cineko",
   "settings.loading.marty_popcorn": "Cineko с попкорном",
+  "settings.loading.matrix": "Матрица",
   "settings.loading.minimal": "Минимальная",
   "settings.default_player": "Плеер по умолчанию",
   "settings.language": "Язык",

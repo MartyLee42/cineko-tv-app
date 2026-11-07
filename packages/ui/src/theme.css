@@ -485,3 +485,11 @@ html.mt-cozy body::after {
 
 /* «Конструктивизм» pictograms (cvIcons.tsx): the red part; on a red slab it turns black. */
 .cv-ic-a { fill: var(--cv-ic-a, #d7261e); }
+
+/* «Матрица»: the waiting spinner (Spinner) — three phosphor blocks lighting up in turn. */
+.mx-spin-cell { display: inline-block; background: #00ff41; box-shadow: 0 0 8px rgba(0, 255, 65, .7); opacity: .18; -webkit-animation: mx-spin 1.05s steps(1, end) infinite; animation: mx-spin 1.05s steps(1, end) infinite; }
+.mx-spin-1 { -webkit-animation-delay: .35s; animation-delay: .35s; }
+.mx-spin-2 { -webkit-animation-delay: .7s; animation-delay: .7s; }
+@-webkit-keyframes mx-spin { 0% { opacity: 1; } 33% { opacity: .18; } }
+@keyframes mx-spin { 0% { opacity: 1; } 33% { opacity: .18; } }
+
