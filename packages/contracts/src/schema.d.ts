@@ -5226,6 +5226,13 @@ export interface components {
                     jobs_rejected: number;
                     /** Format: int64 */
                     jobs_failed: number;
+                    /**
+                     * @description What re-encoded video (XviD / MPEG-2 / VC-1 → H.264) runs on: detected at the transcoder's start (TRANSCODER_HWACCEL).
+                     * @enum {string}
+                     */
+                    video_encoder?: "cpu" | "nvenc" | "vaapi" | "qsv";
+                    /** @description The GPU failed recently; re-encoding uses the CPU for a while. */
+                    video_encoder_fallback?: boolean;
                 } | null;
             };
         };
