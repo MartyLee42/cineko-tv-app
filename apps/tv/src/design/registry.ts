@@ -34,9 +34,9 @@ export const SKINS: Record<DesignSetting, Skin> = {
   // Rubik Mono One is very wide: titles a size smaller.
   popart: { id: "popart", skeleton: "projector", light: false, background: "comic", titleScale: 0.72, animatedLayers: 0, ornaments: { ...none, heroEdges: true } },
   constructivism: { id: "constructivism", skeleton: "terminal", light: false, background: "poster", titleScale: 1, animatedLayers: 0, ornaments: none },
-  // Mono display type runs wide: titles a little smaller.
-  stickerbook: { id: "stickerbook", skeleton: "kinozal", light: false, background: "stickers", titleScale: 1, animatedLayers: 0, ornaments: none },
+  stickerbook: { id: "stickerbook", skeleton: "kinozal", light: false, background: "stickers", titleScale: 1, animatedLayers: 0, ornaments: { ...none, heroEdges: true, titlePlate: true } },
   pocketpet: { id: "pocketpet", skeleton: "terminal", light: false, background: "lcd", titleScale: 1, animatedLayers: 0, ornaments: none },
+  // Mono display type runs wide: titles a little smaller.
   matrix: { id: "matrix", skeleton: "terminal", light: false, background: "rain", titleScale: 0.86, animatedLayers: 0, ornaments: { ...none, cornerBrackets: true } },
 };
 
