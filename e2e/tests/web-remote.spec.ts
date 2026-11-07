@@ -18,6 +18,7 @@ async function openFromSearch(phone: Page, query: string) {
 
 /** Presses "Send to TV", choosing `deviceName` if a picker opens (several online TVs). */
 async function sendToTv(phone: Page, deviceName: string) {
+  await phone.getByTestId("play-more").click(); // «Открыть на ТВ» is in the play button's menu
   await phone.getByTestId("send-to-tv").click();
   const picker = phone.getByTestId("tv-picker");
   const result = phone.getByTestId("send-result");

@@ -213,6 +213,7 @@ test("watch a title in the browser with progress, resume and fallback", async ({
 
   // Title → Watch here: the best release *for this browser* is prepared (not the 4K remux).
   await page.goto(`/title/${movie.id}`);
+  await page.getByTestId("play-more").click(); // «Где и как смотреть»
   await page.getByTestId("watch-here").click();
   await expect(page).toHaveURL(/\/watch\//);
   await expect(page.getByTestId("player-loader")).toBeVisible();
@@ -263,20 +264,22 @@ test("watch a title in the browser with progress, resume and fallback", async ({
   const resumeAt = log.reports.at(-1)!.position_seconds;
   expect(resumeAt).toBeGreaterThanOrEqual(30);
 
-  // Reopen: "Resume at 0:3x / Start over" before starting.
+  // Reopen: the play button says "Resume at 0:3x"; its menu ("From 0:3x" preselected) → here
+  // starts at that position (the choice was made on the title page: no second question).
   await page.reload();
   await expect(page.getByTestId("play-on-tv")).toContainText(/Resume at 0:3\d/);
+  await page.getByTestId("play-more").click();
+  await expect(page.getByTestId("resume-from")).toHaveAttribute("aria-pressed", "true");
   await page.getByTestId("watch-here").click();
-  const prompt = page.getByTestId("resume-prompt");
-  await expect(prompt).toBeVisible({ timeout: 15_000 });
-  await expect(prompt.getByTestId("resume-yes")).toHaveText(/Resume at 0:3\d/);
-  await prompt.getByTestId("resume-yes").click();
+  await expect(page).toHaveURL(/[?&]t=3\d/);
+  await expect(page.getByTestId("resume-prompt")).toHaveCount(0);
   await expect(page.getByTestId("player-loader")).toHaveCount(0, { timeout: 20_000 });
   await expect.poll(() => currentTime(page)).toBeGreaterThan(resumeAt - 1);
   await page.getByTestId("player-back").click();
   await expect(page).toHaveURL(new RegExp(`/title/${movie.id}`));
 
   // Release list in "This browser" mode: badges, playable first.
+  await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
   await page.getByTestId("choose-release").click();
   const sheet = page.getByTestId("release-sheet");
   await sheet.locator('[data-testid=release-mode] [data-mode="here"]').click();
@@ -331,6 +334,7 @@ test("refine an empty release search", async ({ page }) => {
   await page.route(/\/api\/v1\/profiles\/[^/]+\/continue-watching/, (route) => route.fulfill({ json: { items: [] } }));
 
   await page.goto(`/title/${movie.id}`);
+  await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
   await page.getByTestId("choose-release").click();
   const sheet = page.getByTestId("release-sheet");
   await expect(sheet.getByTestId("releases-empty")).toBeVisible({ timeout: 15_000 });
@@ -355,6 +359,7 @@ test("refine an empty release search", async ({ page }) => {
 
   // Remembered for this title: reopening the list uses the refined search.
   await page.keyboard.press("Escape");
+  await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
   await page.getByTestId("choose-release").click();
   await expect(page.getByTestId("release-sheet").getByTestId("refine-active")).toBeVisible();
   await expect(page.getByTestId("release-sheet").getByTestId("release-row")).toHaveCount(1);

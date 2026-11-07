@@ -36,13 +36,18 @@ function useShownSeason(m: MediaDetail): number | undefined {
   return defaultSeason(m.seasons) ?? 1;
 }
 
-export function OnlineWatchButton({ m, className = "" }: { m: MediaDetail; className?: string }) {
-  const { t } = useI18n();
+/** Whether the title has online variants (for the shown season) — the button / menu entry shows only then. */
+export function useHasOnline(m: MediaDetail): { has: boolean; season: number | undefined } {
   const { profileId } = useActiveProfile();
   const season = useShownSeason(m);
   const q = useOnline({ media_id: m.id, ...(season != null && { season_number: season }) }, profileId ?? undefined);
+  return { has: onlineOnly(q.data).length > 0, season };
+}
+
+export function OnlineWatchButton({ m, className = "" }: { m: MediaDetail; className?: string }) {
+  const { t } = useI18n();
+  const { has, season } = useHasOnline(m);
   const [open, setOpen] = useState(false);
-  const has = onlineOnly(q.data).length > 0;
   if (!has && !open) return null;
   return (
     <>
@@ -63,7 +68,7 @@ export function OnlineWatchButton({ m, className = "" }: { m: MediaDetail; class
   );
 }
 
-function OnlinePicker({ m, initialSeason, onClose }: { m: MediaDetail; initialSeason: number | undefined; onClose: () => void }) {
+export function OnlinePicker({ m, initialSeason, onClose }: { m: MediaDetail; initialSeason: number | undefined; onClose: () => void }) {
   const { t } = useI18n();
   const { profileId } = useActiveProfile();
   const next = useMediaProgress(m.id).data?.next_up ?? null;
@@ -317,7 +322,7 @@ function Chip({
 }
 
 /** Play triangle inside a signal arc: "streams at once". */
-function StreamIcon({ className = "" }: { className?: string }) {
+export function StreamIcon({ className = "" }: { className?: string }) {
   if (useConstructivism()) return <CvIcon glyph="play" className={className} />;
   return (
     <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>

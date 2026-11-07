@@ -4,15 +4,16 @@ import { Link, useParams, useSearchParams } from "react-router";
 import type { Episode, MediaDetail, Schemas, WatchProgress } from "@martytv/contracts";
 import { countryList, formatDate, formatRuntime, imageUrl, episodeCode, placeholderColor, formatRating } from "@martytv/media-types";
 import { GenreReaction, useI18n, type MessageKey, ratingTone } from "@martytv/ui";
-import { CheckIcon, PlayIcon, RestartIcon } from "../icons";
+import { CheckIcon, PlayIcon } from "../icons";
 import { Backdrop, CatalogError, CatalogPage, Img, Poster, PosterRow } from "../catalog/components";
 import { isNotFound, useCatalogConfig, useMedia, useRelated, useSeason } from "../catalog/queries";
 import { defaultSeason, orderSeasons } from "../catalog/seasons";
 import { SendToTvButton, SendToTvProvider } from "../remote/SendToTv";
 import { NowOnTvChip } from "../remote/NowOnTv";
-import { ChooseReleaseButton, EpisodePlayButtons, PlayOnTvButton, PlayOnTvProvider, usePlayOnTv, WatchHereButton } from "../play/PlayOnTv";
+import { EpisodePlayButtons, PlayOnTvProvider } from "../play/PlayOnTv";
+import { PlayChooser } from "../play/PlayChooser";
 import { useActiveProfile } from "../watch/ActiveProfile";
-import { ListToggles, ProgressBar, RatePrompt } from "../watch/components";
+import { ListToggles, ProgressBar, RatePrompt, TOOL_BTN, TOOL_LABEL, TOOL_OFF } from "../watch/components";
 import { episodeProgressMap, formatClock, formatLeft, resumeState, seasonProgress } from "../watch/format";
 import { useMediaProgress, useSetWatched, useSettings } from "../watch/queries";
 import { useFilmTheme } from "../filmtheme/useFilmTheme";
@@ -20,7 +21,7 @@ import { RecommendButton } from "../reco/RecommendButton";
 import { FamilyRatings } from "../family/Family";
 import { OnlineWatchButton } from "../play/OnlineWatch";
 import { DownloadChip, useNow } from "../downloads/ui";
-import { SaveEpisodeButton, SaveSeasonButton, SaveToDeviceButton } from "../offline/ui";
+import { SaveEpisodeButton, SaveSeasonButton } from "../offline/ui";
 import { initials } from "../catalog/person";
 import { CvQueue } from "../catalog/CvExtras";
 import { Awards } from "../catalog/Awards";
@@ -66,7 +67,10 @@ function Title({ id }: { id: string }) {
     <SendToTvProvider>
       <PlayOnTvProvider>
       <article className="space-y-10">
-        <Hero m={m} />
+        <div className="space-y-4">
+          <Hero m={m} />
+          <Extras m={m} />
+        </div>
         <RatePrompt only={m.id} />
         <div className="grid gap-10 lg:grid-cols-[1fr_18rem]">
           <div className="min-w-0 space-y-10">
@@ -152,7 +156,7 @@ function Hero({ m }: { m: MediaDetail }) {
             </div>
           )}
           {m.kind === "movie" ? <MovieActions m={m} /> : <SeriesActions m={m} />}
-          <div className="flex flex-wrap gap-2 pt-1"><ListToggles m={m} /><RecommendButton m={m} /><TriviaButtons m={m} /><SoundtrackButton m={m} /><CompanionButtons m={m} /></div>
+          <MyToolbar m={m} />
           <FamilyRatings mediaId={m.id} />
         </div>
       </div>
@@ -160,12 +164,20 @@ function Hero({ m }: { m: MediaDetail }) {
   );
 }
 
+/** Under the play button: «● Сейчас на Almaty · Пульт» and a server download's status, when there are any. */
+function StatusLine({ mediaId }: { mediaId: string }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 [&:empty]:hidden">
+      <NowOnTvChip mediaId={mediaId} />
+      <DownloadChip mediaId={mediaId} />
+    </div>
+  );
+}
+
 function MovieActions({ m }: { m: MediaDetail }) {
   const { t, locale } = useI18n();
   const { data: cfg } = useCatalogConfig();
-  const { profileId } = useActiveProfile();
   const progress = useMediaProgress(m.id).data;
-  const setWatched = useSetWatched(m.id);
   const rs = resumeState(progress?.movie);
   const movie = progress?.movie;
   const target = { media_id: m.id, label: m.title };
@@ -178,45 +190,22 @@ function MovieActions({ m }: { m: MediaDetail }) {
           {left && <p className="text-xs text-muted">{t("watch.left", { time: left })}</p>}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
-        <PlayOnTvButton
-          className="col-span-2 sm:col-span-1"
-          target={
-            rs.kind === "resume" ? { ...target, position_seconds: rs.position } : rs.kind === "again" ? { ...target, position_seconds: 0 } : target
-          }
-          label={
-            rs.kind === "resume"
-              ? t("watch.resume_at", { time: formatClock(rs.position) })
-              : rs.kind === "again"
-                ? t("watch.watch_again")
-                : undefined
-          }
-        />
-        {/* No position: the player itself offers "Resume at … / Start over". */}
-        <WatchHereButton className="col-span-2 sm:col-span-1" target={rs.kind === "again" ? { ...target, position_seconds: 0 } : target} />
-        <OnlineWatchButton m={m} className="col-span-2 sm:col-span-1" />
-        {rs.kind === "resume" && <StartOverButton target={{ ...target, position_seconds: 0 }} className="text-sm sm:text-base" />}
-        <ChooseReleaseButton target={target} className="text-sm sm:text-base" />
-        <SaveToDeviceButton
-          target={{ media_id: m.id, title: m.title, poster: imageUrl(cfg, m.poster_path, "w342") }}
-          className="col-span-2 text-sm sm:col-span-1 sm:text-base"
-        />
-        <SendToTvButton secondary target={{ media_id: m.id }} className="text-sm sm:text-base" />
-        {profileId && (
-          <WatchedButton
-            watched={!!movie?.completed}
-            busy={setWatched.isPending}
-            onToggle={() => setWatched.mutate({ watched: !movie?.completed })}
-            className="text-sm sm:text-base"
-          />
-        )}
-        <div className="col-span-2 sm:col-span-1 [&:empty]:hidden">
-          <NowOnTvChip mediaId={m.id} />
-        </div>
-        <div className="col-span-2 sm:col-span-1 [&:empty]:hidden">
-          <DownloadChip mediaId={m.id} />
-        </div>
-      </div>
+      <PlayChooser
+        m={m}
+        className="w-full sm:w-auto"
+        target={rs.kind === "resume" ? { ...target, position_seconds: rs.position } : rs.kind === "again" ? { ...target, position_seconds: 0 } : target}
+        label={
+          rs.kind === "resume"
+            ? t("watch.resume_at", { time: formatClock(rs.position) })
+            : rs.kind === "again"
+              ? t("watch.watch_again")
+              : t("player.play")
+        }
+        resumeTime={rs.kind === "resume" ? formatClock(rs.position) : undefined}
+        releases
+        save={{ media_id: m.id, title: m.title, poster: imageUrl(cfg, m.poster_path, "w342") }}
+      />
+      <StatusLine mediaId={m.id} />
     </div>
   );
 }
@@ -229,9 +218,10 @@ function SeriesActions({ m }: { m: MediaDetail }) {
   const rs = resumeState(epProgress);
   const code = next ? episodeCode(next.season_number, next.episode_number) : "";
   return (
-    <div className="flex flex-wrap items-center gap-3 pt-2">
-      {next && (
-        <PlayOnTvButton
+    <div className="space-y-3 pt-2">
+      {next ? (
+        <PlayChooser
+          m={m}
           testId="play-next-up"
           className="w-full sm:w-auto"
           target={{
@@ -244,69 +234,68 @@ function SeriesActions({ m }: { m: MediaDetail }) {
             ...(rs.kind === "resume" && { position_seconds: rs.position }),
           }}
           label={rs.kind === "resume" ? `${code} · ${t("watch.resume_at", { time: formatClock(rs.position) })}` : t("watch.next_up", { code })}
+          resumeTime={rs.kind === "resume" ? formatClock(rs.position) : undefined}
         />
+      ) : (
+        // Nothing to continue: episodes play from the list below; online / open on TV stay here.
+        <div className="flex flex-wrap items-center gap-3">
+          <OnlineWatchButton m={m} className="w-full sm:w-auto" />
+          <SendToTvButton target={{ media_id: m.id }} className="w-full sm:w-auto" />
+        </div>
       )}
-      {next && (
-        <WatchHereButton
-          testId="watch-next-up"
-          className="w-full sm:w-auto"
-          target={{
-            media_id: m.id,
-            season_number: next.season_number,
-            episode_number: next.episode_number,
-            episode_id: next.episode_id,
-            label: `${m.title} · ${code}`,
-          }}
-        />
-      )}
-      <OnlineWatchButton m={m} className="w-full sm:w-auto" />
-      <SendToTvButton secondary={!!next} target={{ media_id: m.id }} className="w-full sm:w-auto" />
-      <NowOnTvChip mediaId={m.id} />
+      <StatusLine mediaId={m.id} />
     </div>
   );
 }
 
-function StartOverButton({ target, className = "" }: { target: { media_id: string; label: string; position_seconds: number }; className?: string }) {
+/** Personal marks, small: «Буду смотреть», ♥, ★ rating, «Посоветовать», «Просмотрено» (movies). */
+function MyToolbar({ m }: { m: MediaDetail }) {
   const { t } = useI18n();
-  const { play } = usePlayOnTv();
+  const { profileId } = useActiveProfile();
+  const progress = useMediaProgress(m.id).data;
+  const setWatched = useSetWatched(m.id);
+  const movie = progress?.movie;
   return (
-    <button
-      type="button"
-      onClick={() => play(target)}
-      data-testid="start-over"
-      className={`inline-flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-border bg-surface/70 px-4 font-semibold backdrop-blur transition hover:border-accent sm:px-5 ${className}`}
-    >
-      <RestartIcon className="text-xl" />
-      {t("watch.start_over")}
-    </button>
+    <div role="group" aria-label={t("titleactions.mine")} className="flex flex-wrap items-center gap-2" data-testid="title-toolbar">
+      <ListToggles m={m} compact />
+      {profileId && m.kind === "movie" && (
+        <WatchedButton watched={!!movie?.completed} busy={setWatched.isPending} onToggle={() => setWatched.mutate({ watched: !movie?.completed })} />
+      )}
+      <RecommendButton m={m} compact />
+    </div>
   );
 }
 
-function WatchedButton({
-  watched,
-  busy,
-  onToggle,
-  className = "",
-}: {
-  watched: boolean;
-  busy: boolean;
-  onToggle: () => void;
-  className?: string;
-}) {
+/** «Дополнительно» under the hero: recap, after credits, facts, quotes, soundtrack (each keeps its own rules). */
+function Extras({ m }: { m: MediaDetail }) {
   const { t } = useI18n();
+  return (
+    <section aria-label={t("titleactions.extras")} data-testid="title-extras" className="flex items-center gap-3">
+      <span aria-hidden className="hidden shrink-0 text-xs font-semibold uppercase tracking-wider text-muted sm:block">{t("titleactions.extras")}</span>
+      <div className="no-scrollbar -mx-4 flex min-w-0 flex-1 gap-2 overflow-x-auto px-4 py-0.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+        <CompanionButtons m={m} />
+        <TriviaButtons m={m} />
+        <SoundtrackButton m={m} />
+      </div>
+    </section>
+  );
+}
+
+function WatchedButton({ watched, busy, onToggle }: { watched: boolean; busy: boolean; onToggle: () => void }) {
+  const { t } = useI18n();
+  const label = watched ? t("watch.watched") : t("watch.mark_watched");
   return (
     <button
       type="button"
       aria-pressed={watched}
       disabled={busy}
       onClick={onToggle}
+      title={label}
       data-testid="toggle-watched"
-      className={`inline-flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-4 font-semibold backdrop-blur transition disabled:opacity-60 sm:px-5 ${
-        watched ? "border-ok/60 bg-ok/15 text-ok" : "border-border bg-surface/70 hover:border-accent"
-      } ${className}`}
+      className={`${TOOL_BTN} disabled:opacity-60 ${watched ? "border-ok/60 bg-ok/15 text-ok" : TOOL_OFF}`}
     >
-      <CheckIcon className="text-xl" />
-      {watched ? t("watch.watched") : t("watch.mark_watched")}
+      <CheckIcon className="text-lg" />
+      <span className={TOOL_LABEL}>{watched ? t("watch.watched") : t("watch.watched")}</span>
     </button>
   );
 }

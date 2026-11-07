@@ -48,7 +48,7 @@ function useFlag(): boolean {
   );
 }
 
-function useIsSuperAdmin(): boolean {
+export function useIsSuperAdmin(): boolean {
   const { data: session } = useSession();
   return isSuperAdminRole(session?.user.role);
 }

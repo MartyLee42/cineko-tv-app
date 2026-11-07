@@ -193,7 +193,9 @@ test("continue watching, rate prompt and inbox (mocked)", async ({ page }) => {
     await card.click({ position: { x: 12, y: 12 } });
     await expect(page).toHaveURL(new RegExp(`/title/${movie.id}`));
     await expect(page.getByTestId("play-on-tv")).toContainText("42:10");
+    await page.getByTestId("play-more").click();
     await expect(page.getByTestId("start-over")).toBeVisible();
+    await page.keyboard.press("Escape");
     await expect(page.getByTestId("movie-progress")).toBeVisible();
   } finally {
     await req.delete(`/api/v1/profiles/${profileId}/ratings/${movie.id}`, { headers });

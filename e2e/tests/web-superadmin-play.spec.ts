@@ -140,6 +140,8 @@ test("super admin plays on another user's TV via «All devices»", async ({ brow
     const mediaId = phone.url().split("/title/")[1]!.split(/[?#]/)[0]!;
 
     await phone.getByTestId("play-on-tv").click();
+    // It asks where: no own TV → «Другой телевизор…» opens the full picker.
+    await phone.getByTestId("play-menu").getByTestId("play-other-tv").click();
     const sheet = phone.getByRole("dialog", { name: /choose a tv/i });
     await expect(sheet, "picker opens (e2e-admin has no single online TV of its own)").toBeVisible({ timeout: 20_000 });
     const toggle = sheet.getByTestId("all-devices-toggle");
