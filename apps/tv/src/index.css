@@ -251,6 +251,12 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 .dt-matrix { background-image: repeating-linear-gradient(90deg, rgba(0,255,65,.0) 0px, rgba(0,255,65,.0) 7px, rgba(0,255,65,.35) 7px, rgba(0,255,65,.35) 9px, rgba(0,255,65,0) 9px, rgba(0,255,65,0) 16px), linear-gradient(180deg, rgba(0,6,2,0) 0%, rgba(0,6,2,.9) 100%) !important; background-size: 16px 22px, 100% 100% !important; }
 .dt-matrix .dt-title { box-shadow: 0 0 8px rgb(0,255,65); }
 .dt-matrix .dt-poster { border-radius: 0; }
+.dt-stickerbook { background-image: radial-gradient(circle, rgba(255,248,239,.14) 0px, rgba(255,248,239,.14) 1.2px, rgba(255,248,239,0) 1.8px) !important; background-size: 10px 10px !important; }
+.dt-stickerbook .dt-poster { border: 3px solid #fffaf0 !important; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,.45); transform: rotate(-8deg); }
+.dt-stickerbook .dt-poster + .dt-poster { transform: rotate(6deg); }
+.dt-stickerbook .dt-poster + .dt-poster + .dt-poster { transform: rotate(-4deg); }
+.dt-stickerbook .dt-title { border-radius: 3px; transform: rotate(-1.5deg); }
+.dt-stickerbook .dt-accent { opacity: .85; transform: rotate(3deg); }
 
 /* Проектор-skeleton flat elements never scale on focus (any skin). The doubled
    class outweighs the skins' focus rules, which load later (design/looks/*.css). */

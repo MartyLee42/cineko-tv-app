@@ -1,0 +1,16 @@
+/* ---- stickerbook: stickers slapped onto a dark album page one by one, the logo sticker last, taped down */
+.sbi-board { background-image: radial-gradient(circle, rgba(255,248,239,.09) 0px, rgba(255,248,239,.09) 1.4px, rgba(255,248,239,0) 2px); background-size: 26px 26px; }
+@keyframes sbi-slap { 0% { opacity: 0; transform: translate3d(0,-30px,0) scale(1.45); } 55% { opacity: 1; transform: translate3d(0,0,0) scale(.94); } 78% { transform: scale(1.03); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes sbi-tape { from { opacity: 0; } to { opacity: 1; } }
+.sbi-slap { position: relative; animation: sbi-slap .34s cubic-bezier(.3,.7,.3,1) both; }
+.sbi-slap-big { animation-duration: .46s; }
+.sbi-sticker { display: flex; align-items: center; justify-content: center; border: 10px solid #fffaf0; border-radius: 26px; box-shadow: 0 10px 22px rgba(0,0,0,.45); }
+.sbi-logo { display: flex; align-items: center; justify-content: center; padding: 26px 40px 30px; border: 12px solid #fffaf0; border-radius: 40px; box-shadow: 0 18px 40px rgba(0,0,0,.5); }
+.sbi-tape {
+  position: absolute; top: -14px; width: 92px; height: 28px;
+  background-color: rgba(255,111,165,.82); background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0px, rgba(255,255,255,.34) 5px, rgba(255,255,255,0) 5px, rgba(255,255,255,0) 11px);
+  box-shadow: 0 1px 2px rgba(0,0,0,.25);
+  animation: sbi-tape .14s ease-out both;
+}
+.sbi-tape-sun { width: 130px; height: 34px; background-color: rgba(255,209,102,.86); background-image: linear-gradient(90deg, rgba(160,90,0,.16) 1px, rgba(0,0,0,0) 1px), linear-gradient(rgba(160,90,0,.16) 1px, rgba(0,0,0,0) 1px); background-size: 10px 10px; }
+.sbi-tape-mint { width: 130px; height: 34px; background-color: rgba(95,211,196,.84); background-image: radial-gradient(circle, rgba(255,255,255,.55) 0px, rgba(255,255,255,.55) 2.4px, rgba(255,255,255,0) 3px); background-size: 12px 12px; }

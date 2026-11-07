@@ -28,3 +28,6 @@
 @import "@fontsource/oswald/latin-500.css";
 @import "@fontsource/oswald/cyrillic-700.css";
 @import "@fontsource/oswald/latin-700.css";
+/* «Стикербук» headings and tape labels (handwritten). */
+@import "@fontsource/caveat/cyrillic-700.css";
+@import "@fontsource/caveat/latin-700.css";

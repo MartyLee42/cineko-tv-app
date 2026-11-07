@@ -7,6 +7,7 @@ import { useSettings } from "../profile/settings";
 import { awardBadgeTitle, hasQualityMark, QualityMark, udarnikLabel, useAppliedDesign, useI18n } from "@martytv/ui";
 import { useDesign, type Design } from "./context";
 import { indexTag, posterBadge, type RatingsInput } from "./format";
+import { stickerOf } from "./sticker";
 
 /** The rating badge in a card's top-right corner (hidden when unknown / off). */
 export function RatingBadge({ item, design }: { item: RatingsInput; design: Design }) {
@@ -104,7 +105,7 @@ export function PosterCard({
   const design = useDesign();
   const square = design === "terminal";
   return (
-    <div style={{ width }} data-card-id={item.id} className={focused ? "mt-hop" : undefined}>
+    <div style={{ width }} data-card-id={item.id} data-sticker={stickerOf(item.id)} className={focused ? "mt-hop" : undefined}>
       <div className="relative" style={{ width, height }}>
         <div
           className={`tv-focus mt-card relative overflow-hidden ${square ? "" : "rounded-card"} ${focused ? "is-focused" : ""}`}
@@ -207,7 +208,7 @@ export function WideCard({
   }
   const square = design === "terminal";
   return (
-    <div style={{ width }} data-card-id={media.id} className={focused ? "mt-hop" : undefined}>
+    <div style={{ width }} data-card-id={media.id} data-sticker={stickerOf(media.id)} className={focused ? "mt-hop" : undefined}>
       <div className="relative" style={{ width, height }}>
         <div
           className={`tv-focus mt-card relative overflow-hidden ${square ? "" : "rounded-card"} ${focused ? "is-focused" : ""}`}
