@@ -111,6 +111,20 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [tone("square", 2637, 2637, 0.018, 0.12)], noise: [] },
     click: { tones: [tone("square", 1568, 2093, 0.05, 0.16)], noise: [] },
   },
+  // Honky-tonk piano: each note twice, a few Hz apart (the detuned unisons), with a felt-hammer thud;
+  // OK plays a little two-note figure (G5 → C6).
+  silent: {
+    tick: { tones: [tone("triangle", 1047, 1047, 0.06, 0.22), tone("triangle", 1053, 1053, 0.06, 0.18)], noise: [noise("lowpass", 900, 0.012, 0.15)] },
+    click: {
+      tones: [tone("triangle", 784, 784, 0.05, 0.28), tone("triangle", 789, 789, 0.05, 0.22), tone("triangle", 1047, 1047, 0.07, 0.3, 0.045), tone("triangle", 1054, 1054, 0.07, 0.24, 0.045)],
+      noise: [noise("lowpass", 800, 0.015, 0.2)],
+    },
+  },
+  // A bellboy's desk bell: a bright strike with inharmonic partials («дзынь»); the tick is a soft tap of it.
+  anderson: {
+    tick: { tones: [tone("sine", 2350, 2350, 0.04, 0.16)], noise: [noise("highpass", 5000, 0.006, 0.1)] },
+    click: { tones: [tone("sine", 2093, 2093, 0.12, 0.42), tone("sine", 5230, 5230, 0.08, 0.14), tone("sine", 3140, 3140, 0.1, 0.1)], noise: [noise("highpass", 6000, 0.008, 0.22)] },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */

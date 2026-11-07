@@ -2673,6 +2673,19 @@ up to 2 h, then it is skipped for the night. The restart is a
   (`pocketpetMood.ts`); it eats a popcorn when the score rose since last seen
   (`martytv.pocketpet.score.<profile>`) and dozes (Zz) after a minute without
   keys.
+  Two film homages on the projector skeleton (original artwork only):
+  `silent` = «Немое кино» (pure black and white, photos greyed by a static
+  filter, static SVG-turbulence grain, intertitle cards — an art-nouveau
+  double frame drawn as a CSS `border-image` — around the hero / Details /
+  screen titles, Old Standard TT; the focused card opens with an iris-in, a
+  transform/opacity animation of a pseudo-element, plus a faint flicker over
+  Home's artwork — both off in the calm mode via `html.sl-calm`, which the
+  look's Background sets); `anderson` = «Симметрия» (powder pink, mustard,
+  mint, Jost; the hero and Details become centred title cards; a chapter card
+  «Часть N · <tab>» at the top of each section — `Look.Companion` now gets
+  the screen's menu `section`, numbered by the projector menu order in
+  `andersonChapter.ts`). Their `uiSounds` recipes: a detuned honky-tonk piano
+  and a desk bell on OK (only with «Звуки интерфейса» on).
 - **Startup intro** (`apps/tv/src/intro/`): a ~3 s animation in the
   design's style (kinozal = the wave terrain) on every launch; any key skips.
   «Анимация при запуске» (per TV, `martytv.startup_intro`) turns it off;

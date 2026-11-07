@@ -11,6 +11,7 @@ import { useSkin } from "./context";
 import { skinOf } from "./registry";
 import { getLook, subscribeLooks } from "./looks/registry";
 import type { Look } from "./looks/types";
+import type { MenuId } from "./menuOrder";
 
 // ================================================================ calm mode
 
@@ -71,10 +72,10 @@ export function SkinBackground({ dim = false }: { dim?: boolean }) {
   );
 }
 
-/** The skin's companion over the catalog (Тамагочи's pet), if it has one. */
-export function SkinCompanion({ onHome }: { onHome: boolean }) {
+/** The skin's companion over the catalog (Тамагочи's pet, Симметрия's chapter card), if it has one. */
+export function SkinCompanion({ onHome, section }: { onHome: boolean; section: MenuId | null }) {
   const Companion = useLook(useSkin())?.Companion;
-  return Companion ? <Companion onHome={onHome} /> : null;
+  return Companion ? <Companion onHome={onHome} section={section} /> : null;
 }
 
 // ================================================================ ornaments

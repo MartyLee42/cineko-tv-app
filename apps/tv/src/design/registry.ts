@@ -11,7 +11,7 @@ export interface Skin {
   /** Has a light colour mode (Кинозал only). */
   light: boolean;
   /** Full-screen background layer drawn behind screens (null = plain bg colour / skeleton default). */
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | null;
+  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "intertitle" | "symmetry" | null;
   /** Animated background layers (transform-only); the calm mode stops them. */
   animatedLayers: 0 | 1;
   /** Headline size factor on the skeleton's sizes (wide display faces need less). */
@@ -39,6 +39,10 @@ export const SKINS: Record<DesignSetting, Skin> = {
   pocketpet: { id: "pocketpet", skeleton: "terminal", light: false, background: "lcd", titleScale: 0.6, animatedLayers: 0, ornaments: none },
   // Mono display type runs wide: titles a little smaller.
   matrix: { id: "matrix", skeleton: "terminal", light: false, background: "rain", titleScale: 0.86, animatedLayers: 0, ornaments: { ...none, cornerBrackets: true } },
+  // Silent-film intertitles: the one animated layer is a faint projector flicker (off when calm).
+  silent: { id: "silent", skeleton: "projector", light: false, background: "intertitle", titleScale: 0.9, animatedLayers: 1, ornaments: { ...none, heroEdges: true, titlePlate: true } },
+  // Jost runs narrow and geometric; the hero title is centred.
+  anderson: { id: "anderson", skeleton: "projector", light: false, background: "symmetry", titleScale: 0.9, animatedLayers: 0, ornaments: { ...none, heroEdges: true, titlePlate: true } },
 };
 
 export { DESIGNS };
