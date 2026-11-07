@@ -111,6 +111,11 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [tone("square", 2637, 2637, 0.018, 0.12)], noise: [] },
     click: { tones: [tone("square", 1568, 2093, 0.05, 0.16)], noise: [] },
   },
+  // A ship's console: a pure sine blip; OK answers with two rising panel tones.
+  odyssey: {
+    tick: { tones: [tone("sine", 2093, 2093, 0.02, 0.22)], noise: [] },
+    click: { tones: [tone("sine", 1319, 1319, 0.04, 0.35), tone("sine", 1976, 1976, 0.05, 0.3, 0.045)], noise: [] },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */

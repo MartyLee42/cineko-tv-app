@@ -17,7 +17,8 @@
         var d = localStorage.getItem("martytv.design") || "kinozal", t = localStorage.getItem("martytv.theme") || "dark";
         var m = { terminal: "#070708", projector: "#05090b", wireframe: "#0d0420", cyberpunk: "#06060a", deco: "#0b0a08", retro80: "#0b0e2a", retro90: "#006e6e", stickerbook: "#2a2438" };
         m.pocketpet = "#c4d0aa"; // «Тамагочи»: the LCD (light), dark ink
-        var bg = m[d] || "#08090c", fg = d === "pocketpet" ? "#182012" : "#f2f2f2";
+        m.odyssey = "#eef1f4"; // «Одиссея»: station white, dark ink
+        var bg = m[d] || "#08090c", fg = d === "pocketpet" ? "#182012" : d === "odyssey" ? "#101318" : "#f2f2f2";
         var light = d === "kinozal" && (t === "light" || (t === "system" && !!window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches));
         if (light) { bg = "#f4f5f0"; fg = "#0e100c"; }
         // The same classes the app sets (applyDesign/applyTheme), so its CSS is right as soon as it arrives.

@@ -1,6 +1,7 @@
 import { ApiError } from "@martytv/contracts";
 import { CV_ERROR, CV_OFFLINE, useAppliedDesign, useI18n } from "@martytv/ui";
 import { FocusButton } from "../focus";
+import { failHintKey } from "./failHint";
 
 /** Grey placeholder blocks while a row loads. */
 export function RowSkeleton({ count = 7, width = 260, height = 390, title = true }: { count?: number; width?: number; height?: number; title?: boolean }) {
@@ -30,6 +31,18 @@ export function GridSkeleton({ cols, rows = 2, width, height, pitchX, pitchY }: 
   );
 }
 
+/** The design's calm line under a failure («Одиссея»: «Я не могу это сделать, Дейв.»); nothing elsewhere. */
+export function FailHint({ className = "mt-6 text-3xl" }: { className?: string }) {
+  const { t } = useI18n();
+  const key = failHintKey(useAppliedDesign());
+  if (!key) return null;
+  return (
+    <p data-testid="fail-hint" className={`od-fail-hint ${className}`}>
+      {t(key)}
+    </p>
+  );
+}
+
 /** Error with a focusable Retry button (TMDB not configured has no retry). */
 export function ErrorState({
   error,
@@ -54,6 +67,7 @@ export function ErrorState({
       <div className={`max-w-[1200px] ${className}`}>
         <p className="text-5xl font-bold">{t("catalog.tv.unavailable_title")}</p>
         <p className="mt-6 text-3xl leading-snug text-muted">{t("catalog.unavailable")}</p>
+        <FailHint />
       </div>
     );
   }
@@ -61,6 +75,7 @@ export function ErrorState({
   return (
     <div className={`max-w-[1200px] ${className}`}>
       <p className="text-4xl font-semibold">{cv ? (offline ? CV_OFFLINE : CV_ERROR) : offline ? t("tv.offline") : t("catalog.tv.load_error")}</p>
+      <FailHint />
       <div className="mt-10 flex">
         <FocusButton focusKey={focusKey} onPress={onRetry} autoFocus={autoFocus} className="rounded-2xl bg-accent px-10 py-5 text-3xl font-semibold text-on-accent">
           {t("common.retry")}
