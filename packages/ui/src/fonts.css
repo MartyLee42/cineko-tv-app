@@ -31,6 +31,33 @@
 @import "@fontsource/oswald/latin-500.css";
 @import "@fontsource/oswald/cyrillic-700.css";
 @import "@fontsource/oswald/latin-700.css";
+/* «Одиссея» headings (Unbounded Light: wide, letter-spaced space-age capitals). */
+@import "@fontsource/unbounded/cyrillic-300.css";
+@import "@fontsource/unbounded/latin-300.css";
+/* «Нуар» (typewriter-style slab mono). */
+@import "@fontsource/ibm-plex-mono/cyrillic-400.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/cyrillic-600.css";
+@import "@fontsource/ibm-plex-mono/latin-600.css";
 /* «Стикербук» headings and tape labels (handwritten). */
 @import "@fontsource/caveat/cyrillic-700.css";
 @import "@fontsource/caveat/latin-700.css";
+/* «Мультфильм» headings (hand-lettered, like old title cards) and «Созерцание» (a quiet book serif). */
+@import "@fontsource/neucha/cyrillic-400.css";
+@import "@fontsource/neucha/latin-400.css";
+@import "@fontsource/cormorant-garamond/cyrillic-600.css";
+@import "@fontsource/cormorant-garamond/latin-600.css";
+/* «Немое кино» intertitles (a period serif) and «Симметрия» (geometric, Futura-like). */
+@import "@fontsource/old-standard-tt/cyrillic-400.css";
+@import "@fontsource/old-standard-tt/latin-400.css";
+@import "@fontsource/old-standard-tt/cyrillic-700.css";
+@import "@fontsource/old-standard-tt/latin-700.css";
+@import "@fontsource/jost/cyrillic-400.css";
+@import "@fontsource/jost/latin-400.css";
+@import "@fontsource/jost/cyrillic-500.css";
+@import "@fontsource/jost/latin-500.css";
+@import "@fontsource/jost/cyrillic-700.css";
+@import "@fontsource/jost/latin-700.css";
+/* «Вестерн» headings (wood-type slab). «Красная комната» reuses Playfair Display. */
+@import "@fontsource/kelly-slab/cyrillic-400.css";
+@import "@fontsource/kelly-slab/latin-400.css";

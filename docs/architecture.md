@@ -2693,7 +2693,7 @@ up to 2 h, then it is skipped for the night. The restart is a
 
 - **Designs** are skins on three skeletons: kinozal (кинозал, deco,
   retro80), terminal (terminal, cyberpunk, retro90, constructivism) and
-  projector (projector, wireframe, popart). `retro80` = VHS/arcade sunset
+  projector (projector, wireframe, popart, odyssey). `retro80` = VHS/arcade sunset
   chrome (Russo One), `retro90` = Windows 95 bevels on a teal desktop
   (Pixelify Sans), `popart` = «Поп-арт» comic page (Ben-Day dots, black ink
   outlines, hard offset shadows, Rubik Mono One), `constructivism` =
@@ -2727,6 +2727,29 @@ up to 2 h, then it is skipped for the night. The restart is a
   (`pocketpetMood.ts`); it eats a popcorn when the score rose since last seen
   (`martytv.pocketpet.score.<profile>`) and dozes (Zz) after a minute without
   keys.
+  `odyssey` = «Одиссея» (projector skeleton): late-60s space-age sci-fi mood,
+  original drawings only — a static white spaceship corridor in one-point
+  perspective (`design/looks/odyssey.tsx`: ribs, wall panels, lit ceiling, a
+  black door at the end), light tokens (dark ink on station white, like
+  «Тамагочи»), black-slab buttons, wide letter-spaced capitals (Unbounded
+  Light); the focus ring is the only colour: a single red glowing light.
+  Failures (`ErrorState`, the player's failed screen) add the calm line «Я не
+  могу это сделать, Дейв.» (`components/failHint.ts`, `FailHint`). Its intro
+  is in space: the moon, the planet's limb and the sun align, a black slab
+  rises, «CINEKO» fades in.
+  Two film homages on the projector skeleton (original artwork only):
+  `silent` = «Немое кино» (pure black and white, photos greyed by a static
+  filter, static SVG-turbulence grain, intertitle cards — an art-nouveau
+  double frame drawn as a CSS `border-image` — around the hero / Details /
+  screen titles, Old Standard TT; the focused card opens with an iris-in, a
+  transform/opacity animation of a pseudo-element, plus a faint flicker over
+  Home's artwork — both off in the calm mode via `html.sl-calm`, which the
+  look's Background sets); `anderson` = «Симметрия» (powder pink, mustard,
+  mint, Jost; the hero and Details become centred title cards; a chapter card
+  «Часть N · <tab>» at the top of each section — `Look.Companion` now gets
+  the screen's menu `section`, numbered by the projector menu order in
+  `andersonChapter.ts`). Their `uiSounds` recipes: a detuned honky-tonk piano
+  and a desk bell on OK (only with «Звуки интерфейса» on).
 - **Startup intro** (`apps/tv/src/intro/`): a ~3 s animation in the
   design's style (kinozal = the wave terrain) on every launch; any key skips.
   «Анимация при запуске» (per TV, `martytv.startup_intro`) turns it off;
@@ -2761,7 +2784,23 @@ up to 2 h, then it is skipped for the night. The restart is a
 - **Loading animation** (`loading_style`, TV and web player): «Попкорн»,
   «Заполняющееся название», «Проявление постера», «Киноплёнка»,
   «Минимальная», «Cineko» (`marty`: Cineko's loading loop + a progress bar,
-  he cheers at 100 %) and «Cineko с попкорном» (`marty_popcorn`).
+  he cheers at 100 %), «Cineko с попкорном» (`marty_popcorn`), «Матрица»,
+  the drawn ones — «Следы лапок» (`paws`), «Аквариум» (`aquarium`), «Назад в
+  будущее» (`speed88`), «Космическая одиссея» (`odyssey`, one quiet note at
+  100 % only with «Звуки интерфейса» on), «Вверх» (`balloons`) — the waiting
+  game «Лови!» (`catch`: the arrows move Cineko's basket; PlayerLayer hands
+  only ◀▶▲▼ to it while loading, `player/loaderKeys.ts`), and two pickers
+  resolved once per load attempt (`loaderPick` in @martytv/ui): «Сюрприз»
+  (`surprise`, random, never twice in a row) and «Под фильм» (`match`,
+  `loaderMatch.ts`: themes in the title/overview, then genres, else a stable
+  pick per title). The drawn art is shared (`@martytv/ui/loaders/*`); on the
+  TV each style is its own chunk and the drawn ones play a short end
+  flourish over the starting film (`useFinale`, FINALE_MS).
+  The percentage has one owner per load attempt: `LoadTracker`
+  (`player/loading.ts`) keyed by `PlayerController.loadKey` — bumped only
+  when the user starts something (`newAttempt`) or leaves — on one scale
+  (preparing 0–0.15, preload 0.15–0.9 against the same goal as the
+  «N МБ из M» line, first frame 0.9–1), monotonic, stepping ≤ 4×/s.
 - **Web header**: Главная, ТВ, Видео, Обзор, Новые серии, История, Спросить
   ИИ; below `xl` the tail moves into «Ещё ▾» (Новые серии/История below
   `lg`). Search is an icon; Devices, Settings and Admin live in the avatar

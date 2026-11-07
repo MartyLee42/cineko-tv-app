@@ -11,6 +11,7 @@ import { useSkin } from "./context";
 import { skinOf } from "./registry";
 import { getLook, subscribeLooks } from "./looks/registry";
 import type { Look } from "./looks/types";
+import type { MenuId } from "./menuOrder";
 
 // ================================================================ calm mode
 
@@ -71,10 +72,21 @@ export function SkinBackground({ dim = false }: { dim?: boolean }) {
   );
 }
 
-/** The skin's companion over the catalog (Тамагочи's pet), if it has one. */
-export function SkinCompanion({ onHome }: { onHome: boolean }) {
+/** The skin's companion over the catalog (Тамагочи's pet, Симметрия's chapter card), if it has one. */
+export function SkinCompanion({ onHome, section }: { onHome: boolean; section: MenuId | null }) {
   const Companion = useLook(useSkin())?.Companion;
-  return Companion ? <Companion onHome={onHome} /> : null;
+  return Companion ? <Companion onHome={onHome} section={section} /> : null;
+}
+
+/** The skin draws an end card after rows and grids (HRow / VGrid). */
+export function useHasSkinEnd(): boolean {
+  return !!useLook(useSkin())?.End;
+}
+
+/** The skin's end card («Мультфильм»'s «Конец фильма»), if it has one. */
+export function SkinEnd({ kind, width, height }: { kind: "row" | "screen"; width: number; height: number }) {
+  const End = useLook(useSkin())?.End;
+  return End ? <End kind={kind} width={width} height={height} /> : null;
 }
 
 // ================================================================ ornaments

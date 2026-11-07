@@ -28,6 +28,22 @@ describe("interface sounds", () => {
     expect(uiSoundRecipe("nonsense", "tick")).toEqual(uiSoundRecipe("kinozal", "tick"));
   });
 
+  it("film homages: a detuned honky-tonk piano (Немое кино) and a desk bell on OK (Симметрия)", () => {
+    // Every piano note is doubled a few Hz apart.
+    const piano = uiSoundRecipe("silent", "click").tones;
+    expect(piano.length % 2).toBe(0);
+    for (let i = 0; i < piano.length; i += 2) {
+      const d = piano[i + 1]!.from - piano[i]!.from;
+      expect(d).toBeGreaterThan(2);
+      expect(d).toBeLessThan(12);
+    }
+    // The bell: a high strike with inharmonic partials (not integer multiples of the fundamental).
+    const [base, ...partials] = uiSoundRecipe("anderson", "click").tones;
+    expect(base!.from).toBeGreaterThan(1800);
+    expect(partials.length).toBeGreaterThan(1);
+    for (const p of partials) expect((p.from / base!.from) % 1).not.toBeCloseTo(0, 1);
+  });
+
   it("throttles key repeat to one tick per interval", () => {
     const gate = makeThrottle(UI_TICK_EVERY_MS);
     expect(gate(1000)).toBe(true);

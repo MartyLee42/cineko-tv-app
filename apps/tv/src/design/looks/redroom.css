@@ -1,0 +1,53 @@
+/* «redroom»: this design's own rules (loaded with the design's chunk, design/looks).
+   ---------------------------------------------------------------- Красная комната (projector skeleton)
+   A homage to a famous surreal TV series' red room. Near-black and curtain red with ivory;
+   elegant spaced capitals (Playfair Display). The frame (red curtains, a valance, the black-and-
+   white zigzag floor, coffee and cherry pie) is one static SVG over the content's edges, under the
+   menu (z 19). Focus: an ivory frame with a red glow. A focused card's title sometimes plays
+   backwards (.rr-backwards, ≈0.4 s, looks/redroom.tsx). Transform/opacity only. */
+.rr-frame { z-index: 19; }
+/* The back wall (screens without artwork): dim red folds, darker towards the floor. */
+.rr-wall {
+  background-color: rgb(14,5,6);
+  background-image:
+    linear-gradient(180deg, rgba(14,5,6,0) 40%, rgba(14,5,6,.85) 100%),
+    repeating-linear-gradient(90deg, rgba(120,8,14,.34) 0px, rgba(150,14,22,.42) 18px, rgba(60,2,6,.36) 40px, rgba(120,8,14,.34) 60px);
+}
+.rr-wall-dim { background-image: linear-gradient(180deg, rgba(14,5,6,.4) 0%, rgba(14,5,6,.9) 100%), repeating-linear-gradient(90deg, rgba(120,8,14,.3) 0px, rgba(150,14,22,.36) 18px, rgba(60,2,6,.3) 40px, rgba(120,8,14,.3) 60px); }
+.rr-vignette { background: radial-gradient(ellipse 1100px 760px at 50% 44%, rgba(60,0,4,0) 55%, rgba(60,0,4,.42) 100%); }
+
+/* ---- «sometimes plays backwards»: mirrored, held, then flipped back. */
+@keyframes rr-back { 0% { transform: scaleX(-1); } 68% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
+.rr-backwards { animation: rr-back 420ms cubic-bezier(.6,0,.3,1) both; transform-origin: 50% 50%; }
+@media (prefers-reduced-motion: reduce) {
+  .rr-backwards { animation: none; }
+}
+
+/* ---- the projector skeleton in red, black and ivory. */
+html.design-redroom .p-scrim-left { background: linear-gradient(90deg, rgba(14,4,5,.94) 0%, rgba(14,4,5,.72) 30%, rgba(14,4,5,.2) 60%, rgba(14,4,5,0) 80%); }
+html.design-redroom .p-scrim-bottom { background: linear-gradient(0deg, rgba(14,4,5,.97) 0%, rgba(14,4,5,.74) 22%, rgba(14,4,5,0) 50%); }
+html.design-redroom .p-scrim-top { background: linear-gradient(180deg, rgba(14,4,5,.7) 0%, rgba(14,4,5,0) 100%); }
+html.design-redroom .p-card-shade { background: linear-gradient(0deg, rgba(10,3,4,.88) 0%, rgba(10,3,4,.34) 36%, rgba(10,3,4,0) 62%); }
+html.design-redroom .p-bar { background: rgba(12,4,5,.88); box-shadow: inset 0 0 0 2px rgba(210,31,42,.7); }
+html.design-redroom .p-tab { color: rgba(244,239,230,.88); }
+html.design-redroom .p-tab-on { background: rgb(178,16,26); color: #fff; }
+html.design-redroom nav .p-tab.is-focused { background: rgb(240,236,228); color: rgb(20,6,7); box-shadow: 0 0 16px 3px rgba(226,44,52,.6); }
+/* Cards: a thin ivory hairline; focus = a slight scale, an ivory frame and a red glow. */
+html.design-redroom .mt-card::after { content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 2px solid rgba(240,236,228,.22); border-radius: inherit; pointer-events: none; }
+html.design-redroom .tv-focus.is-focused { transform: scale(1.04); box-shadow: 0 0 0 4px rgb(14,5,6), 0 0 0 9px rgb(240,236,228), 0 0 30px 10px rgba(226,44,52,.55); }
+html.design-redroom .mt-card.is-focused::after { border-color: rgba(240,236,228,0); }
+html.design-redroom .p-primary { background: rgb(178,16,26); color: #fff; }
+html.design-redroom .p-glass { background: rgba(30,8,10,.84); color: rgb(244,239,230); box-shadow: inset 0 0 0 2px rgba(240,236,228,.32); }
+html.design-redroom .p-primary.is-focused, html.design-redroom .p-glass.is-focused { background: rgb(240,236,228); color: rgb(20,6,7); box-shadow: 0 0 0 4px rgb(14,5,6), 0 0 0 8px rgb(226,44,52), 0 0 26px 8px rgba(226,44,52,.5); }
+html.design-redroom .p-outline { border-color: rgba(240,236,228,.7); }
+html.design-redroom .tv-rate-chip { border-color: rgba(240,236,228,.75); background: rgba(14,4,5,.78); color: rgb(244,239,230); }
+html.design-redroom .tv-chip.is-focused { background: rgb(240,236,228); color: rgb(20,6,7); }
+html.design-redroom .tv-release.is-focused { box-shadow: 0 0 0 4px rgb(240,236,228), 0 0 24px 6px rgba(226,44,52,.45); }
+html.design-redroom .tv-progress-fill, html.design-redroom .tv-check { background: rgb(210,31,42); color: #fff; }
+html.design-redroom .tv-panel, html.design-redroom .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 2px rgba(210,31,42,.4); }
+/* Headings: ivory serif capitals, spaced, a soft red shadow behind. */
+html.design-redroom [data-testid="hero"] h2, html.design-redroom [data-media-id] h1 .p-wide, html.design-redroom h1.p-wide {
+  font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .08em; line-height: 1.12; color: rgb(244,239,230); text-shadow: 0 3px 18px rgba(160,10,18,.65);
+}
+html.design-redroom h3 { font-family: var(--mt-font-display); letter-spacing: .04em; line-height: 1.2; position: relative; top: -8px; }
+html.design-redroom .mt-card p.truncate { font-family: var(--mt-font-display); letter-spacing: .03em; }

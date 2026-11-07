@@ -1,0 +1,20 @@
+/* «Чашка кофе» (Coffee.tsx): curtains and a zig-zag floor (own colours on every design). */
+.lk-room {
+  background-color: #6b0f14;
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, .35), rgba(0, 0, 0, 0) 30%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .28) 0px, rgba(0, 0, 0, 0) 40px, rgba(255, 90, 90, .12) 70px, rgba(0, 0, 0, 0) 100px, rgba(0, 0, 0, .28) 140px);
+}
+.lk-floor {
+  background-color: #ece6da;
+  background-image:
+    linear-gradient(135deg, #17130f 25%, rgba(0, 0, 0, 0) 25%),
+    linear-gradient(225deg, #17130f 25%, rgba(0, 0, 0, 0) 25%),
+    linear-gradient(315deg, #17130f 25%, rgba(0, 0, 0, 0) 25%),
+    linear-gradient(45deg, #17130f 25%, rgba(0, 0, 0, 0) 25%);
+  background-size: 80px 80px;
+  background-position: -40px 0, -40px 0, 0 0, 0 0;
+  box-shadow: inset 0 16px 30px rgba(0, 0, 0, .45);
+}
+@keyframes lk-steam { 0% { transform: translate3d(0, 20px, 0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate3d(0, -30px, 0); opacity: 0; } }
+.lk-steam { animation: lk-steam 2.4s ease-out infinite; }

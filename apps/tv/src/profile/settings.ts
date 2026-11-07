@@ -22,7 +22,7 @@ export const DESIGNS: readonly DesignSetting[] = UI_DESIGNS;
 export type Settings = Required<ProfileSettings>;
 const MIN_VOTES: readonly Settings["min_votes"][] = [0, 50, 100, 300, 1000, 5000];
 
-export const LOADING_STYLES: readonly LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix"];
+export const LOADING_STYLES: readonly LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix", "paws", "aquarium", "speed88", "odyssey", "balloons", "catch", "water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine", "surprise", "match"];
 export const THEMES: readonly ThemeSetting[] = ["system", "dark", "light"];
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -55,6 +55,7 @@ export const DEFAULT_SETTINGS: Settings = {
   share_with_family: false,
   show_family: true,
   show_curated: true,
+  film_theme: false,
 };
 
 /** Server settings with defaults filled in (unknown enum values fall back). */
@@ -74,7 +75,7 @@ export function withDefaults(s: ProfileSettings | null | undefined): Settings {
   if (s.cozy_ambience === "rain" || s.cozy_ambience === "fireplace" || s.cozy_ambience === "off") out.cozy_ambience = s.cozy_ambience;
   if (s.skip_segments === "button" || s.skip_segments === "auto" || s.skip_segments === "off") out.skip_segments = s.skip_segments;
   if (s.video_quality === 480 || s.video_quality === 720 || s.video_quality === 1080) out.video_quality = s.video_quality;
-  for (const k of ["hide_anime", "hide_watched", "autoplay_next_episode", "autoplay_countdown", "spoiler_free_episodes", "onboarding_completed", "video_hide_shorts", "video_autoplay", "cozy_mode", "cozy_sound", "poster_wobble", "share_with_family", "show_family", "show_curated"] as const) {
+  for (const k of ["hide_anime", "hide_watched", "autoplay_next_episode", "autoplay_countdown", "spoiler_free_episodes", "onboarding_completed", "video_hide_shorts", "video_autoplay", "cozy_mode", "cozy_sound", "poster_wobble", "share_with_family", "show_family", "show_curated", "film_theme"] as const) {
     if (typeof s[k] === "boolean") out[k] = s[k];
   }
   return out;

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PlayerKind } from "@martytv/contracts";
 import { imageUrl } from "@martytv/media-types";
-import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, SURPRISE_MODES, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
+import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, SURPRISE_MODES, useI18n, useUiSoundsPref, type Locale, type MessageKey } from "@martytv/ui";
 import { useCatalogConfig, useHome } from "../catalog/queries";
 import { Loader } from "../player/Loader";
 import type { LoadStage } from "../player/loading";
@@ -26,7 +26,58 @@ const LOADING_LABEL = {
   marty: "settings.loading.marty",
   marty_popcorn: "settings.loading.marty_popcorn",
   matrix: "settings.loading.matrix",
+  paws: "settings.loading.paws",
+  aquarium: "settings.loading.aquarium",
+  speed88: "settings.loading.speed88",
+  odyssey: "settings.loading.odyssey",
+  balloons: "settings.loading.balloons",
+  catch: "settings.loading.catch",
+  surprise: "settings.loading.surprise",
+  match: "settings.loading.match",
+  water_glass: "loaders2.water_glass",
+  poster_dig: "loaders2.poster_dig",
+  chocolate_box: "loaders2.chocolate_box",
+  coffee_cup: "loaders2.coffee_cup",
+  honey_pot: "loaders2.honey_pot",
+  hyperjump: "loaders2.hyperjump",
+  ghost_meter: "loaders2.ghost_meter",
+  target_scan: "loaders2.target_scan",
+  docking: "loaders2.docking",
+  claw_machine: "loaders2.claw_machine",
 } as const;
+
+/** The focused style's one-line explanation (styles that need one). */
+/** The «Движение фона» hint per design (what moves there). */
+const MOTION_HINT: Partial<Record<string, MessageKey>> = {
+  matrix: "designs.motion_hint_matrix",
+  mult: "mult.motion_hint",
+  tarkovsky: "tarkovsky.motion_hint",
+  silent: "designs.motion_hint_silent",
+  noir: "designs.motion_hint_noir",
+  vague: "designs.motion_hint_vague",
+};
+
+const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
+  popcorn: "settings.loading.popcorn_hint",
+  paws: "settings.loading.paws_hint",
+  aquarium: "settings.loading.aquarium_hint",
+  speed88: "settings.loading.speed88_hint",
+  odyssey: "settings.loading.odyssey_hint",
+  balloons: "settings.loading.balloons_hint",
+  catch: "settings.loading.catch_hint",
+  surprise: "settings.loading.surprise_hint",
+  match: "settings.loading.match_hint",
+  water_glass: "loaders2.water_glass_hint",
+  poster_dig: "loaders2.poster_dig_hint",
+  chocolate_box: "loaders2.chocolate_box_hint",
+  coffee_cup: "loaders2.coffee_cup_hint",
+  honey_pot: "loaders2.honey_pot_hint",
+  hyperjump: "loaders2.hyperjump_hint",
+  ghost_meter: "loaders2.ghost_meter_hint",
+  target_scan: "loaders2.target_scan_hint",
+  docking: "loaders2.docking_hint",
+  claw_machine: "loaders2.claw_machine_hint",
+};
 
 export function useSettingRows() {
   const { t, locale } = useI18n();
@@ -49,7 +100,7 @@ export function useSettingRows() {
     { value: true, label: t("tv.settings.on") },
     { value: false, label: t("tv.settings.off") },
   ];
-  const bool = (key: "hide_anime" | "hide_watched" | "autoplay_next_episode" | "autoplay_countdown" | "spoiler_free_episodes" | "video_hide_shorts" | "video_autoplay", label: string, hint?: string): Row => ({
+  const bool = (key: "hide_anime" | "hide_watched" | "autoplay_next_episode" | "autoplay_countdown" | "spoiler_free_episodes" | "video_hide_shorts" | "video_autoplay" | "film_theme", label: string, hint?: string): Row => ({
     kind: "choice",
     key,
     label,
@@ -97,7 +148,7 @@ export function useSettingRows() {
       kind: "choice",
       key: "calm_motion",
       label: t("designs.motion"),
-      hint: settings.design === "matrix" ? t("designs.motion_hint_matrix") : t("designs.motion_hint"),
+      hint: t(MOTION_HINT[settings.design] ?? "designs.motion_hint"),
       choices: [
         { value: false, label: t("designs.motion.on") },
         { value: true, label: t("designs.motion.calm") },
@@ -155,11 +206,12 @@ export function useSettingRows() {
       kind: "choice",
       key: "loading_style",
       label: t("settings.loading_style"),
-      hint: settings.loading_style === "popcorn" ? t("settings.loading.popcorn_hint") : undefined,
+      hint: LOADING_HINT[settings.loading_style] ? t(LOADING_HINT[settings.loading_style]!) : undefined,
       choices: LOADING_STYLES.map((v) => ({ value: v, label: t(LOADING_LABEL[v]) })),
       value: settings.loading_style,
       onChange: (v) => set({ loading_style: v as LoadingStyle }),
     } as Row,
+    filmTheme: bool("film_theme", t("filmtheme.setting"), t("filmtheme.setting_hint")),
     hideAnime: bool("hide_anime", t("settings.hide_anime"), t("settings.hide_anime_hint")),
     hideWatched: bool("hide_watched", t("settings.hide_watched"), t("settings.hide_watched_hint")),
     autoplay: bool("autoplay_next_episode", t("settings.autoplay_next")),
@@ -247,9 +299,9 @@ export function useSettingRows() {
 }
 
 const STAGES: [number, LoadStage][] = [
-  [0.12, "searching"],
-  [0.35, "metadata"],
-  [0.85, "preloading"],
+  [0.06, "searching"],
+  [0.15, "metadata"],
+  [0.9, "preloading"],
   [1.01, "starting"],
 ];
 

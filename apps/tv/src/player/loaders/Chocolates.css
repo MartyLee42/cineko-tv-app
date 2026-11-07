@@ -1,0 +1,14 @@
+/* «Коробка конфет» (Chocolates.tsx). The box keeps its own colours on every design. */
+.lc-box { background: linear-gradient(150deg, #8f1d2c, #5a0f1a); box-shadow: 0 24px 60px rgba(0, 0, 0, .45), inset 0 0 0 6px #d8b25a, inset 0 0 0 10px #7a1522; }
+.lc-inner { background: #3a1f14; box-shadow: inset 0 6px 18px rgba(0, 0, 0, .6); }
+.lc-cup { background: radial-gradient(circle at 50% 50%, #2a150c 0%, #2a150c 58%, #5b3a22 60%, #4a2c19 72%, #2f1a0f 74%, #3d2414 100%); }
+.lc-choc { border-radius: 50%; box-shadow: 0 6px 10px rgba(0, 0, 0, .45), inset -6px -8px 14px rgba(0, 0, 0, .35), inset 6px 6px 10px rgba(255, 255, 255, .15); transition: transform 700ms cubic-bezier(.5, -.2, .4, 1.2), opacity 600ms ease; }
+.lc-dark { background: radial-gradient(circle at 35% 30%, #5a3420, #2b160b 70%); }
+.lc-milk { border-radius: 18px; background: radial-gradient(circle at 35% 30%, #a06a3f, #6b3f20 75%); }
+.lc-white { background: radial-gradient(circle at 35% 30%, #fff8e6, #e2cfa6 75%); }
+.lc-stripe { border-radius: 22px; background: repeating-linear-gradient(135deg, #6b3f20 0px, #6b3f20 12px, #8c5a33 12px, #8c5a33 18px); }
+@keyframes lc-wiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+.lc-choc.is-next { animation: lc-wiggle 1.6s ease-in-out infinite; }
+.lc-card { background: rgba(var(--mt-surface), .92); box-shadow: 0 20px 50px rgba(0, 0, 0, .35); border: 3px solid rgba(var(--mt-accent), .5); }
+@keyframes lc-in { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+.lc-fact { animation: lc-in 500ms ease-out both; }

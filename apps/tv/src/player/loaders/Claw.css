@@ -1,0 +1,19 @@
+/* «Кран-машина» (Claw.tsx). */
+.lm-cabinet { background: linear-gradient(180deg, #e0457b, #a8235a); box-shadow: 0 28px 70px rgba(0, 0, 0, .45), inset 0 0 0 6px rgba(255, 255, 255, .25); }
+.lm-glass { background: linear-gradient(180deg, #1e2b48, #2c3c63); box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .35), inset 0 0 60px rgba(0, 0, 0, .45); }
+.lm-glass::after { content: ""; position: absolute; left: 60px; top: 0; width: 70px; height: 100%; background: rgba(255, 255, 255, .06); transform: skewX(-12deg); }
+.lm-chute { background: linear-gradient(180deg, #0d1220, #05070d); border: 6px solid #f7c948; border-bottom: none; border-radius: 10px 10px 0 0; }
+.lm-toy { border-radius: 50%; box-shadow: inset -8px -10px 16px rgba(0, 0, 0, .3), inset 6px 6px 10px rgba(255, 255, 255, .3); }
+.lm-toy-1 { border-radius: 22%; transform: rotate(18deg); }
+.lm-toy-2 { border-radius: 50% 50% 42% 42%; }
+.lm-rail { background: linear-gradient(180deg, #c9d1d8, #6c757d); }
+.lm-carriage { background: #4b545c; border-radius: 8px; }
+.lm-rope { background: #2c3237; transform-origin: 50% 0; }
+.lm-prong { transition: transform 500ms ease; }
+.lm-poster { box-shadow: 0 10px 20px rgba(0, 0, 0, .45); border: 3px solid rgba(255, 255, 255, .8); }
+@keyframes lm-slip { 0% { transform: translate3d(0, -240px, 0) rotate(0deg); } 70% { transform: translate3d(0, 8px, 0) rotate(-10deg); } 100% { transform: translate3d(0, 0, 0) rotate(-8deg); } }
+.lm-slip { animation: lm-slip 700ms cubic-bezier(.5, 0, .7, 1.4) both; }
+@keyframes lm-drop { 0% { transform: translate3d(0, 0, 0); opacity: 1; } 80% { opacity: 1; } 100% { transform: translate3d(0, 380px, 0); opacity: 0; } }
+.lm-drop { animation: lm-drop 900ms cubic-bezier(.55, 0, 1, .45) both; }
+@keyframes lm-wobble { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+.lm-wobble > svg { transform-origin: 70px 0; animation: lm-wobble .6s ease-in-out infinite; }
