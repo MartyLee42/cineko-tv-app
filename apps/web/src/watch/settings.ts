@@ -10,6 +10,8 @@ export type LoadingStyle = Settings["loading_style"];
 export const DEFAULT_SETTINGS: Settings = {
   theme: "system",
   design: "kinozal",
+  design_surprise: "off",
+  design_favorites: [],
   hide_anime: false,
   hide_watched: false,
   autoplay_next_episode: true,

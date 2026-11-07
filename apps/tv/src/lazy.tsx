@@ -7,7 +7,7 @@
 //
 // The legacy (SystemJS) build turns these import()s into System.import().
 import { lazy, type ComponentType } from "react";
-import { Spinner } from "@martytv/ui";
+import { getAppliedDesign, Spinner } from "@martytv/ui";
 import type { MenuId } from "./design/menuOrder";
 import { player } from "./player/controller";
 import { live } from "./iptv/live";
@@ -26,7 +26,8 @@ const settings = chunk(() => import("./settings/chunkSettings"));
 const playback = chunk(() => {
   // The profile's loading style travels with the player (it's the first thing the player shows).
   const s = currentSettings();
-  void preloadLoader(loaderKind(s.loading_style, s.design)).catch(() => undefined);
+  // The applied design (a «Сюрприз» may differ from settings.design), as Loader.tsx picks it.
+  void preloadLoader(loaderKind(s.loading_style, getAppliedDesign() ?? s.design)).catch(() => undefined);
   return import("./player/chunkPlayback");
 });
 

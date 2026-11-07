@@ -37,5 +37,6 @@ import { sleepKk } from "./sleep.kk";
 import { skipKk } from "./skip.kk";
 import { pocketpetKk } from "./pocketpet.kk";
 import { triviaKk } from "./trivia.kk";
+import { surpriseKk } from "./surprise.kk";
 
-export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk };
+export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk };
