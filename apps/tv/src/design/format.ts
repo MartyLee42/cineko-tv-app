@@ -10,8 +10,8 @@ export function sizeText(bytes: number, locale = "en"): string {
   const gb = bytes / 1024 ** 3;
   if (!isFinite(gb) || gb < 1) return formatBytes(bytes, locale);
   const s = gb >= 1024 ? (gb / 1024).toFixed(1) : gb.toFixed(1);
-  const unit = gb >= 1024 ? (locale === "ru" ? "ТБ" : "TB") : locale === "ru" ? "ГБ" : "GB";
-  return `${locale === "ru" ? s.replace(".", ",") : s} ${unit}`;
+  const unit = gb >= 1024 ? (locale !== "en" ? "ТБ" : "TB") : locale !== "en" ? "ГБ" : "GB";
+  return `${locale !== "en" ? s.replace(".", ",") : s} ${unit}`;
 }
 
 /** «Дюна: Часть вторая» → main «Дюна», sub «Часть вторая» (Проектор's two-line title). */

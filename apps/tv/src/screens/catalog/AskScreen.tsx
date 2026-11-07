@@ -357,7 +357,7 @@ function Answer({
 function KeyboardOverlay({ initial, kind, onKind, onSend, onClose }: { initial: string; kind: AskKind; onKind: () => void; onSend: (p: string) => void; onClose: () => void }) {
   const { t, locale } = useI18n();
   const [text, setText] = useState(() => initial.toUpperCase());
-  const [layout, setLayout] = useState<Layout>(locale === "ru" ? "ru" : "en");
+  const [layout, setLayout] = useState<Layout>(locale === "en" ? "en" : "ru");
   const edit = (a: KeyAction) => setText((p) => applyKey(p, a));
   const close = useRef(onClose);
   const textRef = useRef(text);

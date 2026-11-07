@@ -31,7 +31,7 @@ export function progressPercent(d: Pick<DownloadBrief, "status" | "progress">): 
 /** Seconds → "~35 мин" / "~2 ч 10 мин" (en: "~35 min" / "~2 h 10 min"). */
 export function formatEta(seconds: number | null | undefined, locale: Locale): string | null {
   if (seconds == null || !Number.isFinite(seconds) || seconds < 0) return null;
-  const [h, m] = locale === "ru" ? ["ч", "мин"] : ["h", "min"];
+  const [h, m] = locale === "kk" ? ["сағ", "мин"] : locale === "ru" ? ["ч", "мин"] : ["h", "min"];
   const mins = Math.max(1, Math.round(seconds / 60));
   if (mins < 60) return `~${mins} ${m}`;
   const hours = Math.floor(mins / 60);
@@ -42,7 +42,7 @@ export function formatEta(seconds: number | null | undefined, locale: Locale): s
 /** Bytes/s → "1,2 МБ/с" (ru, comma) / "1.2 MB/s"; under 1 MB/s in KB/s. */
 export function formatRate(bps: number | null | undefined, locale: Locale): string | null {
   if (bps == null || !Number.isFinite(bps) || bps <= 0) return null;
-  const [kb, mb] = locale === "ru" ? ["КБ/с", "МБ/с"] : ["KB/s", "MB/s"];
+  const [kb, mb] = locale !== "en" ? ["КБ/с", "МБ/с"] : ["KB/s", "MB/s"];
   if (bps >= MB) return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(bps / MB)} ${mb}`;
   return `${Math.max(1, Math.round(bps / KB))} ${kb}`;
 }
@@ -54,10 +54,10 @@ export function formatKeepDate(iso: string | null | undefined, locale: Locale, n
   if (Number.isNaN(d.getTime())) return null;
   const otherYear = d.getFullYear() !== new Date(now).getFullYear();
   const opts: Intl.DateTimeFormatOptions =
-    locale === "ru"
+    locale !== "en"
       ? { day: "2-digit", month: "2-digit", ...(otherYear && { year: "numeric" }) }
       : { month: "short", day: "numeric", ...(otherYear && { year: "numeric" }) };
-  return new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "en-US", opts).format(d);
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : locale === "kk" ? "kk-KZ" : "ru-RU", opts).format(d);
 }
 
 export type ChipTone = "progress" | "wait" | "error" | "done";

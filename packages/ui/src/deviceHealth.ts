@@ -52,7 +52,7 @@ const num = (v: number | null | undefined): v is number => typeof v === "number"
 export function fmtNum(v: number, locale: string, digits = 1): string {
   const d = Math.abs(v) >= 10 ? 0 : digits;
   const s = (Math.round(v * 10 ** d) / 10 ** d).toFixed(d).replace(/\.0+$/, "");
-  return locale === "ru" ? s.replace(".", ",") : s;
+  return locale !== "en" ? s.replace(".", ",") : s;
 }
 
 /** Russian-style plural form (en: one / many). */

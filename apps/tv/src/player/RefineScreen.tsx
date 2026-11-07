@@ -19,7 +19,7 @@ export function RefineScreen({ ctx, initial, onSearch, onClose }: { ctx: PlayCon
   const media = cachedMedia(ctx.media_id, ctx.lang);
   const [text, setText] = useState(() => initial?.text ?? refineDefault(ctx.title || media?.title || "", media?.year));
   const [loose, setLoose] = useState(initial?.loose ?? false);
-  const [layout, setLayout] = useState<Layout>(locale === "ru" ? "ru" : "en");
+  const [layout, setLayout] = useState<Layout>(locale === "en" ? "en" : "ru");
   const [error, setError] = useState(false);
   const edit = (a: KeyAction) => {
     setError(false);

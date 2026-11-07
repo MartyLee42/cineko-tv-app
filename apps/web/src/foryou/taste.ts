@@ -47,7 +47,7 @@ export function balanceLow(b: AIBalance): boolean {
 
 export function formatBalance(b: AIBalance, locale: string): string {
   try {
-    return new Intl.NumberFormat(locale === "ru" ? "ru-RU" : "en-US", { style: "currency", currency: b.currency || "USD" }).format(b.total);
+    return new Intl.NumberFormat(locale === "en" ? "en-US" : locale === "kk" ? "kk-KZ" : "ru-RU", { style: "currency", currency: b.currency || "USD" }).format(b.total);
   } catch {
     return `${b.total.toFixed(2)} ${b.currency}`;
   }
@@ -74,5 +74,5 @@ export function regenState(s: RegenLike | undefined): RegenState {
 
 /** "00:00"-style time of the next regeneration, in the viewer's time zone. */
 export function regenTime(iso: string, locale: string): string {
-  return new Date(iso).toLocaleTimeString(locale === "ru" ? "ru-RU" : "en-GB", { hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleTimeString(locale === "en" ? "en-GB" : locale === "kk" ? "kk-KZ" : "ru-RU", { hour: "2-digit", minute: "2-digit" });
 }

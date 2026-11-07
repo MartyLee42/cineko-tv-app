@@ -60,7 +60,8 @@ docker run --rm -v $PWD:/w -w /w/services/music golang:1.27-bookworm go test ./.
   old `martytv` prefix — Go module `martytv/api`, `@martytv/*` packages, the `/martytv` binary, DB
   user/name, `mt_session` cookie, `martytv.*` localStorage keys, `MARTYTV_*` build vars. Don't rename
   them: existing installs depend on them.
-- UI strings live in `packages/ui/src/locales/*.{ru,en}.ts` (Russian first; keep both in sync).
+- UI strings live in `packages/ui/src/locales/*.{ru,en,kk}.ts` (Russian first; keep all three in sync —
+  `kk.test.ts` checks Kazakh has every key and placeholder). Kazakh UI shows catalog metadata in Russian (`catalogLang`).
 - The API contract is `packages/contracts/openapi.yaml`; regenerate the TS client with `make gen`.
 - Docs: `docs/architecture.md` (how things work), `docs/api.md`, `docs/deployment.md`.
 - CI (`.github/workflows/ci.yml`) runs the same Go/JS tests, compose validation and shellcheck;
