@@ -8,7 +8,7 @@
 // loaderChunks.ts); until it's there, Minimal stands in.
 import { Suspense, useEffect, useState } from "react";
 import type { PlaybackSource } from "@martytv/contracts";
-import { useAppliedDesign } from "@martytv/ui";
+import { Spinner, useAppliedDesign } from "@martytv/ui";
 import { loadTracker, type LoadStage } from "./loading";
 import type { LoadingStyle } from "../profile/settings";
 import { Backdrop, pct, Status, type LoaderModel } from "./loaderParts";
@@ -114,9 +114,11 @@ function Minimal({ m }: { m: LoaderModel }) {
 
 /** Small looping spinner for re-buffering during playback (no overlay). */
 export function BufferingSpinner() {
+  // «Матрица»: the green block spinner instead of the ring.
+  const mx = useAppliedDesign() === "matrix";
   return (
     <div data-testid="player-buffering" className="tv-buffering absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full">
-      <span className="tv-spin block h-12 w-12 rounded-full" />
+      {mx ? <Spinner size={48} /> : <span className="tv-spin block h-12 w-12 rounded-full" />}
     </div>
   );
 }

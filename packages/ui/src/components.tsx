@@ -34,6 +34,15 @@ export function ProfileAvatar({
 }
 
 export function Spinner({ size = 24 }: { size?: number }) {
+  // «Матрица»: three green blocks lighting up in turn, like a terminal waiting.
+  if (useAppliedDesign() === "matrix")
+    return (
+      <span role="status" aria-label="loading" data-spinner="matrix" className="mx-spin inline-flex items-end" style={{ height: size, gap: Math.max(2, size / 8) }}>
+        {[0, 1, 2].map((i) => (
+          <span key={i} className={`mx-spin-cell mx-spin-${i}`} style={{ width: Math.max(4, size / 4), height: Math.max(6, size * 0.7) }} />
+        ))}
+      </span>
+    );
   return (
     <span
       role="status"

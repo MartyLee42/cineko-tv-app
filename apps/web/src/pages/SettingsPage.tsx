@@ -665,6 +665,16 @@ export function LoadingPreview({ style }: { style: LoadingStyle }) {
           </span>
         </span>
       )}
+      {style === "matrix" && (
+        <span className="absolute inset-0 flex flex-col justify-center gap-1 bg-[#000602] px-2.5 font-mono text-[#00ff41]" style={{ textShadow: "0 0 6px rgba(0,255,65,.6)" }}>
+          <span className="text-[10px] leading-none">{"> loading construct…"}</span>
+          <span className="text-lg font-bold leading-none">42%</span>
+          <span className="whitespace-pre text-[9px] leading-none tracking-[-.05em]">
+            {"█".repeat(8)}
+            <span className="opacity-30">{"░".repeat(12)}</span>
+          </span>
+        </span>
+      )}
     </span>
   );
 }
