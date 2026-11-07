@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS: Settings = {
   show_curated: true,
 };
 
-export const LOADING_STYLES: LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix"];
+export const LOADING_STYLES: LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix", "paws", "aquarium", "speed88", "odyssey", "balloons"];
 export const THEMES: ThemeSetting[] = ["system", "dark", "light"];
 
 /** Fills defaults for anything the server omitted, then applies a partial patch. */

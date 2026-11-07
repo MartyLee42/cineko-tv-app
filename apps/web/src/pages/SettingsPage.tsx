@@ -39,6 +39,7 @@ import { TasteCard } from "../foryou/TasteCard";
 import { ServerDownloadIcon } from "../downloads/ui";
 import { VideoQualityRow } from "../video/VideoSettings";
 import { LOADING_STYLES, supportsLight, THEMES, type LoadingStyle, type Settings } from "../watch/settings";
+import { ArtOf, isArtStyle, type ArtStyleId } from "../player/art";
 import { SeasonalSetting } from "../seasons/SeasonalSetting";
 import { ThisDeviceCard } from "../devprefs/ui";
 
@@ -696,6 +697,7 @@ export function LoadingPreview({ style }: { style: LoadingStyle }) {
   return (
     <span aria-hidden className={`relative block aspect-video overflow-hidden ${backdrop}`}>
       {style === "popcorn" && <PopcornPreview />}
+      {isArtStyle(style) && <ArtPreview style={style} />}
       {(style === "marty" || style === "marty_popcorn") && (
         <span className="absolute inset-0 flex flex-col items-center justify-center gap-1">
           <Mascot size={56} mood={style === "marty" ? "loading" : "popcorn"} animated hat={null} />
@@ -768,6 +770,25 @@ function PopcornPreview() {
 }
 
 const STEPS = 20;
+
+/** A drawn style with progress looping 0→1 and its end flourish (remounted each cycle). */
+function ArtPreview({ style }: { style: ArtStyleId }) {
+  const [still] = useState(
+    () => typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  const [tick, setTick] = useState(still ? Math.round(STEPS * 0.6) : 0);
+  useEffect(() => {
+    if (still) return;
+    const id = setInterval(() => setTick((n) => (n + 1) % (STEPS + 6)), 220);
+    return () => clearInterval(id);
+  }, [still]);
+  const cycle = useCycle(tick);
+  return (
+    <span className="absolute inset-0 flex items-center justify-center bg-black/25">
+      <ArtOf key={cycle} style={style} p={Math.min(1, tick / STEPS)} done={tick > STEPS} quiet width={200} />
+    </span>
+  );
+}
 
 /** Counts wrap-arounds of `tick` so the loader remounts at the start of each loop. */
 function useCycle(tick: number) {

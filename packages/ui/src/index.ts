@@ -17,7 +17,7 @@ export * from "./martyMood";
 export * from "./matrix";
 export * from "./cozy";
 export * from "./uiSounds";
-export { installClickSounds, installKeySounds, playUiSound } from "./uiSoundsAudio";
+export { installClickSounds, installKeySounds, playLoaderSound, playUiSound } from "./uiSoundsAudio";
 export * from "./deviceHealth";
 export * from "./loadStatus";
 export * from "./slowTorrent";

@@ -4934,11 +4934,16 @@ export interface components {
              *     minimal = backdrop with a thin progress line and status text;
              *     marty = Cineko the mascot's loading loop with a progress bar; he cheers at 100%;
              *     marty_popcorn = the same with Cineko munching popcorn while it loads;
-             *     matrix = «Матрица»: «> Загрузка конструкта…», the percentage counting up in green and a block bar over the digital rain (also what the matrix design always shows).
+             *     matrix = «Матрица»: «> Загрузка конструкта…», the percentage counting up in green and a block bar over the digital rain (also what the matrix design always shows);
+             *     paws = «Следы лапок»: paw prints walk across the bottom, one per 5 %; the last one taps impatiently when progress stalls;
+             *     aquarium = «Аквариум»: pieces fall as little fish into Cineko's bowl, his eyes follow the newest; a full bowl turns into ▶;
+             *     speed88 = «Назад в будущее»: a speedometer needle / digital readout climbs to 88 mph; at 88 fire trails shoot off as the film starts;
+             *     odyssey = «Космическая одиссея»: a dark monolith rises as a moon and a sun line up; at 100 % one quiet note (only with the device's interface sounds on);
+             *     balloons = «Вверх»: balloons get tied to a little house one by one; at 100 % it floats off.
              * @default popcorn
              * @enum {string}
              */
-            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix";
+            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix" | "paws" | "aquarium" | "speed88" | "odyssey" | "balloons";
             /**
              * @description «О моих вкусах»: the viewer's own description of their tastes (trimmed, at most 600 characters; "" clears it).
              *     Sent to DeepSeek only as delimited data (`viewer_note`) in the AI collections and Ask AI prompts. A change
