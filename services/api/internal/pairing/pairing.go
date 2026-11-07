@@ -17,6 +17,7 @@ import (
 	"martytv/api/internal/auth"
 	"martytv/api/internal/db"
 	"martytv/api/internal/devices"
+	"martytv/api/internal/profiles"
 )
 
 const (
@@ -49,6 +50,10 @@ type Service struct {
 	hasher *auth.Hasher
 	ttl    time.Duration
 	now    func() time.Time
+	// NewTVDesign (config NEW_TV_DESIGN) marks each TV created here with a
+	// default design for all its profiles (profiles.DefaultDesignKey);
+	// "" = none, the TV shows the profiles' own designs.
+	NewTVDesign string
 }
 
 func NewService(pool *pgxpool.Pool, h *auth.Hasher, ttl time.Duration) *Service {
@@ -274,6 +279,12 @@ func (s *Service) Exchange(ctx context.Context, id, secret, userAgent string) (*
 	nd, err := devices.Register(ctx, tx, s.hasher, *ps.ApprovedBy, name, ps.Platform, userAgent, ps.DefaultProfileID)
 	if err != nil {
 		return nil, "", err
+	}
+	if s.NewTVDesign != "" && profiles.IsDesign(s.NewTVDesign) {
+		if _, err := tx.Exec(ctx, `UPDATE devices SET settings = settings || jsonb_build_object($2::text, $3::text) WHERE id = $1`,
+			nd.Device.ID, profiles.DefaultDesignKey, s.NewTVDesign); err != nil {
+			return nil, "", err
+		}
 	}
 	if _, err := tx.Exec(ctx, `UPDATE pairing_sessions SET status = 'consumed', consumed_at = now(), device_id = $2
 		WHERE id = $1`, id, nd.Device.ID); err != nil {

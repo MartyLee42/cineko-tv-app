@@ -6,6 +6,7 @@
 // No React here (main.tsx imports it).
 import type { DesignSetting } from "@martytv/ui";
 import { retrying } from "../../retry";
+import { DESIGN_KEY, startDesign } from "../newTv";
 import type { Look } from "./types";
 
 type Mod = { look: Look };
@@ -65,11 +66,11 @@ export function subscribeLooks(l: () => void): () => void {
 
 /** main.tsx: the saved design's chunk travels next to the app code. */
 export function preloadSavedLook(): void {
-  let id: string | null = null;
+  let id = "kinozal";
   try {
-    id = localStorage.getItem("martytv.design");
+    id = startDesign(localStorage.getItem(DESIGN_KEY), !!localStorage.getItem("martytv.device_credential"));
   } catch {
     /* private mode */
   }
-  void loadLook((id && id in IMPORTS ? id : "kinozal") as DesignSetting).catch(() => undefined);
+  void loadLook((id in IMPORTS ? id : "kinozal") as DesignSetting).catch(() => undefined);
 }

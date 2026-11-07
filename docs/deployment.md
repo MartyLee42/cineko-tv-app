@@ -392,6 +392,11 @@ Tizen, LG webOS, Android TV, …):
 The launcher is `/msx/start.json`. `MSX_APPS` adds more buttons to the MSX
 menu; `MSX_BRIDGE=false` serves a plain menu.
 
+A newly paired TV shows the «Каркас» design for every profile until another
+design is picked on it (TVs paired earlier keep theirs). `NEW_TV_DESIGN` sets
+another design id; `NEW_TV_DESIGN=` (empty) or `off` makes new TVs follow the
+profile's design.
+
 ## Updating
 
 ```sh
