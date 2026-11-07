@@ -31,6 +31,11 @@
 @import "@fontsource/oswald/latin-500.css";
 @import "@fontsource/oswald/cyrillic-700.css";
 @import "@fontsource/oswald/latin-700.css";
+/* «Нуар» (typewriter-style slab mono). */
+@import "@fontsource/ibm-plex-mono/cyrillic-400.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/cyrillic-600.css";
+@import "@fontsource/ibm-plex-mono/latin-600.css";
 /* «Стикербук» headings and tape labels (handwritten). */
 @import "@fontsource/caveat/cyrillic-700.css";
 @import "@fontsource/caveat/latin-700.css";

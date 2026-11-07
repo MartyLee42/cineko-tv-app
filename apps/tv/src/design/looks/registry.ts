@@ -24,6 +24,8 @@ const IMPORTS: Record<DesignSetting, () => Promise<Mod>> = {
   matrix: () => import("./matrix"),
   stickerbook: () => import("./stickerbook"),
   pocketpet: () => import("./pocketpet"),
+  noir: () => import("./noir"),
+  vague: () => import("./vague"),
 };
 
 const loaders = new Map<DesignSetting, () => Promise<Mod>>();

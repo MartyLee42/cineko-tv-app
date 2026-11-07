@@ -1,0 +1,9 @@
+/* ---- noir: the blinds' light sweeps in, drops run down the glass, keys strike one by one */
+@keyframes nri-light { from { opacity: 0; transform: rotate(32deg) translateX(-420px); } to { opacity: 1; transform: rotate(32deg) translateX(0); } }
+@keyframes nri-drop { from { transform: translateY(-80px); } to { transform: translateY(260px); } }
+@keyframes nri-key { from { opacity: 0; } to { opacity: 1; } }
+.nri-light { transform: rotate(32deg); transform-origin: 50% 50%; animation: nri-light 1.1s cubic-bezier(.3,.6,.2,1) both; }
+.nri-drop { background: linear-gradient(180deg, rgba(242,239,230,0), rgba(242,239,230,.35)); opacity: .7; animation: nri-drop 1.6s linear infinite; }
+.nri-key { opacity: 0; animation: nri-key .01s steps(1) both; }
+.nri-cursor { opacity: 0; animation: in-blink .8s steps(1) 1.35s infinite; }
+.nri-bw { -webkit-filter: grayscale(1) contrast(1.15); filter: grayscale(1) contrast(1.15); }

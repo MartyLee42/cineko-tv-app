@@ -1,0 +1,12 @@
+/* ---- vague: hard cuts only — each word card is on screen for one shot (with one jolt mid-shot), then gone */
+@keyframes nvi-flash {
+  0% { opacity: 1; transform: translate(0, 0); }
+  50% { opacity: 1; transform: translate(26px, -10px); }
+  99% { opacity: 1; transform: translate(26px, -10px); }
+  100% { opacity: 0; }
+}
+@keyframes nvi-on { from { opacity: 1; } to { opacity: 1; } }
+@keyframes nvi-jolt { 0% { transform: translate(-30px, 0); } 40% { transform: translate(14px, -6px); } 100% { transform: translate(0, 0); } }
+.nvi-flash { opacity: 0; animation: nvi-flash .45s steps(1, end) forwards; }
+.nvi-on { opacity: 0; animation: nvi-on .01s steps(1, end) forwards; }
+.nvi-jolt { animation: nvi-on .01s steps(1, end) forwards, nvi-jolt .14s steps(1, end) both; }
