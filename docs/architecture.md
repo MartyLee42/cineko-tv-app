@@ -2431,6 +2431,16 @@ videos (a side column from lg up). `/video/channel/:id`: banner, avatar,
 subscribe, uploads with continuation paging. Settings → profile:
 «Качество видео» and «Скрывать Shorts». Admin → Сервер: the Invidious card.
 
+**Nightly restart** (`internal/ivrestart`). Invidious degrades the longer it
+runs, so the API restarts `companion` then `invidious` at
+`INVIDIOUS_RESTART_AT` (03:00 in `TZ`). `playback.LastVideoStream` is bumped
+on every `/vstream` request and every body read (a progressive MP4 is one
+long response); activity in the last 5 min postpones the restart by 15 min,
+up to 2 h, then it is skipped for the night. The restart is a
+`POST /containers/<name>/restart` to `restart-proxy`
+(wollomatic/socket-proxy: regex allowlist for exactly those two paths,
+`-allowfrom=api`, own network), so the API never holds the Docker socket.
+
 ## Designs, intros and navigation
 
 - **Designs** are skins on three skeletons: kinozal (кинозал, deco,
