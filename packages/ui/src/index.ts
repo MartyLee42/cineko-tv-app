@@ -31,3 +31,4 @@ export * from "./genreReaction";
 export { GenreReaction } from "./GenreReaction";
 export * from "./aiCreativity";
 export * from "./trivia";
+export * from "./surprise";

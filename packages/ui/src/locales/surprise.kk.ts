@@ -1,0 +1,20 @@
+// "Surprise": a different design from your favourites each day or week. Keys match surprise.en.ts.
+export const surpriseKk = {
+  "surprise.setting": "Тосын сый",
+  "surprise.setting_hint": "Күн сайын немесе апта сайын таңдаулылардан кездейсоқ басқа безендіру. Жоғарыда таңдалғаны «үй» безендіруі болып қалады: тосын сый өшірілгенде ол қайтады.",
+  "surprise.mode.off": "Өшік",
+  "surprise.mode.day": "Күн сайын",
+  "surprise.mode.week": "Апта сайын",
+  "surprise.today": "Бүгін: {design}",
+  "surprise.this_week": "Осы аптада: {design}",
+  "surprise.favorites": "Таңдаулы безендірулер",
+  "surprise.favorites_hint": "Тосын сый тек жұлдызшамен белгіленгендерден таңдайды. Ештеңе белгіленбесе — барлығынан.",
+  "surprise.favorites_all": "Барлық безендірулер",
+  "surprise.favorites_count": "{total} ішінен {count}",
+  "surprise.favorite_on": "★ Таңдаулыда",
+  "surprise.favorite_off": "—",
+  "surprise.favorite_toggle": "Таңдаулыға: {design}",
+  "surprise.picker_hint": "OK — жұлдызшаны қою немесе алу. Артқа — дайын.",
+  "surprise.picker_none": "Ештеңе белгіленбеген — тосын сый барлық безендірулерден таңдайды.",
+  "surprise.picker_one": "Біреуі ғана белгіленген — кемінде екеуін белгілеңіз, әзірге таңдалған безендіру қалады.",
+};
