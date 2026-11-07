@@ -1715,8 +1715,11 @@ were fetched in; TTL 24 h), `foryou_dismissals`, `foryou_feedback`
 `foryou_collections` + `foryou_collection_items` (AI подборки, 7 days),
 `foryou_runs`, `foryou_ai_usage` (tokens per Moscow day); `foryou_asks` +
 `foryou_ask_usage` (Ask AI, migration `00012_foryou_ask.sql`);
-`foryou_note_regen` (00013), `foryou_regen_usage` (00015) and
-`profile_media_notes` (00017).
+`foryou_note_regen` (00013), `foryou_regen_usage` (00015),
+`profile_media_notes` (00017); migration `00031_foryou_themes.sql`:
+`keywords` + `media_keywords` (TMDB keywords, `media.keywords_fetched_at`),
+`foryou_collections.kind` (`ai` | `theme`), `foryou_ai_picks` and
+`recs_cache.top_candidates`.
 
 ### Taste profile
 
@@ -1736,12 +1739,35 @@ Signals per title (one query, `store.go`):
 Each weight is multiplied by recency `0.4 + 0.6 · 0.5^(age / 2 years)` (age
 of the latest interaction; Kinopoisk imports keep their rating dates).
 Affinities for genres, decades, original languages, countries (after
-details), directors (Director, or Creator for series) and top-5-billed
-actors (×0.6): `Σweight / (n + 3)` (shrinkage) × salience
-`0.5 + 0.5·√(n / n_max)`, normalized so the strongest is ±1. People need
-≥ 2 titles. Seeds = the 10 strongest liked titles + up to 4 recent ones
+details), directors (Director, or Creator for series), top-5-billed
+actors (×0.6), writers (Screenplay / Writer), cinematographers (Director of
+Photography), composers (Original Music Composer) and **themes** (TMDB
+keywords): `Σweight / (n + 3)` (shrinkage) × salience
+`0.5 + 0.5·√(n / n_max)`, normalized so the strongest is ±1 per dimension.
+People and themes need ≥ 2 titles.
+
+**Themes** (`themes.go`). Keywords («heist», «time loop», «slow burn»)
+are much more specific than genres, but noisy: a stoplist drops production
+trivia (credits stingers, «woman director», «based on novel or book»,
+sequel/remake, …) in the features query, and an IDF-like factor damps
+keywords common across the stored catalog (a GROUP BY over
+`media_keywords`, cached 6 h; only with ≥ 200 titles with keywords): full
+weight up to 2 % of titles, falling on a log scale to ×0.25 at ≥ 25 %.
+Keyword names are TMDB's English ones (TMDB has no translated keywords);
+the AI themes call (below) fills `keywords.name_ru` for the profile's liked
+ones — written to read after «фильмы про …» («ограбления», «временную
+петлю»). Until then a Russian UI shows the English name in a neutral form
+(«Ваша тема: heist»); Kazakh uses the neutral form always (names are
+Russian). Taste DNA (`themes`, `writers`, `cinematographers`, `composers`)
+shows them with `localized`. Seeds = the 10 strongest liked titles + up to 4 recent ones
 (45 days). Taste is DB-only (cheap): recomputed by the run, on demand for
 Taste DNA when newer signals exist, and with every rows rebuild.
+
+**Keywords** come with the details (`append_to_response=…,keywords`, no
+extra request; stored for any language). Titles stored before that are
+backfilled by the run (`fillKeywords`, `/movie|tv/{id}/keywords`): up to
+150 per profile — signal titles first, then the best candidates of the
+cached pool — paced like the credits; stored keywords serve every profile.
 
 **Credits.** Imported ratings have no cast/crew. The run fills them
 lazily: per profile up to `FORYOU_CREDITS_PER_PROFILE` (150) titles without
@@ -1762,6 +1788,7 @@ requests per profile, most cached 6–24 h):
 | director / actor | `/person/{id}/movie_credits`: directed (or top-8-billed) released movies with ≥ 50 votes, for 4 directors / 3 actors with affinity ≥ 0.3 | affinity × rank |
 | trending_for_you | `/trending/all/week`, row keeps only titles with genre match > 0 | 0.35 × rank |
 | hidden_gem | discover top genres, rating ≥ 7.2, 150–1500 votes, released ≥ 1 year ago | 0.45 × rank |
+| theme | discover `with_keywords` = each of the 2 most liked keywords (affinity ≥ 0.4), by rating, ≥ 300 votes | 0.5 × affinity × rank |
 | something_different | discover by rating (≥ 2000 votes) in a genre outside the top 5 that isn't disliked, rotating daily | 0.4 × rank |
 | ai_collection | the profile's latest AI collections | 0.6 (keeps order) |
 | rewatch | own completed titles rated ≥ 9 / favorites, last seen > 1 year ago | rating/10 |
@@ -1771,20 +1798,32 @@ rank = `1 − 0.5·i/(n−1)`. **Excluded:** anything rated, started/completed
 anime with `hide_anime`; watchlist titles only enter the Surprise pool.
 
 **Score** = 1.0·quality + 1.2·genre + 0.3·decade + 0.3·language +
-0.2·country + 1.5·source + 0.2·popularity + 0.1 (never shown) − 0.15 ×
+0.2·country + 1.5·source + 0.2·popularity + 0.6·keyword + 0.35·people +
+0.1 (never shown) − 0.15 ×
 unopened impressions in 14 days (≤ 5) − note-reason penalties (see
 "Personal notes"). quality = Bayesian TMDB rating
 `(v·R + 300·6.3)/(v + 300)` (averaged with Kinopoisk when known) mapped
 5.5…8.5 → 0…1; genre = 0.6·max + 0.4·mean over the title's genres; source
-= noisy-or of source strengths. The **reason** is the source with the
-highest strength × priority (because/director/rewatch 1, AI 0.95, actor
-0.9, hidden gem/different 0.8, trending 0.6, genre 0.5); genre reasons name
-the title's liked genres.
+= noisy-or of source strengths; keyword = 0.7·best + 0.3·worst affinity
+among the title's keywords the taste knows (0 when none: unknown keywords
+don't dilute); people = the strongest liked person on the title + half the
+most disliked (director ×1, writer ×0.8, cinematographer/composer ×0.5,
+actor ×0.6; only titles with details have credits). The **reason** is the
+source with the highest strength × priority (because/director/rewatch 1,
+AI 0.95, actor 0.9, theme 0.85, hidden gem/different 0.8, trending 0.6,
+genre 0.5); genre reasons name the title's liked genres. A genre or
+trending reason becomes `theme` when the title has a keyword liked ≥ 0.4
+(«Вам нравятся фильмы про ограбления» says more than «криминал»; the genres
+stay as the fallback).
 
-**Rows** (`BuildRows`): (1) every specific row reserves 5 titles, scarce
-ones first (director, actor, AI collections, then because ×3, hidden gems,
-something different, genre, second director, trending, rewatch); (2) «Подобрано
-для вас» takes the best 15 of the rest; (3) rows fill up to 15. Every pick
+**Rows** (`BuildRowsAI`): (0) today's AI picks (below), still eligible, in
+the model's order, are reserved for «Подобрано для вас»; (1) every specific
+row reserves 5 titles, scarce ones first (AI theme rubrics, director,
+actor, AI collections, theme, then because ×3, hidden gems, something
+different, genre, second director, trending, rewatch); (2) «Подобрано для
+вас» takes the best of the rest up to 15 — the picks plus the next best up
+to 40 are stored as `top_candidates`, what the next re-ranking sees; (3)
+rows fill up to 15. Every pick
 is MMR-diversified (λ = 0.75; similarity = 0.6·genre Jaccard + 0.2 same
 decade + 0.2 same seed + 0.25 same reason). Titles are unique across rows.
 Cold start (< 3 positive signals): «Популярное сейчас» + top rated.
@@ -1913,6 +1952,59 @@ collections with < 5 resolved titles are discarded. Resolved titles lacking
 the profile's language get details in it (one request each). ≤ 3000 TMDB
 searches per run.
 
+### AI themes and picks (second and third call)
+
+`aiextra.go`. After the rows are built, the per-profile pipeline (daily
+run, admin rerun, «Обновить подборки ИИ», taste-note and return
+regenerations) makes two more calls on the scorer's own candidates — no
+TMDB search needed — then rebuilds the rows when either stored something.
+Same client, budget checks (`aiBudgetCheck` before each), token
+accounting, collections temperature and idle-profile skipping; cold-start
+profiles are skipped. Candidates go out as `{id: 1…n, title (English),
+year, kind, genres, themes (≤ 4 keywords, liked first), director}` —
+short numeric ids, never our uuids; only those ids are accepted back.
+
+- **Themes** (switch `themes_ai`): up to 80 pool candidates outside the 40
+  top-picks ones (no watchlist), ≥ 30 needed, plus a compact viewer
+  (top genres, favourite themes/directors, guarded `viewer_note`). The
+  model groups some into 2–4 rubrics (`title_ru/en` ≤ 60, one-line
+  descriptions ≤ 200, 5–12 ids, each id once); stored as
+  `foryou_collections` kind `theme` in the run's batch, so they show as
+  AI-collection rows (reserved first) and in Explore's «Подборки дня». A
+  rubric needs a Russian (Cyrillic) title; a Cyrillic «English» title is
+  dropped (readers fall back to Russian); prompt leaks and injection-like
+  texts are dropped. The same call translates up to 15 liked keywords
+  without a Russian name (`theme_names_ru`, accusative after «фильмы
+  про»; only sent names, ≤ 40 chars, Cyrillic, ≤ 6 words, never
+  overwriting).
+- **Picks** (switch `picks_ai`): the 40 `top_candidates` (≥ 20 needed)
+  and the usual taste summary (`buildSummary`: favourite directors and
+  themes, highly rated titles, notes, quiz; no recent themes). The model
+  picks 15, best first, with a one-line reason each in the profile's
+  language («медленный, как любимый вами Тарковский, но с развязкой»).
+  Kept: known ids, once each, a non-empty single line ≤ 140 chars in the
+  language (≥ 50 % Cyrillic letters for ru, ≤ 20 % for en), no leak (the
+  prompt's own example counts as one), no injection pattern; fewer than 5
+  → `ai returned invalid JSON` (an explicit empty list just keeps the
+  scorer's order). Stored per profile in `foryou_ai_picks` (lang, items
+  `[{m, why}]`), valid 48 h; `GET /foryou/rows` sets `reason.ai_text` on
+  those titles only when the response language matches, and clients show
+  it (with ✦) instead of «Потому что вам понравился …». AI off, failed or
+  another language → the deterministic order and reasons. ~1.5–2k tokens.
+
+**Language.** The server knows only ru/en per profile (`profileLang`:
+the language the rows were last asked in, else `ui_language`, which is
+ru/en). The Kazakh UI asks the catalog in Russian (`catalogLang` maps
+kk → ru), so Kazakh viewers get Russian AI reasons and theme names; the
+UI strings around them are Kazakh. Generating Kazakh would need the UI
+locale on the server (an extra field) and a third language in the
+prompts — not done.
+
+**Switches.** `themes_ai` / `picks_ai` (app_settings
+`ai_feature_themes` / `ai_feature_picks`, default on) on the admin
+«Рекомендации» tab next to «Факты от ИИ»; `PUT /admin/foryou/ai`, shown in
+`GET /admin/foryou/runs` → `ai` and `GET /foryou/ai-settings`.
+
 **DeepSeek balance:** `GET {DEEPSEEK_BASE_URL}/user/balance` with the same
 key (`balance.go`; errors never carry the URL or key), USD entry preferred,
 cached 10 min (failures too) and refreshed after every run; shown on the
@@ -1925,7 +2017,7 @@ FORYOU_AI_DAILY_TOKENS` (default 300k, Moscow day, `foryou_ai_usage`) and
 AI for the rest of the run (`ai token budget exhausted`). Usage counts (not
 prompts) are logged and shown in the admin runs list. One call costs
 ~2–2.5k tokens (smoke test: 2,124 tokens → 4 collections, 7–10 titles
-each). Without `DEEPSEEK_API_KEY` AI is off (`ai_enabled: false`) and
+each); the themes and picks calls add ~2–3k and ~1.5–2k per profile. Without `DEEPSEEK_API_KEY` AI is off (`ai_enabled: false`) and
 everything else works.
 
 **Temperature.** Admins set the DeepSeek temperature per feature on the

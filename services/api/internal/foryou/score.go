@@ -14,6 +14,7 @@ type Source struct {
 	PersonID     int    // director / actor
 	GenreIDs     []int
 	CollectionID string
+	KeywordID    int // theme
 	// Strength 0..1: how strongly this source vouches for the candidate
 	// (seed/person affinity × rank in the TMDB list).
 	Strength float64
@@ -82,7 +83,7 @@ func sourceStrength(c *Candidate) float64 {
 // typePriority breaks ties between reasons: specific ones explain better.
 var typePriority = map[string]float64{
 	ReasonBecause: 1, ReasonDirector: 1, ReasonRewatch: 1, ReasonAI: 0.95, ReasonActor: 0.9,
-	ReasonHiddenGem: 0.8, ReasonDifferent: 0.8, ReasonTrending: 0.6, ReasonGenre: 0.5, ReasonPopular: 0.3,
+	ReasonHiddenGem: 0.8, ReasonDifferent: 0.8, ReasonTheme: 0.85, ReasonTrending: 0.6, ReasonGenre: 0.5, ReasonPopular: 0.3,
 }
 
 // Score ranks a candidate for a taste. Deterministic.
@@ -92,7 +93,8 @@ func Score(c *Candidate, t *Taste, w Weights) Scored {
 	src := sourceStrength(c)
 	pop := math.Min(1, math.Log1p(c.Popularity)/math.Log1p(1000))
 	s := w.Quality*q + w.Genre*g + w.Decade*t.decadeScore(c.Year) + w.Language*t.langScore(c.Lang) +
-		w.Country*t.countryScore(c.Countries) + w.Source*src + w.Popularity*pop
+		w.Country*t.countryScore(c.Countries) + w.Source*src + w.Popularity*pop +
+		w.Keyword*keywordMatch(c, t) + w.People*peopleMatch(c, t, w)
 	if !c.Shown {
 		s += w.Novelty
 	}
@@ -101,7 +103,26 @@ func Score(c *Candidate, t *Taste, w Weights) Scored {
 	if c.Watchlist {
 		s += w.WatchlistBoost
 	}
-	return Scored{Candidate: c, Score: round3(s), Quality: q, Genre: g, Reason: mainReason(c, t)}
+	return Scored{Candidate: c, Score: round3(s), Quality: q, Genre: g, Reason: themed(mainReason(c, t), c, t, w)}
+}
+
+// themed replaces a weak reason (genre, trending) with the candidate's most
+// liked theme: «вам нравятся фильмы про ограбления» says more than «криминал».
+// The genres stay as the fallback when the keyword has no name in the
+// response language.
+func themed(r Reason, c *Candidate, t *Taste, w Weights) Reason {
+	if r.Type != ReasonGenre && r.Type != ReasonTrending {
+		return r
+	}
+	k, _ := bestKeyword(c, t, w.ThemeReasonMin)
+	if k == 0 {
+		return r
+	}
+	gs := r.GenreIDs
+	if r.Type != ReasonGenre {
+		gs = matchingGenres(c, t)
+	}
+	return Reason{Type: ReasonTheme, KeywordID: k, GenreIDs: gs}
 }
 
 // mainReason picks the most explanatory source.
@@ -125,6 +146,8 @@ func mainReason(c *Candidate, t *Taste) Reason {
 		return Reason{Type: best.Type, PersonID: best.PersonID}
 	case ReasonAI:
 		return Reason{Type: best.Type, CollectionID: best.CollectionID}
+	case ReasonTheme:
+		return Reason{Type: best.Type, KeywordID: best.KeywordID, GenreIDs: matchingGenres(c, t)}
 	case ReasonDifferent:
 		return Reason{Type: best.Type, GenreIDs: best.GenreIDs}
 	case ReasonGenre:
@@ -137,7 +160,7 @@ func mainReason(c *Candidate, t *Taste) Reason {
 }
 
 func sourceKey(s *Source) string {
-	return s.Type + "|" + s.MediaID + "|" + strconv.Itoa(s.PersonID) + "|" + s.CollectionID
+	return s.Type + "|" + s.MediaID + "|" + strconv.Itoa(s.PersonID) + "|" + s.CollectionID + "|" + strconv.Itoa(s.KeywordID)
 }
 
 // matchingGenres: the candidate's genres the profile likes, best first (≤ 2).
@@ -248,9 +271,11 @@ func mmr(items []*Scored, keys []float64, k int, lambda float64) []int {
 	return picked
 }
 
-// CollectionRef is an AI collection offered as a row.
+// CollectionRef is an AI collection offered as a row. Theme = the model
+// grouped the scorer's own candidates (kind 'theme').
 type CollectionRef struct {
-	ID string
+	ID    string
+	Theme bool
 }
 
 // rowSpec is a row being built: its identity, how it ranks candidates
@@ -271,6 +296,17 @@ type rowSpec struct {
 // вас» takes the best of the rest; (3) the specific rows fill up to
 // RowSize. Deterministic for fixed inputs.
 func BuildRows(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold bool) []cachedRow {
+	rows, _ := BuildRowsAI(all, t, w, cols, cold, nil)
+	return rows
+}
+
+// BuildRowsAI is BuildRows with the AI re-ranking of «Подобрано для вас»:
+// aiPicks (media ids, the model's order) lead the row when still eligible
+// and are reserved before the specific rows; the rest fills up as usual.
+// It also returns the row's candidates — the current picks plus the best
+// titles left for the row, RerankCandidates in all — which the next
+// re-ranking is asked about.
+func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold bool, aiPicks []string) ([]cachedRow, []string) {
 	sorted := make([]*Scored, 0, len(all))
 	for i := range all {
 		sorted = append(sorted, &all[i])
@@ -373,7 +409,7 @@ func BuildRows(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold boo
 			key: func(s *Scored) (float64, bool) { return s.Quality + 0.2*s.Score, true }}
 		popular.items = pick(w.RowSize, popular)
 		top.items = pick(w.RowSize, top)
-		return finish([]*rowSpec{popular, top})
+		return finish([]*rowSpec{popular, top}), nil
 	}
 
 	topGenres := []int{}
@@ -457,28 +493,69 @@ func BuildRows(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold boo
 			}})
 		}
 	}
-	collection := func(i, slot int) func() {
+	var aiCols, themeCols []CollectionRef
+	for _, c := range cols {
+		if c.Theme {
+			themeCols = append(themeCols, c)
+		} else {
+			aiCols = append(aiCols, c)
+		}
+	}
+	collectionOf := func(cols []CollectionRef) func(i, slot int) func() {
+		return func(i, slot int) func() {
+			return func() {
+				if i >= len(cols) {
+					return
+				}
+				cid := cols[i].ID
+				r := Reason{Type: ReasonAI, CollectionID: cid}
+				try(&rowSpec{id: "ai:" + cid, kind: RowAI, reason: r, itemReason: &r, slot: slot, key: func(s *Scored) (float64, bool) {
+					src := s.source(ReasonAI, func(x *Source) bool { return x.CollectionID == cid })
+					if src == nil {
+						return 0, false
+					}
+					return src.Strength, true // keep the collection's order
+				}})
+			}
+		}
+	}
+	collection, themeCollection := collectionOf(aiCols), collectionOf(themeCols)
+	// theme: a row per liked keyword whose discover source found enough.
+	theme := func(slot int) func() {
 		return func() {
-			if i >= len(cols) {
+			if count(RowTheme) >= w.ThemeRows {
 				return
 			}
-			cid := cols[i].ID
-			r := Reason{Type: ReasonAI, CollectionID: cid}
-			try(&rowSpec{id: "ai:" + cid, kind: RowAI, reason: r, itemReason: &r, slot: slot, key: func(s *Scored) (float64, bool) {
-				src := s.source(ReasonAI, func(x *Source) bool { return x.CollectionID == cid })
-				if src == nil {
-					return 0, false
+			for _, a := range t.Keywords {
+				if a.Score < w.ThemeReasonMin {
+					break
 				}
-				return src.Strength, true // keep the collection's order
-			}})
+				kid, _ := strconv.Atoi(a.Key)
+				r := Reason{Type: ReasonTheme, KeywordID: kid}
+				if try(&rowSpec{id: "theme:" + a.Key, kind: RowTheme, reason: r, itemReason: &r, slot: slot,
+					key: func(s *Scored) (float64, bool) {
+						src := s.source(ReasonTheme, func(x *Source) bool { return x.KeywordID == kid })
+						if src == nil {
+							return 0, false
+						}
+						return s.Score + w.Source*src.Strength, true
+					}}) {
+					return
+				}
+			}
 		}
 	}
 	// Build order = reservation priority (scarce rows first); slot = display order.
+	// AI theme rubrics come first: the model grouped exactly these
+	// candidates, and they are useless if other rows take them.
 	plan := []func(){
+		themeCollection(0, 6),
+		themeCollection(1, 12),
 		person(ReasonDirector, t.Directors, w.DirectorRows, 2),
 		person(ReasonActor, t.Actors, w.ActorRows, 10),
 		collection(0, 5),
 		collection(1, 12),
+		theme(7),
 		because(1), because(4), because(7),
 		simple("hidden_gems", RowHiddenGems, ReasonHiddenGem, Reason{Type: ReasonHiddenGem}, 3,
 			func(s *Scored, _ *Source) (float64, bool) { return s.Score, true }),
@@ -492,19 +569,49 @@ func BuildRows(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold boo
 		simple("rewatch", RowRewatch, ReasonRewatch, Reason{Type: ReasonRewatch}, 13,
 			func(s *Scored, src *Source) (float64, bool) { return src.Strength, true }),
 	}
+	top := &rowSpec{id: RowTopPicks, kind: RowTopPicks, reason: Reason{Type: ReasonGenre, GenreIDs: topGenres},
+		key: func(s *Scored) (float64, bool) { return s.Score, s.source(ReasonRewatch, nil) == nil }}
+	// Phase 0: the AI re-ranking's picks are «Подобрано для вас» — reserved
+	// before any specific row can take them (model order, still eligible).
+	var aiTop []cachedItem
+	if len(aiPicks) > 0 {
+		byID := make(map[string]*Scored, len(sorted))
+		for _, s := range sorted {
+			byID[s.MediaID] = s
+		}
+		for _, id := range aiPicks {
+			s := byID[id]
+			if len(aiTop) >= w.TopPicks || s == nil || used[id] || s.Watchlist {
+				continue
+			}
+			if _, ok := top.key(s); !ok {
+				continue
+			}
+			used[id] = true
+			aiTop = append(aiTop, cachedItem{MediaID: id, Score: s.Score, Reason: s.Reason})
+		}
+	}
 	for _, step := range plan {
 		step()
 	}
-	// Phase 2: the best of the rest, diversified.
-	top := &rowSpec{id: RowTopPicks, kind: RowTopPicks, reason: Reason{Type: ReasonGenre, GenreIDs: topGenres},
-		key: func(s *Scored) (float64, bool) { return s.Score, s.source(ReasonRewatch, nil) == nil }}
-	top.items = pick(w.TopPicks, top)
+	// Phase 2: the best of the rest, diversified. The next re-ranking sees
+	// the current picks plus the best RerankCandidates of the rest.
+	first := pick(w.TopPicks-len(aiTop), top)
+	more := pick(max(0, w.RerankCandidates-len(aiTop)-len(first)), top)
+	var cands []string
+	for _, list := range [][]cachedItem{aiTop, first, more} {
+		for _, it := range list {
+			cands = append(cands, it.MediaID)
+		}
+	}
+	release(more)
+	top.items = append(aiTop, first...)
 	// Phase 3: fill the specific rows.
 	for _, sp := range specs {
 		sp.items = append(sp.items, pick(w.RowSize-len(sp.items), sp)...)
 	}
 	slices.SortStableFunc(specs, func(a, b *rowSpec) int { return a.slot - b.slot })
-	return finish(append([]*rowSpec{top}, specs...))
+	return finish(append([]*rowSpec{top}, specs...)), cands
 }
 
 // BuildPool is the scored pool for Surprise Me (best first).
