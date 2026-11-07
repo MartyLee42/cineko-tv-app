@@ -147,6 +147,9 @@ const (
 	ReasonStaleSequence = "stale_sequence"
 	ReasonStaleSession  = "stale_session"
 	ReasonTooEarly      = "too_early"
+	// ReasonPositionReset: a spot near the start after the session had played
+	// on, without a seek — a stream restarted by the engine; ignored.
+	ReasonPositionReset = "position_reset"
 )
 
 // Reporter identifies who sends a report: a verified report token, or a principal.
@@ -252,6 +255,17 @@ func (s *Service) report(ctx context.Context, tx pgx.Tx, sessionID string, who R
 	}
 	if dur != nil && pos > *dur {
 		pos = *dur
+	}
+	// A session that had played past the opening and now reports a spot near
+	// the start without seeking there: the player's engine restarted the
+	// stream after a stall (some TVs). Keep the saved resume point (and the
+	// session's last good position); a real seek back reports "seeking" first.
+	if cur != nil && cur.resumable && ss.lastPosition >= MinWatchSeconds && pos < MinWatchSeconds && state != "seeking" && state != "ended" {
+		if _, err := tx.Exec(ctx, `UPDATE playback_sessions SET last_seq = $2, last_state = $3, updated_at = now(),
+			ended_at = CASE WHEN $3 = 'stopped' THEN now() ELSE NULL END WHERE id = $1`, ss.id, seq, state); err != nil {
+			return nil, err
+		}
+		return &ReportResult{Reason: ReasonPositionReset, Progress: cur}, nil
 	}
 	if _, err := tx.Exec(ctx, `
 		UPDATE playback_sessions SET last_seq = $2, last_position = $3, last_duration = $4, last_state = $5,

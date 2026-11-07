@@ -9068,8 +9068,11 @@ export interface operations {
                 content: {
                     "application/json": {
                         accepted: boolean;
-                        /** @enum {string} */
-                        reason?: "stale_sequence" | "stale_session" | "too_early";
+                        /**
+                         * @description position_reset: a spot near the start after the session had played past the opening, without a seek (the engine restarted the stream) — the saved resume point stays.
+                         * @enum {string}
+                         */
+                        reason?: "stale_sequence" | "stale_session" | "too_early" | "position_reset";
                         progress: components["schemas"]["WatchProgress"] | null;
                     };
                 };
