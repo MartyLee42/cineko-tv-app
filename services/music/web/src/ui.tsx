@@ -7,6 +7,7 @@ import { usePlayer, type PlayContext } from "./player";
 import { HeartIcon, MoreIcon, PauseIcon, PlayIcon, BackIcon, DownloadIcon } from "./icons";
 import { openMatchPicker, openPlaylistPicker, openTrackTorrent } from "./dialogs";
 import { download, isDownloaded, removeDownloads, useOffline } from "./offline";
+import { songsterrLink } from "./songsterr";
 
 // ---------------------------------------------------------------- cover
 
@@ -36,6 +37,8 @@ export function Mosaic({ covers, className = "" }: { covers: string[]; className
 export interface MenuItem {
   label: string;
   onClick?: () => void;
+  /** External link, opened in a new tab by a real <a> (user taps on anchors can hand off to apps). */
+  href?: string;
   submenu?: MenuItem[];
   danger?: boolean;
   disabled?: boolean;
@@ -108,7 +111,12 @@ export function MenuHost() {
             <BackIcon size={16} /> Назад
           </button>
         )}
-        {items.map((it, i) => (
+        {items.map((it, i) =>
+          it.href && !it.disabled ? (
+            <a key={i} role="menuitem" className="menu-item" href={it.href} target="_blank" rel="noopener" onClick={() => setM(null)}>
+              <span>{it.label}</span>
+            </a>
+          ) : (
           <button
             key={i}
             role="menuitem"
@@ -126,7 +134,8 @@ export function MenuHost() {
             <span>{it.label}</span>
             {it.submenu && <span className="menu-arrow">›</span>}
           </button>
-        ))}
+          ),
+        )}
       </div>
     </div>
   );
@@ -461,10 +470,9 @@ export function TrackDownload({ track, size = 18 }: { track: Track; size?: numbe
   );
 }
 
-/** Guitar tabs / chords for a track on the usual sites (opened in a new tab). */
+/** Guitar tabs / chords for a track on the usual sites (opened in a new tab; Songsterr in its app if installed). */
 export function tabLinks(t: Track): MenuItem[] {
   const q = `${t.artist.split(",")[0]} ${t.title}`.replace(/\s*[([].*?[)\]]/g, "").trim();
-  const open = (u: string) => () => window.open(u, "_blank", "noopener");
   return [
     {
       label: "Открыть здесь (табы, аккорды)",
@@ -473,8 +481,8 @@ export function tabLinks(t: Track): MenuItem[] {
           new CustomEvent("music:navigate", { detail: `/tabs?${new URLSearchParams({ artist: t.artist.split(",")[0]!, title: t.title })}` }),
         ),
     },
-    { label: "Songsterr (табы)", onClick: open(`https://www.songsterr.com/?pattern=${encodeURIComponent(q)}`) },
-    { label: "Ultimate Guitar (аккорды, табы)", onClick: open(`https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(q)}`) },
-    { label: "AmDm.ru (аккорды)", onClick: open(`https://amdm.ru/search/?q=${encodeURIComponent(q)}`) },
+    { label: "Songsterr (табы)", href: songsterrLink(`https://www.songsterr.com/?pattern=${encodeURIComponent(q)}`, navigator.userAgent) },
+    { label: "Ultimate Guitar (аккорды, табы)", href: `https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(q)}` },
+    { label: "AmDm.ru (аккорды)", href: `https://amdm.ru/search/?q=${encodeURIComponent(q)}` },
   ];
 }
