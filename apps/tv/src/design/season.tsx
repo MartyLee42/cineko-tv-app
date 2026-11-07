@@ -4,11 +4,10 @@
 // CatalogShell mounts <TvSeasonLayer/> only on menu screens (never on
 // Details, Settings, the guide or while the player / live TV replaces the
 // catalog), so it is absent during playback by construction.
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { isAdminRole, unwrap } from "@martytv/contracts";
 import {
   forcedState,
-  SeasonLayer,
   seasonParam,
   seasonRender,
   useReducedMotion,
@@ -22,6 +21,9 @@ import { api } from "../api";
 import { useSettings } from "../profile/settings";
 import { useServerStatus } from "./data";
 import { useCalmMotion } from "./skins";
+
+// The layer (and its sprites) is its own chunk: fetched only when a holiday is on.
+const SeasonLayer = lazy(() => import("@martytv/ui/season-layer").then((m) => ({ default: m.SeasonLayer })));
 
 /** Today's season id (Settings' preview starts there). */
 export function useTodaySeason(): SeasonId | null {
@@ -72,6 +74,7 @@ export function TvSeasonLayer() {
   const { state, render } = useTvSeason();
   if (!state || render === "none") return null;
   return (
+    <Suspense fallback={null}>
     <SeasonLayer
       season={state.id}
       mode={render}
@@ -81,5 +84,6 @@ export function TvSeasonLayer() {
       greeting={{ phase: state.main ? "day" : "soon", year: state.year }}
       fixed={false}
     />
+    </Suspense>
   );
 }

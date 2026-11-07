@@ -8,7 +8,7 @@ import {
   writeLeninCache,
 } from "./constructivism";
 import { findFilms, normTitle, pickByTitle } from "./cvSearch";
-import { CV_GLYPHS } from "./cvIcons";
+import { CV_GLYPHS } from "./cvGlyphs";
 import { CV_MESSAGES, translate, translateCv } from "./i18n";
 import {
   CV_MENU,

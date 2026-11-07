@@ -5,7 +5,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { PlaybackSource } from "@martytv/contracts";
 import { placeholderColor } from "@martytv/media-types";
-import { loadStatus, Mascot, PopcornLoader, SloganTicker, SovietEmblem, useAppliedDesign, useI18n } from "@martytv/ui";
+import { loadStatus, Mascot, SloganTicker, SovietEmblem, useAppliedDesign, useI18n } from "@martytv/ui";
+import { PopcornLoader } from "@martytv/ui/popcorn";
 import { formatSize, formatSpeed } from "../play/releases";
 import type { LoadingStyle } from "../watch/settings";
 import { LoadTracker, preloadTarget, type LoadStage } from "./logic";

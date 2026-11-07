@@ -3,7 +3,8 @@
 // the holidays; while it is focused the aside plays the chosen one for 10 s
 // on a scaled-down 1920×1080 canvas, then holds it still.
 import { useEffect, useState } from "react";
-import { SEASONAL_SETTINGS, SEASONS, SeasonPreviewBox, PREVIEW_MS, useI18n, useReducedMotion, type MessageKey, type SeasonId, type SeasonalSetting } from "@martytv/ui";
+import { SeasonPreviewBox } from "@martytv/ui/season-layer";
+import { SEASONAL_SETTINGS, SEASONS, PREVIEW_MS, useI18n, useReducedMotion, type MessageKey, type SeasonId, type SeasonalSetting } from "@martytv/ui";
 import { useServerStatus } from "../design/data";
 import { useTodaySeason } from "../design/season";
 import { useCalmMotion } from "../design/skins";

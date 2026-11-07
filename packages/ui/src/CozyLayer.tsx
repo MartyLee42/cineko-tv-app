@@ -7,20 +7,10 @@
 // flickering in opacity. No filters, no blur. Static mode (reduced / calm
 // motion) draws the glow and a few drops in place; the hidden page pauses
 // every animation and the sound.
-import { memo, useEffect, useMemo } from "react";
+import { memo, useMemo } from "react";
 import { makeCozyParticles, type CozyAmbience, type CozyPlatform } from "./cozy";
 import { useCozySound } from "./cozyAudio";
 import { useDocumentHidden } from "./seasonStore";
-
-/** Toggles the warm, dimmed palette (html.mt-cozy) while mounted with `on`. */
-export function useCozyPalette(on: boolean): void {
-  useEffect(() => {
-    if (!on || typeof document === "undefined") return;
-    const root = document.documentElement;
-    root.classList.add("mt-cozy");
-    return () => root.classList.remove("mt-cozy");
-  }, [on]);
-}
 
 export interface CozyLayerProps {
   ambience: Exclude<CozyAmbience, "off">;
