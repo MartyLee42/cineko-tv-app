@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/pixelify-sans.css"; /* not in the startup CSS */
 /* ---- retro90: sky and clouds, a bevelled window with a block progress bar, then the desktop + taskbar */
 @keyframes r9i-cloud { from { transform: translateX(-30px); } to { transform: translateX(30px); } }
 @keyframes r9i-win { 0% { opacity: 0; transform: scale(.2); } 100% { opacity: 1; transform: scale(1); } }

@@ -1,3 +1,5 @@
+@import "@martytv/ui/themes/mult.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/neucha.css";
 /* «mult»: this design's own rules (loaded with the design's chunk, design/looks).
    ---------------------------------------------------------------- Мультфильм (kinozal skeleton)
    A LIGHT design in the spirit of classic Soviet studio animation: a gouache sky on warm paper,

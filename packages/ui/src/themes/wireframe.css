@@ -1,0 +1,22 @@
+/* «wireframe» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Каркас»: deep purple-black, magenta + cyan neon. */
+html.design-wireframe {
+  --mt-bg: 13, 4, 32;
+  --mt-surface: 30, 15, 61;
+  --mt-surface-2: 46, 24, 88;
+  --mt-border: 92, 54, 156;
+  --mt-text: 248, 242, 255;
+  --mt-muted: 196, 178, 230;
+  --mt-accent: 255, 79, 216;
+  --mt-accent-strong: 60, 232, 255;
+  --mt-on-accent: 22, 4, 32;
+  --mt-focus: 60, 232, 255;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 6px;
+  --mt-radius-control: 8px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-wireframe h1, html.design-wireframe h2 { font-family: var(--mt-font-display); }

@@ -1,0 +1,16 @@
+/* «projector» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+html.design-projector {
+  --mt-bg: 5, 9, 11;
+  --mt-surface: 18, 26, 29;
+  --mt-surface-2: 28, 38, 42;
+  --mt-border: 46, 60, 64;
+  --mt-text: 244, 248, 248;
+  --mt-muted: 160, 176, 178;
+  --mt-accent: 95, 214, 200;
+  --mt-accent-strong: 150, 236, 226;
+  --mt-on-accent: 4, 16, 14;
+  --mt-focus: 255, 255, 255;
+  --mt-radius-card: 18px;
+  --mt-radius-control: 999px;
+  color-scheme: dark;
+}

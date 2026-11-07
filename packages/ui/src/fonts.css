@@ -1,63 +1,18 @@
-/* Self-hosted fonts (no external requests from TVs). Latin + Cyrillic only. */
-@import "@fontsource/onest/cyrillic-400.css";
-@import "@fontsource/onest/latin-400.css";
-@import "@fontsource/onest/cyrillic-500.css";
-@import "@fontsource/onest/latin-500.css";
-@import "@fontsource/onest/cyrillic-700.css";
-@import "@fontsource/onest/latin-700.css";
-@import "@fontsource/unbounded/cyrillic-700.css";
-@import "@fontsource/unbounded/latin-700.css";
-@import "@fontsource/unbounded/cyrillic-800.css";
-@import "@fontsource/unbounded/latin-800.css";
-@import "@fontsource/jetbrains-mono/cyrillic-500.css";
-@import "@fontsource/jetbrains-mono/latin-500.css";
-/* «Ар-деко» headings (display serif): 700 + the italic for taglines. */
-@import "@fontsource/playfair-display/cyrillic-700.css";
-@import "@fontsource/playfair-display/latin-700.css";
-@import "@fontsource/playfair-display/cyrillic-400-italic.css";
-@import "@fontsource/playfair-display/latin-400-italic.css";
-/* «Ретро 80-е» headings (chunky italic arcade/VHS face) and «Ретро 90-е» (pixel system font). */
-@import "@fontsource/russo-one/cyrillic-400.css";
-@import "@fontsource/russo-one/latin-400.css";
-@import "@fontsource/pixelify-sans/cyrillic-600.css";
-@import "@fontsource/pixelify-sans/latin-600.css";
-/* «Тамагочи» (8×8 pixel type with clear Cyrillic; one weight). */
-@import "@fontsource/press-start-2p/cyrillic-400.css";
-@import "@fontsource/press-start-2p/latin-400.css";
-/* «Поп-арт» headings (heavy comic lettering) and «Конструктивизм» (condensed poster grotesque). */
-@import "@fontsource/rubik-mono-one/cyrillic-400.css";
-@import "@fontsource/rubik-mono-one/latin-400.css";
-@import "@fontsource/oswald/cyrillic-500.css";
-@import "@fontsource/oswald/latin-500.css";
-@import "@fontsource/oswald/cyrillic-700.css";
-@import "@fontsource/oswald/latin-700.css";
-/* «Одиссея» headings (Unbounded Light: wide, letter-spaced space-age capitals). */
-@import "@fontsource/unbounded/cyrillic-300.css";
-@import "@fontsource/unbounded/latin-300.css";
-/* «Нуар» (typewriter-style slab mono). */
-@import "@fontsource/ibm-plex-mono/cyrillic-400.css";
-@import "@fontsource/ibm-plex-mono/latin-400.css";
-@import "@fontsource/ibm-plex-mono/cyrillic-600.css";
-@import "@fontsource/ibm-plex-mono/latin-600.css";
-/* «Стикербук» headings and tape labels (handwritten). */
-@import "@fontsource/caveat/cyrillic-700.css";
-@import "@fontsource/caveat/latin-700.css";
-/* «Мультфильм» headings (hand-lettered, like old title cards) and «Созерцание» (a quiet book serif). */
-@import "@fontsource/neucha/cyrillic-400.css";
-@import "@fontsource/neucha/latin-400.css";
-@import "@fontsource/cormorant-garamond/cyrillic-600.css";
-@import "@fontsource/cormorant-garamond/latin-600.css";
-/* «Немое кино» intertitles (a period serif) and «Симметрия» (geometric, Futura-like). */
-@import "@fontsource/old-standard-tt/cyrillic-400.css";
-@import "@fontsource/old-standard-tt/latin-400.css";
-@import "@fontsource/old-standard-tt/cyrillic-700.css";
-@import "@fontsource/old-standard-tt/latin-700.css";
-@import "@fontsource/jost/cyrillic-400.css";
-@import "@fontsource/jost/latin-400.css";
-@import "@fontsource/jost/cyrillic-500.css";
-@import "@fontsource/jost/latin-500.css";
-@import "@fontsource/jost/cyrillic-700.css";
-@import "@fontsource/jost/latin-700.css";
-/* «Вестерн» headings (wood-type slab). «Красная комната» reuses Playfair Display. */
-@import "@fontsource/kelly-slab/cyrillic-400.css";
-@import "@fontsource/kelly-slab/latin-400.css";
+/* Self-hosted fonts (no external requests from TVs). Latin + Cyrillic only.
+   Every font (the PWA). The TV app takes fonts/base.css only and each design's
+   own fonts with its chunk (apps/tv/src/design/looks/<id>.css). */
+@import "./fonts/base.css";
+@import "./fonts/playfair-display.css";
+@import "./fonts/russo-one.css";
+@import "./fonts/pixelify-sans.css";
+@import "./fonts/press-start-2p.css";
+@import "./fonts/rubik-mono-one.css";
+@import "./fonts/oswald.css";
+@import "./fonts/unbounded-light.css";
+@import "./fonts/ibm-plex-mono.css";
+@import "./fonts/caveat.css";
+@import "./fonts/neucha.css";
+@import "./fonts/cormorant-garamond.css";
+@import "./fonts/old-standard-tt.css";
+@import "./fonts/jost.css";
+@import "./fonts/kelly-slab.css";

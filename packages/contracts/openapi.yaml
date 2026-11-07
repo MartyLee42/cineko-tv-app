@@ -350,6 +350,37 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/DeviceCredentialResponse" }
         "403": { $ref: "#/components/responses/Error" }
+  /devices/demo:
+    post:
+      tags: [devices]
+      operationId: createDemoDevice
+      description: |
+        «Демо TV» (`/demo_tv`): the TV app in a browser signed in to the PWA,
+        without pairing. Browser session only (cookie + `X-CSRF-Token`; API
+        tokens and TVs get 403). Returns a credential for the session's own
+        hidden demo device (created on first use, reused by every tab of the
+        session). The credential expires after 12 hours and stops working as
+        soon as the session ends; at most 5 live per device (older ones are
+        revoked). The demo device acts like a TV the user owns (their own
+        profiles only, never shared) but is left out of device lists, remote
+        control, the admin TV list, metrics, health samples (posts are
+        accepted with 204 and dropped) and realtime (its socket is refused).
+      responses:
+        "201":
+          description: A fresh demo credential (shown once).
+          headers:
+            Cache-Control: { schema: { type: string }, description: no-store }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [device_id, credential, expires_at]
+                properties:
+                  device_id: { type: string, format: uuid }
+                  credential: { type: string, description: "Device credential (mtd_…), use as Bearer." }
+                  expires_at: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
   /devices/{id}:
     parameters: [{ $ref: "#/components/parameters/Id" }]
     get:

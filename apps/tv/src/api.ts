@@ -1,7 +1,8 @@
 import { createApi, RealtimeClient, realtimeUrl } from "@martytv/contracts";
 import { credentialStore } from "./platform";
 
-type Listener = () => void;
+/** `rejected`: the credential the failed request carried (null: unknown, e.g. the socket). */
+type Listener = (rejected: string | null) => void;
 const unauthorizedListeners = new Set<Listener>();
 
 /** Subscribe to "credential rejected" (device revoked or unknown). */
@@ -10,8 +11,10 @@ export function onUnauthorized(l: Listener): () => void {
   return () => unauthorizedListeners.delete(l);
 }
 
-function fireUnauthorized() {
-  unauthorizedListeners.forEach((l) => l());
+function fireUnauthorized(request?: Request) {
+  const auth = request?.headers.get("Authorization") ?? "";
+  const rejected = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+  unauthorizedListeners.forEach((l) => l(rejected));
 }
 
 export const api = createApi({
@@ -24,7 +27,7 @@ export const realtime = new RealtimeClient({
   // auth=token: authenticate as this TV even if the browser has a PWA session cookie.
   url: `${realtimeUrl()}?auth=token`,
   getToken: () => credentialStore.get() ?? undefined,
-  onAuthFailed: fireUnauthorized,
+  onAuthFailed: () => fireUnauthorized(),
 });
 
 window.addEventListener("online", () => realtime.reconnectNow());

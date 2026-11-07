@@ -52,6 +52,9 @@ type Principal struct {
 	TokenID   string // KindToken
 	Scopes    []string
 	DeviceID  string // KindDevice
+	// Demo: a «Демо TV» credential (/demo_tv, POST /devices/demo) — a TV
+	// that is hidden from lists, presence and stats.
+	Demo bool
 }
 
 // IsAdmin reports administrator rights (admin or super_admin).
