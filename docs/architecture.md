@@ -1101,7 +1101,21 @@ browser ─GET compat.mp4?audio=&start=─▶ API (token, checks) ─POST /v1/re
 The TV player does the same (`apps/tv/src/player/rebuffer.ts`, controller
 `onStall`/`tick`): «Буферизация… N%» with seconds ahead and Mbit/s, OK
 resumes early, a stall within 4 s of a seek becomes a rebuffer (target 8 s)
-only if it lasts > 3 s. The slow-link hint «Скорость соединения ниже…» offers
+only if it lasts > 3 s. A rebuffer never waits without end: after 20 s it
+plays whatever is buffered (≥ 1 s). The stall watchdog (`starve.ts`, every
+tick) covers what no media event reports — a dead connection to TorrServer
+(often after a long pause), a wedged engine with a stale readyState, a
+rebuffer that can't finish: when the film should play (not the viewer's
+pause; our own rebuffer counts) and neither the picture nor the buffered end
+moved for 12 s (5 s right after a resume; each further try waits longer, up
+to 60 s; never a failure), the stream is reopened at the spot with a fresh
+URL — what Stop + Play did by hand. OK / ▶ on a picture stuck ≥ 2.5 s with no
+new data reopens it at once (OK doesn't pause a stuck picture). The spinner
+follows the picture: never while the time moves, at once while seeking / not
+ready, after 1.5 s for a frozen "ready" picture; after a played-out rebuffer a
+native stall stays quiet only 3 s. The first frame of a new stream (the next
+episode) also counts once the time moves, even if the engine never fires
+canplay / playing. The slow-link hint «Скорость соединения ниже…» offers
 «Выбрать раздачу полегче» (OK): the picker at the same position, re-ranked by
 bitrate against the measured rate. The TV remembers one rate sample per
 session (median of estimates taken while the buffer was short; a stall-free
