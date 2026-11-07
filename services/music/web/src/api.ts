@@ -114,6 +114,8 @@ export interface User {
 export interface Me {
   user: User;
   features: { youtube: boolean; torrents: boolean; ai?: boolean };
+  /** The main Cineko site (PUBLIC_BASE_URL), for links from Music's own host. */
+  cinekoUrl?: string;
 }
 
 export interface MyPlaylist {

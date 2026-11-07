@@ -334,6 +334,39 @@ No host cron or systemd timer is needed; it starts with the stack (also after
   `CADDY_TRUSTED_PROXIES` to Cloudflare's ranges and
   `CADDY_CLIENT_IP_HEADER=CF-Connecting-IP` so client IPs can't be spoofed.
 
+### Cineko Music on its own domain
+
+Cineko Music always lives at `/music/` on the main host. Optionally it can also
+be its own app on its own host, so phones can install Music alone, or Cineko
+and Cineko Music side by side, as two PWAs:
+
+```sh
+./install.sh --music-domain music.example.com     # or MUSIC_DOMAIN=… in .env, then scripts/cineko.sh up -d
+```
+
+- Point the name's DNS at the server like the main domain (behind Cloudflare:
+  proxied the same way). Caddy gets its certificate on first request.
+- `https://music.example.com/` serves the Music app at the root (its own
+  manifest: id, `start_url` and scope `/`; its own service worker). Caddy also
+  proxies `/music/api/*` (music service) and `/api/*` (Cineko API: sign-in,
+  settings) there, so the app works same-origin. `/metrics` answers 404.
+- **Sign-in**: when both hosts share a parent domain (`tv.example.com` +
+  `music.example.com`, or `example.com` + `music.example.com`), the API sets
+  the session cookie with `Domain=example.com` (HttpOnly, Secure, SameSite=Lax),
+  so one sign-in covers both hosts. Public suffixes are never used
+  (`a.github.io` + `b.github.io` → host-only). `COOKIE_DOMAIN=` sets the
+  domain by hand; `COOKIE_DOMAIN=off` keeps host-only cookies (then Music has
+  its own sign-in screen on its host, which works too). The music origin is
+  added to the API's allowed origins automatically.
+- **Existing sessions** keep working on the main host (old host-only cookie);
+  the music host asks for one sign-in, after which the shared cookie replaces
+  the old one on whichever host you sign in to. A browser holding both is
+  fine: the API takes the first valid one, and signing out clears both.
+- The shared cookie is sent to every subdomain of the parent domain: if other,
+  less trusted sites run on subdomains of it, use `COOKIE_DOMAIN=off`.
+- Unset `MUSIC_DOMAIN` (or `--music-domain off`) = only `/music/`, exactly as
+  before.
+
 ### Behind an existing nginx (or another proxy)
 
 Keep Caddy as the inner server on a local port and let nginx terminate TLS:

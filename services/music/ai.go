@@ -293,9 +293,7 @@ func (a *App) fetchAISettings(r *http.Request) (aiSettings, bool) {
 	if err != nil {
 		return s, false
 	}
-	if c, err := r.Cookie(sessionCookie); err == nil && c.Value != "" {
-		req.AddCookie(&http.Cookie{Name: sessionCookie, Value: c.Value})
-	}
+	forwardSession(req, r)
 	resp, err := a.auth.Do(req)
 	if err != nil {
 		return s, false
