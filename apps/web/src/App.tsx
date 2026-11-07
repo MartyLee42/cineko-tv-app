@@ -85,6 +85,8 @@ export function App() {
       <PillLayer />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        {/* «Демо TV» (Caddy redirects it too): the TV app in this browser, no pairing. */}
+        <Route path="/demo_tv" element={<DemoTvRedirect />} />
         {/* Plays a video saved on this device: works with no connection. */}
         <Route path="/offline/:id" element={<OfflinePlayerPage />} />
         <Route element={<RequireAuth />}>
@@ -131,6 +133,11 @@ export function App() {
       </Routes>
     </BrowserRouter>
   );
+}
+
+function DemoTvRedirect() {
+  useEffect(() => location.replace("/tv/?demo=1"), []);
+  return null;
 }
 
 /** Sends signed-out visitors to /login, remembering where they were going. */

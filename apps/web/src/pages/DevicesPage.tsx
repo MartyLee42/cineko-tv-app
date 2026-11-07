@@ -32,8 +32,22 @@ export function DevicesPage() {
       <div className="space-y-4">
         {devices?.map((d) => <DeviceCard key={d.id} device={d} />)}
         <PlaybackClientsCard />
+        <DemoTvCard />
       </div>
     </div>
+  );
+}
+
+/** «Демо TV»: the TV app in this browser (/demo_tv), signed in as you, no pairing. */
+function DemoTvCard() {
+  const { t } = useI18n();
+  return (
+    <Card>
+      <a href="/demo_tv" target="_blank" rel="noopener" data-testid="open-demo-tv" className="block font-semibold text-accent hover:underline">
+        {t("demo.open_tv")} ↗
+      </a>
+      <p className="mt-1 text-sm text-muted">{t("demo.open_tv_hint")}</p>
+    </Card>
   );
 }
 

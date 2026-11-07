@@ -227,6 +227,21 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 /* Veil over a skin background behind long text (Settings, guide). */
 .skin-veil { background: linear-gradient(90deg, rgba(var(--mt-bg), .9) 0%, rgba(var(--mt-bg), .78) 60%, rgba(var(--mt-bg), .6) 100%); }
 
+/* «Демо TV» (/demo_tv): a small tag in the corner; the key hint fades after a few seconds. */
+.demo-badge {
+  position: absolute; left: 24px; bottom: 20px; z-index: 70; pointer-events: none;
+  font-size: 20px; line-height: 1; color: #fff; white-space: nowrap;
+}
+.demo-badge-tag {
+  display: inline-block; padding: 8px 14px; border-radius: 999px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; background: rgba(0, 0, 0, .62); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .35);
+}
+.demo-badge-hint {
+  display: inline-block; margin-left: 12px; padding: 8px 14px; border-radius: 999px; background: rgba(0, 0, 0, .55);
+  opacity: 0; animation: demo-hint 9s ease-out 1;
+}
+@keyframes demo-hint { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+
 /* ---------------------------------------------------------------- design preview tiles */
 .dt-tile { border-radius: 10px; box-shadow: inset 0 0 0 2px rgba(var(--mt-text), .14); }
 .dt-tile.dt-on { box-shadow: 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
