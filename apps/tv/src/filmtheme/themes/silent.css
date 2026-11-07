@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/playfair-display.css"; /* not in the startup CSS */
 /* «Тема под фильм» — silent: Немое кино: чёрно-белое, зерно, виньетка, шрифт интертитров. Its own chunk (filmtheme/load.ts). */
 :root [data-film-theme="silent"] > .tv-fade img,
 :root .tv-loader[data-film-theme="silent"] img { -webkit-filter: grayscale(1) contrast(1.2) brightness(.92); filter: grayscale(1) contrast(1.2) brightness(.92); }

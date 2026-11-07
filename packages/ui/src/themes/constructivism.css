@@ -1,0 +1,23 @@
+/* «constructivism» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Конструктивизм»: a 1920s–30s avant-garde poster: black-brown ground, signal red, cream paper;
+   heavy condensed sans (Oswald) in capitals, square corners. Graphic style only. */
+html.design-constructivism {
+  --mt-bg: 24, 20, 18;
+  --mt-surface: 40, 34, 30;
+  --mt-surface-2: 60, 51, 45;
+  --mt-border: 112, 98, 84;
+  --mt-text: 243, 234, 214;
+  --mt-muted: 190, 178, 156;
+  --mt-accent: 215, 38, 30;
+  --mt-accent-strong: 239, 228, 204;
+  --mt-on-accent: 248, 240, 222;
+  --mt-focus: 243, 234, 214;
+  --mt-font-display: "Oswald", "Russo One", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "Oswald", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-constructivism h1, html.design-constructivism h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }

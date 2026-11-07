@@ -15,6 +15,7 @@ import { catalogLang } from "@martytv/media-types";
 import { applyDesign, applyTheme, Centered, CV_OFFLINE, DESIGN_SWATCH, Logo, Spinner, useEffectiveDesign, useI18n } from "@martytv/ui";
 import { api, onUnauthorized, realtime } from "./api";
 import { credentialStore, exitApp, isBackKey, profileStore } from "./platform";
+import { DEMO, DEMO_LOGIN, fetchDemoCredential, refreshGuard } from "./demo";
 import { FocusButton, rememberFocus } from "./focus";
 import { ActionMenu } from "./components/ActionMenu";
 import { initialStack, openDetails, openSection, pop, type StackEntry } from "./catalog/nav";
@@ -43,6 +44,7 @@ import { SkinBackground } from "./design/skins";
 import { getLook, loadLook } from "./design/looks/registry";
 import { parseMessageEvent } from "./messages/queue";
 import { RateLayer } from "./watch/RatePrompt";
+import { QuickLayer } from "./quick/QuickMenu";
 import { messageQueue } from "./watch/stores";
 import { invalidateForYou } from "./foryou/queries";
 import { askInbox, parseAskEvent } from "./foryou/askLogic";
@@ -67,6 +69,7 @@ type Screen =
   | { kind: "offline" }
   | { kind: "pairing" }
   | { kind: "token" }
+  | { kind: "demo_signin" }
   | { kind: "profiles"; device: Device; profiles: Profile[]; current?: Profile }
   | { kind: "home"; device: Device; profiles: Profile[]; profile: Profile };
 
@@ -101,8 +104,74 @@ function landing(device: Device, profiles: Profile[]): Screen {
 
 const pauseForMessage = () => void player.pause();
 
+// «Демо TV» (demo.ts): the credential comes from the browser's PWA session.
+// A rejected one is re-requested once (single flight, not in a loop).
+const demoRefresh = refreshGuard();
+let demoRenewing: Promise<Screen | null> | null = null;
+
+/** Demo: a credential from the PWA session, or the screen to show instead. */
+async function ensureDemoCredential(): Promise<Screen | null> {
+  if (credentialStore.get()) return null;
+  const r = await fetchDemoCredential();
+  if (r.kind === "ok") {
+    credentialStore.set(r.credential);
+    return null;
+  }
+  return r.kind === "signed_out" ? { kind: "demo_signin" } : { kind: "offline" };
+}
+
+/** Demo: replaces the `rejected` credential (null when it was replaced already). */
+function renewDemo(rejected: string | null): Promise<Screen | null> {
+  if (demoRenewing) return demoRenewing;
+  if (rejected !== credentialStore.get()) return Promise.resolve(null);
+  if (!demoRefresh()) return Promise.resolve({ kind: "demo_signin" });
+  credentialStore.forget();
+  demoRenewing = ensureDemoCredential().finally(() => {
+    demoRenewing = null;
+  });
+  return demoRenewing;
+}
+
+/** Works out the next screen from the server (requires a stored credential, or the demo). */
+async function loadScreen(retried = false): Promise<Screen> {
+  if (DEMO) {
+    const instead = await ensureDemoCredential();
+    if (instead) return instead;
+  }
+  const used = credentialStore.get();
+  try {
+    const [device, profiles] = await Promise.all([
+      unwrap(api.GET("/devices/me")),
+      unwrap(api.GET("/profiles")).then((r) => r.items),
+    ]);
+    // This TV's own options (screensaver, sounds, language…): server copy, seeded from here once.
+    void tvOwn.sync();
+    // This TV's playback profile: report what it detects (quietly, later on).
+    setTimeout(() => void devicePrefs.sync(), 3000);
+    // The demo is a browser tab, not a TV: no socket, speed tests or health reports.
+    if (DEMO) return landing(device, profiles);
+    realtime.start();
+    // Background speed test (first one ~25 s later; never while playing).
+    startSpeedtest();
+    // Health reports («Состояние»: memory, smoothness), ~2 min later, then every 10 min.
+    startHealth();
+    return landing(device, profiles);
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 401) {
+      if (DEMO) {
+        if (retried) return { kind: "demo_signin" };
+        return (await renewDemo(used)) ?? loadScreen(true);
+      }
+      credentialStore.clear();
+      return { kind: "pairing" };
+    }
+    // Keep the credential: the server or network is just unreachable.
+    return { kind: "offline" };
+  }
+}
+
 export function App() {
-  const [screen, setScreen] = useState<Screen>(() => (credentialStore.get() ? { kind: "boot" } : { kind: "pairing" }));
+  const [screen, setScreen] = useState<Screen>(() => (credentialStore.get() || DEMO ? { kind: "boot" } : { kind: "pairing" }));
   const [conn, setConn] = useState<ConnectionState>("closed");
   const [toast, setToast] = useState<Toast | null>(null);
   /** Home's Back at the root asks «Выйти из Cineko?» — never a silent exit / reload. */
@@ -139,32 +208,7 @@ export function App() {
     localeRef.current = locale;
   }, [screen, stack, details, t, locale]);
 
-  // Works out the next screen from the server (requires a stored credential).
-  const load = useCallback(async (): Promise<Screen> => {
-    try {
-      const [device, profiles] = await Promise.all([
-        unwrap(api.GET("/devices/me")),
-        unwrap(api.GET("/profiles")).then((r) => r.items),
-      ]);
-      realtime.start();
-      // This TV's own options (screensaver, sounds, language…): server copy, seeded from here once.
-      void tvOwn.sync();
-      // This TV's playback profile: report what it detects (quietly, later on).
-      setTimeout(() => void devicePrefs.sync(), 3000);
-      // Background speed test (first one ~25 s later; never while playing).
-      startSpeedtest();
-      // Health reports («Состояние»: memory, smoothness), ~2 min later, then every 10 min.
-      startHealth();
-      return landing(device, profiles);
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 401) {
-        credentialStore.clear();
-        return { kind: "pairing" };
-      }
-      // Keep the credential: the server or network is just unreachable.
-      return { kind: "offline" };
-    }
-  }, []);
+  const load = useCallback(() => loadScreen(), []);
 
   const boot = useCallback(() => {
     setScreen({ kind: "boot" });
@@ -172,14 +216,23 @@ export function App() {
   }, [load]);
 
   useEffect(() => {
-    if (credentialStore.get()) void load().then(setScreen);
+    if (credentialStore.get() || DEMO) void load().then(setScreen);
   }, [load]);
 
-  // Credential revoked or unknown → back to pairing.
+  // Credential revoked or unknown → back to pairing (demo: a fresh credential
+  // from the browser session; the stack and profile stay).
   useEffect(
     () =>
-      onUnauthorized(() => {
+      onUnauthorized((rejected) => {
         realtime.stop();
+        if (DEMO) {
+          // Several requests may fail at once: renewDemo replaces the credential once.
+          void renewDemo(rejected).then((instead) => {
+            if (instead) setScreen(instead);
+            else void queryClient.invalidateQueries();
+          });
+          return;
+        }
         credentialStore.clear();
         setScreen({ kind: "pairing" });
       }),
@@ -246,7 +299,7 @@ export function App() {
     const ls = s.kind === "home" ? live.get() : null;
     const vs = s.kind === "home" ? videoSession.get() : null;
     return buildDeviceState({
-      screen: s.kind === "home" ? "catalog" : s.kind,
+      screen: s.kind === "home" ? "catalog" : s.kind === "demo_signin" ? "boot" : s.kind,
       route: top.route,
       profile: s.kind === "home" ? { id: s.profile.id, name: s.profile.name } : null,
       details: d && d.key === top.key ? d.info : null,
@@ -698,6 +751,18 @@ export function App() {
     case "pairing":
       body = <PairingScreen onPaired={paired} onManual={() => setScreen({ kind: "token" })} />;
       break;
+    case "demo_signin":
+      // «Демо TV» without a PWA session in this browser: sign in, then back here.
+      body = (
+        <Centered>
+          <Logo className="mb-10 text-7xl" />
+          <p className="mb-10 max-w-[1200px] text-center text-4xl text-muted">{t("demo.signin_title")}</p>
+          <FocusButton focusKey="demo-signin" autoFocus onPress={() => location.assign(DEMO_LOGIN)} className="rounded-2xl bg-accent px-10 py-5 text-3xl font-semibold text-on-accent">
+            {t("demo.signin")}
+          </FocusButton>
+        </Centered>
+      );
+      break;
     case "token":
       body = <TokenScreen onPaired={paired} onBack={() => setScreen({ kind: "pairing" })} />;
       break;
@@ -747,7 +812,8 @@ export function App() {
       break;
   }
 
-  const showConn = screen.kind === "home" || screen.kind === "profiles";
+  // The demo has no socket: no «reconnecting» notice.
+  const showConn = !DEMO && (screen.kind === "home" || screen.kind === "profiles");
   const device = screen.kind === "home" || screen.kind === "profiles" ? screen.device : null;
   return (
     <DesignProvider value={design}>
@@ -778,7 +844,14 @@ export function App() {
         </div>
       )}
       <VolumeOsd />
+      {DEMO && (
+        <div data-testid="demo-badge" className="demo-badge" title={t("demo.hint")}>
+          <span className="demo-badge-tag">{t("demo.badge")}</span>
+          <span className="demo-badge-hint">{t("demo.hint")}</span>
+        </div>
+      )}
       {screen.kind === "home" && <RateLayer enabled={flow.phase === "idle" && !liveSession && !videoOn} />}
+      {screen.kind === "home" && <QuickLayer />}
       {screen.kind === "home" && <MessageLayer playing={screen.kind === "home" && player.busy() && !player.handedOff()} onPause={pauseForMessage} />}
       {exitAsk && (
         <ActionMenu

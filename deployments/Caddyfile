@@ -58,6 +58,12 @@
 		}
 	}
 
+	# «Демо TV»: the TV app in a browser signed in to the PWA, without
+	# pairing (apps/tv/src/demo.ts; the PWA has the same route for its
+	# service worker).
+	@demotv path /demo_tv /demo_tv/
+	redir @demotv /tv/?demo=1 302
+
 	# TV app (built with base /tv/).
 	handle_path /tv/* {
 		root * /srv/tv

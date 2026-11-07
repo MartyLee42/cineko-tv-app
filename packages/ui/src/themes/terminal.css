@@ -1,0 +1,17 @@
+/* «terminal» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+html.design-terminal {
+  --mt-bg: 7, 7, 8;
+  --mt-surface: 16, 16, 17;
+  --mt-surface-2: 26, 26, 28;
+  --mt-border: 52, 52, 56;
+  --mt-text: 236, 236, 232;
+  --mt-muted: 150, 150, 146;
+  --mt-accent: 255, 107, 61;
+  --mt-accent-strong: 255, 140, 100;
+  --mt-on-accent: 12, 7, 5;
+  --mt-focus: 255, 255, 255;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 2px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}

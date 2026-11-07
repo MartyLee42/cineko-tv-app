@@ -39,7 +39,7 @@ const selectAny = `
 	FROM devices d
 	JOIN users u ON u.id = d.owner_user_id
 	LEFT JOIN device_permissions dp ON dp.device_id = d.id AND dp.user_id = $1
-	WHERE d.revoked_at IS NULL`
+	WHERE d.revoked_at IS NULL AND NOT d.demo`
 
 func scanAny(row interface{ Scan(...any) error }) (*Device, error) {
 	var d Device

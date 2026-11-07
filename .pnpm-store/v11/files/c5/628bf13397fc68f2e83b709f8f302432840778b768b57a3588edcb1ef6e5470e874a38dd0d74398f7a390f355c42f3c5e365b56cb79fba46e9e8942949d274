@@ -1,0 +1,49 @@
+import { RefObject } from 'react';
+import { FocusableComponentLayout, FocusDetails, KeyPressDetails, Direction, NextFocusResolver } from '@noriginmedia/norigin-spatial-navigation-core';
+export type EnterPressHandler<P = object> = (props: P, details: KeyPressDetails) => void;
+export type EnterReleaseHandler<P = object> = (props: P) => void;
+export type ArrowPressHandler<P = object> = (direction: string, props: P, details: KeyPressDetails) => boolean;
+export type ArrowReleaseHandler<P = object> = (direction: string, props: P) => void;
+export type FocusHandler<P = object> = (layout: FocusableComponentLayout, props: P, details: FocusDetails) => void;
+export type BlurHandler<P = object> = (layout: FocusableComponentLayout, props: P, details: FocusDetails) => void;
+export interface UseFocusableConfig<P = object> {
+    focusable?: boolean;
+    saveLastFocusedChild?: boolean;
+    trackChildren?: boolean;
+    autoRestoreFocus?: boolean;
+    forceFocus?: boolean;
+    isFocusBoundary?: boolean;
+    focusBoundaryDirections?: Direction[];
+    focusKey?: string;
+    preferredChildFocusKey?: string;
+    nextFocusResolver?: NextFocusResolver;
+    /**
+     * When false, direct children of this component are not measured during
+     * navigation or `updateAllLayouts`. Only meaningful together with
+     * `nextFocusResolver`, since default coordinate-based navigation requires
+     * fresh child layouts.
+     */
+    measureChildrenLayout?: boolean;
+    onEnterPress?: EnterPressHandler<P>;
+    onEnterRelease?: EnterReleaseHandler<P>;
+    onArrowPress?: ArrowPressHandler<P>;
+    onArrowRelease?: ArrowReleaseHandler<P>;
+    onFocus?: FocusHandler<P>;
+    onBlur?: BlurHandler<P>;
+    extraProps?: P;
+    /**
+     * Accessibility label for this focusable component.
+     * When focus lands on a leaf node, the labels of all newly-entered parent
+     * regions (in tree order) are concatenated with the leaf's own label and
+     * passed to the `onUtterText` callback provided during `init()`.
+     */
+    accessibilityLabel?: string;
+}
+export interface UseFocusableResult<E = any> {
+    ref: RefObject<E>;
+    focusSelf: (focusDetails?: FocusDetails) => void;
+    focused: boolean;
+    hasFocusedChild: boolean;
+    focusKey: string;
+}
+export declare const useFocusable: <P, E = any>({ focusable, saveLastFocusedChild, trackChildren, autoRestoreFocus, forceFocus, isFocusBoundary, focusBoundaryDirections, focusKey: propFocusKey, preferredChildFocusKey, nextFocusResolver, measureChildrenLayout, onEnterPress, onEnterRelease, onArrowPress, onArrowRelease, onFocus, onBlur, extraProps, accessibilityLabel }?: UseFocusableConfig<P>) => UseFocusableResult<E>;

@@ -1,0 +1,23 @@
+/* «noir» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Нуар»: 1940s film noir (homage): monochrome night, paper-white light, silver greys; typewriter
+   type (IBM Plex Mono, a slab-serif mono with Cyrillic) for headings and labels, Onest body. */
+html.design-noir {
+  --mt-bg: 12, 12, 13;
+  --mt-surface: 28, 28, 29;
+  --mt-surface-2: 44, 44, 45;
+  --mt-border: 96, 95, 92;
+  --mt-text: 235, 233, 227;
+  --mt-muted: 160, 157, 150;
+  --mt-accent: 242, 239, 230;
+  --mt-accent-strong: 255, 255, 255;
+  --mt-on-accent: 12, 12, 13;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+  --mt-font-label: "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-noir h1, html.design-noir h2 { font-family: var(--mt-font-display); font-weight: 600; letter-spacing: -.01em; }

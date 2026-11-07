@@ -1,0 +1,1682 @@
+import { findKey, sortBy, assign, throttle, filter, first, difference, forEach, debounce, forOwn } from 'lodash-es';
+
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
+
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+
+function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+}
+
+function __generator(thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+}
+
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+}
+
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
+
+var ELEMENT_NODE = 1;
+var getRect = function (node) {
+    var offsetParent = node.offsetParent;
+    var height = node.offsetHeight;
+    var width = node.offsetWidth;
+    var left = node.offsetLeft;
+    var top = node.offsetTop;
+    while (offsetParent && offsetParent.nodeType === ELEMENT_NODE) {
+        left += offsetParent.offsetLeft - offsetParent.scrollLeft;
+        top += offsetParent.offsetTop - offsetParent.scrollTop;
+        offsetParent = offsetParent.offsetParent;
+    }
+    return {
+        height: height,
+        left: left,
+        top: top,
+        width: width
+    };
+};
+var measureLayout = function (node) {
+    var relativeNode = node && node.parentElement;
+    if (node && relativeNode) {
+        var relativeRect = getRect(relativeNode);
+        var _a = getRect(node), height = _a.height, left = _a.left, top_1 = _a.top, width = _a.width;
+        var x = left - relativeRect.left;
+        var y = top_1 - relativeRect.top;
+        return {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            left: left,
+            top: top_1,
+            get right() {
+                return this.left + this.width;
+            },
+            get bottom() {
+                return this.top + this.height;
+            }
+        };
+    }
+    return {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: 0
+    };
+};
+var getBoundingClientRect = function (node) {
+    if (node && node.getBoundingClientRect) {
+        var rect = node.getBoundingClientRect();
+        return {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+            left: rect.left,
+            top: rect.top,
+            get right() {
+                return this.left + this.width;
+            },
+            get bottom() {
+                return this.top + this.height;
+            }
+        };
+    }
+    return {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: 0
+    };
+};
+
+var getKeyCode = function (event) {
+    return event.keyCode || event.code || event.key;
+};
+var BaseWebAdapter = /** @class */ (function () {
+    function BaseWebAdapter(service) {
+        var _this = this;
+        this.service = service;
+        this.measureLayout = function (component) { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, (__assign(__assign({}, measureLayout(component.node)), { node: component.node }))];
+            });
+        }); };
+        this.blurNode = function (component) {
+            var _a, _b;
+            if (component.node && _this.service.options.shouldFocusDOMNode) {
+                (_b = (_a = component.node) === null || _a === void 0 ? void 0 : _a.removeAttribute) === null || _b === void 0 ? void 0 : _b.call(_a, 'data-focused');
+            }
+        };
+        this.focusNode = function (component) {
+            var _a, _b;
+            if (component.node && _this.service.options.shouldFocusDOMNode) {
+                component.node.focus(_this.service.options.domNodeFocusOptions);
+            }
+            (_b = (_a = component.node) === null || _a === void 0 ? void 0 : _a.setAttribute) === null || _b === void 0 ? void 0 : _b.call(_a, 'data-focused', 'true');
+        };
+    }
+    BaseWebAdapter.prototype.addEventListeners = function (_a) {
+        var _this = this;
+        var keyDown = _a.keyDown, keyUp = _a.keyUp;
+        this.keyDownEventListener = function (event) {
+            var keyCode = getKeyCode(event);
+            var key = findKey(_this.service.getKeyMap(), function (codeList) {
+                return codeList.includes(keyCode);
+            });
+            if (!key) {
+                return;
+            }
+            if (!_this.service.options.shouldUseNativeEvents) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            keyDown === null || keyDown === void 0 ? void 0 : keyDown(key, event);
+        };
+        this.keyUpEventListener = function (event) {
+            var keyCode = getKeyCode(event);
+            var key = findKey(_this.service.getKeyMap(), function (codeList) {
+                return codeList.includes(keyCode);
+            });
+            if (!key) {
+                return;
+            }
+            keyUp === null || keyUp === void 0 ? void 0 : keyUp(key);
+        };
+        window.addEventListener('keyup', this.keyUpEventListener);
+        window.addEventListener('keydown', this.keyDownEventListener);
+    };
+    BaseWebAdapter.prototype.removeEventListeners = function () {
+        window.removeEventListener('keyup', this.keyUpEventListener);
+        window.removeEventListener('keydown', this.keyDownEventListener);
+    };
+    return BaseWebAdapter;
+}());
+
+var GetBoundingClientRectAdapter = /** @class */ (function (_super) {
+    __extends(GetBoundingClientRectAdapter, _super);
+    function GetBoundingClientRectAdapter() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.measureLayout = function (component) { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, (__assign(__assign({}, getBoundingClientRect(component.node)), { node: component.node }))];
+            });
+        }); };
+        return _this;
+    }
+    return GetBoundingClientRectAdapter;
+}(BaseWebAdapter));
+
+var WritingDirection;
+(function (WritingDirection) {
+    WritingDirection[WritingDirection["LTR"] = 0] = "LTR";
+    WritingDirection[WritingDirection["RTL"] = 1] = "RTL";
+})(WritingDirection || (WritingDirection = {}));
+var WritingDirection$1 = WritingDirection;
+
+// We'll make VisualDebugger no-op for any environments lacking a DOM (e.g. SSR and React Native non-web platforms).
+var hasDOM = typeof window !== 'undefined' && window.document;
+var WIDTH = hasDOM ? window.innerWidth : 0;
+var HEIGHT = hasDOM ? window.innerHeight : 0;
+var VisualDebugger = /** @class */ (function () {
+    function VisualDebugger(writingDirection) {
+        if (hasDOM) {
+            this.debugCtx = VisualDebugger.createCanvas('sn-debug', '1010', writingDirection);
+            this.layoutsCtx = VisualDebugger.createCanvas('sn-layouts', '1000', writingDirection);
+            this.writingDirection = writingDirection;
+        }
+    }
+    VisualDebugger.createCanvas = function (id, zIndex, writingDirection) {
+        var canvas = document.querySelector("#".concat(id)) || document.createElement('canvas');
+        canvas.setAttribute('id', id);
+        canvas.setAttribute('dir', writingDirection === WritingDirection$1.LTR ? 'ltr' : 'rtl');
+        var ctx = canvas.getContext('2d');
+        canvas.style.zIndex = zIndex;
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        document.body.appendChild(canvas);
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+        return ctx;
+    };
+    VisualDebugger.prototype.clear = function () {
+        if (!hasDOM) {
+            return;
+        }
+        this.debugCtx.clearRect(0, 0, WIDTH, HEIGHT);
+    };
+    VisualDebugger.prototype.clearLayouts = function () {
+        if (!hasDOM) {
+            return;
+        }
+        this.layoutsCtx.clearRect(0, 0, WIDTH, HEIGHT);
+    };
+    VisualDebugger.prototype.drawLayout = function (layout, focusKey, parentFocusKey) {
+        if (!hasDOM) {
+            return;
+        }
+        this.layoutsCtx.strokeStyle = 'green';
+        this.layoutsCtx.strokeRect(layout.left, layout.top, layout.width, layout.height);
+        this.layoutsCtx.font = '8px monospace';
+        this.layoutsCtx.fillStyle = 'red';
+        var horizontalStartDirection = this.writingDirection === WritingDirection$1.LTR ? 'left' : 'right';
+        var horizontalStartCoordinate = layout[horizontalStartDirection];
+        this.layoutsCtx.fillText(focusKey, horizontalStartCoordinate, layout.top + 10);
+        this.layoutsCtx.fillText(parentFocusKey, horizontalStartCoordinate, layout.top + 25);
+        this.layoutsCtx.fillText("".concat(horizontalStartDirection, ": ").concat(horizontalStartCoordinate), horizontalStartCoordinate, layout.top + 40);
+        this.layoutsCtx.fillText("top: ".concat(layout.top), horizontalStartCoordinate, layout.top + 55);
+    };
+    VisualDebugger.prototype.drawPoint = function (x, y, color, size) {
+        if (color === void 0) { color = 'blue'; }
+        if (size === void 0) { size = 10; }
+        if (!hasDOM) {
+            return;
+        }
+        this.debugCtx.strokeStyle = color;
+        this.debugCtx.lineWidth = 3;
+        this.debugCtx.strokeRect(x - size / 2, y - size / 2, size, size);
+    };
+    return VisualDebugger;
+}());
+
+/**
+ * Scheduler provides a simple way to queue and execute tasks in a strict sequence.
+ * - Regular tasks are run one after another; if a new task is scheduled before the current one starts, it replaces the pending next task.
+ * - Priority tasks are added to a separate queue and will be executed before any remaining regular tasks.
+ */
+var Scheduler = /** @class */ (function () {
+    function Scheduler() {
+        this.nextPriorityTasks = [];
+    }
+    Scheduler.prototype.tick = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var nextTasks_1;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, , 2, 8]);
+                        return [4 /*yield*/, ((_a = this.currentTask) === null || _a === void 0 ? void 0 : _a.call(this))];
+                    case 1:
+                        _b.sent();
+                        return [3 /*break*/, 8];
+                    case 2:
+                        if (!(this.nextPriorityTasks.length > 0)) return [3 /*break*/, 4];
+                        nextTasks_1 = this.nextPriorityTasks.map(function (task) { return task(); });
+                        this.currentTask = function () { return Promise.all(nextTasks_1); };
+                        this.nextPriorityTasks = [];
+                        return [4 /*yield*/, this.tick()];
+                    case 3:
+                        _b.sent();
+                        return [3 /*break*/, 7];
+                    case 4:
+                        if (!this.nextTask) return [3 /*break*/, 6];
+                        this.currentTask = this.nextTask;
+                        this.nextTask = undefined;
+                        return [4 /*yield*/, this.tick()];
+                    case 5:
+                        _b.sent();
+                        return [3 /*break*/, 7];
+                    case 6:
+                        this.currentTask = undefined;
+                        _b.label = 7;
+                    case 7: return [7 /*endfinally*/];
+                    case 8: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Scheduler.prototype.bind = function (fn, context) {
+        var _this = this;
+        return function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            return __awaiter(_this, void 0, void 0, function () {
+                var _this = this;
+                return __generator(this, function (_a) {
+                    return [2 /*return*/, this.schedulePriority(function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+                            return [2 /*return*/, fn.bind(context).apply(void 0, args)];
+                        }); }); })];
+                });
+            });
+        };
+    };
+    Scheduler.prototype.schedule = function (task) {
+        if (this.currentTask) {
+            this.nextTask = task;
+        }
+        else {
+            this.currentTask = task;
+            this.tick();
+        }
+    };
+    Scheduler.prototype.schedulePriority = function (task) {
+        if (this.currentTask) {
+            this.nextPriorityTasks.push(task);
+        }
+        else {
+            task();
+        }
+    };
+    return Scheduler;
+}());
+
+var _a;
+var DIRECTION_LEFT = 'left';
+var DIRECTION_RIGHT = 'right';
+var DIRECTION_UP = 'up';
+var DIRECTION_DOWN = 'down';
+var KEY_ENTER = 'enter';
+var DEFAULT_KEY_MAP = (_a = {},
+    _a[DIRECTION_LEFT] = [37, 'ArrowLeft'],
+    _a[DIRECTION_UP] = [38, 'ArrowUp'],
+    _a[DIRECTION_RIGHT] = [39, 'ArrowRight'],
+    _a[DIRECTION_DOWN] = [40, 'ArrowDown'],
+    _a[KEY_ENTER] = [13, 'Enter'],
+    _a);
+var ROOT_FOCUS_KEY = 'SN:ROOT';
+var ADJACENT_SLICE_THRESHOLD = 0.2;
+/**
+ * Adjacent slice is 5 times more important than diagonal
+ */
+var ADJACENT_SLICE_WEIGHT = 5;
+var DIAGONAL_SLICE_WEIGHT = 1;
+/**
+ * Main coordinate distance is 5 times more important
+ */
+var MAIN_COORDINATE_WEIGHT = 5;
+var AUTO_RESTORE_FOCUS_DELAY = 300;
+var LAYOUT_STALE_TIME = 16; // 60fps
+var DEBUG_FN_COLORS = ['#0FF', '#FF0', '#F0F'];
+var THROTTLE_OPTIONS = {
+    leading: true,
+    trailing: false
+};
+var getChildClosestToOrigin = function (children, writingDirection) {
+    var comparator = writingDirection === WritingDirection$1.LTR
+        ? function (_a) {
+            var layout = _a.layout;
+            return Math.abs(layout.left) + Math.abs(layout.top);
+        }
+        : function (_a) {
+            var layout = _a.layout;
+            return Math.abs(window.innerWidth - layout.right) + Math.abs(layout.top);
+        };
+    var childrenClosestToOrigin = sortBy(children, comparator);
+    return first(childrenClosestToOrigin);
+};
+/**
+ * Takes either a BackwardsCompatibleKeyMap and transforms it into a the new KeyMap format
+ * to ensure backwards compatibility.
+ */
+var normalizeKeyMap = function (keyMap) {
+    var newKeyMap = {};
+    Object.entries(keyMap).forEach(function (_a) {
+        var key = _a[0], value = _a[1];
+        newKeyMap[key] = Array.isArray(value) ? value : [value];
+    });
+    return newKeyMap;
+};
+var DEFAULT_SPATIAL_NAVIGATION_SERVICE_OPTIONS = {
+    debug: false,
+    throttle: 0,
+    throttleKeypresses: false,
+    domNodeFocusOptions: {},
+    shouldUseNativeEvents: false,
+    distanceCalculationMethod: 'corners'};
+var SpatialNavigationService = /** @class */ (function () {
+    function SpatialNavigationService() {
+        this.scheduler = new Scheduler();
+        /**
+         * When a focusable is added whose focus key was already set as the current focus key
+         * (e.g. setFocus was called before the component mounted), automatically focus it.
+         * Enabled by default for backward compatibility.
+         */
+        this.focusOnPresetKey = true;
+        /**
+         * Storage for all focusable components
+         */
+        this.focusableComponents = {};
+        /**
+         * Storing current focused key
+         */
+        this.focusKey = null;
+        /**
+         * This collection contains focus keys of the elements that are having a child focused
+         * Might be handy for styling of certain parent components if their child is focused.
+         */
+        this.parentsHavingFocusedChild = [];
+        this.domNodeFocusOptions = {};
+        this.enabled = false;
+        this.throttle = 0;
+        this.throttleKeypresses = false;
+        this.shouldFocusDOMNode = false;
+        this.shouldUseNativeEvents = false;
+        this.writingDirection = WritingDirection$1.LTR;
+        this.pressedKeys = {};
+        /**
+         * Flag used to block key events from this service
+         * @type {boolean}
+         */
+        this.paused = false;
+        this.keyDownEventListener = null;
+        this.keyUpEventListener = null;
+        this.keyMap = DEFAULT_KEY_MAP;
+        this.pause = this.pause.bind(this);
+        this.resume = this.resume.bind(this);
+        this.setImmediateFocus = this.setFocus.bind(this);
+        this.setFocus = this.scheduler.bind(this.setFocus, this);
+        this.updateAllLayouts = this.scheduler.bind(this.updateAllLayouts, this);
+        this.navigateByDirection = this.scheduler.bind(this.navigateByDirection, this);
+        this.addFocusable = this.scheduler.bind(this.addFocusable, this);
+        this.removeFocusable = this.scheduler.bind(this.removeFocusable, this);
+        this.init = this.init.bind(this);
+        this.setThrottle = this.setThrottle.bind(this);
+        this.destroy = this.destroy.bind(this);
+        this.setKeyMap = this.setKeyMap.bind(this);
+        this.getCurrentFocusKey = this.getCurrentFocusKey.bind(this);
+        this.doesFocusableExist = this.doesFocusableExist.bind(this);
+        this.clearLastFocusedChild = this.clearLastFocusedChild.bind(this);
+        this.updateRtl = this.updateRtl.bind(this);
+        this.setFocusDebounced = debounce(this.setFocus, AUTO_RESTORE_FOCUS_DELAY, {
+            leading: false,
+            trailing: true
+        });
+        this.onUtterText = undefined;
+        this.debug = false;
+        this.visualDebugger = null;
+        this.logIndex = 0;
+        this.distanceCalculationMethod = 'corners';
+    }
+    Object.defineProperty(SpatialNavigationService.prototype, "options", {
+        get: function () {
+            return {
+                shouldFocusDOMNode: this.shouldFocusDOMNode,
+                domNodeFocusOptions: this.domNodeFocusOptions,
+                shouldUseNativeEvents: this.shouldUseNativeEvents
+            };
+        },
+        enumerable: false,
+        configurable: true
+    });
+    /**
+     * Used to determine the coordinate that will be used to filter items that are over the "edge"
+     */
+    SpatialNavigationService.getCutoffCoordinate = function (isVertical, isIncremental, isSibling, layout, writingDirection) {
+        var itemStart = isVertical
+            ? layout.top
+            : writingDirection === WritingDirection$1.LTR
+                ? layout.left
+                : layout.right;
+        var itemEnd = isVertical
+            ? layout.bottom
+            : writingDirection === WritingDirection$1.LTR
+                ? layout.right
+                : layout.left;
+        return isIncremental
+            ? isSibling
+                ? itemStart
+                : itemEnd
+            : isSibling
+                ? itemEnd
+                : itemStart;
+    };
+    /**
+     * Returns two corners (a and b) coordinates that are used as a reference points
+     * Where "a" is always leftmost and topmost corner, and "b" is rightmost bottommost corner
+     */
+    SpatialNavigationService.getRefCorners = function (direction, isSibling, layout) {
+        var result = {
+            a: {
+                x: 0,
+                y: 0
+            },
+            b: {
+                x: 0,
+                y: 0
+            }
+        };
+        switch (direction) {
+            case DIRECTION_UP: {
+                var y = isSibling ? layout.bottom : layout.top;
+                result.a = {
+                    x: layout.left,
+                    y: y
+                };
+                result.b = {
+                    x: layout.right,
+                    y: y
+                };
+                break;
+            }
+            case DIRECTION_DOWN: {
+                var y = isSibling ? layout.top : layout.bottom;
+                result.a = {
+                    x: layout.left,
+                    y: y
+                };
+                result.b = {
+                    x: layout.right,
+                    y: y
+                };
+                break;
+            }
+            case DIRECTION_LEFT: {
+                var x = isSibling ? layout.right : layout.left;
+                result.a = {
+                    x: x,
+                    y: layout.top
+                };
+                result.b = {
+                    x: x,
+                    y: layout.bottom
+                };
+                break;
+            }
+            case DIRECTION_RIGHT: {
+                var x = isSibling ? layout.left : layout.right;
+                result.a = {
+                    x: x,
+                    y: layout.top
+                };
+                result.b = {
+                    x: x,
+                    y: layout.bottom
+                };
+                break;
+            }
+        }
+        return result;
+    };
+    /**
+     * Calculates if the sibling node is intersecting enough with the ref node by the secondary coordinate
+     */
+    SpatialNavigationService.isAdjacentSlice = function (refCorners, siblingCorners, isVerticalDirection) {
+        var refA = refCorners.a, refB = refCorners.b;
+        var siblingA = siblingCorners.a, siblingB = siblingCorners.b;
+        var coordinate = isVerticalDirection ? 'x' : 'y';
+        var refCoordinateA = refA[coordinate];
+        var refCoordinateB = refB[coordinate];
+        var siblingCoordinateA = siblingA[coordinate];
+        var siblingCoordinateB = siblingB[coordinate];
+        var thresholdDistance = (refCoordinateB - refCoordinateA) * ADJACENT_SLICE_THRESHOLD;
+        var intersectionLength = Math.max(0, Math.min(refCoordinateB, siblingCoordinateB) -
+            Math.max(refCoordinateA, siblingCoordinateA));
+        return intersectionLength >= thresholdDistance;
+    };
+    SpatialNavigationService.getPrimaryAxisDistance = function (refCorners, siblingCorners, isVerticalDirection) {
+        var refA = refCorners.a;
+        var siblingA = siblingCorners.a;
+        var coordinate = isVerticalDirection ? 'y' : 'x';
+        return Math.abs(siblingA[coordinate] - refA[coordinate]);
+    };
+    SpatialNavigationService.getSecondaryAxisDistance = function (refCorners, siblingCorners, isVerticalDirection, distanceCalculationMethod, customDistanceCalculationFunction) {
+        if (customDistanceCalculationFunction) {
+            return customDistanceCalculationFunction(refCorners, siblingCorners, isVerticalDirection, distanceCalculationMethod);
+        }
+        var refA = refCorners.a, refB = refCorners.b;
+        var siblingA = siblingCorners.a, siblingB = siblingCorners.b;
+        var coordinate = isVerticalDirection ? 'x' : 'y';
+        var refCoordinateA = refA[coordinate];
+        var refCoordinateB = refB[coordinate];
+        var siblingCoordinateA = siblingA[coordinate];
+        var siblingCoordinateB = siblingB[coordinate];
+        if (distanceCalculationMethod === 'center') {
+            var refCoordinateCenter = (refCoordinateA + refCoordinateB) / 2;
+            var siblingCoordinateCenter = (siblingCoordinateA + siblingCoordinateB) / 2;
+            return Math.abs(refCoordinateCenter - siblingCoordinateCenter);
+        }
+        if (distanceCalculationMethod === 'edges') {
+            // 1. Find the minimum and maximum coordinates for both ref and sibling
+            var refCoordinateEdgeMin = Math.min(refCoordinateA, refCoordinateB);
+            var siblingCoordinateEdgeMin = Math.min(siblingCoordinateA, siblingCoordinateB);
+            var refCoordinateEdgeMax = Math.max(refCoordinateA, refCoordinateB);
+            var siblingCoordinateEdgeMax = Math.max(siblingCoordinateA, siblingCoordinateB);
+            // 2. Calculate the distances between the closest edges
+            var minEdgeDistance = Math.abs(refCoordinateEdgeMin - siblingCoordinateEdgeMin);
+            var maxEdgeDistance = Math.abs(refCoordinateEdgeMax - siblingCoordinateEdgeMax);
+            // 3. Return the smallest distance between the edges
+            return Math.min(minEdgeDistance, maxEdgeDistance);
+        }
+        // Default to corners
+        var distancesToCompare = [
+            Math.abs(siblingCoordinateA - refCoordinateA),
+            Math.abs(siblingCoordinateA - refCoordinateB),
+            Math.abs(siblingCoordinateB - refCoordinateA),
+            Math.abs(siblingCoordinateB - refCoordinateB)
+        ];
+        return Math.min.apply(Math, distancesToCompare);
+    };
+    /**
+     * Inspired by: https://developer.mozilla.org/en-US/docs/Mozilla/Firefox_OS_for_TV/TV_remote_control_navigation#Algorithm_design
+     * Ref Corners are the 2 corners of the current component in the direction of navigation
+     * They are used as a base to measure adjacent slices
+     */
+    SpatialNavigationService.prototype.sortSiblingsByPriority = function (siblings, currentLayout, direction, focusKey) {
+        var _this = this;
+        var isVerticalDirection = direction === DIRECTION_DOWN || direction === DIRECTION_UP;
+        var refCorners = SpatialNavigationService.getRefCorners(direction, false, currentLayout);
+        return sortBy(siblings, function (sibling) {
+            var siblingCorners = SpatialNavigationService.getRefCorners(direction, true, sibling.layout);
+            var isAdjacentSlice = SpatialNavigationService.isAdjacentSlice(refCorners, siblingCorners, isVerticalDirection);
+            var primaryAxisFunction = isAdjacentSlice
+                ? SpatialNavigationService.getPrimaryAxisDistance
+                : SpatialNavigationService.getSecondaryAxisDistance;
+            var secondaryAxisFunction = isAdjacentSlice
+                ? SpatialNavigationService.getSecondaryAxisDistance
+                : SpatialNavigationService.getPrimaryAxisDistance;
+            var primaryAxisDistance = primaryAxisFunction(refCorners, siblingCorners, isVerticalDirection, _this.distanceCalculationMethod, _this.customDistanceCalculationFunction);
+            var secondaryAxisDistance = secondaryAxisFunction(refCorners, siblingCorners, isVerticalDirection, _this.distanceCalculationMethod, _this.customDistanceCalculationFunction);
+            /**
+             * The higher this value is, the less prioritised the candidate is
+             */
+            var totalDistancePoints = primaryAxisDistance * MAIN_COORDINATE_WEIGHT + secondaryAxisDistance;
+            /**
+             * + 1 here is in case of distance is zero, but we still want to apply Adjacent priority weight
+             */
+            var priority = (totalDistancePoints + 1) /
+                (isAdjacentSlice ? ADJACENT_SLICE_WEIGHT : DIAGONAL_SLICE_WEIGHT);
+            _this.log('smartNavigate', "distance (primary, secondary, total weighted) for ".concat(sibling.focusKey, " relative to ").concat(focusKey, " is"), primaryAxisDistance, secondaryAxisDistance, totalDistancePoints);
+            _this.log('smartNavigate', "priority for ".concat(sibling.focusKey, " relative to ").concat(focusKey, " is"), priority);
+            if (_this.visualDebugger) {
+                _this.visualDebugger.drawPoint(siblingCorners.a.x, siblingCorners.a.y, 'yellow', 6);
+                _this.visualDebugger.drawPoint(siblingCorners.b.x, siblingCorners.b.y, 'yellow', 6);
+            }
+            return priority;
+        });
+    };
+    SpatialNavigationService.prototype.init = function (_a) {
+        var _this = this;
+        var _b = _a === void 0 ? {} : _a, debug = _b.debug, visualDebug = _b.visualDebug, throttleParam = _b.throttle, throttleKeypresses = _b.throttleKeypresses, useGetBoundingClientRect = _b.useGetBoundingClientRect, layoutAdapter = _b.layoutAdapter, shouldFocusDOMNode = _b.shouldFocusDOMNode, domNodeFocusOptions = _b.domNodeFocusOptions, shouldUseNativeEvents = _b.shouldUseNativeEvents, rtl = _b.rtl, distanceCalculationMethod = _b.distanceCalculationMethod, _c = _b.customDistanceCalculationFunction, customDistanceCalculationFunction = _c === void 0 ? undefined : _c, onUtterText = _b.onUtterText, _d = _b.focusOnPresetKey, focusOnPresetKey = _d === void 0 ? true : _d;
+        if (!this.enabled) {
+            this.domNodeFocusOptions =
+                domNodeFocusOptions !== null && domNodeFocusOptions !== void 0 ? domNodeFocusOptions : DEFAULT_SPATIAL_NAVIGATION_SERVICE_OPTIONS.domNodeFocusOptions;
+            this.throttleKeypresses =
+                throttleKeypresses !== null && throttleKeypresses !== void 0 ? throttleKeypresses : DEFAULT_SPATIAL_NAVIGATION_SERVICE_OPTIONS.throttleKeypresses;
+            /*
+             * If layoutAdapter is a constructor, create a new instance of the class
+             * If it's an object, merge it with the default adapter
+             */
+            if (typeof layoutAdapter === 'function') {
+                var LayoutAdapterClass = layoutAdapter;
+                this.layoutAdapter = new LayoutAdapterClass(this);
+            }
+            else {
+                if (useGetBoundingClientRect) {
+                    console.warn('useGetBoundingClientRect is deprecated. Please use layoutAdapter API instead.');
+                    this.layoutAdapter = new GetBoundingClientRectAdapter(this);
+                }
+                else {
+                    this.layoutAdapter = new BaseWebAdapter(this);
+                }
+                // Override specific methods
+                if (layoutAdapter) {
+                    assign(this.layoutAdapter, layoutAdapter);
+                }
+            }
+            this.shouldFocusDOMNode = shouldFocusDOMNode;
+            this.shouldUseNativeEvents =
+                shouldUseNativeEvents !== null && shouldUseNativeEvents !== void 0 ? shouldUseNativeEvents : DEFAULT_SPATIAL_NAVIGATION_SERVICE_OPTIONS.shouldUseNativeEvents;
+            this.writingDirection = rtl ? WritingDirection$1.RTL : WritingDirection$1.LTR;
+            this.distanceCalculationMethod =
+                distanceCalculationMethod !== null && distanceCalculationMethod !== void 0 ? distanceCalculationMethod : DEFAULT_SPATIAL_NAVIGATION_SERVICE_OPTIONS.distanceCalculationMethod;
+            this.customDistanceCalculationFunction =
+                customDistanceCalculationFunction;
+            this.onUtterText = onUtterText !== null && onUtterText !== void 0 ? onUtterText : undefined;
+            this.focusOnPresetKey = focusOnPresetKey;
+            this.debug = debug !== null && debug !== void 0 ? debug : DEFAULT_SPATIAL_NAVIGATION_SERVICE_OPTIONS.debug;
+            this.throttle =
+                throttleParam !== null && throttleParam !== void 0 ? throttleParam : DEFAULT_SPATIAL_NAVIGATION_SERVICE_OPTIONS.throttle;
+            this.bindEventHandlers();
+            if (visualDebug) {
+                this.visualDebugger = new VisualDebugger(this.writingDirection);
+                var draw_1 = function () {
+                    requestAnimationFrame(function () {
+                        _this.visualDebugger.clearLayouts();
+                        forOwn(_this.focusableComponents, function (component, focusKey) {
+                            _this.visualDebugger.drawLayout(component.layout, focusKey, component.parentFocusKey);
+                        });
+                        draw_1();
+                    });
+                };
+                draw_1();
+            }
+            this.enabled = true;
+        }
+    };
+    SpatialNavigationService.prototype.setThrottle = function (_a) {
+        var _b = _a === void 0 ? {} : _a, _c = _b.throttle, throttleParam = _c === void 0 ? DEFAULT_SPATIAL_NAVIGATION_SERVICE_OPTIONS.throttle : _c, _d = _b.throttleKeypresses, throttleKeypresses = _d === void 0 ? DEFAULT_SPATIAL_NAVIGATION_SERVICE_OPTIONS.throttleKeypresses : _d;
+        this.throttleKeypresses = throttleKeypresses;
+        this.unbindEventHandlers();
+        if (Number.isInteger(throttleParam)) {
+            this.throttle = throttleParam;
+        }
+        this.bindEventHandlers();
+    };
+    SpatialNavigationService.prototype.destroy = function () {
+        if (this.enabled) {
+            this.enabled = false;
+            this.throttle = 0;
+            this.throttleKeypresses = false;
+            this.focusKey = null;
+            this.parentsHavingFocusedChild = [];
+            this.focusableComponents = {};
+            this.paused = false;
+            this.keyMap = DEFAULT_KEY_MAP;
+            this.onUtterText = undefined;
+            this.unbindEventHandlers();
+        }
+    };
+    SpatialNavigationService.prototype.getEventType = function (keyCode) {
+        return findKey(this.getKeyMap(), function (codeList) { return codeList.includes(keyCode); });
+    };
+    SpatialNavigationService.prototype.bindEventHandlers = function () {
+        var _this = this;
+        this.keyDownEventListener = function (key, event) {
+            _this.scheduler.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
+                var preventDefaultNavigation;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (this.paused === true) {
+                                return [2 /*return*/];
+                            }
+                            if (this.debug) {
+                                this.logIndex += 1;
+                            }
+                            this.pressedKeys[key] = this.pressedKeys[key]
+                                ? this.pressedKeys[key] + 1
+                                : 1;
+                            if (key === KEY_ENTER && this.focusKey) {
+                                this.onEnterPress({ pressedKeys: this.pressedKeys });
+                                return [2 /*return*/];
+                            }
+                            preventDefaultNavigation = this.onArrowPress(key, { pressedKeys: this.pressedKeys }) === false;
+                            if (this.visualDebugger) {
+                                this.visualDebugger.clear();
+                            }
+                            if (!preventDefaultNavigation) return [3 /*break*/, 1];
+                            this.log('keyDownEventListener', 'default navigation prevented');
+                            return [3 /*break*/, 3];
+                        case 1: return [4 /*yield*/, this.smartNavigate(key, null, { event: event })];
+                        case 2:
+                            _a.sent();
+                            _a.label = 3;
+                        case 3: return [2 /*return*/];
+                    }
+                });
+            }); });
+        };
+        // Apply throttle only if the option we got is > 0 to avoid limiting the listener to every animation frame
+        if (this.throttle) {
+            this.keyDownEventListenerThrottled = throttle(this.keyDownEventListener.bind(this), this.throttle, THROTTLE_OPTIONS);
+        }
+        // When throttling then make sure to only throttle key down and cancel any queued functions in case of key up
+        this.keyUpEventListener = function (key) {
+            _this.scheduler.schedule(function () {
+                delete _this.pressedKeys[key];
+                if (_this.throttle && !_this.throttleKeypresses) {
+                    _this.keyDownEventListenerThrottled.cancel();
+                }
+                if (key === KEY_ENTER && _this.focusKey) {
+                    _this.onEnterRelease();
+                }
+                if (_this.focusKey &&
+                    (key === DIRECTION_LEFT ||
+                        key === DIRECTION_RIGHT ||
+                        key === DIRECTION_UP ||
+                        key === DIRECTION_DOWN)) {
+                    _this.onArrowRelease(key);
+                }
+            });
+        };
+        this.layoutAdapter.addEventListeners({
+            keyDown: this.throttle
+                ? this.keyDownEventListenerThrottled
+                : this.keyDownEventListener,
+            keyUp: this.keyUpEventListener
+        });
+    };
+    SpatialNavigationService.prototype.unbindEventHandlers = function () {
+        this.layoutAdapter.removeEventListeners();
+        this.keyUpEventListener = null;
+        this.keyDownEventListener = null;
+        this.keyDownEventListenerThrottled = null;
+    };
+    SpatialNavigationService.prototype.onEnterPress = function (keysDetails) {
+        var component = this.focusableComponents[this.focusKey];
+        /* Guard against last-focused component being unmounted at time of onEnterPress (e.g due to UI fading out) */
+        if (!component) {
+            this.log('onEnterPress', 'noComponent');
+            return;
+        }
+        /* Suppress onEnterPress if the last-focused item happens to lose its 'focused' status. */
+        if (!component.focusable) {
+            this.log('onEnterPress', 'componentNotFocusable');
+            return;
+        }
+        if (component.onEnterPress) {
+            component.onEnterPress(keysDetails);
+        }
+    };
+    SpatialNavigationService.prototype.onEnterRelease = function () {
+        var component = this.focusableComponents[this.focusKey];
+        /* Guard against last-focused component being unmounted at time of onEnterRelease (e.g due to UI fading out) */
+        if (!component) {
+            this.log('onEnterRelease', 'noComponent');
+            return;
+        }
+        /* Suppress onEnterRelease if the last-focused item happens to lose its 'focused' status. */
+        if (!component.focusable) {
+            this.log('onEnterRelease', 'componentNotFocusable');
+            return;
+        }
+        if (component.onEnterRelease) {
+            component.onEnterRelease();
+        }
+    };
+    SpatialNavigationService.prototype.onArrowPress = function (direction, keysDetails) {
+        var component = this.focusableComponents[this.focusKey];
+        /* Guard against last-focused component being unmounted at time of onArrowPress (e.g due to UI fading out) */
+        if (!component) {
+            this.log('onArrowPress', 'noComponent');
+            return undefined;
+        }
+        /* It's okay to navigate AWAY from an item that has lost its 'focused' status, so we don't inspect
+         * component.focusable. */
+        return (component &&
+            component.onArrowPress &&
+            component.onArrowPress(direction, keysDetails));
+    };
+    SpatialNavigationService.prototype.onArrowRelease = function (direction) {
+        var component = this.focusableComponents[this.focusKey];
+        /* Guard against last-focused component being unmounted at time of onArrowRelease (e.g due to UI fading out) */
+        if (!component) {
+            this.log('onArrowRelease', 'noComponent');
+            return;
+        }
+        /* Suppress onArrowRelease if the last-focused item happens to lose its 'focused' status. */
+        if (!component.focusable) {
+            this.log('onArrowRelease', 'componentNotFocusable');
+            return;
+        }
+        if (component.onArrowRelease) {
+            component.onArrowRelease(direction);
+        }
+    };
+    /**
+     * Move focus by direction, if you can't use buttons or focusing by key.
+     *
+     * @example
+     * navigateByDirection('right') // The focus is moved to right
+     */
+    SpatialNavigationService.prototype.navigateByDirection = function (direction_1) {
+        return __awaiter(this, arguments, void 0, function (direction, focusDetails) {
+            var validDirections;
+            if (focusDetails === void 0) { focusDetails = {}; }
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.paused === true || !this.enabled) {
+                            return [2 /*return*/];
+                        }
+                        validDirections = [
+                            DIRECTION_DOWN,
+                            DIRECTION_UP,
+                            DIRECTION_LEFT,
+                            DIRECTION_RIGHT
+                        ];
+                        if (!validDirections.includes(direction)) return [3 /*break*/, 2];
+                        this.log('navigateByDirection', 'direction', direction);
+                        return [4 /*yield*/, this.smartNavigate(direction, null, focusDetails)];
+                    case 1:
+                        _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
+                        this.log('navigateByDirection', "Invalid direction. You passed: `".concat(direction, "`, but you can use only these: "), validDirections);
+                        _a.label = 3;
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    /**
+     * This function navigates between siblings OR goes up by the Tree
+     * Based on the Direction
+     */
+    SpatialNavigationService.prototype.smartNavigate = function (direction, fromParentFocusKey, focusDetails) {
+        return __awaiter(this, void 0, void 0, function () {
+            var isVerticalDirection, isIncrementalDirection, currentComponent, forcedKey, parentFocusKey_1, focusKey, currentParentComponent, _a, nextFocusResolver, _b, measureChildrenLayout, layout, currentCutoffCoordinate_1, threshold_1, nextComponent, siblings, focusableSiblingCount, siblings, refCorners, sortedSiblings, parentComponent, focusBoundaryDirections;
+            var _this = this;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        isVerticalDirection = direction === DIRECTION_DOWN || direction === DIRECTION_UP;
+                        isIncrementalDirection = direction === DIRECTION_DOWN ||
+                            (this.writingDirection === WritingDirection$1.LTR
+                                ? direction === DIRECTION_RIGHT
+                                : direction === DIRECTION_LEFT);
+                        this.log('smartNavigate', 'direction', direction);
+                        this.log('smartNavigate', 'fromParentFocusKey', fromParentFocusKey);
+                        this.log('smartNavigate', 'this.focusKey', this.focusKey);
+                        currentComponent = this.focusableComponents[fromParentFocusKey || this.focusKey];
+                        /**
+                         * When there's no currently focused component, an attempt is made, to force focus one of
+                         * the Focusable Containers, that have "forceFocus" flag enabled.
+                         */
+                        if (!fromParentFocusKey && !currentComponent) {
+                            forcedKey = this.getForcedFocusKey();
+                            if (forcedKey) {
+                                this.setImmediateFocus(forcedKey);
+                            }
+                            else {
+                                this.log('smartNavigate', 'Aborted due to missing current component and force-focusable key');
+                            }
+                            // Current component is null (e.g. nothing to navigate from)
+                            return [2 /*return*/];
+                        }
+                        this.log('smartNavigate', 'currentComponent', currentComponent ? currentComponent.focusKey : undefined, currentComponent ? currentComponent.node : undefined, currentComponent);
+                        if (!currentComponent) return [3 /*break*/, 7];
+                        parentFocusKey_1 = currentComponent.parentFocusKey, focusKey = currentComponent.focusKey;
+                        currentParentComponent = this.focusableComponents[parentFocusKey_1];
+                        _a = currentParentComponent !== null && currentParentComponent !== void 0 ? currentParentComponent : {}, nextFocusResolver = _a.nextFocusResolver, _b = _a.measureChildrenLayout, measureChildrenLayout = _b === void 0 ? true : _b;
+                        if (!measureChildrenLayout) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.updateLayout(currentComponent.focusKey)];
+                    case 1:
+                        _c.sent();
+                        _c.label = 2;
+                    case 2:
+                        layout = currentComponent.layout;
+                        currentCutoffCoordinate_1 = SpatialNavigationService.getCutoffCoordinate(isVerticalDirection, isIncrementalDirection, false, layout, this.writingDirection);
+                        if (!measureChildrenLayout) return [3 /*break*/, 4];
+                        threshold_1 = Date.now() - LAYOUT_STALE_TIME;
+                        return [4 /*yield*/, Promise.all(Object.values(this.focusableComponents)
+                                .filter(function (component) {
+                                return component.parentFocusKey === parentFocusKey_1 &&
+                                    component.focusable &&
+                                    component.layoutUpdatedAt <= threshold_1;
+                            })
+                                .map(function (component) { return _this.updateLayout(component.focusKey); }))];
+                    case 3:
+                        _c.sent();
+                        _c.label = 4;
+                    case 4:
+                        nextComponent = null;
+                        if (nextFocusResolver) {
+                            siblings = filter(this.focusableComponents, function (component) {
+                                return component.parentFocusKey === parentFocusKey_1 && component.focusable;
+                            });
+                            nextComponent = nextFocusResolver(direction, focusKey, siblings);
+                            if (this.debug) {
+                                if (nextComponent != null && !siblings.includes(nextComponent)) {
+                                    console.warn("nextFocusResolver returned an invalid component. This will result in lost focus. Check the \"nextFocusResolver\" implementation in component with focusKey: ".concat(parentFocusKey_1));
+                                }
+                                this.log('smartNavigate', 'navigation overridden by nextFocusResolver', nextComponent);
+                            }
+                        }
+                        else {
+                            if (this.debug && !measureChildrenLayout) {
+                                focusableSiblingCount = filter(this.focusableComponents, function (component) {
+                                    return component.parentFocusKey === parentFocusKey_1 && component.focusable;
+                                }).length;
+                                if (focusableSiblingCount >= 2) {
+                                    console.warn("measureChildrenLayout is false but no nextFocusResolver is set for component with focusKey: ".concat(parentFocusKey_1, ". Default coordinate-based navigation requires fresh layout data and may behave incorrectly."));
+                                }
+                            }
+                            siblings = filter(this.focusableComponents, function (component) {
+                                if (component.parentFocusKey === parentFocusKey_1 &&
+                                    component.focusKey !== currentComponent.focusKey &&
+                                    component.focusable &&
+                                    component.layout) {
+                                    var siblingCutoffCoordinate = SpatialNavigationService.getCutoffCoordinate(isVerticalDirection, isIncrementalDirection, true, component.layout, _this.writingDirection);
+                                    return isVerticalDirection
+                                        ? isIncrementalDirection
+                                            ? siblingCutoffCoordinate >= currentCutoffCoordinate_1 // vertical next
+                                            : siblingCutoffCoordinate <= currentCutoffCoordinate_1 // vertical previous
+                                        : _this.writingDirection === WritingDirection$1.LTR
+                                            ? isIncrementalDirection
+                                                ? siblingCutoffCoordinate >= currentCutoffCoordinate_1 // horizontal LTR next
+                                                : siblingCutoffCoordinate <= currentCutoffCoordinate_1 // horizontal LTR previous
+                                            : isIncrementalDirection
+                                                ? siblingCutoffCoordinate <= currentCutoffCoordinate_1 // horizontal RTL next
+                                                : siblingCutoffCoordinate >= currentCutoffCoordinate_1; // horizontal RTL previous
+                                }
+                                return false;
+                            });
+                            if (this.debug) {
+                                this.log('smartNavigate', 'currentCutoffCoordinate', currentCutoffCoordinate_1);
+                                this.log('smartNavigate', 'siblings', "".concat(siblings.length, " elements:"), siblings.map(function (sibling) { return sibling.focusKey; }).join(', '), siblings.map(function (sibling) { return sibling.node; }), siblings.map(function (sibling) { return sibling; }));
+                            }
+                            if (this.visualDebugger) {
+                                refCorners = SpatialNavigationService.getRefCorners(direction, false, layout);
+                                this.visualDebugger.drawPoint(refCorners.a.x, refCorners.a.y);
+                                this.visualDebugger.drawPoint(refCorners.b.x, refCorners.b.y);
+                            }
+                            sortedSiblings = this.sortSiblingsByPriority(siblings, layout, direction, focusKey);
+                            nextComponent = first(sortedSiblings);
+                        }
+                        this.log('smartNavigate', 'nextComponent', nextComponent ? nextComponent.focusKey : undefined, nextComponent ? nextComponent.node : undefined, nextComponent);
+                        if (!nextComponent) return [3 /*break*/, 5];
+                        this.setImmediateFocus(nextComponent.focusKey, focusDetails);
+                        return [3 /*break*/, 7];
+                    case 5:
+                        parentComponent = this.focusableComponents[parentFocusKey_1];
+                        focusBoundaryDirections = (parentComponent === null || parentComponent === void 0 ? void 0 : parentComponent.isFocusBoundary)
+                            ? parentComponent.focusBoundaryDirections || [direction]
+                            : [];
+                        if (!(!parentComponent || !focusBoundaryDirections.includes(direction))) return [3 /*break*/, 7];
+                        return [4 /*yield*/, this.smartNavigate(direction, parentFocusKey_1, focusDetails)];
+                    case 6:
+                        _c.sent();
+                        _c.label = 7;
+                    case 7: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SpatialNavigationService.prototype.saveLastFocusedChildKey = function (component, focusKey) {
+        if (component) {
+            this.log('saveLastFocusedChildKey', "".concat(component.focusKey, " lastFocusedChildKey set"), focusKey);
+            // eslint-disable-next-line no-param-reassign
+            component.lastFocusedChildKey = focusKey;
+        }
+    };
+    SpatialNavigationService.prototype.log = function (functionName, debugString) {
+        var rest = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            rest[_i - 2] = arguments[_i];
+        }
+        if (this.debug) {
+            // eslint-disable-next-line no-console
+            console.log.apply(console, __spreadArray(["%c".concat(functionName, "%c").concat(debugString), "background: ".concat(DEBUG_FN_COLORS[this.logIndex % DEBUG_FN_COLORS.length], "; color: black; padding: 1px 5px;"), 'background: #333; color: #BADA55; padding: 1px 5px;'], rest, false));
+        }
+    };
+    /**
+     * Returns the current focus key
+     */
+    SpatialNavigationService.prototype.getCurrentFocusKey = function () {
+        return this.focusKey;
+    };
+    /**
+     * Returns the focus key to which focus can be forced if there are force-focusable components.
+     * A component closest to the top left viewport corner (0,0) is returned.
+     */
+    SpatialNavigationService.prototype.getForcedFocusKey = function () {
+        var _a;
+        var forceFocusableComponents = filter(this.focusableComponents, function (component) { return component.focusable && component.forceFocus; });
+        /**
+         * Searching of the top level component that is closest to the top left viewport corner (0,0).
+         * To achieve meaningful and coherent results, 'down' direction is forced.
+         */
+        var sortedForceFocusableComponents = this.sortSiblingsByPriority(forceFocusableComponents, {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            node: null
+        }, 'down', ROOT_FOCUS_KEY);
+        return (_a = first(sortedForceFocusableComponents)) === null || _a === void 0 ? void 0 : _a.focusKey;
+    };
+    /**
+     * This function tries to determine the next component to Focus
+     * It's either the target node OR the one down by the Tree if node has children components
+     * Based on "targetFocusKey" which means the "intended component to focus"
+     */
+    SpatialNavigationService.prototype.getNextFocusKey = function (targetFocusKey) {
+        return __awaiter(this, void 0, void 0, function () {
+            var targetComponent, children, lastFocusedChildKey, preferredChildFocusKey, childKey;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        targetComponent = this.focusableComponents[targetFocusKey];
+                        /**
+                         * Security check, if component doesn't exist, stay on the same focusKey
+                         */
+                        if (!targetComponent) {
+                            return [2 /*return*/, targetFocusKey];
+                        }
+                        children = filter(this.focusableComponents, function (component) {
+                            return component.parentFocusKey === targetFocusKey && component.focusable;
+                        });
+                        if (!(children.length > 0)) return [3 /*break*/, 2];
+                        lastFocusedChildKey = targetComponent.lastFocusedChildKey, preferredChildFocusKey = targetComponent.preferredChildFocusKey;
+                        this.log('getNextFocusKey', 'lastFocusedChildKey is', lastFocusedChildKey);
+                        this.log('getNextFocusKey', 'preferredChildFocusKey is', preferredChildFocusKey);
+                        /**
+                         * First of all trying to focus last focused child
+                         */
+                        if (lastFocusedChildKey &&
+                            targetComponent.saveLastFocusedChild &&
+                            this.isParticipatingFocusableComponent(lastFocusedChildKey)) {
+                            this.log('getNextFocusKey', 'lastFocusedChildKey will be focused', lastFocusedChildKey);
+                            return [2 /*return*/, this.getNextFocusKey(lastFocusedChildKey)];
+                        }
+                        /**
+                         * If there is no lastFocusedChild, trying to focus the preferred focused key
+                         */
+                        if (preferredChildFocusKey &&
+                            this.isParticipatingFocusableComponent(preferredChildFocusKey) &&
+                            this.isDescendantOf(preferredChildFocusKey, targetFocusKey)) {
+                            this.log('getNextFocusKey', 'preferredChildFocusKey will be focused', preferredChildFocusKey);
+                            return [2 /*return*/, this.getNextFocusKey(preferredChildFocusKey)];
+                        }
+                        /**
+                         * Otherwise, trying to focus something by coordinates
+                         */
+                        return [4 /*yield*/, Promise.all(children.map(function (component) { return _this.updateLayout(component.focusKey); }))];
+                    case 1:
+                        /**
+                         * Otherwise, trying to focus something by coordinates
+                         */
+                        _a.sent();
+                        childKey = getChildClosestToOrigin(children, this.writingDirection).focusKey;
+                        this.log('getNextFocusKey', 'childKey will be focused', childKey);
+                        return [2 /*return*/, this.getNextFocusKey(childKey)];
+                    case 2:
+                        /**
+                         * If no children, just return targetFocusKey back
+                         */
+                        this.log('getNextFocusKey', 'targetFocusKey', targetFocusKey);
+                        return [2 /*return*/, targetFocusKey];
+                }
+            });
+        });
+    };
+    SpatialNavigationService.prototype.addFocusable = function (_a) {
+        var focusKey = _a.focusKey, node = _a.node, parentFocusKey = _a.parentFocusKey, onEnterPress = _a.onEnterPress, onEnterRelease = _a.onEnterRelease, onArrowPress = _a.onArrowPress, onArrowRelease = _a.onArrowRelease, onFocus = _a.onFocus, onBlur = _a.onBlur, saveLastFocusedChild = _a.saveLastFocusedChild, trackChildren = _a.trackChildren, onUpdateFocus = _a.onUpdateFocus, onUpdateHasFocusedChild = _a.onUpdateHasFocusedChild, preferredChildFocusKey = _a.preferredChildFocusKey, autoRestoreFocus = _a.autoRestoreFocus, forceFocus = _a.forceFocus, focusable = _a.focusable, isFocusBoundary = _a.isFocusBoundary, focusBoundaryDirections = _a.focusBoundaryDirections, accessibilityLabel = _a.accessibilityLabel, nextFocusResolver = _a.nextFocusResolver, measureChildrenLayout = _a.measureChildrenLayout;
+        this.focusableComponents[focusKey] = {
+            focusKey: focusKey,
+            node: node,
+            parentFocusKey: parentFocusKey,
+            onEnterPress: onEnterPress,
+            onEnterRelease: onEnterRelease,
+            onArrowPress: onArrowPress,
+            onArrowRelease: onArrowRelease,
+            onFocus: onFocus,
+            onBlur: onBlur,
+            onUpdateFocus: onUpdateFocus,
+            onUpdateHasFocusedChild: onUpdateHasFocusedChild,
+            nextFocusResolver: nextFocusResolver,
+            measureChildrenLayout: measureChildrenLayout,
+            saveLastFocusedChild: saveLastFocusedChild,
+            trackChildren: trackChildren,
+            preferredChildFocusKey: preferredChildFocusKey,
+            focusable: focusable,
+            isFocusBoundary: isFocusBoundary,
+            focusBoundaryDirections: focusBoundaryDirections,
+            autoRestoreFocus: autoRestoreFocus,
+            forceFocus: forceFocus,
+            accessibilityLabel: accessibilityLabel,
+            lastFocusedChildKey: null,
+            layoutUpdatedAt: 0,
+            layout: {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0,
+                /**
+                 * Node ref is also duplicated in layout to be reported in onFocus callback
+                 */
+                node: node
+            }
+        };
+        if (!node) {
+            // eslint-disable-next-line no-console
+            console.warn('Component added without a node reference. This will result in its coordinates being empty and may cause lost focus. Check the "ref" passed to "useFocusable": ', this.focusableComponents[focusKey]);
+        }
+        this.updateLayout(focusKey);
+        this.log('addFocusable', 'Component added: ', this.focusableComponents[focusKey]);
+        /**
+         * If for some reason this component was already focused before it was added, call the update.
+         * Gated behind the focusOnPresetKey option (enabled by default) so this implicit refocus can
+         * be opted out of.
+         */
+        if (this.focusOnPresetKey && focusKey === this.focusKey) {
+            this.setImmediateFocus(preferredChildFocusKey || focusKey);
+        }
+        /**
+         * Parent nodes are created after children, and child may focus itself.
+         * If so, it's required to check if parent lies on a path to focused child.
+         */
+        var currentComponent = this.focusableComponents[this.focusKey];
+        while (currentComponent) {
+            if (currentComponent.parentFocusKey === focusKey) {
+                this.updateParentsHasFocusedChild(this.focusKey, {});
+                this.updateParentsLastFocusedChild(this.focusKey);
+                break;
+            }
+            currentComponent =
+                this.focusableComponents[currentComponent.parentFocusKey];
+        }
+    };
+    SpatialNavigationService.prototype.removeFocusable = function (_a) {
+        var focusKey = _a.focusKey;
+        var componentToRemove = this.focusableComponents[focusKey];
+        if (componentToRemove) {
+            var parentFocusKey = componentToRemove.parentFocusKey, onUpdateFocus = componentToRemove.onUpdateFocus;
+            onUpdateFocus(false);
+            this.log('removeFocusable', 'Component removed: ', componentToRemove);
+            delete this.focusableComponents[focusKey];
+            var hadFocusedChild = this.parentsHavingFocusedChild.includes(focusKey);
+            this.parentsHavingFocusedChild = this.parentsHavingFocusedChild.filter(function (parentWithFocusedChild) { return parentWithFocusedChild !== focusKey; });
+            var parentComponent = this.focusableComponents[parentFocusKey];
+            var isFocused = focusKey === this.focusKey;
+            /**
+             * If the component was stored as lastFocusedChild, clear lastFocusedChildKey from parent
+             */
+            if (parentComponent && parentComponent.lastFocusedChildKey === focusKey) {
+                parentComponent.lastFocusedChildKey = null;
+            }
+            /**
+             * If the component was also focused at this time, OR had focused child, focus its parent -> it will focus another child
+             * Normally the order of components unmount is children -> parents, but sometimes parent can be removed before the child
+             * So we need to check not only for the current Leaf component focus state, but also if it was a Parent that had focused child
+             */
+            if ((isFocused || hadFocusedChild) &&
+                parentComponent &&
+                parentComponent.autoRestoreFocus) {
+                this.log('removeFocusable', 'Component removed: ', isFocused ? 'Leaf component' : 'Container component', 'Auto restoring focus to: ', parentFocusKey);
+                /**
+                 * Focusing parent with a slight delay
+                 * This is to avoid multiple focus restorations if multiple children getting unmounted in one render cycle
+                 */
+                this.setFocusDebounced(parentFocusKey);
+            }
+        }
+    };
+    SpatialNavigationService.prototype.getNodeLayoutByFocusKey = function (focusKey) {
+        return __awaiter(this, void 0, void 0, function () {
+            var component;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        component = this.focusableComponents[focusKey];
+                        if (!component) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.updateLayout(component.focusKey)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, component.layout];
+                    case 2: return [2 /*return*/, null];
+                }
+            });
+        });
+    };
+    SpatialNavigationService.prototype.setCurrentFocusedKey = function (newFocusKey, focusDetails) {
+        var _this = this;
+        if (this.isFocusableComponent(this.focusKey) &&
+            newFocusKey !== this.focusKey) {
+            var oldComponent_1 = this.focusableComponents[this.focusKey];
+            oldComponent_1.onUpdateFocus(false);
+            this.layoutAdapter.blurNode(oldComponent_1);
+            this.getNodeLayoutByFocusKey(this.focusKey).then(function (layout) {
+                oldComponent_1.onBlur(layout, focusDetails);
+                _this.log('setCurrentFocusedKey', 'onBlur', oldComponent_1);
+            });
+        }
+        this.focusKey = newFocusKey;
+        if (this.isFocusableComponent(this.focusKey)) {
+            var newComponent_1 = this.focusableComponents[this.focusKey];
+            this.layoutAdapter.focusNode(newComponent_1);
+            newComponent_1.onUpdateFocus(true);
+            this.getNodeLayoutByFocusKey(this.focusKey).then(function (layout) {
+                newComponent_1.onFocus(layout, focusDetails);
+                _this.log('setCurrentFocusedKey', 'onFocus', newComponent_1);
+            });
+        }
+    };
+    SpatialNavigationService.prototype.updateParentsHasFocusedChild = function (focusKey, focusDetails) {
+        var _this = this;
+        var parents = [];
+        var currentComponent = this.focusableComponents[focusKey];
+        /**
+         * Recursively iterate the tree up and find all the parents' focus keys
+         */
+        while (currentComponent) {
+            var parentFocusKey = currentComponent.parentFocusKey;
+            var parentComponent = this.focusableComponents[parentFocusKey];
+            if (parentComponent) {
+                var currentParentFocusKey = parentComponent.focusKey;
+                parents.push(currentParentFocusKey);
+            }
+            currentComponent = parentComponent;
+        }
+        var parentsToRemoveFlag = difference(this.parentsHavingFocusedChild, parents);
+        var parentsToAddFlag = difference(parents, this.parentsHavingFocusedChild);
+        forEach(parentsToRemoveFlag, function (parentFocusKey) {
+            var parentComponent = _this.focusableComponents[parentFocusKey];
+            if (parentComponent && parentComponent.trackChildren) {
+                parentComponent.onUpdateHasFocusedChild(false);
+            }
+            _this.onIntermediateNodeBecameBlurred(parentFocusKey, focusDetails);
+        });
+        forEach(parentsToAddFlag, function (parentFocusKey) {
+            var parentComponent = _this.focusableComponents[parentFocusKey];
+            if (parentComponent && parentComponent.trackChildren) {
+                parentComponent.onUpdateHasFocusedChild(true);
+            }
+            _this.onIntermediateNodeBecameFocused(parentFocusKey, focusDetails);
+        });
+        this.parentsHavingFocusedChild = parents;
+    };
+    SpatialNavigationService.prototype.updateParentsLastFocusedChild = function (focusKey) {
+        var currentComponent = this.focusableComponents[focusKey];
+        /**
+         * Recursively iterate the tree up and update all the parent's lastFocusedChild
+         */
+        while (currentComponent) {
+            var parentFocusKey = currentComponent.parentFocusKey;
+            var parentComponent = this.focusableComponents[parentFocusKey];
+            if (parentComponent) {
+                this.saveLastFocusedChildKey(parentComponent, currentComponent.focusKey);
+            }
+            currentComponent = parentComponent;
+        }
+    };
+    SpatialNavigationService.prototype.getKeyMap = function () {
+        return this.keyMap;
+    };
+    SpatialNavigationService.prototype.setKeyMap = function (keyMap) {
+        this.keyMap = __assign(__assign({}, this.getKeyMap()), normalizeKeyMap(keyMap));
+    };
+    SpatialNavigationService.prototype.isFocusableComponent = function (focusKey) {
+        return !!this.focusableComponents[focusKey];
+    };
+    /**
+     * Checks whether the focusableComponent is actually participating in spatial navigation (in other words, is a
+     * 'focusable' focusableComponent). Seems less confusing than calling it isFocusableFocusableComponent()
+     */
+    SpatialNavigationService.prototype.isParticipatingFocusableComponent = function (focusKey) {
+        return (this.isFocusableComponent(focusKey) &&
+            this.focusableComponents[focusKey].focusable);
+    };
+    /**
+     * Checks whether the focusableComponent is a descendant of another component.
+     * @param focusKey The focus key of the component to check
+     * @param ancestorFocusKey The focus key of the ancestor component
+     * @returns Whether the focusableComponent is a descendant of the ancestor component
+     */
+    SpatialNavigationService.prototype.isDescendantOf = function (focusKey, ancestorFocusKey) {
+        var currentComponent = this.focusableComponents[focusKey];
+        while (currentComponent) {
+            if (currentComponent.parentFocusKey === ancestorFocusKey) {
+                return true;
+            }
+            currentComponent =
+                this.focusableComponents[currentComponent.parentFocusKey];
+        }
+        return false;
+    };
+    SpatialNavigationService.prototype.onIntermediateNodeBecameFocused = function (focusKey, focusDetails) {
+        var _this = this;
+        if (this.isParticipatingFocusableComponent(focusKey)) {
+            this.getNodeLayoutByFocusKey(focusKey).then(function (layout) {
+                var _a;
+                (_a = _this.focusableComponents[focusKey]) === null || _a === void 0 ? void 0 : _a.onFocus(layout, focusDetails);
+            });
+        }
+    };
+    SpatialNavigationService.prototype.onIntermediateNodeBecameBlurred = function (focusKey, focusDetails) {
+        var _this = this;
+        if (this.isParticipatingFocusableComponent(focusKey)) {
+            this.getNodeLayoutByFocusKey(focusKey).then(function (layout) {
+                var _a;
+                (_a = _this.focusableComponents[focusKey]) === null || _a === void 0 ? void 0 : _a.onBlur(layout, focusDetails);
+            });
+        }
+    };
+    SpatialNavigationService.prototype.pause = function () {
+        this.paused = true;
+    };
+    SpatialNavigationService.prototype.resume = function () {
+        this.paused = false;
+    };
+    /**
+     * Builds and utters accessibility labels when focus changes.
+     * Parent region labels are spoken only when entering a new region (similar to aria-label on role=region).
+     * When navigating within the same parent, only the leaf node's label is spoken.
+     *
+     * Must be called BEFORE updateParentsHasFocusedChild so we can compare
+     * the new parent chain against the current one to detect newly entered regions.
+     */
+    SpatialNavigationService.prototype.utterAccessibilityLabels = function (newFocusKey) {
+        var _this = this;
+        if (!this.onUtterText) {
+            return;
+        }
+        // Don't utter if focus hasn't actually changed
+        if (newFocusKey === this.focusKey) {
+            return;
+        }
+        var newComponent = this.focusableComponents[newFocusKey];
+        if (!newComponent) {
+            return;
+        }
+        // Walk up the tree to collect all parents of the new focus key (bottom-up)
+        var parentChain = [];
+        var current = this.focusableComponents[newFocusKey];
+        while (current) {
+            var parentFocusKey = current.parentFocusKey;
+            var parentComponent = this.focusableComponents[parentFocusKey];
+            if (parentComponent) {
+                parentChain.push(parentFocusKey);
+            }
+            current = parentComponent;
+        }
+        // Find newly entered parent regions (parents not in the current focused parent chain).
+        // These are regions whose labels should be spoken because focus is entering them for the first time.
+        var newlyEnteredParents = parentChain.filter(function (key) { return !_this.parentsHavingFocusedChild.includes(key); });
+        // Reverse to get top-down order (root → leaf) for natural reading order
+        newlyEnteredParents.reverse();
+        // Collect labels from newly entered parent regions and the leaf node
+        var labels = [];
+        newlyEnteredParents.forEach(function (parentKey) {
+            var parent = _this.focusableComponents[parentKey];
+            if (parent === null || parent === void 0 ? void 0 : parent.accessibilityLabel) {
+                labels.push(parent.accessibilityLabel);
+            }
+        });
+        if (newComponent.accessibilityLabel) {
+            labels.push(newComponent.accessibilityLabel);
+        }
+        if (labels.length > 0) {
+            this.onUtterText(labels.join(', '));
+        }
+    };
+    SpatialNavigationService.prototype.setFocus = function (focusKey_1) {
+        return __awaiter(this, arguments, void 0, function (focusKey, focusDetails) {
+            var newFocusKey;
+            if (focusDetails === void 0) { focusDetails = {}; }
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // Cancel any pending auto-restore focus calls if we are setting focus manually
+                        this.setFocusDebounced.cancel();
+                        if (!this.enabled) {
+                            return [2 /*return*/];
+                        }
+                        this.log('setFocus', 'focusKey', focusKey);
+                        /**
+                         * When focusKey is not provided or is equal to `ROOT_FOCUS_KEY`, an attempt is made,
+                         * to force focus one of the Focusable Containers, that have "forceFocus" flag enabled.
+                         * A component closest to the top left viewport corner (0,0) is force-focused.
+                         */
+                        if (!focusKey || focusKey === ROOT_FOCUS_KEY) {
+                            // eslint-disable-next-line no-param-reassign
+                            focusKey = this.getForcedFocusKey();
+                            // If there is no force-focusable key either then we abort
+                            if (!focusKey) {
+                                this.log('setFocus', 'Aborted due to missing force-focusable key');
+                                return [2 /*return*/];
+                            }
+                        }
+                        return [4 /*yield*/, this.getNextFocusKey(focusKey)];
+                    case 1:
+                        newFocusKey = _a.sent();
+                        if (!newFocusKey) {
+                            this.log('setFocus', 'Aborted due to missing next focus key');
+                            return [2 /*return*/];
+                        }
+                        this.log('setFocus', 'newFocusKey', newFocusKey);
+                        // Utter accessibility labels BEFORE updating parents so we can detect newly entered regions
+                        this.utterAccessibilityLabels(newFocusKey);
+                        this.setCurrentFocusedKey(newFocusKey, focusDetails);
+                        this.updateParentsHasFocusedChild(newFocusKey, focusDetails);
+                        this.updateParentsLastFocusedChild(newFocusKey);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SpatialNavigationService.prototype.updateAllLayouts = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.enabled) {
+                            return [2 /*return*/];
+                        }
+                        return [4 /*yield*/, Promise.all(Object.values(this.focusableComponents)
+                                .filter(function (component) {
+                                var _a;
+                                return ((_a = _this.focusableComponents[component.parentFocusKey]) === null || _a === void 0 ? void 0 : _a.measureChildrenLayout) !== false;
+                            })
+                                .map(function (component) { return _this.updateLayout(component.focusKey); }))];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SpatialNavigationService.prototype.updateLayout = function (focusKey) {
+        return __awaiter(this, void 0, void 0, function () {
+            var component, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        component = this.focusableComponents[focusKey];
+                        if (!component) {
+                            return [2 /*return*/];
+                        }
+                        _a = component;
+                        return [4 /*yield*/, this.layoutAdapter.measureLayout(component)];
+                    case 1:
+                        _a.layout = _b.sent();
+                        component.layoutUpdatedAt = Date.now();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SpatialNavigationService.prototype.updateFocusable = function (focusKey, _a) {
+        var node = _a.node, preferredChildFocusKey = _a.preferredChildFocusKey, focusable = _a.focusable, isFocusBoundary = _a.isFocusBoundary, focusBoundaryDirections = _a.focusBoundaryDirections, onEnterPress = _a.onEnterPress, onEnterRelease = _a.onEnterRelease, onArrowPress = _a.onArrowPress, onFocus = _a.onFocus, onBlur = _a.onBlur, accessibilityLabel = _a.accessibilityLabel, nextFocusResolver = _a.nextFocusResolver, measureChildrenLayout = _a.measureChildrenLayout;
+        var component = this.focusableComponents[focusKey];
+        if (component) {
+            component.preferredChildFocusKey = preferredChildFocusKey;
+            component.focusable = focusable;
+            component.isFocusBoundary = isFocusBoundary;
+            component.focusBoundaryDirections = focusBoundaryDirections;
+            component.onEnterPress = onEnterPress;
+            component.onEnterRelease = onEnterRelease;
+            component.onArrowPress = onArrowPress;
+            component.onFocus = onFocus;
+            component.onBlur = onBlur;
+            component.accessibilityLabel = accessibilityLabel;
+            component.nextFocusResolver = nextFocusResolver;
+            component.measureChildrenLayout = measureChildrenLayout;
+            // Reset layout updated at to force a layout update
+            component.layoutUpdatedAt = 0;
+            if (node) {
+                component.node = node;
+            }
+        }
+    };
+    SpatialNavigationService.prototype.doesFocusableExist = function (focusKey) {
+        return !!this.focusableComponents[focusKey];
+    };
+    /**
+     * Makes a container forget its last focused child, so the next time focus enters it,
+     * it goes to `preferredChildFocusKey` (or the first child) instead. Does not move focus.
+     */
+    SpatialNavigationService.prototype.clearLastFocusedChild = function (focusKey) {
+        var component = this.focusableComponents[focusKey];
+        if (component) {
+            component.lastFocusedChildKey = null;
+        }
+    };
+    /**
+     * This function updates the writing direction
+     * @param rtl whether the writing direction is right-to-left
+     */
+    SpatialNavigationService.prototype.updateRtl = function (rtl) {
+        this.writingDirection = rtl ? WritingDirection$1.RTL : WritingDirection$1.LTR;
+    };
+    return SpatialNavigationService;
+}());
+/**
+ * Export singleton
+ */
+var SpatialNavigation = new SpatialNavigationService();
+var init = SpatialNavigation.init, setThrottle = SpatialNavigation.setThrottle, destroy = SpatialNavigation.destroy, setKeyMap = SpatialNavigation.setKeyMap, setFocus = SpatialNavigation.setFocus, navigateByDirection = SpatialNavigation.navigateByDirection, pause = SpatialNavigation.pause, resume = SpatialNavigation.resume, updateAllLayouts = SpatialNavigation.updateAllLayouts, getCurrentFocusKey = SpatialNavigation.getCurrentFocusKey, doesFocusableExist = SpatialNavigation.doesFocusableExist, clearLastFocusedChild = SpatialNavigation.clearLastFocusedChild, updateRtl = SpatialNavigation.updateRtl;
+
+export { BaseWebAdapter, GetBoundingClientRectAdapter, ROOT_FOCUS_KEY, SpatialNavigation, SpatialNavigationService, clearLastFocusedChild, destroy, doesFocusableExist, getCurrentFocusKey, init, navigateByDirection, pause, resume, setFocus, setKeyMap, setThrottle, updateAllLayouts, updateRtl };

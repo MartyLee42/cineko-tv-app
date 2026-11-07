@@ -1,0 +1,26 @@
+/* «pocketpet» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Тамагочи»: a pastel toy with an LCD. The app content is the LCD (light grey-green, near-black pixel
+   ink, almost monochrome: «accent» is the ink too, so accent buttons read as lit pixel blocks); the
+   pastel shell (pink, lilac, mint) is drawn around it by the TV look / PWA chrome. Headings and labels
+   in Press Start 2P (chunky 8×8 pixels; its Cyrillic reads at TV distance, unlike Pixelify's), mixed
+   case; small labels in JetBrains Mono (Press Start is too wide for tables), body text Onest. */
+html.design-pocketpet {
+  --mt-bg: 196, 208, 170;
+  --mt-surface: 181, 195, 153;
+  --mt-surface-2: 166, 182, 138;
+  --mt-border: 72, 86, 56;
+  --mt-text: 24, 32, 18;
+  --mt-muted: 52, 64, 40;
+  --mt-accent: 24, 32, 18;
+  --mt-accent-strong: 196, 58, 122;
+  --mt-on-accent: 206, 218, 180;
+  --mt-focus: 24, 32, 18;
+  --mt-font-display: "Press Start 2P", "JetBrains Mono", ui-monospace, monospace;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: light;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-pocketpet h1, html.design-pocketpet h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; line-height: 1.25; }

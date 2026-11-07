@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/oswald.css"; /* not in the startup CSS */
 /* «Тема под фильм» — horror: Ужасы: обесцвеченно и темно, кроваво-красный акцент. Its own chunk (filmtheme/load.ts). */
 :root [data-film-theme="horror"] > .tv-fade img,
 :root .tv-loader[data-film-theme="horror"] img { -webkit-filter: grayscale(.5) contrast(1.25) brightness(.78); filter: grayscale(.5) contrast(1.25) brightness(.78); }
