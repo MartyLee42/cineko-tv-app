@@ -3,12 +3,12 @@
    plain bold sans like MS Sans Serif; the pixel face (Pixelify Sans) only for the logo and intro:
    its Cyrillic reads poorly at TV distance. */
 html.design-retro90 {
-  --mt-bg: 0, 110, 110;
+  --mt-bg: 0, 96, 96;
   --mt-surface: 16, 24, 112;
   --mt-surface-2: 32, 48, 160;
   --mt-border: 192, 192, 192;
   --mt-text: 255, 255, 255;
-  --mt-muted: 204, 228, 228;
+  --mt-muted: 226, 242, 242;
   --mt-accent: 255, 232, 92;
   --mt-accent-strong: 255, 255, 255;
   --mt-on-accent: 0, 0, 0;
@@ -18,6 +18,10 @@ html.design-retro90 {
   --mt-radius-card: 0px;
   --mt-radius-control: 0px;
   color-scheme: dark;
+  --mt-accent-text: 255, 240, 140;
+  --mt-ok: 170, 240, 195;
+  --mt-danger: 255, 222, 222;
+  --mt-warn: 253, 221, 140;
 }
 
 /* Headings use the display face (web and TV). */

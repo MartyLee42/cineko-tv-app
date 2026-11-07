@@ -16,6 +16,7 @@ html.design-redroom {
   --mt-radius-card: 4px;
   --mt-radius-control: 0px;
   color-scheme: dark;
+  --mt-accent-text: 240, 96, 104;
 }
 
 /* Headings use the display face (web and TV). */

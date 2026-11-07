@@ -37,7 +37,7 @@
   --mt-accent-strong: 222, 255, 130;
   --mt-on-accent: 10, 12, 6;
   --mt-focus: 255, 255, 255;
-  --mt-danger: 239, 68, 68;
+  --mt-danger: 244, 84, 84;
   --mt-ok: 74, 222, 128;
   --mt-warn: 251, 191, 36;
   --mt-font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -54,13 +54,14 @@ html.design-kinozal.theme-light {
   --mt-surface-2: 232, 235, 226;
   --mt-border: 210, 214, 204;
   --mt-text: 14, 16, 12;
-  --mt-muted: 86, 92, 80;
+  --mt-muted: 76, 82, 70;
   --mt-accent: 120, 170, 0;
   --mt-accent-strong: 200, 255, 61;
   --mt-on-accent: 10, 12, 6;
   --mt-focus: 14, 16, 12;
-  --mt-danger: 220, 38, 38;
-  --mt-ok: 22, 163, 74;
-  --mt-warn: 180, 83, 9;
+  --mt-danger: 190, 30, 30;
+  --mt-ok: 12, 100, 45;
+  --mt-warn: 150, 70, 8;
   color-scheme: light;
+  --mt-accent-text: 70, 99, 0;
 }

@@ -334,7 +334,7 @@ export function BusyDialog({
           <button
             type="button"
             onClick={onConfirm}
-            className="min-h-[48px] rounded-xl bg-danger font-semibold text-white hover:bg-danger/85"
+            className="min-h-[48px] rounded-xl bg-danger font-semibold text-bg hover:bg-danger/85"
           >
             {t("remote.interrupt")}
           </button>

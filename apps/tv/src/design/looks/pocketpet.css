@@ -64,7 +64,6 @@ html.design-pocketpet .t-seg-on { background: rgb(24,32,18); }
 /* Backdrops on the LCD: ink-only photos (grey, multiplied onto the panel) under a pixel matrix. */
 html.design-pocketpet .t-mono-img { -webkit-filter: grayscale(1) contrast(1.15) brightness(1.1); filter: grayscale(1) contrast(1.15) brightness(1.1); mix-blend-mode: multiply; opacity: .8; }
 html.design-pocketpet .t-scanlines { background-image: linear-gradient(rgba(196,208,170,.35) 1px, rgba(0,0,0,0) 1px), linear-gradient(90deg, rgba(196,208,170,.35) 1px, rgba(0,0,0,0) 1px); background-size: 4px 4px; }
-html.design-pocketpet .t-band-fade { background: linear-gradient(0deg, rgb(196,208,170) 0%, rgba(196,208,170,.6) 35%, rgba(196,208,170,.15) 70%, rgba(196,208,170,.4) 100%); }
 html.design-pocketpet .tv-scrim-left { background: linear-gradient(90deg, rgb(196,208,170) 0%, rgba(196,208,170,.94) 30%, rgba(196,208,170,.6) 60%, rgba(196,208,170,.1) 100%); }
 html.design-pocketpet .tv-scrim-bottom { background: linear-gradient(0deg, rgb(196,208,170) 0%, rgba(196,208,170,.88) 25%, rgba(196,208,170,0) 60%); }
 
@@ -130,3 +129,5 @@ html.design-pocketpet .skin-veil { background: rgba(196,208,170,.55); }
 .pp-zz small { font-size: 16px; margin-left: 2px; }
 .pp-zz-on { animation: pp-zz 2s steps(4, end) infinite; }
 @keyframes pp-zz { 0% { transform: translate(0, 8px); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(6px, -14px); opacity: 0; } }
+/* A focused card's tags are lit pixel blocks: the rating inside one is LCD-light too. */
+html.design-pocketpet .mt-card.is-focused .t-tag.tv-rate-t-good, html.design-pocketpet .mt-card.is-focused .t-tag.tv-rate-t-mid { color: rgb(206,218,180); }

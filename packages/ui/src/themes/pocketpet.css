@@ -20,6 +20,10 @@ html.design-pocketpet {
   --mt-radius-card: 0px;
   --mt-radius-control: 0px;
   color-scheme: light;
+  --mt-ok: 10, 77, 35;
+  --mt-danger: 132, 21, 21;
+  --mt-warn: 108, 50, 5;
+  --mt-accent-strong-text: 117, 35, 73;
 }
 
 /* Headings use the display face (web and TV). */

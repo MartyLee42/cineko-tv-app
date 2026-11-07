@@ -45,7 +45,7 @@ html.design-cyberpunk [data-testid="status-ticker"] { background: rgb(245,240,60
 html.design-cyberpunk [data-testid="status-ticker"]::after { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0px, rgba(0,0,0,.12) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 3px); pointer-events: none; }
 html.design-cyberpunk .t-scanlines { background-image: repeating-linear-gradient(0deg, rgba(6,0,20,.45) 0px, rgba(6,0,20,.45) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 4px); }
 html.design-cyberpunk .t-mono-img { -webkit-filter: grayscale(1) contrast(1.1); filter: grayscale(1) contrast(1.1); opacity: .8; }
-html.design-cyberpunk .t-band-fade { background: linear-gradient(0deg, rgb(6,6,10) 0%, rgba(6,6,10,.55) 35%, rgba(40,0,40,.25) 70%, rgba(6,6,10,.4) 100%); }
+html.design-cyberpunk .t-band-fade { background: linear-gradient(0deg, rgb(6,6,10) 0%, rgba(6,6,10, .86) 35%, rgba(6,6,10, .84) 70%, rgba(6,6,10, .9) 100%); }
 html.design-cyberpunk .tv-chip.is-focused { background: rgb(0,240,255); color: #04080a; }
 html.design-cyberpunk .tv-progress-fill, html.design-cyberpunk .tv-check { background: rgb(0,240,255); color: #04080a; }
 html.design-cyberpunk .tv-panel, html.design-cyberpunk .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 1px rgba(0,240,255,.35); }

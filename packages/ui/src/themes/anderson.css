@@ -8,8 +8,8 @@ html.design-anderson {
   --mt-surface-2: 242, 222, 210;
   --mt-border: 196, 150, 70;
   --mt-text: 58, 34, 44;
-  --mt-muted: 112, 78, 88;
-  --mt-accent: 154, 107, 16;
+  --mt-muted: 100, 66, 76;
+  --mt-accent: 134, 92, 12;
   --mt-accent-strong: 143, 207, 184;
   --mt-on-accent: 251, 238, 230;
   --mt-focus: 122, 34, 62;
@@ -19,6 +19,10 @@ html.design-anderson {
   --mt-radius-card: 0px;
   --mt-radius-control: 0px;
   color-scheme: light;
+  --mt-ok: 12, 90, 40;
+  --mt-danger: 176, 28, 28;
+  --mt-warn: 146, 67, 8;
+  --mt-accent-text: 100, 66, 6;
 }
 
 /* Headings use the display face (web and TV). */

@@ -16,6 +16,8 @@ html.design-popart {
   --mt-radius-card: 4px;
   --mt-radius-control: 10px;
   color-scheme: dark;
+  --mt-ok: 150, 240, 180;
+  --mt-danger: 255, 190, 190;
 }
 
 /* Headings use the display face (web and TV). */

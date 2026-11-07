@@ -16,6 +16,7 @@ html.design-wireframe {
   --mt-radius-card: 6px;
   --mt-radius-control: 8px;
   color-scheme: dark;
+  --mt-accent-text: 255, 130, 225;
 }
 
 /* Headings use the display face (web and TV). */

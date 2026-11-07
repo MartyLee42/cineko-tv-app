@@ -273,7 +273,7 @@ function HistoryCard({
         <span
           data-testid="history-rating"
           className={`mr-6 shrink-0 px-4 text-[26px] font-bold leading-[44px] ${square ? "t-tag font-mono text-accent" : "rounded-full"} ${
-            square ? "" : rating >= 7 ? "bg-ok text-white" : rating >= 5 ? "bg-text text-bg" : "bg-danger text-white"
+            square ? "" : rating >= 7 ? "bg-ok text-bg" : rating >= 5 ? "bg-text text-bg" : "bg-danger text-bg"
           }`}
         >
           {t("fy.tv.your_rating", { n: rating })}
