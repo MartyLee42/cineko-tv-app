@@ -9,7 +9,7 @@ html.design-odyssey {
   --mt-surface-2: 226, 231, 236;
   --mt-border: 180, 188, 198;
   --mt-text: 16, 19, 24;
-  --mt-muted: 74, 85, 99;
+  --mt-muted: 62, 72, 86;
   --mt-accent: 16, 19, 24;
   --mt-accent-strong: 226, 30, 22;
   --mt-on-accent: 255, 255, 255;
@@ -19,6 +19,10 @@ html.design-odyssey {
   --mt-radius-card: 2px;
   --mt-radius-control: 2px;
   color-scheme: light;
+  --mt-ok: 12, 100, 46;
+  --mt-danger: 190, 30, 26;
+  --mt-warn: 150, 70, 8;
+  --mt-accent-strong-text: 190, 26, 20;
 }
 
 /* Headings use the display face (web and TV). */

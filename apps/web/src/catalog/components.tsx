@@ -387,7 +387,8 @@ export function InfinitePosterGrid({
   );
 }
 
-/** Full-bleed-on-mobile backdrop image with bottom/left fades into the page. */
+/** Full-bleed-on-mobile backdrop image with bottom/left fades into the page: the scrims (index.css
+ *  .mt-scrim-*) keep text over it on the page colour whatever the picture (bright sky, night). */
 export function Backdrop({
   path,
   title,
@@ -414,8 +415,8 @@ export function Backdrop({
         className="h-full w-full object-cover object-top"
         fallback={null}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent" />
-      <div className="absolute inset-0 hidden bg-gradient-to-r from-bg/95 via-bg/40 to-transparent sm:block" />
+      <div className="mt-scrim-b absolute inset-0" />
+      <div className="mt-scrim-l absolute inset-0 hidden sm:block" />
     </div>
   );
 }

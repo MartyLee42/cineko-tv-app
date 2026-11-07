@@ -63,7 +63,7 @@ export function VideoThumb({ v, w, h, design, focused, className = "" }: { v: Vi
     >
       <Img src={w > 340 ? v.thumbnail_hd : v.thumbnail} className="absolute left-0 top-0 h-full w-full object-cover" />
       {v.live ? (
-        <span data-testid="video-live" className="absolute bottom-3 right-3 rounded bg-danger px-2 text-[18px] font-bold uppercase leading-[28px] text-white">
+        <span data-testid="video-live" className="absolute bottom-3 right-3 rounded bg-danger px-2 text-[18px] font-bold uppercase leading-[28px] text-bg">
           {t("video.live")}
         </span>
       ) : (

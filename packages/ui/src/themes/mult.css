@@ -9,18 +9,20 @@ html.design-mult {
   --mt-surface-2: 236, 223, 198;
   --mt-border: 196, 176, 144;
   --mt-text: 58, 42, 32;
-  --mt-muted: 108, 86, 68;
+  --mt-muted: 80, 60, 44;
   --mt-accent: 184, 72, 40;
   --mt-accent-strong: 92, 140, 160;
   --mt-on-accent: 255, 248, 236;
   --mt-focus: 150, 52, 28;
-  --mt-danger: 190, 40, 40;
-  --mt-ok: 46, 130, 70;
-  --mt-warn: 166, 96, 10;
+  --mt-danger: 170, 36, 36;
+  --mt-ok: 30, 92, 50;
+  --mt-warn: 136, 78, 8;
   --mt-font-display: "Neucha", "Onest", ui-sans-serif, system-ui, sans-serif;
   --mt-radius-card: 10px;
   --mt-radius-control: 14px;
   color-scheme: light;
+  --mt-accent-text: 146, 54, 28;
+  --mt-accent-strong-text: 64, 98, 112;
 }
 
 /* Headings use the display face (web and TV). */

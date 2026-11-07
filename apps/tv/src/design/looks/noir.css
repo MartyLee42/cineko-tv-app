@@ -19,7 +19,6 @@ html.design-noir .t-grid { background: rgb(var(--mt-bg)); }
 html.design-noir img { -webkit-filter: grayscale(1) contrast(1.12); filter: grayscale(1) contrast(1.12); }
 html.design-noir .t-mono-img { -webkit-filter: grayscale(1) contrast(1.25) brightness(.8); filter: grayscale(1) contrast(1.25) brightness(.8); }
 html.design-noir .t-scanlines { background-image: none; }
-html.design-noir .t-band-fade { background: linear-gradient(0deg, rgb(12,12,13) 0%, rgba(12,12,13,.6) 38%, rgba(12,12,13,.15) 70%, rgba(12,12,13,.45) 100%); }
 
 /* Typewriter: mixed case for titles (a typed page, not a HUD), tighter label tracking. */
 html.design-noir .t-label { letter-spacing: .06em; }

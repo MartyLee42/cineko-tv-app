@@ -27,6 +27,16 @@ html {
   }
 }
 
+/* Backdrop scrims (catalog Backdrop): text over a backdrop must sit on ≥ ~80% page colour, whatever
+   the picture is (a bright sky behind white text, a night scene behind dark ink in a light design).
+   The picture stays visible at the top (phone) and on the right (desktop). */
+.mt-scrim-b {
+  background: linear-gradient(0deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), 0.94) 40%, rgba(var(--mt-bg), 0.86) 70%, rgba(var(--mt-bg), 0.45) 100%);
+}
+.mt-scrim-l {
+  background: linear-gradient(90deg, rgba(var(--mt-bg), 0.95) 0%, rgba(var(--mt-bg), 0.7) 45%, rgba(var(--mt-bg), 0.15) 85%, rgba(var(--mt-bg), 0) 100%);
+}
+
 /* Loading-animation previews on the Settings page (mirrors the TV styles). */
 @layer components {
   .lp-fill-text {
@@ -220,6 +230,8 @@ html.design-retro80 .aspect-\[2\/3\] { box-shadow: inset 0 0 0 2px rgba(22, 224,
 html.design-retro80 h1 { background-image: linear-gradient(180deg, #ffffff 0%, #d8e6ff 38%, #6a7dff 50%, #ffb04a 53%, #ff7a1a 74%, #ffe7a0 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; padding-right: 0.12em; }
 html.design-retro90 section.rounded-2xl.border { border-radius: 0; border-color: #c0c0c0; box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.5), inset -2px -2px 0 rgba(0, 0, 0, 0.45); }
 html.design-retro90 .aspect-\[2\/3\] { border-radius: 0; box-shadow: inset 2px 2px 0 #ffffff, inset -2px -2px 0 #404040; }
+html.design-retro90 .mt-scrim-b { background: linear-gradient(0deg, rgb(var(--mt-surface)) 0%, rgba(var(--mt-surface), 0.94) 40%, rgba(var(--mt-surface), 0.86) 70%, rgba(var(--mt-surface), 0.45) 100%); }
+html.design-retro90 .mt-scrim-l { background: linear-gradient(90deg, rgba(var(--mt-surface), 0.95) 0%, rgba(var(--mt-surface), 0.72) 45%, rgba(var(--mt-surface), 0.15) 85%, rgba(var(--mt-surface), 0) 100%); }
 html.design-retro90 header.sticky { box-shadow: inset 0 -3px 0 #c0c0c0, inset 0 -5px 0 #404040; }
 html.design-popart section.rounded-2xl.border { border: 3px solid #000; box-shadow: 6px 6px 0 #000; }
 html.design-popart .aspect-\[2\/3\] { box-shadow: inset 0 0 0 3px #000, 4px 4px 0 #000; }
@@ -249,7 +261,7 @@ html.design-stickerbook :focus-visible { outline: 3px solid rgb(255, 209, 102); 
 html.design-popart :focus-visible { outline: 3px solid #000; outline-offset: 2px; box-shadow: 0 0 0 5px rgb(255, 214, 0), 6px 6px 0 5px #000; }
 html.design-constructivism :focus-visible { outline: 2px solid rgb(243, 234, 214); outline-offset: 2px; box-shadow: 6px 6px 0 2px rgb(215, 38, 30); }
 html.design-retro80 :focus-visible { outline: 2px solid rgb(22, 224, 208); outline-offset: 2px; box-shadow: 0 0 0 4px rgba(255, 122, 26, 0.8); }
-html.design-retro90 :focus-visible { outline: 2px dotted #ffffff; outline-offset: 3px; }
+html.design-retro90 :focus-visible { outline: 2px dotted #000000; outline-offset: 0; box-shadow: 0 0 0 4px #ffffff; }
 html.design-wireframe :focus-visible { outline: 2px solid rgb(60, 232, 255); outline-offset: 2px; box-shadow: 0 0 14px rgba(60, 232, 255, 0.6); }
 html.design-cyberpunk :focus-visible { outline: 2px solid rgb(0, 240, 255); outline-offset: 2px; box-shadow: 4px 4px 0 rgba(255, 46, 136, 0.8); }
 html.design-deco :focus-visible { outline: 2px double rgb(232, 207, 138); outline-offset: 3px; }
@@ -291,7 +303,7 @@ html.design-pocketpet .aspect-\[2\/3\] { border-radius: 0; box-shadow: inset 0 0
 html.design-pocketpet :focus-visible { outline: none; box-shadow: 0 0 0 3px rgb(196, 208, 170), 0 -6px 0 3px rgb(24, 32, 18), 0 6px 0 3px rgb(24, 32, 18), -6px 0 0 3px rgb(24, 32, 18), 6px 0 0 3px rgb(24, 32, 18); }
 .design-swatch-pocketpet { background: #c4d0aa !important; box-shadow: inset 0 0 0 4px #f3c6dc, inset 0 0 0 5px #c7a6d6; }
 
-/* «Мультфильм» (light): warm gouache paper with soft paper hills at the bottom; posters and panels are
+/* «Мультфильм» (light): warm gouache paper with soft pale paper hills at the bottom (pale: text scrolls over them); posters and panels are
    paper cut-outs (a cream edge, a soft lifted shadow); a brick focus ring. */
 html.design-mult body {
   background-color: rgb(var(--mt-bg));
@@ -302,8 +314,8 @@ html.design-mult body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: radial-gradient(ellipse 60% 16% at 22% 100%, #afbd8b 0, #afbd8b 96%, rgba(175, 189, 139, 0) 100%),
-    radial-gradient(ellipse 70% 20% at 86% 100%, #c3cea5 0, #c3cea5 96%, rgba(195, 206, 165, 0) 100%),
+  background-image: radial-gradient(ellipse 60% 16% at 22% 100%, #c9d3ad 0, #c9d3ad 96%, rgba(201, 211, 173, 0) 100%),
+    radial-gradient(ellipse 70% 20% at 86% 100%, #d6ddc0 0, #d6ddc0 96%, rgba(214, 221, 192, 0) 100%),
     radial-gradient(ellipse 80% 40% at 15% 0%, rgba(244, 206, 170, 0.5), rgba(244, 206, 170, 0)),
     radial-gradient(circle, rgba(96, 64, 40, 0.04) 0px, rgba(96, 64, 40, 0.04) 1px, rgba(96, 64, 40, 0) 1.6px);
   background-size: 100% 100%, 100% 100%, 100% 100%, 6px 6px;
@@ -466,6 +478,9 @@ html.design-redroom body::after {
   z-index: 70;
   pointer-events: none;
   background-image: repeating-linear-gradient(135deg, #ece7dd 0px, #ece7dd 7px, #0d0b0b 7px, #0d0b0b 14px);
+}
+@media (max-width: 767px) {
+  html.design-redroom body::after { z-index: 10; }
 }
 /* The curtains: two narrow red drapes down the viewport's edges. */
 html.design-redroom body::before {

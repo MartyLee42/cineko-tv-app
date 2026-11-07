@@ -6,7 +6,7 @@ html.design-retro80 {
   --mt-surface-2: 42, 48, 108;
   --mt-border: 80, 88, 170;
   --mt-text: 255, 244, 230;
-  --mt-muted: 190, 186, 218;
+  --mt-muted: 226, 222, 244;
   --mt-accent: 255, 122, 26;
   --mt-accent-strong: 22, 224, 208;
   --mt-on-accent: 24, 8, 0;
@@ -15,6 +15,8 @@ html.design-retro80 {
   --mt-radius-card: 6px;
   --mt-radius-control: 8px;
   color-scheme: dark;
+  --mt-accent-text: 255, 150, 70;
+  --mt-danger: 255, 120, 120;
 }
 
 /* Headings use the display face (web and TV). */

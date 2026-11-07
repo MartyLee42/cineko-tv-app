@@ -10,15 +10,15 @@ html.design-constructivism body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: radial-gradient(circle at 104% 12%, rgba(215, 38, 30, 0.5) 0, rgba(215, 38, 30, 0.5) min(34vw, 300px), rgba(215, 38, 30, 0) calc(min(34vw, 300px) + 1px)),
+  background-image: radial-gradient(circle at 104% 12%, rgba(205,34,28, 0.5) 0, rgba(205,34,28, 0.5) min(34vw, 300px), rgba(205,34,28, 0) calc(min(34vw, 300px) + 1px)),
     radial-gradient(circle at 104% 12%, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) calc(min(34vw, 300px) + 26px), rgba(239, 228, 204, 0.12) calc(min(34vw, 300px) + 27px), rgba(239, 228, 204, 0.12) calc(min(34vw, 300px) + 31px), rgba(0, 0, 0, 0) calc(min(34vw, 300px) + 32px)),
-    linear-gradient(155deg, rgba(0, 0, 0, 0) 74%, rgba(215, 38, 30, 0.28) 74%, rgba(215, 38, 30, 0.28) 77%, rgba(0, 0, 0, 0) 77%),
+    linear-gradient(155deg, rgba(0, 0, 0, 0) 74%, rgba(205,34,28, 0.28) 74%, rgba(205,34,28, 0.28) 77%, rgba(0, 0, 0, 0) 77%),
     linear-gradient(155deg, rgba(0, 0, 0, 0) 79%, rgba(239, 228, 204, 0.08) 79%, rgba(239, 228, 204, 0.08) 79.6%, rgba(0, 0, 0, 0) 79.6%),
     repeating-linear-gradient(135deg, rgba(243, 234, 214, 0.02) 0px, rgba(243, 234, 214, 0.02) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 9px);
 }
 
 /* Header: a red wedge behind the wordmark, a thick red rule under the bar, capitals in the nav. */
-html.design-constructivism header.sticky { border-bottom: 0; box-shadow: inset 0 -6px 0 rgb(215, 38, 30); }
+html.design-constructivism header.sticky { border-bottom: 0; box-shadow: inset 0 -6px 0 rgb(205,34,28); }
 html.design-constructivism header.sticky > div { position: relative; }
 html.design-constructivism header.sticky::before {
   content: "";
@@ -27,7 +27,7 @@ html.design-constructivism header.sticky::before {
   top: 0;
   bottom: 6px;
   width: 190px;
-  background: rgb(215, 38, 30);
+  background: rgb(205,34,28);
   -webkit-clip-path: polygon(0 0, 100% 0, 78% 100%, 0 100%);
   clip-path: polygon(0 0, 100% 0, 78% 100%, 0 100%);
 }
@@ -38,12 +38,12 @@ html.design-constructivism .mt-logo { font-family: var(--mt-font-display); font-
 html.design-constructivism .mt-logo > span:last-child { border-radius: 0; background: #1a1512; color: rgb(239, 228, 204); }
 html.design-constructivism header.sticky nav a,
 html.design-constructivism header.sticky nav > div > button { font-family: var(--mt-font-display); text-transform: uppercase; letter-spacing: 0.07em; font-size: 0.95rem; border-radius: 0; }
-html.design-constructivism header.sticky nav a.bg-surface-2 { background: rgb(215, 38, 30); color: rgb(248, 240, 222); box-shadow: 4px 4px 0 #000; }
+html.design-constructivism header.sticky nav a.bg-surface-2 { background: rgb(205,34,28); color: rgb(248, 240, 222); box-shadow: 4px 4px 0 #000; }
 
 /* Phone tab bar: a red rule on top, capitals; the active tab is a red block. */
-html.design-constructivism nav.fixed.bottom-0 { border-top: 4px solid rgb(215, 38, 30); background: rgba(24, 20, 18, 0.97); }
+html.design-constructivism nav.fixed.bottom-0 { border-top: 4px solid rgb(205,34,28); background: rgba(24, 20, 18, 0.97); }
 html.design-constructivism nav.fixed.bottom-0 a { font-family: var(--mt-font-display); text-transform: uppercase; letter-spacing: 0.06em; }
-html.design-constructivism nav.fixed.bottom-0 a.text-accent { background: rgb(215, 38, 30); color: rgb(248, 240, 222); }
+html.design-constructivism nav.fixed.bottom-0 a.text-accent { background: rgb(205,34,28); color: rgb(248, 240, 222); }
 
 /* Sharp corners everywhere in the content. */
 html.design-constructivism main .rounded-lg,
@@ -62,7 +62,7 @@ html.design-constructivism main h1:not(.sr-only) {
   transform: rotate(-2deg);
   transform-origin: 0 100%;
   padding-bottom: 0.16em;
-  background: linear-gradient(rgb(215, 38, 30), rgb(215, 38, 30)) 0 100% / min(4.2em, 100%) 0.12em no-repeat;
+  background: linear-gradient(rgb(205,34,28), rgb(205,34,28)) 0 100% / min(4.2em, 100%) 0.12em no-repeat;
 }
 
 /* Section titles: capitals with a red wedge in front. */
@@ -81,13 +81,13 @@ html.design-constructivism main section h2:not(#hero-title):not(#cv-lenin-title)
   height: 0.62em;
   margin-right: 0.35em;
   vertical-align: 0.02em;
-  background: rgb(215, 38, 30);
+  background: rgb(205,34,28);
   -webkit-clip-path: polygon(0 0, 100% 50%, 0 100%);
   clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 
 /* Home greeting: the emblem and the line on a cream slab with a red offset. */
-html.design-constructivism [data-testid="marty-hello"] > div { background: rgb(239, 228, 204); border-color: #1a1512; color: #1a1512; box-shadow: 6px 6px 0 rgb(215, 38, 30); }
+html.design-constructivism [data-testid="marty-hello"] > div { background: rgb(239, 228, 204); border-color: #1a1512; color: #1a1512; box-shadow: 6px 6px 0 rgb(205,34,28); }
 html.design-constructivism [data-testid="marty-hello"] p { font-family: var(--mt-font-display); text-transform: uppercase; letter-spacing: 0.03em; font-size: clamp(1.15rem, 3.6vw, 1.6rem); }
 
 /* Home hero: a poster — red-black duotone still, a red wedge and a black circle, the title huge and tilted. */
@@ -104,7 +104,7 @@ html.design-constructivism .home-hero::before {
   right: 0;
   bottom: 0;
   height: 46%;
-  background: rgb(215, 38, 30);
+  background: rgb(205,34,28);
   opacity: 0.88;
   -webkit-clip-path: polygon(0 38%, 100% 100%, 0 100%);
   clip-path: polygon(0 38%, 100% 100%, 0 100%);
@@ -130,14 +130,16 @@ html.design-constructivism .home-hero #hero-title {
   line-height: 0.92;
   transform: rotate(-4deg);
   transform-origin: 0 100%;
-  text-shadow: 0.06em 0.06em 0 rgb(215, 38, 30);
+  text-shadow: 0.06em 0.06em 0 rgb(205,34,28);
   padding-bottom: 0.12em;
 }
 html.design-constructivism .home-hero p.uppercase:first-child { align-self: flex-start; background: rgb(239, 228, 204); color: #1a1512; padding: 0.2em 0.7em; font-family: var(--mt-font-display); font-size: 0.85rem; }
+/* The overview runs over the red wedge: full cream, not 85 %. */
+html.design-constructivism .home-hero p.line-clamp-3 { color: rgb(var(--mt-text)); }
 html.design-constructivism .home-hero a.bg-accent { font-family: var(--mt-font-display); text-transform: uppercase; letter-spacing: 0.08em; box-shadow: 6px 6px 0 #1a1512; }
 
 /* «Рекомендуем к просмотру»: «Ленин в Октябре» (CvLeninCard). */
-.cv-lenin-web { background: rgb(215, 38, 30); color: rgb(248, 240, 222); box-shadow: inset 0 -8px 0 #1a1512; }
+.cv-lenin-web { background: rgb(205,34,28); color: rgb(248, 240, 222); box-shadow: inset 0 -8px 0 #1a1512; }
 .cv-lenin-web .cv-lenin-circle { position: absolute; right: -58px; top: -58px; width: 170px; height: 170px; border-radius: 50%; background: #1a1512; }
 .cv-lenin-web .cv-lenin-wedge {
   position: absolute;
@@ -173,7 +175,7 @@ html.design-constructivism .home-hero a.bg-accent { font-family: var(--mt-font-d
   font-size: clamp(2.3rem, 10.5vw, 6.4rem);
   line-height: 0.95;
   color: rgb(248, 240, 222);
-  background: rgb(215, 38, 30);
+  background: rgb(205,34,28);
   padding: 0.06em 0.26em 0.1em;
   transform: rotate(-3deg);
   transform-origin: 0 100%;
@@ -188,7 +190,7 @@ html.design-constructivism .home-hero a.bg-accent { font-family: var(--mt-font-d
 }
 
 /* Extras: the news strip, the five-year plan, the toast and the «очередь за дефицитом». */
-.cv-news { background: rgb(215, 38, 30); color: rgb(248, 240, 222); font-family: var(--mt-font-display); text-transform: uppercase; letter-spacing: 0.08em; box-shadow: inset 0 -3px 0 #1a1512; }
-.cv-plan-web { background: rgb(239, 228, 204); color: #1a1512; box-shadow: 8px 8px 0 rgb(215, 38, 30); }
-.cv-toast-web { background: rgb(215, 38, 30); color: rgb(248, 240, 222); box-shadow: 8px 8px 0 #1a1512; transform: rotate(-2deg); }
+.cv-news { background: rgb(205,34,28); color: rgb(248, 240, 222); font-family: var(--mt-font-display); text-transform: uppercase; letter-spacing: 0.08em; box-shadow: inset 0 -3px 0 #1a1512; }
+.cv-plan-web { background: rgb(239, 228, 204); color: #1a1512; box-shadow: 8px 8px 0 rgb(205,34,28); }
+.cv-toast-web { background: rgb(205,34,28); color: rgb(248, 240, 222); box-shadow: 8px 8px 0 #1a1512; transform: rotate(-2deg); }
 .cv-queue-web { background: rgba(24, 20, 18, 0.94); }

@@ -119,7 +119,7 @@ function Hero({ m }: { m: MediaDetail }) {
         <div className="min-w-0 space-y-3">
           <h1 className="text-3xl font-extrabold leading-tight drop-shadow sm:text-5xl">{m.title}</h1>
           {m.original_title && m.original_title !== m.title && (
-            <p className="text-sm text-text/70">
+            <p className="text-sm text-muted">
               <span className="sr-only">{t("catalog.detail.original_title")}: </span>
               {m.original_title}
             </p>

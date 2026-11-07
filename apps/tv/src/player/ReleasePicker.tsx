@@ -373,15 +373,15 @@ function ReleaseRowView({
           {row.chips.length > 0 && <span className="truncate">{row.chips.join(" · ")}</span>}
           {best && <Badge className="bg-accent text-on-accent">{t("player.best_match")}</Badge>}
           {row.seasonPack && <Badge className="bg-text/10 text-text">{t("player.season_pack")}{row.scope ? ` ${row.scope}` : ""}</Badge>}
-          {last && <Badge className="bg-ok text-on-accent">{t("player.tv.last_played")}</Badge>}
+          {last && <Badge className="bg-ok text-bg">{t("player.tv.last_played")}</Badge>}
           {server && <Badge className="bg-text/10 text-text"><span data-on-server>{server}</span></Badge>}
           {heavy ? (
-            <Badge className="bg-danger/80 text-white">
+            <Badge className="bg-danger text-bg">
               <span data-heavy={heavy}>{t("tvplay.heavy", { mbps: heavy })}</span>
             </Badge>
           ) : null}
           {isUncertain(release) && (
-            <Badge className="bg-danger/80 text-white">
+            <Badge className="bg-danger text-bg">
               <span data-uncertain>⚠ {t("tv.refine.uncertain")}</span>
             </Badge>
           )}
@@ -494,7 +494,7 @@ function VariantRowView({
             {v.voice}
           </span>
           {v.preferred && <Badge className="bg-accent text-on-accent">★ {t("sources.variant.preferred")}</Badge>}
-          {last && <Badge className="bg-ok text-on-accent">{t("player.tv.last_played")}</Badge>}
+          {last && <Badge className="bg-ok text-bg">{t("player.tv.last_played")}</Badge>}
         </div>
         <p className="mt-2 truncate text-2xl text-muted">
           <span className="mr-3 rounded-lg border border-text/20 px-3 py-0.5 text-xl font-semibold uppercase tracking-wide text-text/70">{v.provider.name}</span>

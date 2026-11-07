@@ -197,9 +197,9 @@ export function TerminalHero({ data, cfg, loading }: { data: HeroData | null; cf
             </div>
             <Brackets />
           </div>
-          <div className="absolute font-mono text-[15px]" style={{ left: 1806, top: 182, height: 555 }}>
+          <div className="t-ruler absolute font-mono text-[15px]" style={{ left: 1806, top: 182, height: 555 }}>
             {rulerMarks(pct).map((m) => (
-              <span key={m.value} className={`absolute left-0 ${m.current ? "text-accent" : "text-muted/70"}`} style={{ top: (m.value / 99) * 535 }}>
+              <span key={m.value} className={`absolute left-0 ${m.current ? "text-accent" : "text-muted"}`} style={{ top: (m.value / 99) * 535 }}>
                 {m.label}
               </span>
             ))}
@@ -233,7 +233,7 @@ export function TerminalHero({ data, cfg, loading }: { data: HeroData | null; cf
                 ))}
               </div>
             )}
-            <p className="mt-7 line-clamp-2 w-[820px] text-[25px] leading-[1.45] text-text/75">{overviewOf(data!)}</p>
+            <p className="mt-7 line-clamp-2 w-[820px] text-[25px] leading-[1.45] text-text/85">{overviewOf(data!)}</p>
           </>
         )}
       </div>
