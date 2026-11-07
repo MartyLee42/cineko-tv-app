@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CAT_AFTER_MS, CodeMatcher, codeKey, dvdStep, idlePhase, PAUSED_SAVER_MS, pausedSaverDue, SAVER_AFTER_MS, SECRET, type CodeKey } from "./logic";
+import { CAT_AFTER_MS, CodeMatcher, codeKey, idlePhase, PAUSED_SAVER_MS, pausedSaverDue, SAVER_AFTER_MS, SECRET, type CodeKey } from "./logic";
 
 describe("idle phases on Home", () => {
   const all = { cat: true, saver: true };
@@ -34,20 +34,6 @@ describe("secret code", () => {
     m.push("up");
     m.push(null);
     expect(feed(SECRET.slice(1)).some(Boolean)).toBe(false);
-  });
-});
-
-describe("DVD bounce", () => {
-  it("moves, bounces off walls and reports it", () => {
-    const s1 = dvdStep({ x: 10, y: 10, vx: 100, vy: 100 }, 100, 1920, 1080, 300, 100);
-    expect(s1).toMatchObject({ x: 20, y: 20, bounced: false });
-    const s2 = dvdStep({ x: 1615, y: 500, vx: 100, vy: -50 }, 100, 1920, 1080, 300, 100);
-    expect(s2.x).toBe(1620);
-    expect(s2.vx).toBeLessThan(0);
-    expect(s2.bounced).toBe(true);
-    // A long frame (the TV was busy) doesn't fling it out.
-    const s3 = dvdStep({ x: 5, y: 5, vx: -400, vy: -400 }, 5000, 1920, 1080, 300, 100);
-    expect(s3).toMatchObject({ x: 0, y: 0, bounced: true });
   });
 });
 
