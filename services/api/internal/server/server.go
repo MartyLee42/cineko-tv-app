@@ -31,7 +31,9 @@ import (
 	"martytv/api/internal/integrations/tmdb"
 	"martytv/api/internal/integrations/torrserver"
 	"martytv/api/internal/iptv"
+	"martytv/api/internal/ivrestart"
 	"martytv/api/internal/messages"
+	"martytv/api/internal/metrics"
 	"martytv/api/internal/pairing"
 	"martytv/api/internal/playback"
 	"martytv/api/internal/profiles"
@@ -91,6 +93,10 @@ type Server struct {
 	Video *video.Service
 	// Trivia: «Цитаты» / «Факты» of a title.
 	Trivia *trivia.Service
+	// InvidiousRestart: the nightly Invidious restart (Run).
+	InvidiousRestart *ivrestart.Restarter
+	// Metrics refreshes the GET /metrics snapshot (Run); nil without METRICS_TOKEN.
+	Metrics *metrics.Refresher
 }
 
 // New builds the HTTP application.
@@ -135,6 +141,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	catalogSvc := catalog.NewService(pool, tmdbClient, cfg.TMDB, cfg.Catalog, log)
 
 	app.Use(recover.New())
+	prom := metrics.New(cfg.MetricsToken, Version)
+	app.Use(prom.Middleware()) // request counters by route template (cheap; also with /metrics off)
 	app.Use(httpx.RequestIDMiddleware())
 	app.Use(httpx.LoggerMiddleware(log))
 	app.Use(imports.LimitOtherBodies()) // BodyLimit fits 5 MB import uploads; 1 MiB for every other route
@@ -157,6 +165,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 		return c.JSON(fiber.Map{"status": "ok", "database": "up", "integrations": deps})
 	})
 
+	prom.Routes(app) // GET /metrics: 404 without METRICS_TOKEN; never proxied by Caddy
 	registerMSX(app, cfg)
 
 	api := app.Group("/api/v1", httpx.SecurityHeaders(), mw.Authenticate(), mw.CSRF())
@@ -307,7 +316,21 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 
 	api.Use(func(c fiber.Ctx) error { return httpx.NotFound() })
 
-	return &Server{App: app, Auth: authSvc, Pairing: pairSvc, Hub: hub, Catalog: catalogSvc, Playback: playbackSvc, Watch: watchSvc, Sysmon: sysmonSvc, Ratings: ratingsSvc, Awards: awardsSvc, Sources: srcReg, Online: onlineSvc, ClientLog: clientLog, Imports: importSvc, ForYou: forYouSvc, Curated: curatedSvc, Downloads: downloadsSvc, IPTV: iptvSvc, Video: videoSvc, Trivia: triviaSvc}
+	// /metrics snapshot sources (refreshed every 20 s while scraped, only when enabled).
+	var refresher *metrics.Refresher
+	if prom.Enabled() {
+		prom.RegisterLive(pool, playback.ActiveStreams, hub.Counts)
+		refresher = metrics.NewRefresher(log.With("module", "metrics"),
+			metrics.SystemSource(sysmonSvc.Status),
+			metrics.DBSource(pool),
+			metrics.AISource(forYouSvc.AIStats),
+			metrics.VideoSource(videoSvc.Health),
+		)
+		prom.Registry().MustRegister(refresher)
+	}
+
+	return &Server{App: app, Auth: authSvc, Pairing: pairSvc, Hub: hub, Catalog: catalogSvc, Playback: playbackSvc, Watch: watchSvc, Sysmon: sysmonSvc, Ratings: ratingsSvc, Awards: awardsSvc, Sources: srcReg, Online: onlineSvc, ClientLog: clientLog, Imports: importSvc, ForYou: forYouSvc, Curated: curatedSvc, Downloads: downloadsSvc, IPTV: iptvSvc, Video: videoSvc, Trivia: triviaSvc,
+		InvidiousRestart: ivrestart.New(cfg.InvidiousRestart, playback.LastVideoStream, log), Metrics: refresher}
 }
 
 // RunCleanup periodically prunes expired sessions and pairing requests.
@@ -453,6 +476,7 @@ func transcoderStats(p *playback.Service) func(context.Context) *sysmon.Transcod
 			return &sysmon.TranscoderStats{}
 		}
 		return &sysmon.TranscoderStats{OK: true, ActiveJobs: m.ActiveJobs, ActiveSubtitleJobs: m.ActiveSubtitleJobs, MaxJobs: m.MaxJobs,
-			JobsStarted: m.JobsStarted, JobsRejected: m.JobsRejected, JobsFailed: m.JobsFailed}
+			JobsStarted: m.JobsStarted, JobsRejected: m.JobsRejected, JobsFailed: m.JobsFailed,
+			VideoEncoder: m.VideoEncoder, VideoEncoderFallback: m.VideoEncoderFallback}
 	}
 }

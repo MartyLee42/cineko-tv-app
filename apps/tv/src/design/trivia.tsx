@@ -77,7 +77,7 @@ export function ExtrasLine({
 }
 
 /** Window key handling while a panel is shown (the newest claim acts). */
-function usePanelKeys(onKey: (k: PlayerKey, e: KeyboardEvent) => void) {
+export function usePanelKeys(onKey: (k: PlayerKey, e: KeyboardEvent) => void) {
   const handler = useRef(onKey);
   useEffect(() => {
     handler.current = onKey;

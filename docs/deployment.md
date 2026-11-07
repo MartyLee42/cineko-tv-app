@@ -15,6 +15,7 @@ other software has to be installed first.
 | `flaresolverr` | Gets Prowlarr past Cloudflare checks on some trackers | internal |
 | `torrserver` | Streams torrents over HTTP while they download | internal; UI on `127.0.0.1:8090` |
 | `invidious`, `invidious-db`, `companion` | YouTube for the «Видео» tab and music audio | internal |
+| `restart-proxy` | Docker socket proxy that lets the API restart Invidious + companion nightly ([below](#nightly-invidious-restart)) — nothing else | internal |
 | `gluetun` *(profile `vpn`, optional)* | VPN client offering an HTTP proxy, for places where TMDB / YouTube are blocked | internal |
 
 Only Caddy is published. The Prowlarr and TorrServer web UIs listen on the
@@ -56,8 +57,8 @@ The installer:
    optional **outbound proxy** (see [Blocked TMDB / YouTube](#blocked-tmdb--youtube-vpn-profile)).
 4. Writes `.env` (mode 0600) and generates every secret: `APP_SESSION_SECRET`,
    `POSTGRES_PASSWORD`, `TRANSCODER_SECRET`, `INVIDIOUS_DB_PASSWORD`,
-   `INVIDIOUS_HMAC_KEY`, `INVIDIOUS_COMPANION_KEY`. Existing values are never
-   replaced.
+   `INVIDIOUS_HMAC_KEY`, `INVIDIOUS_COMPANION_KEY`, `METRICS_TOKEN`
+   ([metrics](#metrics--prometheus)). Existing values are never replaced.
 5. Pulls the prebuilt images from GHCR (or builds them from the checkout when
    they aren't available, or with `--build`) and starts the stack.
 6. Waits for Prowlarr, copies its generated API key into `.env`
@@ -137,6 +138,49 @@ recreates the containers whose settings changed.
 - **Memory**: every container has a `mem_limit`. On a small server lower
   TorrServer's cache in its settings and `TRANSCODER_MAX_JOBS`.
 
+## GPU transcoding
+
+Most compatibility streams copy the video; only old codecs (XviD / DivX,
+MPEG-2, VC-1 ≤ 1080p) are re-encoded to H.264. That runs on the CPU
+(libx264) unless the transcoder finds a working GPU encoder at startup.
+`TRANSCODER_HWACCEL=auto` (default) tries, in order, NVIDIA NVENC, VAAPI
+(Intel / AMD) and Intel QSV; a backend is used only when ffmpeg has its
+encoder **and** a one-second test encode succeeds. Otherwise — and with
+`TRANSCODER_HWACCEL=none` — it stays on the CPU. `nvenc` / `vaapi` / `qsv`
+restricts the probe to that backend (still falling back to the CPU).
+Output is the same on every backend: H.264 High 4.0, 8-bit 4:2:0, a keyframe
+every 2 s, AAC audio. A GPU job that fails before any output is retried on the
+CPU; if that works, the CPU is used for the next 10 minutes.
+
+The GPU has to be passed into the container — add to
+`deployments/compose.override.yaml`:
+
+```yaml
+services:
+  transcoder:
+    # Intel / AMD: the render nodes, readable by the `render` group's id on the host.
+    devices: ["/dev/dri:/dev/dri"]
+    group_add: ["${RENDER_GID:-109}"]     # getent group render | cut -d: -f3
+```
+
+- **Intel**: the amd64 image includes the drivers (iHD for Broadwell and newer,
+  i965 for older, oneVPL for QSV).
+- **AMD**: needs Mesa's VA driver, which is large (~225 MB), so it is not in
+  the published image: build it with
+  `build: { context: ../services/transcoder, target: runtime, args: { VA_DRIVERS: mesa-va-gallium } }`
+  in the override and `scripts/cineko.sh up -d --build transcoder`.
+- **NVIDIA**: the stock image's ffmpeg (Alpine) has no NVENC encoder, so `auto`
+  skips it. The detection supports it for a custom image (`FFMPEG_PATH` to an
+  ffmpeg with `h264_nvenc`) with the nvidia-container-toolkit, see the
+  commented example in `deployments/compose.yaml`.
+
+Check the choice: `scripts/cineko.sh logs transcoder | grep "video encoder"`,
+or run the probe again with every attempt shown:
+`scripts/cineko.sh exec transcoder martytv-transcoder probe`. The
+transcoder's `/metrics` (`video_encoder`, `video_encoder_fallback`) is in the
+API's admin system stats too. `TRANSCODER_HWACCEL_DEVICE=/dev/dri/renderD129`
+picks another GPU.
+
 ## Torrent indexers (Prowlarr)
 
 Cineko searches through Prowlarr. Open its UI through an SSH tunnel:
@@ -168,15 +212,42 @@ to it; the bundled one then just idles (or remove it in the override file).
 ## TorrServer
 
 TorrServer downloads the pieces a player asks for and serves them over HTTP to
-the API and the transcoder; clients never talk to it. Its settings (cache
-size, connection limits, preload) are in its UI:
+the API and the transcoder; clients never talk to it.
+
+Three of its settings come from `.env` and are applied by
+`scripts/torrserver-settings.sh` (install.sh and update.sh run it; flags
+`--ts-cache-mb`, `--ts-remove-cache-on-drop`, `--ts-rutor-search` of
+install.sh write them):
+
+| `.env` | Default | TorrServer setting |
+|---|---|---|
+| `TORRSERVER_CACHE_MB` | `128` | `CacheSize` (bytes): RAM cache per torrent |
+| `TORRSERVER_REMOVE_CACHE_ON_DROP` | `true` | `RemoveCacheOnDrop`: free a torrent's cache when it closes |
+| `TORRSERVER_RUTOR_SEARCH` | `false` | `EnableRutorSearch`: TorrServer's own rutor search (Cineko uses Prowlarr / Jacred) |
+
+The script reads TorrServer's full settings, changes only these fields and
+writes the whole object back; everything else you set in its UI stays. It
+writes nothing when they already match, because every change makes
+TorrServer drop its open torrents and reconnect (whatever is streaming —
+Cineko, Lampa, MSX — has to restart). New values apply at once; no restart
+is needed (`--restart` restarts it anyway). With basic auth it uses
+`TORRSERVER_USERNAME` / `TORRSERVER_PASSWORD`.
+
+```sh
+scripts/torrserver-settings.sh                    # bundled TorrServer
+scripts/torrserver-settings.sh --url http://127.0.0.1:8090   # your own one, from this machine (curl/wget)
+scripts/torrserver-settings.sh --container NAME   # your own one in container NAME
+```
+
+The rest (connection limits, preload, …) is in its UI:
 
 ```sh
 ssh -L 8090:127.0.0.1:8090 you@your-server      # then http://localhost:8090
 ```
 
-- **Cache**: the default RAM cache is small; 256–1024 MB is a good range. Keep
-  it below the container's `mem_limit` (2 GB).
+- **Cache**: 128 MB per torrent suits a few simultaneous streams; up to
+  256–1024 MB helps on slow torrents. Keep (cache × streams) below the
+  container's `mem_limit` (2 GB).
 - **Incoming peers** (faster starts on poorly seeded torrents): set a fixed
   "peer port" in its settings and publish it in
   `deployments/compose.override.yaml`:
@@ -221,6 +292,35 @@ nano gluetun.env          # VPN_SERVICE_PROVIDER=…, WIREGUARD_PRIVATE_KEY=…,
 
 Torrent traffic (TorrServer, Prowlarr) does **not** go through it. Check:
 **Admin → Сервер** shows TMDB and «Видео (Invidious)» status.
+
+## Nightly Invidious restart
+
+Invidious gets slower and runs into YouTube's limits (stale connections,
+rate limiting, growing memory) the longer it runs; its own docs recommend
+restarting it regularly. Cineko does it every night at **03:00** in the
+server's timezone, so it is fresh before anyone watches:
+
+- The API restarts `companion`, then `invidious` (under a minute of «Видео»
+  downtime).
+- **Never mid-video**: if a YouTube video streamed in the last 5 minutes, the
+  restart waits and checks again every 15 minutes; if someone is still watching
+  at 05:00 it is skipped until the next night. (Music played from YouTube for
+  the first time isn't counted.)
+- Settings in `.env`: `INVIDIOUS_RESTART_AT=03:00` (`off` disables it);
+  the timezone is `INVIDIOUS_RESTART_TZ`, else `TZ` (install.sh sets it from
+  the host), else `NEW_EPISODES_TZ`, else UTC.
+- The restart goes through `restart-proxy`
+  ([wollomatic/socket-proxy](https://github.com/wollomatic/socket-proxy)),
+  which mounts the Docker socket and allows exactly
+  `POST /containers/<project>-{companion,invidious}-1/restart`, only from the
+  `api` container, on a network of their own. The API itself never sees the
+  socket. Rootless Docker or a socket elsewhere: `DOCKER_SOCKET=/run/user/1000/docker.sock`.
+- Check: `scripts/cineko.sh logs api | grep -i 'invidious restart'` (the
+  schedule is logged at start, every restart or postponement when it happens);
+  blocked requests show in `scripts/cineko.sh logs restart-proxy`.
+
+No host cron or systemd timer is needed; it starts with the stack (also after
+`scripts/update.sh`). The dev stack (`make dev`) has no proxy, so it is off there.
 
 ## Domain, HTTPS and reverse proxies
 
@@ -375,6 +475,90 @@ services:
   api:
     volumes: ["/run/martytv:/run/martytv:ro"]
 ```
+
+## Metrics / Prometheus
+
+«Метрики»: the API and Cineko Music serve `GET /metrics` in the Prometheus text
+format, for Prometheus, VictoriaMetrics, Grafana Agent / Alloy and the like.
+
+- **Off** unless `METRICS_TOKEN` is set in `.env` (then `/metrics` answers
+  404). `install.sh` generates one; set or change it by hand and run
+  `scripts/cineko.sh up -d`.
+- Every scrape needs `Authorization: Bearer <METRICS_TOKEN>` (else 401).
+- **Not public**: Caddy only proxies `/api`, `/msx`, `/music…` and `/healthz`, so
+  `https://<your domain>/metrics` is just the PWA. Scrape from inside the
+  compose network: `api:8080/metrics` and `music:8080/metrics`.
+- Cheap: the snapshot (host load, DB counts, device health, AI usage,
+  integrations) is refreshed every 20 s only while someone scrapes; a 15–60 s
+  scrape interval is fine.
+
+What's there (all prefixed `cineko_`; Go runtime and process series as usual):
+
+| Area | Series |
+|---|---|
+| HTTP | `http_requests_total{method,route,status}` (route = template like `/api/v1/media/:id`, status = `2xx`…), `http_request_duration_seconds{method,route}` |
+| Server tab | `host_cpu_usage_ratio`, `host_load1/5/15`, `host_memory_*_bytes`, `host_swap_*_bytes`, `host_disk_{total,used,free}_bytes{mount}`, `host_network_{receive,transmit}_bytes_total{iface}`, `container_{running,cpu_ratio,memory_bytes,memory_limit_bytes}{container}` (with the [host monitor](#host-monitor-optional); otherwise the API container's own numbers, `host_info{scope="container"}`), `db_size_bytes`, `image_cache_bytes` |
+| Database | `db_pool_{acquired,idle,total,max}_conns`, `db_pool_acquires_total`, `db_pool_acquire_duration_seconds_total`, … |
+| Playback | `active_streams`, `playback_sessions_active{client}`, `websocket_connections{kind}`, `transcoder_{up,active_jobs,max_jobs}`, `transcoder_jobs_{started,rejected,failed}_total`, `torrserver_{up,torrents,active_torrents,peers}`, `torrserver_{download,upload}_bytes_per_second` |
+| Downloads | `downloads{status}`, `downloads_size_bytes{status}`, `downloads_done_bytes{status}` |
+| Integrations | `integration_up{name}`, `integration_configured{name}` (tmdb, prowlarr, torrserver, kinopoisk; checked every 30 s), `integration_budget_remaining{name="kinopoisk"}`, `invidious_{configured,up,latency_seconds}` |
+| AI | `ai_enabled`, `ai_tokens_today`, `ai_calls_today`, `ai_daily_token_budget`, `ai_asks_today`, `ai_ask_daily_limit_per_user`, `ai_balance{currency}`; music: `music_ai_tokens_today`, `music_ai_daily_token_budget` («today» = the Moscow day the budgets use) |
+| Errors | `client_error_groups_open{app}`, `client_error_events{app}` (Admin → Errors) |
+| TVs | `devices_paired`, `devices_seen_1d`, `users`, `profiles`; latest health report per TV (≤ 1 day old) `device_health_{fps,heap_used_bytes,heap_limit_bytes,event_loop_lag_seconds,slow_frames_ratio,long_tasks,dropped_frames,total_frames,…}{device,model}` — labelled by device id and model, never the TV's name |
+| Meta | `build_info{version}`, `metrics_source_up{source}` (0 = that part of the snapshot failed; see the API log) |
+
+Example: Prometheus next to Cineko, in `deployments/compose.override.yaml`.
+Put the token in a file Prometheus reads (it isn't printed):
+
+```sh
+grep '^METRICS_TOKEN=' .env | cut -d= -f2- > deployments/metrics_token && chmod 600 deployments/metrics_token
+```
+
+```yaml
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    user: "0"   # reads the 0600 token file
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=30d"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./metrics_token:/etc/prometheus/metrics_token:ro
+      - prometheus-data:/prometheus
+    ports: ["127.0.0.1:9090:9090"]   # UI through an SSH tunnel
+    networks: [internal]
+volumes:
+  prometheus-data:
+```
+
+`deployments/prometheus.yml`:
+
+```yaml
+global:
+  scrape_interval: 30s
+scrape_configs:
+  - job_name: cineko-api
+    metrics_path: /metrics
+    authorization: { credentials_file: /etc/prometheus/metrics_token }
+    static_configs: [{ targets: ["api:8080"] }]
+  - job_name: cineko-music
+    authorization: { credentials_file: /etc/prometheus/metrics_token }
+    static_configs: [{ targets: ["music:8080"] }]
+```
+
+**Prometheus on another machine**: tunnel or publish the API's port only on a
+private interface (LAN / VPN address), e.g. in the override
+`services: { api: { ports: ["10.8.0.1:9101:8080"] } }`, and scrape
+`10.8.0.1:9101` with the same bearer token. Don't add `/metrics` to the
+Caddyfile unless you also restrict who can reach it — the token protects it,
+but the numbers describe your household's viewing.
+
+**Grafana**: add the Prometheus data source and build panels from e.g.
+`sum by (route) (rate(cineko_http_requests_total{status="5xx"}[5m]))`,
+`histogram_quantile(0.95, sum by (le, route) (rate(cineko_http_request_duration_seconds_bucket[5m])))`,
+`cineko_host_cpu_usage_ratio`, `cineko_active_streams`,
+`cineko_ai_tokens_today / cineko_ai_daily_token_budget`,
+`cineko_device_health_fps`, `cineko_integration_up == 0` (alert).
 
 ## Troubleshooting
 

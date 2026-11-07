@@ -17,6 +17,11 @@ export interface ReasonLike {
   mood: string | null;
   /** type "family": who in the family liked it (optional in the contract). */
   family?: FamilyWhyLike | null;
+  /** type "theme": the liked TMDB keyword; localized = the name is in the UI's catalog language. */
+  keyword_name?: string | null;
+  keyword_localized?: boolean | null;
+  /** The AI re-ranking's one-line personal reason (shown instead of the typed one). */
+  ai_text?: string | null;
 }
 
 export interface RowLike {
@@ -45,7 +50,11 @@ function genres(r: ReasonLike, max = 2): string {
  * required field is missing.
  */
 export function reasonText(r: ReasonLike, t: T): string {
+  if (r.ai_text) return t("themes.ai_reason", { text: r.ai_text });
   switch (r.type) {
+    case "theme":
+      if (r.keyword_name) return t(r.keyword_localized ? "themes.reason_about" : "themes.reason", { name: r.keyword_name });
+      return r.genre_names.length ? t("fy.reason.genre", { genres: genres(r) }) : t("fy.reason.genre_plain");
     case "because_you_rated":
       return r.media_title ? t("fy.reason.because_you_rated", { title: r.media_title }) : r.text;
     case "director":
@@ -101,6 +110,8 @@ export function rowTitle(row: RowLike, t: T): string {
       return t("fy.row.popular");
     case "ai_collection":
       return r.collection_title ? t("fy.row.ai_collection", { title: r.collection_title }) : row.title;
+    case "theme":
+      return r.keyword_name ? t(r.keyword_localized ? "themes.row_about" : "themes.row", { name: r.keyword_name }) : row.title;
     case "family":
       return t("family.row");
     case "curated":

@@ -1048,8 +1048,9 @@ export interface paths {
          *     only re-rank per request (penalties, never hiding): warnings
          *     too_heavy_for_device, over_device_resolution, codec_unsupported,
          *     codec_unknown (likely XviD: an old-style rip naming no codec or resolution),
-         *     audio_needs_conversion, audio_unsupported, hdr_avoided; reason
-         *     device_fit when a release fits every constraint.
+         *     audio_needs_conversion, audio_unsupported, hdr_avoided, may_stutter
+         *     (the variant is in the device's auto.rough); reason device_fit when a
+         *     release fits every constraint.
          */
         get: operations["listReleases"];
         put?: never;
@@ -3648,6 +3649,8 @@ export interface components {
             /** @description Decodable audio codecs. */
             audio?: ("aac" | "ac3" | "eac3" | "dts" | "truehd" | "mp3" | "opus" | "flac")[];
             containers?: ("mkv" | "mp4" | "ts")[];
+            /** @description Video variants (codec, 10-bit, 1080p / 2160p) the device decodes but not smoothly: mediaCapabilities.decodingInfo says smooth = false, or playback dropped many frames there. Ranking demotes matching releases (warning may_stutter). */
+            rough?: ("h264_1080p" | "h264_2160p" | "hevc_1080p" | "hevc_2160p" | "hevc_10bit_1080p" | "hevc_10bit_2160p" | "av1_1080p" | "av1_2160p" | "av1_10bit_1080p" | "av1_10bit_2160p")[];
             hls?: boolean | null;
             /** @description Compat streams (AAC transcode) are usable. */
             compat?: boolean | null;
@@ -3695,6 +3698,8 @@ export interface components {
             video: string[] | null;
             /** @description Decodable audio (null = unknown). */
             audio_codecs: string[] | null;
+            /** @description auto.rough: variants that don't play smoothly (null = none known). */
+            rough: string[] | null;
             compat: boolean;
             /** @enum {string|null} */
             default_player: "builtin" | "msx" | "external" | null;
@@ -4405,7 +4410,7 @@ export interface components {
             score: number;
             /** @description Machine-readable match reasons, e.g. title_exact, year_match, imdb_match, episode_match. */
             reasons: string[];
-            /** @description e.g. low_seeders, cam_quality, over_size_limit, no_preferred_language, likely_unplayable_codec, disc_image, 3d, uncertain_match; with a device profile also too_heavy_for_device, over_device_resolution, codec_unsupported, codec_unknown (an old-style rip naming neither codec nor resolution: likely XviD), audio_needs_conversion, audio_unsupported, hdr_avoided. */
+            /** @description e.g. low_seeders, cam_quality, over_size_limit, no_preferred_language, likely_unplayable_codec, disc_image, 3d, uncertain_match; with a device profile also too_heavy_for_device, over_device_resolution, codec_unsupported, codec_unknown (an old-style rip naming neither codec nor resolution: likely XviD), audio_needs_conversion, audio_unsupported, hdr_avoided, may_stutter (decodes here but not smoothly). */
             warnings: string[];
             /** @description Estimated average bitrate (size × 8 / runtime; per episode for packs), bits/s. null when the runtime is unknown. */
             est_bitrate_bps?: number | null;
@@ -5166,13 +5171,18 @@ export interface components {
                 /** Format: int64 */
                 tx_total: number;
             }[];
-            /** @description Top 12 by resident memory, grouped by friendly name (e.g. all postgres backends). Names only, never command lines. */
+            /** @description Top 12 by memory, grouped by friendly name per container (e.g. one container's postgres backends). Names only, never command lines. */
             processes: {
                 name: string;
+                /** @description Docker container name (hostmon only; absent for host processes). */
+                container?: string;
                 /** @description The group's biggest process. */
                 pid: number;
                 count: number;
-                /** Format: int64 */
+                /**
+                 * Format: int64
+                 * @description Resident memory with shared pages counted once per group: the members' private memory plus the largest member's shared part.
+                 */
                 rss_bytes: number;
                 /** @description 100 = one full core. */
                 cpu_percent: number;
@@ -5237,6 +5247,13 @@ export interface components {
                     jobs_rejected: number;
                     /** Format: int64 */
                     jobs_failed: number;
+                    /**
+                     * @description What re-encoded video (XviD / MPEG-2 / VC-1 → H.264) runs on: detected at the transcoder's start (TRANSCODER_HWACCEL).
+                     * @enum {string}
+                     */
+                    video_encoder?: "cpu" | "nvenc" | "vaapi" | "qsv";
+                    /** @description The GPU failed recently; re-encoding uses the CPU for a while. */
+                    video_encoder_fallback?: boolean;
                 } | null;
             };
         };
@@ -5458,12 +5475,17 @@ export interface components {
          *     trending «В тренде для вас»; rewatch «Пересмотреть любимое»; ai_collection (an AI подборка);
          *     popular (cold start: the profile has no signals yet);
          *     family «Семья советует» (GET /profiles/{id}/family; computed per request, second row);
-         *     curated «Подборка: …» (one curated list per profile per day, GET /curated/{list_id}; computed per request).
+         *     curated «Подборка: …» (one curated list per profile per day, GET /curated/{list_id}; computed per request);
+         *     theme «Вам нравятся фильмы про …» (TMDB discover by the profile's most liked keyword; reason.keyword_*).
+         *     AI theme rubrics (the model grouping the scorer's own candidates) are ai_collection rows too.
          * @enum {string}
          */
-        ForYouRowKind: "top_picks" | "because_you_rated" | "director" | "actor" | "genre" | "hidden_gems" | "something_different" | "trending" | "rewatch" | "ai_collection" | "popular" | "family" | "curated";
-        /** @enum {string} */
-        ForYouReasonType: "because_you_rated" | "director" | "actor" | "genre" | "hidden_gem" | "something_different" | "trending_for_you" | "ai_collection" | "rewatch" | "popular" | "mood" | "family" | "curated";
+        ForYouRowKind: "top_picks" | "because_you_rated" | "director" | "actor" | "genre" | "hidden_gems" | "something_different" | "trending" | "rewatch" | "ai_collection" | "popular" | "family" | "curated" | "theme";
+        /**
+         * @description theme: the title has a TMDB keyword the profile likes (keyword_id / keyword_name; genre_ids are the fallback).
+         * @enum {string}
+         */
+        ForYouReasonType: "because_you_rated" | "director" | "actor" | "genre" | "hidden_gem" | "something_different" | "trending_for_you" | "ai_collection" | "rewatch" | "popular" | "mood" | "family" | "curated" | "theme";
         /**
          * @description Why a title is recommended. `text` is localized by the server (lang);
          *     clients may instead build their own text from `type` + the typed
@@ -5496,6 +5518,18 @@ export interface components {
             collection_title: string | null;
             /** @description mood (Surprise): the SurpriseMood key. */
             mood: string | null;
+            /** @description theme: the TMDB keyword id. */
+            keyword_id?: number;
+            /** @description theme: the keyword's name in the response language when known (Russian names come from the AI themes call), else TMDB's English name. Absent when the keyword is unknown. */
+            keyword_name?: string;
+            /** @description theme: keyword_name is in the response language (Russian reads after «фильмы про …»). */
+            keyword_localized?: boolean;
+            /**
+             * @description The model's one-line personal reason from the daily AI re-ranking of «Подобрано для вас»
+             *     («медленный, как любимый вами Тарковский, но с развязкой»), in the profile's language; only
+             *     when the response language matches it. Clients show it instead of the typed reason.
+             */
+            ai_text?: string;
             /** @description family: who in the family liked the title and how (only on family items). */
             family?: components["schemas"]["FamilyWhy"];
         };
@@ -5756,6 +5790,10 @@ export interface components {
             temperature: components["schemas"]["AITemperature"];
             /** @description DeepSeek may write «Факты» for titles Kinopoisk has none for (admin switch, default true). */
             facts_ai: boolean;
+            /** @description The daily run groups each profile's good unseen candidates into AI theme rubrics (admin switch, default true). */
+            themes_ai?: boolean;
+            /** @description The daily run re-ranks «Подобрано для вас» with a personal reason per title (admin switch, default true). */
+            picks_ai?: boolean;
             model: string;
             /** @description Tokens used today (Moscow date). */
             tokens_today: number;
@@ -5787,6 +5825,10 @@ export interface components {
             temperature: components["schemas"]["AITemperature"];
             /** @description AI-written «Факты» allowed (admin switch). */
             facts_ai: boolean;
+            /** @description AI theme rubrics allowed (admin switch). */
+            themes_ai?: boolean;
+            /** @description AI re-ranking of «Подобрано для вас» allowed (admin switch). */
+            picks_ai?: boolean;
             /** @description Offset each creativity adds to the temperature. */
             creativity: {
                 precise: number;
@@ -5956,6 +5998,19 @@ export interface components {
             score: number;
             count: number;
         };
+        /** @description A TMDB keyword («heist», «time loop») as a taste theme. */
+        TasteTheme: {
+            /** @description TMDB keyword id. */
+            id: number;
+            /** @description In the response language when known, else TMDB's English name. */
+            name: string;
+            name_en: string;
+            /** @description name is in the response language (Russian: accusative, reads after «фильмы про …»). */
+            localized: boolean;
+            /** @description −1…1 (damped for keywords common across the catalog). */
+            score: number;
+            count: number;
+        };
         TasteDNA: {
             /** Format: uuid */
             profile_id: string;
@@ -5983,6 +6038,14 @@ export interface components {
             countries: components["schemas"]["TasteAffinity"][];
             directors: components["schemas"]["TastePerson"][];
             actors: components["schemas"]["TastePerson"][];
+            /** @description TMDB keywords (≥ 2 titles), strongest first, ≤ 20. */
+            themes?: components["schemas"]["TasteTheme"][];
+            /** @description Screenplay / Writer (≥ 2 titles). */
+            writers?: components["schemas"]["TastePerson"][];
+            /** @description Director of Photography (≥ 2 titles). */
+            cinematographers?: components["schemas"]["TastePerson"][];
+            /** @description Original Music Composer (≥ 2 titles). */
+            composers?: components["schemas"]["TastePerson"][];
             /** @description How many signal titles have cast/crew loaded (filled lazily by the daily run). */
             credits_coverage: {
                 with_credits: number;
@@ -10912,6 +10975,10 @@ export interface operations {
                     };
                     /** @description False: «Факты» show only Kinopoisk's (stored AI ones are hidden). */
                     facts_ai?: boolean;
+                    /** @description False: the daily run doesn't ask the model to group the scorer's candidates into theme rubrics. */
+                    themes_ai?: boolean;
+                    /** @description False: no AI re-ranking of «Подобрано для вас» (stored picks still apply until they expire, 48 h). */
+                    picks_ai?: boolean;
                 };
             };
         };

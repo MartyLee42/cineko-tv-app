@@ -82,6 +82,9 @@ type Store struct {
 
 	factsAILoaded bool
 	factsAI       bool
+
+	// features: cached AI feature switches (AIFeatureEnabled).
+	features map[string]bool
 }
 
 func NewStore(q db.Querier, auditLog *audit.Logger, log *slog.Logger) *Store {
@@ -210,6 +213,49 @@ func (s *Store) SetFactsAIEnabled(ctx context.Context, enabled bool, by string) 
 	}
 	s.mu.Lock()
 	s.factsAI, s.factsAILoaded = enabled, true
+	s.mu.Unlock()
+	return nil
+}
+
+// AIFeatureEnabled reports an AI feature switch stored under
+// "ai_feature_<name>" (internal/foryou: "themes", "picks"). Default true;
+// a database error also answers true and is retried on the next call.
+func (s *Store) AIFeatureEnabled(ctx context.Context, feature string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if v, ok := s.features[feature]; ok {
+		return v
+	}
+	var raw []byte
+	err := s.q.QueryRow(ctx, `SELECT value FROM app_settings WHERE key = $1`, "ai_feature_"+feature).Scan(&raw)
+	v := seasonalValue{Enabled: true}
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+	case err != nil:
+		if s.log != nil {
+			s.log.Warn("app settings: read failed", "err", err)
+		}
+		return true
+	default:
+		_ = json.Unmarshal(raw, &v)
+	}
+	if s.features == nil {
+		s.features = map[string]bool{}
+	}
+	s.features[feature] = v.Enabled
+	return v.Enabled
+}
+
+// SetAIFeatureEnabled stores an AI feature switch.
+func (s *Store) SetAIFeatureEnabled(ctx context.Context, feature string, enabled bool, by string) error {
+	if err := s.put(ctx, "ai_feature_"+feature, seasonalValue{Enabled: enabled}, by); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	if s.features == nil {
+		s.features = map[string]bool{}
+	}
+	s.features[feature] = enabled
 	s.mu.Unlock()
 	return nil
 }

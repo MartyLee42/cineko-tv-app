@@ -296,6 +296,19 @@ func (s *Service) probe(ctx context.Context) {
 	}
 }
 
+// Health is the last Invidious probe for /metrics (no network call);
+// reachable nil = not checked yet.
+func (s *Service) Health() (configured bool, reachable *bool, latency time.Duration) {
+	s.health.mu.Lock()
+	defer s.health.mu.Unlock()
+	if s.health.reachable != nil {
+		ok := *s.health.reachable
+		reachable = &ok
+		latency = s.health.latency
+	}
+	return s.client.Configured(), reachable, latency
+}
+
 // Status is GET /admin/video/status.
 type Status struct {
 	Configured    bool    `json:"configured"`

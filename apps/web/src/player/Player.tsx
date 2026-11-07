@@ -12,7 +12,7 @@ import { sessionThroughput } from "../devprefs/logic";
 import { api } from "../api";
 import { formatSpeed } from "../play/releases";
 import { releaseSummary } from "../play/PlayOnTv";
-import { autoSkipDue, hasMediaSource, hlsMode, isAndroid, isHlsSource, markerKey, skipTarget, type HlsMode, type SkipMode } from "@martytv/media-types";
+import { autoSkipDue, chapterIndexAt, chapterTicks, fileChapters, hasMediaSource, hlsMode, isAndroid, isHlsSource, markerKey, skipTarget, type Chapter, type HlsMode, type SkipMode } from "@martytv/media-types";
 import { Spinner, useI18n } from "@martytv/ui";
 import {
   AudioTrackIcon,
@@ -1262,6 +1262,8 @@ export function Player(props: PlayerProps) {
               seek(s);
             }}
             label={t("player.web.seek")}
+            chapters={fileChapters(source.media_info?.chapters, duration)}
+            chapterName={(i, title) => (title ? t("chapters.titled", { n: i + 1, title }) : t("chapters.n", { n: i + 1 }))}
           />
           <div className="flex items-center gap-1">
             {props.prev && (
@@ -1529,6 +1531,8 @@ function SeekBar({
   onScrub,
   onCommit,
   label,
+  chapters = null,
+  chapterName,
 }: {
   time: number;
   duration: number;
@@ -1536,7 +1540,11 @@ function SeekBar({
   onScrub: (s: number) => void;
   onCommit: (s: number) => void;
   label: string;
+  /** The file's chapters: ticks on the bar, the name in the time bubble. */
+  chapters?: Chapter[] | null;
+  chapterName?: (index: number, title: string | null) => string;
 }) {
+  const ticks = chapterTicks(chapters, duration);
   const bar = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const [hover, setHover] = useState<{ x: number; s: number; w: number } | null>(null);
@@ -1558,6 +1566,11 @@ function SeekBar({
           data-testid="player-seek-bubble"
         >
           {formatClock(bubble.s)}
+          {chapters && chapterName && chapterIndexAt(chapters, bubble.s) >= 0 && (
+            <span className="ml-1.5 font-normal opacity-80" data-testid="player-seek-chapter">
+              · {chapterName(chapterIndexAt(chapters, bubble.s), chapters[chapterIndexAt(chapters, bubble.s)]!.title)}
+            </span>
+          )}
         </span>
       )}
       <div
@@ -1615,6 +1628,9 @@ function SeekBar({
             <div key={i} className="absolute inset-y-0 bg-white/35" style={{ left: `${b.left}%`, width: `${b.width}%` }} data-testid="player-buffered" />
           ))}
           <div className="absolute inset-y-0 left-0 bg-accent" style={{ width: `${pct}%` }} />
+          {ticks.map((p) => (
+            <div key={p} className="absolute inset-y-0 w-0.5 -translate-x-1/2 bg-black/70" style={{ left: `${p}%` }} data-testid="player-chapter-tick" />
+          ))}
         </div>
         <div
           className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow ring-2 ring-black/30 transition-transform group-hover:scale-110 ${touchAt ? "h-6 w-6" : "h-4 w-4 sm:h-3.5 sm:w-3.5"}`}
