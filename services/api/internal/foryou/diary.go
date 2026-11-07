@@ -316,6 +316,17 @@ type TastePerson struct {
 	Count       int     `json:"count"`
 }
 
+// TasteTheme is a liked or disliked TMDB keyword (contract TasteTheme).
+type TasteTheme struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+	// NameEN is TMDB's name; Localized = Name is in the response language.
+	NameEN    string  `json:"name_en"`
+	Localized bool    `json:"localized"`
+	Score     float64 `json:"score"`
+	Count     int     `json:"count"`
+}
+
 type TasteDNA struct {
 	ProfileID string    `json:"profile_id"`
 	Computed  time.Time `json:"computed_at"`
@@ -334,13 +345,18 @@ type TasteDNA struct {
 		Movie  int `json:"movie"`
 		Series int `json:"series"`
 	} `json:"kinds"`
-	Genres          []TasteAffinity `json:"genres"`
-	Decades         []TasteAffinity `json:"decades"`
-	Languages       []TasteAffinity `json:"languages"`
-	Countries       []TasteAffinity `json:"countries"`
-	Directors       []TastePerson   `json:"directors"`
-	Actors          []TastePerson   `json:"actors"`
-	CreditsCoverage struct {
+	Genres    []TasteAffinity `json:"genres"`
+	Decades   []TasteAffinity `json:"decades"`
+	Languages []TasteAffinity `json:"languages"`
+	Countries []TasteAffinity `json:"countries"`
+	Directors []TastePerson   `json:"directors"`
+	Actors    []TastePerson   `json:"actors"`
+	// Themes (TMDB keywords) and the crew beyond directors.
+	Themes           []TasteTheme  `json:"themes"`
+	Writers          []TastePerson `json:"writers"`
+	Cinematographers []TastePerson `json:"cinematographers"`
+	Composers        []TastePerson `json:"composers"`
+	CreditsCoverage  struct {
 		WithCredits int `json:"with_credits"`
 		Total       int `json:"total"`
 	} `json:"credits_coverage"`
@@ -420,17 +436,19 @@ func (s *Service) TasteDNA(ctx context.Context, profileID, lang string) (*TasteD
 	out.Languages = conv(t.Languages, 15, func(k string) string { return languageName(lang, k) })
 	out.Countries = conv(t.Countries, 15, func(k string) string { return countryName(lang, k) })
 	var pids []int
-	for _, a := range append(limit(t.Directors, 15), limit(t.Actors, 15)...) {
-		p, _ := strconv.Atoi(a.Key)
-		pids = append(pids, p)
+	for _, list := range [][]Affinity{limit(t.Directors, 15), limit(t.Actors, 15), limit(t.Writers, 10), limit(t.Cinematographers, 10), limit(t.Composers, 10)} {
+		for _, a := range list {
+			p, _ := strconv.Atoi(a.Key)
+			pids = append(pids, p)
+		}
 	}
 	people, err := s.personNames(ctx, pids, lang)
 	if err != nil {
 		return nil, err
 	}
-	persons := func(list []Affinity) []TastePerson {
+	persons := func(list []Affinity, n int) []TastePerson {
 		out := []TastePerson{}
-		for _, a := range limit(list, 15) {
+		for _, a := range limit(list, n) {
 			p, _ := strconv.Atoi(a.Key)
 			n, ok := people[p]
 			if !ok {
@@ -440,6 +458,26 @@ func (s *Service) TasteDNA(ctx context.Context, profileID, lang string) (*TasteD
 		}
 		return out
 	}
-	out.Directors, out.Actors = persons(t.Directors), persons(t.Actors)
+	out.Directors, out.Actors = persons(t.Directors, 15), persons(t.Actors, 15)
+	out.Writers, out.Cinematographers, out.Composers = persons(t.Writers, 10), persons(t.Cinematographers, 10), persons(t.Composers, 10)
+	themes := limit(t.Keywords, 20)
+	kids := make([]int, 0, len(themes))
+	for _, a := range themes {
+		k, _ := strconv.Atoi(a.Key)
+		kids = append(kids, k)
+	}
+	kn, err := s.keywordNames(ctx, kids)
+	if err != nil {
+		return nil, err
+	}
+	out.Themes = []TasteTheme{}
+	for i, a := range themes {
+		n, ok := kn[kids[i]]
+		if !ok {
+			continue
+		}
+		out.Themes = append(out.Themes, TasteTheme{ID: kids[i], Name: n.in(lang), NameEN: n.EN, Localized: lang != "ru" || n.RU != "",
+			Score: a.Score, Count: a.Count})
+	}
 	return out, nil
 }
