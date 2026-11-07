@@ -17,6 +17,15 @@
      design-matrix             — «Матрица»: green phosphor digital rain, glowing mono type (terminal skeleton)
      design-stickerbook        — «Стикербук»: die-cut sticker posters, washi tape, cream/pink/mint on ink (kinozal skeleton)
      design-pocketpet          — «Тамагочи»: pastel toy shell around a grey-green LCD, pixel ink and type (terminal skeleton)
+     design-odyssey            — «Одиссея»: late-60s space age: white ship corridors, symmetry, dark ink, one red light as focus (projector skeleton)
+     design-mult               — «Мультфильм»: LIGHT warm gouache paper, cut-out hills, soft fog, terracotta (kinozal skeleton)
+     design-tarkovsky          — «Созерцание»: dim rain and water, sepia posters, candle amber, book serif (kinozal skeleton)
+     design-silent             — «Немое кино»: black and white, film grain, art-nouveau intertitle cards (projector skeleton)
+     design-anderson           — «Симметрия»: pastel pink, mustard and mint, centred and symmetric, chapter cards (projector skeleton)
+     design-noir               — «Нуар»: 1940s film noir: monochrome, window-blind light, rain, typewriter type (terminal skeleton)
+     design-vague              — «Новая волна»: French New Wave: red/blue/white word cards, handwritten notes (terminal skeleton)
+     design-western            — «Вестерн»: sun-bleached desert, wanted posters, letterboxing, slab type (kinozal skeleton)
+     design-redroom            — «Красная комната»: red curtains, zigzag floor, ivory serif capitals (projector skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {
@@ -285,6 +294,196 @@ html.design-pocketpet {
   color-scheme: light;
 }
 
+/* «Одиссея»: late-1960s space-age sci-fi (mood only): white spaceship corridors and symmetry; station-
+   white panels, dark ink, grey ribs, black-slab buttons; colour only in the focus ring, a single red
+   glowing light. Headings in wide, letter-spaced capitals (Unbounded Light, has Cyrillic); labels
+   in JetBrains Mono. Light tokens like «Тамагочи» (the theme switch stays Кинозал-only). */
+html.design-odyssey {
+  --mt-bg: 238, 241, 244;
+  --mt-surface: 255, 255, 255;
+  --mt-surface-2: 226, 231, 236;
+  --mt-border: 180, 188, 198;
+  --mt-text: 16, 19, 24;
+  --mt-muted: 74, 85, 99;
+  --mt-accent: 16, 19, 24;
+  --mt-accent-strong: 226, 30, 22;
+  --mt-on-accent: 255, 255, 255;
+  --mt-focus: 226, 30, 22;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 2px;
+  --mt-radius-control: 2px;
+  color-scheme: light;
+}
+
+/* «Мультфильм» (in the spirit of classic Soviet studio animation): a LIGHT design — warm gouache paper,
+   umber ink (≈11:1 on the paper; muted ≈5.5:1), terracotta accent, a deep brick focus ring, a faded sky
+   blue. Hand-lettered Neucha headings (Cyrillic, one weight), Onest body. No light/dark switch: the
+   design itself is light (like «Тамагочи»). */
+html.design-mult {
+  --mt-bg: 243, 233, 214;
+  --mt-surface: 255, 250, 240;
+  --mt-surface-2: 236, 223, 198;
+  --mt-border: 196, 176, 144;
+  --mt-text: 58, 42, 32;
+  --mt-muted: 108, 86, 68;
+  --mt-accent: 184, 72, 40;
+  --mt-accent-strong: 92, 140, 160;
+  --mt-on-accent: 255, 248, 236;
+  --mt-focus: 150, 52, 28;
+  --mt-danger: 190, 40, 40;
+  --mt-ok: 46, 130, 70;
+  --mt-warn: 166, 96, 10;
+  --mt-font-display: "Neucha", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 10px;
+  --mt-radius-control: 14px;
+  color-scheme: light;
+}
+
+/* «Созерцание» (a homage to Tarkovsky): dim and low-contrast ground (wet slate, moss), warm parchment
+   text (≈13:1, so it still reads), candle amber, a water green; Cormorant Garamond headings. */
+html.design-tarkovsky {
+  --mt-bg: 20, 22, 19;
+  --mt-surface: 33, 35, 31;
+  --mt-surface-2: 45, 47, 42;
+  --mt-border: 74, 76, 66;
+  --mt-text: 226, 220, 203;
+  --mt-muted: 158, 152, 134;
+  --mt-accent: 200, 164, 106;
+  --mt-accent-strong: 140, 168, 152;
+  --mt-on-accent: 22, 18, 10;
+  --mt-focus: 232, 216, 176;
+  --mt-font-display: "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 4px;
+  --mt-radius-control: 6px;
+  color-scheme: dark;
+}
+
+/* «Немое кино»: a silent-film print: pure black and white (no sepia), white intertitle type in a
+   period serif (Old Standard TT, has Cyrillic), the body stays Onest for legibility; the accent is
+   white too, so lit buttons read as white intertitle cards. Photos turn grey (TV look / PWA). */
+html.design-silent {
+  --mt-bg: 10, 10, 10;
+  --mt-surface: 26, 26, 26;
+  --mt-surface-2: 44, 44, 44;
+  --mt-border: 120, 120, 120;
+  --mt-text: 244, 244, 244;
+  --mt-muted: 178, 178, 178;
+  --mt-accent: 240, 240, 240;
+  --mt-accent-strong: 255, 255, 255;
+  --mt-on-accent: 10, 10, 10;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "Old Standard TT", "Playfair Display", Georgia, serif;
+  --mt-font-label: "Old Standard TT", "Playfair Display", Georgia, serif;
+  --mt-radius-card: 10px;
+  --mt-radius-control: 6px;
+  color-scheme: dark;
+}
+
+/* «Симметрия»: a pastel storybook: powder pink ground, cream paper, mustard and mint, a deep
+   raspberry ink for text (contrast at 3 m), a dark mustard accent (accent text reads on pink); a geometric Futura-like sans (Jost, has Cyrillic) for
+   everything, headings in spaced capitals. */
+html.design-anderson {
+  --mt-bg: 246, 214, 214;
+  --mt-surface: 251, 238, 230;
+  --mt-surface-2: 242, 222, 210;
+  --mt-border: 196, 150, 70;
+  --mt-text: 58, 34, 44;
+  --mt-muted: 112, 78, 88;
+  --mt-accent: 154, 107, 16;
+  --mt-accent-strong: 143, 207, 184;
+  --mt-on-accent: 251, 238, 230;
+  --mt-focus: 122, 34, 62;
+  --mt-font-body: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-display: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: light;
+}
+
+/* «Нуар»: 1940s film noir (homage): monochrome night, paper-white light, silver greys; typewriter
+   type (IBM Plex Mono, a slab-serif mono with Cyrillic) for headings and labels, Onest body. */
+html.design-noir {
+  --mt-bg: 12, 12, 13;
+  --mt-surface: 28, 28, 29;
+  --mt-surface-2: 44, 44, 45;
+  --mt-border: 96, 95, 92;
+  --mt-text: 235, 233, 227;
+  --mt-muted: 160, 157, 150;
+  --mt-accent: 242, 239, 230;
+  --mt-accent-strong: 255, 255, 255;
+  --mt-on-accent: 12, 12, 13;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+  --mt-font-label: "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* «Новая волна»: the French New Wave (homage): a black screen, solid red, blue and white word cards
+   (like intertitles); heavy wide capitals (Unbounded) on the cards, handwritten notes (Caveat), Onest body. */
+html.design-vague {
+  --mt-bg: 10, 10, 12;
+  --mt-surface: 26, 26, 30;
+  --mt-surface-2: 42, 42, 48;
+  --mt-border: 92, 92, 100;
+  --mt-text: 250, 250, 248;
+  --mt-muted: 170, 170, 176;
+  --mt-accent: 230, 40, 30;
+  --mt-accent-strong: 52, 92, 222;
+  --mt-on-accent: 255, 255, 255;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* «Вестерн»: a spaghetti-western homage on a sun-bleached desert: pale sand sky, dusty ochre, dark
+   saddle-brown ink, a rust-red «wanted» accent; wood-type slab headings (Kelly Slab, has Cyrillic),
+   body text Onest. Light, like Тамагочи: the kinozal skeleton reads its tokens. */
+html.design-western {
+  --mt-bg: 236, 220, 188;
+  --mt-surface: 224, 199, 154;
+  --mt-surface-2: 210, 180, 130;
+  --mt-border: 150, 106, 62;
+  --mt-text: 43, 26, 14;
+  --mt-muted: 98, 66, 40;
+  --mt-accent: 163, 58, 28;
+  --mt-accent-strong: 208, 138, 46;
+  --mt-on-accent: 255, 243, 222;
+  --mt-focus: 43, 26, 14;
+  --mt-danger: 178, 34, 34;
+  --mt-ok: 46, 125, 50;
+  --mt-warn: 168, 98, 10;
+  --mt-font-display: "Kelly Slab", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 3px;
+  --mt-radius-control: 4px;
+  color-scheme: light;
+}
+
+/* «Красная комната»: a homage to a famous surreal TV series' red room: near-black, deep curtain red,
+   ivory; elegant capitals in Playfair Display (has Cyrillic). */
+html.design-redroom {
+  --mt-bg: 11, 6, 6;
+  --mt-surface: 42, 10, 12;
+  --mt-surface-2: 62, 16, 18;
+  --mt-border: 110, 34, 36;
+  --mt-text: 244, 239, 230;
+  --mt-muted: 196, 178, 170;
+  --mt-accent: 226, 44, 52;
+  --mt-accent-strong: 240, 236, 228;
+  --mt-on-accent: 255, 255, 255;
+  --mt-focus: 240, 236, 228;
+  --mt-font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 4px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
 /* Headings in the later designs use their display face (web and TV). */
 html.design-deco h1, html.design-deco h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2 { font-family: var(--mt-font-display); }
@@ -296,6 +495,15 @@ html.design-constructivism h1, html.design-constructivism h2 { font-family: var(
 html.design-matrix h1, html.design-matrix h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 0 10px rgba(0, 255, 65, .55); }
 html.design-stickerbook h1, html.design-stickerbook h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-pocketpet h1, html.design-pocketpet h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; line-height: 1.25; }
+html.design-odyssey h1, html.design-odyssey h2 { font-family: var(--mt-font-display); font-weight: 300; text-transform: uppercase; letter-spacing: .14em; }
+html.design-mult h1, html.design-mult h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .01em; }
+html.design-tarkovsky h1, html.design-tarkovsky h2 { font-family: var(--mt-font-display); font-weight: 600; letter-spacing: .01em; }
+html.design-silent h1, html.design-silent h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .02em; }
+html.design-anderson h1, html.design-anderson h2 { font-family: var(--mt-font-display); font-weight: 500; text-transform: uppercase; letter-spacing: .12em; }
+html.design-noir h1, html.design-noir h2 { font-family: var(--mt-font-display); font-weight: 600; letter-spacing: -.01em; }
+html.design-vague h1, html.design-vague h2 { font-family: var(--mt-font-display); font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; }
+html.design-western h1, html.design-western h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .02em; }
+html.design-redroom h1, html.design-redroom h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .04em; }
 
 html, body, #root { height: 100%; }
 body {
@@ -323,5 +531,5 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--mt-muted), 0.7); }
 ::-webkit-scrollbar-corner { background: transparent; }
-html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb, html.design-matrix ::-webkit-scrollbar-thumb, html.design-pocketpet ::-webkit-scrollbar-thumb { border-radius: 0; }
+html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb, html.design-matrix ::-webkit-scrollbar-thumb, html.design-pocketpet ::-webkit-scrollbar-thumb, html.design-noir ::-webkit-scrollbar-thumb, html.design-vague ::-webkit-scrollbar-thumb { border-radius: 0; }
 

@@ -3,16 +3,19 @@ import { useQuery } from "@tanstack/react-query";
 import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-spatial-navigation";
 import type { PlaybackSource, Release } from "@martytv/contracts";
 import { chapterIndexAt, chapterTicks, fileChapters, imageUrl, nextChapterStart, prevChapterStart, releaseBitrate, skipMode, type Chapter } from "@martytv/media-types";
-import { CvIcon, loadStatsLines, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
+import { CvIcon, loaderPick, loadStatsLines, matchInfoOf, useAppliedDesign, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
+import { FINALE_MS, hasFinale, loaderKind } from "./loaderChunks";
+import { loaderKey } from "./loaderKeys";
 import { FocusButton, FocusLine } from "../focus";
 import { useCatalogConfig } from "../catalog/queries";
 import { Backdrop } from "../components/Img";
+import { FailHint } from "../components/States";
 import { player } from "./controller";
 import { useFlow } from "./flow";
 import { episodeLabel, formatClock, releaseRow } from "./format";
 import { BufferingSpinner, Loader, useLoadProgress } from "./Loader";
 import { useSteady } from "./steady";
-import { getSource } from "./data";
+import { cachedMedia, getSource } from "./data";
 import { mbit, prebufferPref } from "./rebuffer";
 import { bufferStripe, netStats } from "./stats";
 import { formatBytes, formatSpeed } from "./format";
@@ -246,28 +249,62 @@ function bufferLabel(t: ReturnType<typeof useI18n>["t"], locale: string, ahead: 
 /** One for the app, like the progress tracker (a remount keeps the numbers). */
 const torrentHold = new TorrentHold();
 
-/** The first-load screen: preparing the source, then until the first frame. */
-function PreparingOverlay({ flow }: { flow: Extract<Flow, { phase: "preparing" | "playing" }> }) {
+/**
+ * The end flourish of the drawn styles: true for FINALE_MS once a loading
+ * screen that was up for a while (not a quick internal restart) gives way
+ * to the first frame. Derived during render (no frame without the overlay).
+ */
+function useFinale(shown: boolean, playing: boolean): boolean {
+  const [long, setLong] = useState(false);
+  const [prev, setPrev] = useState(shown);
+  const [finale, setFinale] = useState(false);
+  if (prev !== shown) {
+    setPrev(shown);
+    setFinale(!shown && long && playing);
+    setLong(false);
+  }
+  useEffect(() => {
+    if (!shown) return;
+    const id = setTimeout(() => setLong(true), 2000);
+    return () => clearTimeout(id);
+  }, [shown]);
+  useEffect(() => {
+    if (!finale) return;
+    const id = setTimeout(() => setFinale(false), FINALE_MS);
+    return () => clearTimeout(id);
+  }, [finale]);
+  return finale;
+}
+
+/** The first-load screen: preparing the source, then until the first frame (`done`: the style's end flourish). */
+function PreparingOverlay({ flow, done = false }: { flow: Extract<Flow, { phase: "preparing" | "playing" }>; done?: boolean }) {
   const { locale } = useI18n();
   const cfg = useCatalogConfig();
   const settings = useSettings();
+  const applied = useAppliedDesign();
   const ctx = flow.ctx;
-  const stage: LoadStage = flow.phase === "preparing" ? stageOf(flow.step, flow.source) : "starting";
+  const stage: LoadStage = done ? "done" : flow.phase === "preparing" ? stageOf(flow.step, flow.source) : "starting";
   const source = flow.source;
-  const p = useLoadProgress(player.loadKey(), stage, source, player.metadata, `${ctx.media_id}|${ctx.episode_id ?? ""}`);
   // While the first seconds buffer (source ready), keep the numbers live —
   // held so «загружено N МБ из M» never goes back.
   const live = useLiveTorrent(source, flow.phase === "playing");
   const held = torrentHold.hold(source?.id ?? null, live, source?.file?.size_bytes ?? source?.release?.size_bytes ?? null);
   const torrent = held.torrent;
+  // The bar measures the same held numbers the text shows (one feed, not the raw polls).
+  const fed = source ? { id: source.id, torrent, file: source.file, release: source.release } : null;
+  const p = useLoadProgress(player.loadKey(), stage, fed, player.metadata, `${ctx.media_id}|${ctx.episode_id ?? ""}`);
   const cs = flow.phase === "playing" ? player.compatState() : null;
   // Tell phones following this load (device state) what the screen shows.
   const loadKey = player.loadKey();
   useEffect(() => player.reportLoad(loadKey, p, torrent), [loadKey, p, torrent]);
+  // «Сюрприз»: one pick per load attempt (the same key keeps it through remounts and the finale).
+  const style = loaderPick.resolve(settings.loading_style, loadKey, () => matchInfoOf(ctx.media_id, { title: ctx.title, ...cachedMedia(ctx.media_id, ctx.lang), kind: ctx.kind }));
+  if (done && !hasFinale(loaderKind(style, applied ?? "kinozal"))) return null;
   return (
     <Loader
-      style={settings.loading_style}
+      style={style}
       m={{
+        done,
         p,
         stage,
         title: ctx.title,
@@ -302,6 +339,7 @@ function FailedScreen({ flow }: { flow: Extract<Flow, { phase: "failed" }> }) {
         <p data-testid="player-failed-text" className="mt-6 max-w-[1500px] text-4xl leading-snug">
           {unplayable ? t("player.unplayable", { reason }) : errText(flow.code)}
         </p>
+        <FailHint />
         {flow.release && <p className="mt-6 truncate text-3xl text-muted">{releaseSummary(flow.release, locale)}</p>}
         <FocusLine focusKey="failed" keys={keys} axis="horizontal" className="mt-14 flex">
           <FocusButton
@@ -406,6 +444,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   // the controller only acts on «Другая раздача»).
   const loadingNow = flow.phase === "preparing" || !player.started;
   const rebufNow = playing && player.started && player.rebuffering() !== null;
+  const finale = useFinale(loadingNow, playing);
   const liveTorrent = useLiveTorrent(flow.source, loadingNow || rebufNow);
   const [waitKey, setWaitKey] = useState<string | null>(null);
   const slowKey = `${player.loadKey()}:${loadingNow ? "load" : "rebuf"}`;
@@ -637,6 +676,8 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         if (k === "back" || (k === "ok" && sl.focus === "wait")) return setWaitKey(sl.key);
         if (k === "ok") return player.slowAnother(sl.slow.speedBps * 8);
       }
+      // «Лови!»: the loading screen's game takes the arrows (Back / OK / media keys stay the player's).
+      if (player.loading() && loaderKey(k)) return;
       if (flow.phase !== "playing") {
         if (k === "back") player.back();
         if (k === "stop") player.close();
@@ -878,7 +919,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         style={{ objectFit: "contain", display: player.frameShown() ? "block" : "none" }}
       />
 
-      {(flow.phase === "preparing" || !player.started) && <PreparingOverlay flow={flow} />}
+      {loadingNow ? <PreparingOverlay flow={flow} /> : finale && <PreparingOverlay flow={flow} done />}
       {slowT && (flow.phase === "preparing" || !player.started) && (
         <div className="absolute bottom-[90px] left-1/2 z-20 w-[1400px] -translate-x-1/2">
           <SlowTorrentHint slow={slowT} focus={slowTFocus} />

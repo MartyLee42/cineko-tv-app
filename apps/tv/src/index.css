@@ -69,8 +69,12 @@ body { overflow: hidden; cursor: none; }
 .tv-spoiler { -webkit-filter: blur(18px); filter: blur(18px); transform: scale(1.15); }
 
 /* ---------------------------------------------------------------- loading screens */
-.tv-loader-ease { transition: transform 900ms cubic-bezier(.22,.61,.36,1); will-change: transform; }
+/* Progress steps arrive ~4/s (loading.ts SHOW_EVERY_MS): ease between them. */
+.tv-loader-ease { transition: transform 600ms cubic-bezier(.25,.6,.4,1); will-change: transform; }
 .tv-loader-fade { transition: opacity 900ms ease; }
+/* The end flourish over the starting film (loaderChunks FINALE_MS): holds, then fades away. */
+.tv-loader-finale { pointer-events: none; animation: tv-loader-finale 1500ms ease-in both; }
+@keyframes tv-loader-finale { 0%, 55% { opacity: 1; } 100% { opacity: 0; } }
 .tv-loader-title { font-size: 112px; line-height: 1.08; font-weight: 800; letter-spacing: -.01em; margin: 0; }
 /* Outline text: dim fill + stroke (prefixed for old engines). */
 .tv-title-outline { color: rgba(var(--mt-text), .1); -webkit-text-stroke: 2px rgba(var(--mt-text), .38); }
@@ -262,6 +266,50 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 .dt-pocketpet.dt-on { box-shadow: inset 0 0 0 6px #f3c6dc, inset 0 0 0 8px #c7a6d6, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
 .dt-pocketpet .dt-nav { left: 6px; top: 6px; width: calc(100% - 12px); background: rgba(24,32,18,.12) !important; }
 .dt-pocketpet .dt-poster { border-radius: 0; border-color: #182012 !important; background: #b5c399 !important; }
+/* «Одиссея»: a white corridor in perspective (converging ribs), a black door at the end, a red-lit tile. */
+.dt-odyssey { background-image: linear-gradient(90deg, rgba(0,0,0,0) 47%, #101318 47%, #101318 53%, rgba(0,0,0,0) 53%), linear-gradient(26deg, rgba(0,0,0,0) 49%, rgba(150,160,172,.7) 49.5%, rgba(0,0,0,0) 50.5%), linear-gradient(-26deg, rgba(0,0,0,0) 49%, rgba(150,160,172,.7) 49.5%, rgba(0,0,0,0) 50.5%), linear-gradient(180deg, #f6f8fa 0%, #e6eaee 50%, #cfd5dc 100%) !important; background-size: 100% 30%, 100% 100%, 100% 100%, 100% 100% !important; background-position: 0 50%, 0 0, 0 0, 0 0 !important; background-repeat: no-repeat !important; }
+.dt-odyssey .dt-nav, .dt-odyssey .dt-title, .dt-odyssey .dt-accent, .dt-odyssey .dt-poster { border-radius: 1px; }
+.dt-odyssey .dt-nav { background: #fff !important; box-shadow: inset 0 0 0 1px rgba(16,19,24,.25); }
+.dt-odyssey .dt-title { height: 5%; }
+.dt-odyssey .dt-poster { border-width: 1px; border-color: rgba(16,19,24,.3) !important; background: #fff !important; }
+.dt-odyssey .dt-accent + .dt-poster { border-color: #e21e16 !important; box-shadow: 0 0 6px 2px rgba(255,40,28,.55); }
+/* «Мультфильм»: paper hills and a sun on warm paper (light); cut-out posters. «Созерцание»: rain over dim water, sepia posters. */
+.dt-mult { background-image: radial-gradient(ellipse 60% 26% at 28% 100%, #afbd8b 0, #afbd8b 97%, rgba(175,189,139,0) 100%), radial-gradient(ellipse 75% 32% at 88% 100%, #c3cea5 0, #c3cea5 97%, rgba(195,206,165,0) 100%), radial-gradient(circle at 84% 20%, #f4c586 0, #f4c586 9%, rgba(244,197,134,0) 10%) !important; }
+.dt-mult .dt-nav { background: #e9d6b4 !important; }
+.dt-mult .dt-poster { border: 3px solid #fffaf0 !important; box-shadow: 0 2px 3px rgba(96,64,40,.3); }
+.dt-tarkovsky { background-image: repeating-linear-gradient(98deg, rgba(216,210,191,0) 0px, rgba(216,210,191,0) 9px, rgba(216,210,191,.13) 9px, rgba(216,210,191,.13) 10px), linear-gradient(180deg, rgba(0,0,0,0) 66%, rgba(216,210,191,.14) 66%, rgba(216,210,191,0) 68%, rgba(8,10,8,.5) 100%) !important; }
+.dt-tarkovsky .dt-poster { background: #6e5c43 !important; border-color: rgba(226,220,203,.25) !important; }
+.dt-tarkovsky .dt-accent + .dt-poster { background: #4f6a5c !important; }
+/* «Немое кино»: black and white, an intertitle frame on the title bar, grain dots. */
+.dt-silent { background-image: radial-gradient(circle, rgba(255,255,255,.1) 0px, rgba(255,255,255,.1) 1px, rgba(255,255,255,0) 1.4px), radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 50%, rgba(0,0,0,.7) 100%) !important; background-size: 5px 7px, 100% 100% !important; }
+.dt-silent .dt-nav { background: #0a0a0a !important; box-shadow: 0 0 0 1px #f2f2f2; }
+.dt-silent .dt-title { background: #0a0a0a !important; box-shadow: 0 0 0 2px #f2f2f2, 0 0 0 4px #0a0a0a, 0 0 0 5px #f2f2f2; }
+.dt-silent .dt-poster { border-color: #f2f2f2 !important; background: #3a3a3a !important; }
+/* «Симметрия»: pink with a mint/cream awning, centred title card in a mustard rule, framed posters. */
+.dt-anderson { background-image: repeating-linear-gradient(90deg, #8fcfb8 0px, #8fcfb8 8px, #fbeee6 8px, #fbeee6 16px) !important; background-size: 100% 6px !important; background-repeat: no-repeat !important; }
+.dt-anderson .dt-nav { border-radius: 0; box-shadow: 0 0 0 1px #d9a520; }
+.dt-anderson .dt-title { left: 27%; width: 46%; background: #3a222c !important; box-shadow: 0 0 0 4px #fbeee6, 0 0 0 5px #d9a520; }
+.dt-anderson .dt-accent { left: 40%; }
+.dt-anderson .dt-poster { border-radius: 0; border: 3px solid #fbeee6 !important; box-shadow: 0 0 0 1px #d9a520; }
+/* «Нуар»: light through blinds; grey posters. «Новая волна»: red and blue cards at the edges. */
+.dt-noir { background-image: repeating-linear-gradient(-32deg, rgba(242,239,230,0) 0px, rgba(242,239,230,0) 8px, rgba(242,239,230,.16) 8px, rgba(242,239,230,.16) 15px) !important; }
+.dt-noir .dt-poster { border-radius: 0; }
+.dt-vague { background-image: linear-gradient(90deg, #e6281e 0, #e6281e 5%, rgba(0,0,0,0) 5%) !important; }
+.dt-vague .dt-poster { border-radius: 0; }
+.dt-vague .dt-title { background: #345cde !important; }
+/* «Вестерн»: a bleached sky over ochre ground, letterbox bars, paper-framed bills. */
+.dt-western { background-image: linear-gradient(180deg, #f6eedb 0%, #ecd6aa 58%, #d29d5f 58%, #c88f52 100%) !important; box-shadow: inset 0 9px 0 #0b0806, inset 0 -9px 0 #0b0806; }
+.dt-western.dt-on { box-shadow: inset 0 9px 0 #0b0806, inset 0 -9px 0 #0b0806, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
+.dt-western .dt-poster { border-radius: 0; border-width: 2px; border-top-width: 6px; border-color: #f1dfb8 !important; background: #7a4a26 !important; }
+/* «Красная комната»: red curtains at the sides, a zigzag floor. */
+.dt-redroom {
+  background-color: #170607 !important;
+  background-image: repeating-linear-gradient(135deg, #ece7dd 0px, #ece7dd 4px, #0d0b0b 4px, #0d0b0b 8px), repeating-linear-gradient(90deg, #5a0509 0px, #a8121c 6px, #5a0509 12px) !important;
+  background-size: 100% 16%, 100% 100% !important; background-position: 0 100%, 0 0 !important; background-repeat: no-repeat !important;
+  box-shadow: inset 12px 0 0 #b3121c, inset -12px 0 0 #b3121c;
+}
+.dt-redroom.dt-on { box-shadow: inset 12px 0 0 #b3121c, inset -12px 0 0 #b3121c, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
+.dt-redroom .dt-poster { border-color: #f0ece4 !important; background: #2a0a0c !important; }
 
 /* Проектор-skeleton flat elements never scale on focus (any skin). The doubled
    class outweighs the skins' focus rules, which load later (design/looks/*.css). */

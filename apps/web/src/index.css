@@ -291,13 +291,210 @@ html.design-pocketpet .aspect-\[2\/3\] { border-radius: 0; box-shadow: inset 0 0
 html.design-pocketpet :focus-visible { outline: none; box-shadow: 0 0 0 3px rgb(196, 208, 170), 0 -6px 0 3px rgb(24, 32, 18), 0 6px 0 3px rgb(24, 32, 18), -6px 0 0 3px rgb(24, 32, 18), 6px 0 0 3px rgb(24, 32, 18); }
 .design-swatch-pocketpet { background: #c4d0aa !important; box-shadow: inset 0 0 0 4px #f3c6dc, inset 0 0 0 5px #c7a6d6; }
 
+/* «Мультфильм» (light): warm gouache paper with soft paper hills at the bottom; posters and panels are
+   paper cut-outs (a cream edge, a soft lifted shadow); a brick focus ring. */
+html.design-mult body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-mult body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse 60% 16% at 22% 100%, #afbd8b 0, #afbd8b 96%, rgba(175, 189, 139, 0) 100%),
+    radial-gradient(ellipse 70% 20% at 86% 100%, #c3cea5 0, #c3cea5 96%, rgba(195, 206, 165, 0) 100%),
+    radial-gradient(ellipse 80% 40% at 15% 0%, rgba(244, 206, 170, 0.5), rgba(244, 206, 170, 0)),
+    radial-gradient(circle, rgba(96, 64, 40, 0.04) 0px, rgba(96, 64, 40, 0.04) 1px, rgba(96, 64, 40, 0) 1.6px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 6px 6px;
+}
+html.design-mult section.rounded-2xl.border { border: 4px solid #fffaf0; box-shadow: 0 4px 0 rgba(96, 64, 40, 0.1), 0 8px 18px rgba(96, 64, 40, 0.15); }
+html.design-mult .aspect-\[2\/3\] { border: 4px solid #fffaf0; border-radius: 10px; box-shadow: 0 3px 0 rgba(96, 64, 40, 0.12), 0 6px 12px rgba(96, 64, 40, 0.18); }
+html.design-mult header.sticky { box-shadow: 0 2px 0 rgba(184, 72, 40, 0.35); }
+html.design-mult :focus-visible { outline: 3px solid rgb(150, 52, 28); outline-offset: 3px; }
+/* «Созерцание»: dim slate with faint static rain; posters rest in sepia and get their colour back on hover / focus. */
+html.design-tarkovsky body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-tarkovsky body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(98deg, rgba(216, 210, 191, 0) 0px, rgba(216, 210, 191, 0) 13px, rgba(216, 210, 191, 0.035) 13px, rgba(216, 210, 191, 0.035) 14px),
+    linear-gradient(180deg, #1b1e1a 0%, #141613 60%, #0f110e 100%);
+}
+html.design-tarkovsky .aspect-\[2\/3\] img { -webkit-filter: sepia(0.6) saturate(0.6); filter: sepia(0.6) saturate(0.6); transition: filter 0.9s ease; }
+html.design-tarkovsky a:hover .aspect-\[2\/3\] img, html.design-tarkovsky a:focus-visible .aspect-\[2\/3\] img { -webkit-filter: none; filter: none; }
+html.design-tarkovsky section.rounded-2xl.border { border-color: rgba(226, 220, 203, 0.12); }
+html.design-tarkovsky :focus-visible { outline: 2px solid rgb(232, 216, 176); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  html.design-tarkovsky .aspect-\[2\/3\] img { transition: none; }
+}
+.design-swatch-mult { background-image: radial-gradient(ellipse 60% 30% at 28% 100%, #afbd8b 0, #afbd8b 96%, rgba(175, 189, 139, 0) 100%), radial-gradient(ellipse 75% 36% at 88% 100%, #c3cea5 0, #c3cea5 96%, rgba(195, 206, 165, 0) 100%), radial-gradient(circle at 80% 24%, #f4c586 0, #f4c586 12%, rgba(244, 197, 134, 0) 13%) !important; }
+.design-swatch-tarkovsky { background-image: repeating-linear-gradient(98deg, rgba(216, 210, 191, 0) 0px, rgba(216, 210, 191, 0) 6px, rgba(216, 210, 191, 0.16) 6px, rgba(216, 210, 191, 0.16) 7px), linear-gradient(180deg, rgba(0, 0, 0, 0) 64%, rgba(216, 210, 191, 0.16) 64%, rgba(216, 210, 191, 0) 68%) !important; }
+
 .design-swatch-stickerbook { background-image: radial-gradient(circle, rgba(255, 248, 239, 0.16) 0px, rgba(255, 248, 239, 0.16) 1px, rgba(255, 248, 239, 0) 1.6px), linear-gradient(-6deg, rgba(0, 0, 0, 0) 40%, rgba(255, 111, 165, 0.75) 40%, rgba(255, 111, 165, 0.75) 52%, rgba(0, 0, 0, 0) 52%); background-size: 7px 7px, 100% 100%; box-shadow: inset 0 0 0 3px #fffaf0; }
+/* «Одиссея»: station white with a faint symmetric corridor (two converging ribs and a soft ceiling
+   glow, fixed behind everything); square panels with hairlines, wide light capitals in dark ink,
+   focus = a single red glowing ring. */
+html.design-odyssey body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-odyssey body::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0)),
+    linear-gradient(118deg, rgba(0, 0, 0, 0) 49.8%, rgba(150, 160, 172, 0.35) 50%, rgba(0, 0, 0, 0) 50.2%),
+    linear-gradient(-118deg, rgba(0, 0, 0, 0) 49.8%, rgba(150, 160, 172, 0.35) 50%, rgba(0, 0, 0, 0) 50.2%),
+    linear-gradient(180deg, rgba(238, 241, 244, 0) 60%, rgba(207, 213, 220, 0.6) 100%);
+}
+html.design-odyssey section.rounded-2xl.border { border-radius: 2px; border-color: rgba(16, 19, 24, 0.14); background-color: rgba(255, 255, 255, 0.9); box-shadow: 0 6px 18px rgba(16, 19, 24, 0.06); }
+html.design-odyssey .aspect-\[2\/3\] { border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(16, 19, 24, 0.14), 0 4px 12px rgba(16, 19, 24, 0.14); }
+html.design-odyssey header.sticky { background-color: rgba(255, 255, 255, 0.94); box-shadow: 0 1px 0 rgba(16, 19, 24, 0.14); }
+html.design-odyssey :focus-visible { outline: 2px solid rgb(226, 30, 22); outline-offset: 3px; box-shadow: 0 0 14px 4px rgba(255, 40, 28, 0.45); }
+.design-swatch-odyssey { background-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 46%, #101318 46%, #101318 54%, rgba(0, 0, 0, 0) 54%), linear-gradient(26deg, rgba(0, 0, 0, 0) 49%, rgba(150, 160, 172, 0.7) 49.5%, rgba(0, 0, 0, 0) 50.5%), linear-gradient(-26deg, rgba(0, 0, 0, 0) 49%, rgba(150, 160, 172, 0.7) 49.5%, rgba(0, 0, 0, 0) 50.5%), linear-gradient(180deg, #f6f8fa 0%, #e6eaee 50%, #cfd5dc 100%) !important; background-size: 100% 30%, 100% 100%, 100% 100%, 100% 100% !important; background-position: 0 50%, 0 0, 0 0, 0 0 !important; background-repeat: no-repeat !important; box-shadow: inset 0 0 0 1px rgba(16, 19, 24, 0.25); }
+
+/* «Немое кино»: a black-and-white print: static grain and a vignette over black, posters in grey,
+   headings on intertitle cards (a double white rule), serif type. */
+html.design-silent body { background-color: rgb(var(--mt-bg)); }
+html.design-silent body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse at 50% 40%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.7) 100%),
+    radial-gradient(circle, rgba(255, 255, 255, 0.07) 0px, rgba(255, 255, 255, 0.07) 0.8px, rgba(255, 255, 255, 0) 1.2px);
+  background-size: 100% 100%, 5px 7px;
+}
+html.design-silent img { -webkit-filter: grayscale(1) contrast(1.1); filter: grayscale(1) contrast(1.1); }
+html.design-silent h1 { display: table; padding: 0.15em 0.9em 0.25em; border: 2px solid #f2f2f2; outline: 1px solid rgba(242, 242, 242, 0.7); outline-offset: 4px; background: #0a0a0a; }
+html.design-silent section.rounded-2xl.border { border-color: rgba(242, 242, 242, 0.45); box-shadow: inset 0 0 0 4px rgb(var(--mt-surface)), inset 0 0 0 5px rgba(242, 242, 242, 0.2); }
+html.design-silent .aspect-\[2\/3\] { box-shadow: inset 0 0 0 1px rgba(242, 242, 242, 0.5); }
+html.design-silent header.sticky { box-shadow: 0 1px 0 rgba(242, 242, 242, 0.5), 0 4px 0 #0a0a0a, 0 5px 0 rgba(242, 242, 242, 0.25); }
+html.design-silent :focus-visible { outline: 2px solid #f4f4f4; outline-offset: 2px; box-shadow: 0 0 0 5px #0a0a0a, 0 0 0 6px #f4f4f4; }
+.design-swatch-silent { background-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.75) 100%), radial-gradient(circle, rgba(255, 255, 255, 0.14) 0px, rgba(255, 255, 255, 0.14) 0.8px, rgba(255, 255, 255, 0) 1.2px) !important; background-size: 100% 100%, 4px 5px !important; box-shadow: inset 0 0 0 2px #0a0a0a, inset 0 0 0 3px #f2f2f2; }
+/* «Симметрия»: a pink wall under a mint/cream awning; centred spaced-capital headings; cream mats
+   in mustard rules around panels and posters; raspberry focus. */
+html.design-anderson body { background-color: rgb(var(--mt-bg)); }
+html.design-anderson body::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 10px;
+  z-index: 60;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(90deg, #8fcfb8 0px, #8fcfb8 24px, #fbeee6 24px, #fbeee6 48px);
+}
+html.design-anderson h1 { text-align: center; }
+html.design-anderson section.rounded-2xl.border { border-radius: 0; border: 2px solid #d9a520; box-shadow: inset 0 0 0 5px rgb(var(--mt-surface)), inset 0 0 0 6px rgba(217, 165, 32, 0.6); }
+html.design-anderson .aspect-\[2\/3\] { border-radius: 0; box-shadow: inset 0 0 0 5px #fbeee6, inset 0 0 0 6px #d9a520; }
+html.design-anderson header.sticky { box-shadow: 0 2px 0 #d9a520; }
+html.design-anderson :focus-visible { outline: 3px solid rgb(122, 34, 62); outline-offset: 3px; }
+.design-swatch-anderson { background-image: repeating-linear-gradient(90deg, #8fcfb8 0px, #8fcfb8 6px, #fbeee6 6px, #fbeee6 12px), linear-gradient(#fbeee6, #fbeee6) !important; background-size: 100% 5px, 40% 30% !important; background-position: 0 0, 50% 60% !important; background-repeat: no-repeat !important; box-shadow: inset 0 0 0 2px #d9a520; }
+
+/* «Нуар»: black and white; light through window blinds falls across the page (static), every picture
+   desaturated, typewriter headings (tokens), a paper-white focus. */
+html.design-noir body { background-color: rgb(var(--mt-bg)); }
+html.design-noir body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse 80% 60% at 75% 10%, rgba(242, 239, 230, 0.07), rgba(242, 239, 230, 0)),
+    repeating-linear-gradient(-32deg, rgba(242, 239, 230, 0) 0px, rgba(242, 239, 230, 0) 26px, rgba(242, 239, 230, 0.05) 26px, rgba(242, 239, 230, 0.05) 58px);
+}
+html.design-noir img { filter: grayscale(1) contrast(1.1); }
+html.design-noir section.rounded-2xl.border { border-radius: 0; border-color: rgba(242, 239, 230, 0.22); }
+html.design-noir .aspect-\[2\/3\] { border-radius: 0; }
+html.design-noir :focus-visible { outline: 2px solid rgb(242, 239, 230); outline-offset: 3px; }
+.design-swatch-noir { background-image: repeating-linear-gradient(-32deg, rgba(242, 239, 230, 0) 0px, rgba(242, 239, 230, 0) 5px, rgba(242, 239, 230, 0.22) 5px, rgba(242, 239, 230, 0.22) 10px) !important; }
+
+/* «Новая волна»: black, section titles on solid blue cards, square corners, a white frame with a red
+   offset for focus; pages arrive with a jump cut (three hard frames, no tween). */
+html.design-vague body { background-color: rgb(var(--mt-bg)); box-shadow: inset 6px 0 0 rgb(230, 40, 30); }
+html.design-vague main section h2:not(#hero-title) { display: inline-block; background: rgb(52, 92, 222); color: #fff; padding: 0.1em 0.45em 0.15em; text-transform: uppercase; }
+html.design-vague section.rounded-2xl.border { border-radius: 0; border-color: rgba(250, 250, 248, 0.3); }
+html.design-vague .aspect-\[2\/3\] { border-radius: 0; }
+html.design-vague :focus-visible { outline: 3px solid #fff; outline-offset: 2px; box-shadow: 7px 7px 0 3px rgb(230, 40, 30); }
+html.design-vague .mt-page { -webkit-animation: nv-page-cut 0.14s steps(1, end) both; animation: nv-page-cut 0.14s steps(1, end) both; }
+@-webkit-keyframes nv-page-cut { 0% { opacity: 0; } 30% { opacity: 1; -webkit-transform: translate3d(-14px, 0, 0); } 65% { opacity: 1; -webkit-transform: translate3d(7px, -3px, 0); } 100% { opacity: 1; -webkit-transform: none; } }
+@keyframes nv-page-cut { 0% { opacity: 0; } 30% { opacity: 1; transform: translate3d(-14px, 0, 0); } 65% { opacity: 1; transform: translate3d(7px, -3px, 0); } 100% { opacity: 1; transform: none; } }
+.design-swatch-vague { background-image: linear-gradient(90deg, #e6281e 0, #e6281e 22%, rgba(0, 0, 0, 0) 22%), linear-gradient(0deg, #345cde 0, #345cde 30%, rgba(0, 0, 0, 0) 30%) !important; }
+
+/* «Вестерн»: a sun-bleached sky over a dusty ridge; panels and posters are aged paper bills
+   (posters with a thick top margin, like a «wanted» bill); slab headings; a rust-red focus. */
+html.design-western body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-western body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 82% 12%, rgba(255, 250, 240, 0.9) 0, rgba(255, 244, 220, 0.6) 70px, rgba(255, 244, 220, 0) 180px),
+    linear-gradient(180deg, #f6eedb 0%, #f1e4c6 50%, #e8cc98 82%, #d6a96c 100%);
+}
+html.design-western section.rounded-2xl.border { border-radius: 4px; border: 2px solid rgba(96, 60, 30, 0.45); background-color: #f1dfb8; box-shadow: inset 0 0 30px rgba(120, 70, 24, 0.18), 0 6px 14px rgba(70, 40, 15, 0.18); }
+html.design-western .aspect-\[2\/3\] { border-radius: 2px; border: 5px solid #f1dfb8; border-top-width: 16px; box-shadow: 0 0 0 1px rgba(96, 60, 30, 0.45), 0 5px 12px rgba(70, 40, 15, 0.28); }
+html.design-western header.sticky { box-shadow: 0 3px 0 rgba(163, 58, 28, 0.55); }
+html.design-western :focus-visible { outline: 3px solid rgb(163, 58, 28); outline-offset: 3px; }
+.design-swatch-western { background-image: linear-gradient(180deg, #f6eedb 0%, #ecd6aa 58%, #d29d5f 58%, #c88f52 100%) !important; box-shadow: inset 0 6px 0 #0b0806, inset 0 -6px 0 #0b0806; }
+
+/* «Красная комната»: red curtains at the viewport's sides, a zigzag floor strip at the bottom;
+   ivory serif headings; an ivory focus with a red glow. */
+html.design-redroom body {
+  background-color: rgb(var(--mt-bg));
+  background-image: repeating-linear-gradient(90deg, rgba(120, 8, 14, 0.16) 0px, rgba(150, 14, 22, 0.22) 18px, rgba(60, 2, 6, 0.16) 40px, rgba(120, 8, 14, 0.16) 60px);
+}
+html.design-redroom body::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14px;
+  z-index: 70;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(135deg, #ece7dd 0px, #ece7dd 7px, #0d0b0b 7px, #0d0b0b 14px);
+}
+/* The curtains: two narrow red drapes down the viewport's edges. */
+html.design-redroom body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  box-shadow: inset 12px 0 0 #a8121c, inset -12px 0 0 #a8121c, inset 16px 0 10px rgba(0, 0, 0, 0.45), inset -16px 0 10px rgba(0, 0, 0, 0.45);
+}
+html.design-redroom section.rounded-2xl.border { border-color: rgba(210, 31, 42, 0.5); }
+html.design-redroom h1 { letter-spacing: 0.06em; text-transform: uppercase; }
+html.design-redroom header.sticky { box-shadow: 0 3px 0 rgba(210, 31, 42, 0.7); }
+html.design-redroom :focus-visible { outline: 2px solid rgb(240, 236, 228); outline-offset: 2px; box-shadow: 0 0 16px rgba(226, 44, 52, 0.65); }
+.design-swatch-redroom {
+  background-image: repeating-linear-gradient(135deg, #ece7dd 0px, #ece7dd 4px, #0d0b0b 4px, #0d0b0b 8px), repeating-linear-gradient(90deg, #5a0509 0px, #a8121c 6px, #5a0509 12px) !important;
+  background-size: 100% 22%, 100% 100% !important;
+  background-position: 0 100%, 0 0 !important;
+  background-repeat: no-repeat !important;
+}
 
 /* Page changes: a short fade-in of the new page (transform + opacity only). */
 .mt-page { -webkit-animation: mt-page-in .18s ease-out both; animation: mt-page-in .18s ease-out both; }
 @-webkit-keyframes mt-page-in { from { opacity: 0; -webkit-transform: translate3d(0, 6px, 0); } to { opacity: 1; -webkit-transform: none; } }
 @keyframes mt-page-in { from { opacity: 0; transform: translate3d(0, 6px, 0); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .mt-page { -webkit-animation: none; animation: none; }
+  .mt-page, html.design-vague .mt-page { -webkit-animation: none; animation: none; }
 }
 

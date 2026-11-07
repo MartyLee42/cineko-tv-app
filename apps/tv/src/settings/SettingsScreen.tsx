@@ -18,6 +18,9 @@ import { useFamilyRows } from "./familyRows";
 import { useHealthPref } from "../health/agent";
 import { tvOwn } from "./tvOwn";
 
+/** Designs with a moving background layer: the «Движение фона» row shows for them. */
+const MOTION_DESIGNS = new Set<string>(["wireframe", "matrix", "mult", "tarkovsky", "silent", "noir", "vague"]);
+
 /**
  * Settings (side menu): the profile's settings (saved on the server, applied
  * at once) and this TV's own (default player, language). Back closes.
@@ -47,10 +50,11 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
     r.design,
     r.surprise,
     ...(settings.design_surprise !== "off" ? [favorites(() => setPickingFavs(true))] : []),
-    ...(looks.includes("wireframe") || looks.includes("matrix") ? [r.motion] : []),
+    ...(looks.some((l) => MOTION_DESIGNS.has(l)) ? [r.motion] : []),
     // Light colours exist for «Кинозал» only.
     ...(looks.includes("kinozal") ? [r.theme] : []),
     r.loading,
+    r.filmTheme,
     ...season.rows,
     ...cozy,
     r.posterRating,

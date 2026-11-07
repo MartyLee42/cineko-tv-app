@@ -88,6 +88,9 @@ type Settings struct {
 	// ShowCurated («Подборки» on Home): one curated list per day as a
 	// «Для вас» row (internal/curated, foryou). Default on.
 	ShowCurated *bool `json:"show_curated,omitempty"`
+	// FilmTheme («Тема под фильм»): Details and the player's loader take the
+	// look of the film being opened (silent → black and white, …). Default off.
+	FilmTheme *bool `json:"film_theme,omitempty"`
 }
 
 // SkipModes are the allowed skip_segments values.
@@ -192,8 +195,8 @@ func SetKnownSources(f func() []string) { knownSources = f }
 
 var (
 	themes        = []string{"system", "dark", "light"}
-	loadingStyles = []string{"popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix"}
-	designs       = []string{"kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet"}
+	loadingStyles = []string{"popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix", "paws", "aquarium", "speed88", "odyssey", "balloons", "catch", "water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine", "surprise", "match"}
+	designs       = []string{"kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson", "noir", "vague", "western", "redroom"}
 	posterRatings = []string{"kp", "tmdb", "imdb", "off"}
 )
 
@@ -207,7 +210,7 @@ func DefaultSettings() Settings {
 		IPTVPlaylists: &IPTVPlaylistsSetting{All: true}, VideoQuality: ptr(720), VideoHideShorts: ptr(true), VideoAutoplay: ptr(true),
 		SeasonalEffects: ptr("off"), HiddenTabs: &[]string{},
 		CozyMode: ptr(false), CozyAmbience: ptr("fireplace"), CozySound: ptr(false), PosterWobble: ptr(true),
-		ShareWithFamily: ptr(false), ShowFamily: ptr(true), ShowCurated: ptr(true)}
+		ShareWithFamily: ptr(false), ShowFamily: ptr(true), ShowCurated: ptr(true), FilmTheme: ptr(false)}
 }
 
 func ptr[T any](v T) *T { return &v }
@@ -313,6 +316,9 @@ func (s Settings) withDefaults() Settings {
 	}
 	if s.ShowCurated != nil {
 		d.ShowCurated = s.ShowCurated
+	}
+	if s.FilmTheme != nil {
+		d.FilmTheme = s.FilmTheme
 	}
 	return d
 }

@@ -1,0 +1,68 @@
+/* «Тема под фильм» on the PWA: the title page's hero only (same looks as
+   apps/tv/src/filmtheme/themes; all in one lazy chunk). Static: graded
+   images, the title's font, one grain/vignette overlay. :root lifts the
+   specificity over the designs' html.design-x h1 rules. */
+:root [data-film-theme] {
+  isolation: isolate;
+  --ft-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+:root [data-film-theme]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* silent: Немое кино: чёрно-белое, зерно, виньетка, шрифт интертитров */
+:root [data-film-theme="silent"] img { -webkit-filter: grayscale(1) contrast(1.2) brightness(.92); filter: grayscale(1) contrast(1.2) brightness(.92); }
+:root [data-film-theme="silent"] h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; letter-spacing: .01em; }
+:root [data-film-theme="silent"]::after { background-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 52%, rgba(0, 0, 0, .7) 100%), var(--ft-grain); opacity: .9; }
+
+/* classic: Классический Голливуд: сепия, мягкая виньетка */
+:root [data-film-theme="classic"] img { -webkit-filter: sepia(.6) grayscale(.35) contrast(1.08); filter: sepia(.6) grayscale(.35) contrast(1.08); }
+:root [data-film-theme="classic"] h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; }
+:root [data-film-theme="classic"]::after { background-image: radial-gradient(ellipse at 50% 45%, rgba(40, 24, 8, 0) 58%, rgba(40, 24, 8, .55) 100%), var(--ft-grain); opacity: .7; }
+
+/* noir: Нуар: жёсткий контраст и тени жалюзи */
+:root [data-film-theme="noir"] img { -webkit-filter: grayscale(1) contrast(1.55) brightness(.82); filter: grayscale(1) contrast(1.55) brightness(.82); }
+:root [data-film-theme="noir"] h1 { font-family: 'Oswald', 'Onest', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+:root [data-film-theme="noir"]::after { background-image: repeating-linear-gradient(-24deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 46px, rgba(0, 0, 0, .13) 46px, rgba(0, 0, 0, .13) 78px), radial-gradient(ellipse at 40% 40%, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, .75) 100%), var(--ft-grain); opacity: .85; }
+
+/* soviet_toon: Советская мультипликация: мягкие акварельные краски на бумаге */
+:root [data-film-theme="soviet_toon"] img { -webkit-filter: saturate(.72) sepia(.18) brightness(1.06) contrast(.94); filter: saturate(.72) sepia(.18) brightness(1.06) contrast(.94); }
+:root [data-film-theme="soviet_toon"] h1 { font-family: 'Caveat', 'Onest', cursive; font-weight: 700; letter-spacing: .01em; }
+:root [data-film-theme="soviet_toon"]::after { background-image: radial-gradient(ellipse at 50% 40%, rgba(255, 236, 200, 0) 60%, rgba(120, 80, 40, .35) 100%), var(--ft-grain); opacity: .55; }
+
+/* soviet: Советское кино: плёнка киностудии — тёплый цвет, кремовые титры */
+:root [data-film-theme="soviet"] img { -webkit-filter: sepia(.28) saturate(.82) contrast(1.06); filter: sepia(.28) saturate(.82) contrast(1.06); }
+:root [data-film-theme="soviet"] h1 { font-family: 'Oswald', 'Onest', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+:root [data-film-theme="soviet"]::after { background-image: radial-gradient(ellipse at 50% 45%, rgba(30, 10, 6, 0) 55%, rgba(30, 10, 6, .55) 100%), var(--ft-grain); opacity: .65; }
+
+/* anime: Аниме: чистые насыщенные «целлулоидные» цвета */
+:root [data-film-theme="anime"] img { -webkit-filter: saturate(1.35) contrast(1.1); filter: saturate(1.35) contrast(1.1); }
+:root [data-film-theme="anime"] h1 { font-family: 'Unbounded', 'Onest', sans-serif; font-weight: 800; letter-spacing: -.01em; }
+:root [data-film-theme="anime"]::after { background-image: radial-gradient(ellipse at 50% 40%, rgba(0, 0, 0, 0) 65%, rgba(20, 10, 60, .45) 100%); opacity: 1; }
+
+/* western: Вестерн: выгоревшая охра, пыльная виньетка */
+:root [data-film-theme="western"] img { -webkit-filter: sepia(.55) saturate(1.25) contrast(1.1); filter: sepia(.55) saturate(1.25) contrast(1.1); }
+:root [data-film-theme="western"] h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+:root [data-film-theme="western"]::after { background-image: radial-gradient(ellipse at 50% 40%, rgba(80, 40, 10, 0) 55%, rgba(80, 40, 10, .55) 100%), var(--ft-grain); opacity: .7; }
+
+/* horror: Ужасы: обесцвеченно и темно, кроваво-красный акцент */
+:root [data-film-theme="horror"] img { -webkit-filter: grayscale(.5) contrast(1.25) brightness(.78); filter: grayscale(.5) contrast(1.25) brightness(.78); }
+:root [data-film-theme="horror"] h1 { font-family: 'Oswald', 'Onest', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+:root [data-film-theme="horror"]::after { background-image: radial-gradient(ellipse at 50% 45%, rgba(40, 0, 0, 0) 45%, rgba(20, 0, 0, .8) 100%), var(--ft-grain); opacity: .8; }
+
+/* eighties: Восьмидесятые: неон, строки развёртки */
+:root [data-film-theme="eighties"] img { -webkit-filter: saturate(1.3) contrast(1.1); filter: saturate(1.3) contrast(1.1); }
+:root [data-film-theme="eighties"] h1 { font-family: 'Unbounded', 'Onest', sans-serif; font-weight: 800; font-style: italic; text-shadow: 0 0 18px rgba(255, 60, 180, .75), 0 0 2px rgba(255, 255, 255, .9); }
+:root [data-film-theme="eighties"]::after { background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, .14) 0px, rgba(0, 0, 0, .14) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 5px), radial-gradient(ellipse at 50% 45%, rgba(40, 0, 80, 0) 55%, rgba(40, 0, 80, .55) 100%); opacity: 1; }
+
+/* scifi: Фантастика: холодный стальной цвет */
+:root [data-film-theme="scifi"] img { -webkit-filter: saturate(.7) contrast(1.12) brightness(.95); filter: saturate(.7) contrast(1.12) brightness(.95); }
+:root [data-film-theme="scifi"] h1 { font-family: 'Unbounded', 'Onest', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+:root [data-film-theme="scifi"]::after { background-image: linear-gradient(180deg, rgba(40, 140, 200, .12), rgba(0, 20, 40, .25)), radial-gradient(ellipse at 50% 45%, rgba(0, 10, 20, 0) 55%, rgba(0, 10, 20, .6) 100%); opacity: 1; }

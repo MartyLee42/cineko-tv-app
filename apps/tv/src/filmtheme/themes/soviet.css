@@ -1,0 +1,7 @@
+/* «Тема под фильм» — soviet: Советское кино: плёнка киностудии — тёплый цвет, кремовые титры. Its own chunk (filmtheme/load.ts). */
+:root [data-film-theme="soviet"] > .tv-fade img,
+:root .tv-loader[data-film-theme="soviet"] img { -webkit-filter: sepia(.28) saturate(.82) contrast(1.06); filter: sepia(.28) saturate(.82) contrast(1.06); }
+:root [data-film-theme="soviet"] h1 { font-family: 'Oswald', 'Onest', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+:root [data-film-theme="soviet"]::after { background-image: radial-gradient(ellipse at 50% 45%, rgba(30, 10, 6, 0) 55%, rgba(30, 10, 6, .55) 100%), var(--ft-grain); opacity: .65; }
+/* The loader takes the theme's palette too (Details keeps the design's). */
+:root .tv-loader[data-film-theme="soviet"] { --mt-bg: 28, 18, 15; --mt-surface: 46, 32, 27; --mt-surface-2: 62, 44, 37; --mt-text: 240, 230, 210; --mt-muted: 180, 160, 140; --mt-accent: 210, 52, 44; --mt-accent-strong: 240, 200, 96; --mt-on-accent: 255, 244, 228; color: rgb(var(--mt-text)); }

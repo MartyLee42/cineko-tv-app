@@ -7,6 +7,7 @@ import type { PlaybackSource } from "@martytv/contracts";
 import { placeholderColor } from "@martytv/media-types";
 import { loadStatus, Mascot, SloganTicker, SovietEmblem, useAppliedDesign, useI18n } from "@martytv/ui";
 import { PopcornLoader } from "@martytv/ui/popcorn";
+import { ArtOf, isArtStyle, type ArtStyleId } from "./art";
 import { formatSize, formatSpeed } from "../play/releases";
 import type { LoadingStyle } from "../watch/settings";
 import { LoadTracker, preloadTarget, type LoadStage } from "./logic";
@@ -71,6 +72,8 @@ export function Loader({ style, m, children }: { style: LoadingStyle; m: LoaderM
     <PosterLoader m={m} />
   ) : mx ? (
     <MatrixLoader m={m} />
+  ) : isArtStyle(style) ? (
+    <ArtStyle m={m} style={style} />
   ) : style === "popcorn" ? (
       <Popcorn m={m} />
     ) : style === "poster_reveal" ? (
@@ -151,6 +154,21 @@ function Popcorn({ m }: { m: LoaderModel }) {
       <div className="h-[min(42vw,32vh,260px)] w-[min(42vw,32vh,260px)] shrink-0">
         <PopcornLoader progress={m.p} size={260} className="h-full w-full" label={`${status} ${pct(m.p)}`} />
       </div>
+      <Titles m={m} />
+      <div className="flex items-center gap-4">
+        <span className="font-display text-3xl font-extrabold tabular-nums text-accent sm:text-4xl">{pct(m.p)}</span>
+        <Status m={m} center={false} />
+      </div>
+    </div>
+  );
+}
+
+function ArtStyle({ m, style }: { m: LoaderModel; style: ArtStyleId }) {
+  // Fits the phone / window once (the art is drawn at 1200 × 560 and scaled).
+  const [width] = useState(() => Math.max(260, Math.min(720, (typeof window === "undefined" ? 720 : window.innerWidth) - 40)));
+  return (
+    <div className="flex w-full max-w-3xl flex-col items-center gap-4">
+      <ArtOf style={style} p={m.p} width={width} />
       <Titles m={m} />
       <div className="flex items-center gap-4">
         <span className="font-display text-3xl font-extrabold tabular-nums text-accent sm:text-4xl">{pct(m.p)}</span>

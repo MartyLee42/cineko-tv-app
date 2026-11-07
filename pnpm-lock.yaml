@@ -333,8 +333,26 @@ importers:
       '@fontsource/caveat':
         specifier: 5.3.0
         version: 5.3.0
+      '@fontsource/cormorant-garamond':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource/ibm-plex-mono':
+        specifier: 5.3.0
+        version: 5.3.0
       '@fontsource/jetbrains-mono':
         specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource/jost':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/kelly-slab':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource/neucha':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource/old-standard-tt':
+        specifier: ^5.3.0
         version: 5.3.0
       '@fontsource/onest':
         specifier: 5.3.1
@@ -932,8 +950,26 @@ packages:
   '@fontsource/caveat@5.3.0':
     resolution: {integrity: sha512-eHTfzQxFSW9ABERRLNruHoNJmKed2J7pqTUc5lp4a4POMgXGKpxmWj3d9Hz10kmAg6iuTTLe6UagbA4bnsmfQw==}
 
+  '@fontsource/cormorant-garamond@5.3.0':
+    resolution: {integrity: sha512-weuGsCirGVWBWqpt6YUp0yLThTe4G8YO45noq8wxeJCRvEpq5lFrxNMFSTxcyOyV5k5otzJ8guDzYegdYlcLMQ==}
+
+  '@fontsource/ibm-plex-mono@5.3.0':
+    resolution: {integrity: sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==}
+
   '@fontsource/jetbrains-mono@5.3.0':
     resolution: {integrity: sha512-fqDfB5I9f1p1TV486aUgB9t8zP84P0O1FtQR5Ol9vjwPy+S+EIGlVYm1cvj2W5shcZMTg2nZFdVMoH5wFu8a1A==}
+
+  '@fontsource/jost@5.3.0':
+    resolution: {integrity: sha512-lORv5y49hSoLVxjGb0qNuBzXvnaNYI3B94200uGPGJFei8fao6d6LLz2ziWbOZubGfZnibzuT6GVNX8fBw8WQQ==}
+
+  '@fontsource/kelly-slab@5.3.0':
+    resolution: {integrity: sha512-p4lVAmeFu01QkiPgotBfdpxprWYscS1+wWTl7ir1AI5exi3kG5tzc1W4mI8yyy4SeEN8E1iM0GlDk/fEsXL8wA==}
+
+  '@fontsource/neucha@5.3.0':
+    resolution: {integrity: sha512-7PoHR/5toTeYP3T6wJyZ8xcT3uTJ6UcyAgrDo1OIUtKX/xuxbblvUyVQcN0lQEppY6EgkCC8zMkFsBhwUvWXBg==}
+
+  '@fontsource/old-standard-tt@5.3.0':
+    resolution: {integrity: sha512-9cXU8XWqw4Pz9/9Lf6Otf1GPc0y17d96/nP9tzs4PLlq1IFMIxXszL3OLldaoyAn5YGr1r+tIXr0rlbgIeCYrg==}
 
   '@fontsource/onest@5.3.1':
     resolution: {integrity: sha512-2uA9HUzQHBB8H7T2R6inmrnqPofB6+svATHM/huIG640duJr4rm+uanmAIheTTlbZvRC0ujMtf2T4U4RX51oEQ==}
@@ -3957,7 +3993,19 @@ snapshots:
 
   '@fontsource/caveat@5.3.0': {}
 
+  '@fontsource/cormorant-garamond@5.3.0': {}
+
+  '@fontsource/ibm-plex-mono@5.3.0': {}
+
   '@fontsource/jetbrains-mono@5.3.0': {}
+
+  '@fontsource/jost@5.3.0': {}
+
+  '@fontsource/kelly-slab@5.3.0': {}
+
+  '@fontsource/neucha@5.3.0': {}
+
+  '@fontsource/old-standard-tt@5.3.0': {}
 
   '@fontsource/onest@5.3.1': {}
 

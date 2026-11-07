@@ -1,0 +1,7 @@
+/* «Тема под фильм» — classic: Классический Голливуд: сепия, мягкая виньетка. Its own chunk (filmtheme/load.ts). */
+:root [data-film-theme="classic"] > .tv-fade img,
+:root .tv-loader[data-film-theme="classic"] img { -webkit-filter: sepia(.6) grayscale(.35) contrast(1.08); filter: sepia(.6) grayscale(.35) contrast(1.08); }
+:root [data-film-theme="classic"] h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; }
+:root [data-film-theme="classic"]::after { background-image: radial-gradient(ellipse at 50% 45%, rgba(40, 24, 8, 0) 58%, rgba(40, 24, 8, .55) 100%), var(--ft-grain); opacity: .7; }
+/* The loader takes the theme's palette too (Details keeps the design's). */
+:root .tv-loader[data-film-theme="classic"] { --mt-bg: 26, 20, 14; --mt-surface: 44, 34, 24; --mt-surface-2: 60, 47, 33; --mt-text: 242, 228, 204; --mt-muted: 184, 164, 132; --mt-accent: 214, 172, 104; --mt-accent-strong: 240, 204, 140; --mt-on-accent: 26, 18, 8; color: rgb(var(--mt-text)); }

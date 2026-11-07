@@ -1,0 +1,7 @@
+/* «Тема под фильм» — scifi: Фантастика: холодный стальной цвет. Its own chunk (filmtheme/load.ts). */
+:root [data-film-theme="scifi"] > .tv-fade img,
+:root .tv-loader[data-film-theme="scifi"] img { -webkit-filter: saturate(.7) contrast(1.12) brightness(.95); filter: saturate(.7) contrast(1.12) brightness(.95); }
+:root [data-film-theme="scifi"] h1 { font-family: 'Unbounded', 'Onest', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+:root [data-film-theme="scifi"]::after { background-image: linear-gradient(180deg, rgba(40, 140, 200, .12), rgba(0, 20, 40, .25)), radial-gradient(ellipse at 50% 45%, rgba(0, 10, 20, 0) 55%, rgba(0, 10, 20, .6) 100%); opacity: 1; }
+/* The loader takes the theme's palette too (Details keeps the design's). */
+:root .tv-loader[data-film-theme="scifi"] { --mt-bg: 4, 12, 20; --mt-surface: 14, 28, 42; --mt-surface-2: 22, 42, 60; --mt-text: 222, 244, 255; --mt-muted: 140, 176, 196; --mt-accent: 80, 220, 255; --mt-accent-strong: 170, 240, 255; --mt-on-accent: 0, 16, 24; color: rgb(var(--mt-text)); }

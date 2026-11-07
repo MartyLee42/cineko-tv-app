@@ -111,6 +111,55 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [tone("square", 2637, 2637, 0.018, 0.12)], noise: [] },
     click: { tones: [tone("square", 1568, 2093, 0.05, 0.16)], noise: [] },
   },
+  // A ship's console: a pure sine blip; OK answers with two rising panel tones.
+  odyssey: {
+    tick: { tones: [tone("sine", 2093, 2093, 0.02, 0.22)], noise: [] },
+    click: { tones: [tone("sine", 1319, 1319, 0.04, 0.35), tone("sine", 1976, 1976, 0.05, 0.3, 0.045)], noise: [] },
+  },
+  // A toy glockenspiel: one soft bar, two on OK (a cartoon «plink-plonk»).
+  mult: {
+    tick: { tones: [tone("sine", 2093, 2093, 0.04, 0.22), tone("sine", 6279, 6279, 0.015, 0.04)], noise: [] },
+    click: { tones: [tone("sine", 1568, 1568, 0.05, 0.3), tone("sine", 2349, 2349, 0.06, 0.3, 0.05)], noise: [] },
+  },
+  // A water drop: a falling sine, low and quiet; OK is a deeper drop with a faint splash.
+  tarkovsky: {
+    tick: { tones: [tone("sine", 1300, 700, 0.035, 0.16)], noise: [] },
+    click: { tones: [tone("sine", 900, 380, 0.09, 0.3)], noise: [noise("lowpass", 900, 0.04, 0.08, 0.7, 0.02)] },
+  },
+  // Honky-tonk piano: each note twice, a few Hz apart (the detuned unisons), with a felt-hammer thud;
+  // OK plays a little two-note figure (G5 → C6).
+  silent: {
+    tick: { tones: [tone("triangle", 1047, 1047, 0.06, 0.22), tone("triangle", 1053, 1053, 0.06, 0.18)], noise: [noise("lowpass", 900, 0.012, 0.15)] },
+    click: {
+      tones: [tone("triangle", 784, 784, 0.05, 0.28), tone("triangle", 789, 789, 0.05, 0.22), tone("triangle", 1047, 1047, 0.07, 0.3, 0.045), tone("triangle", 1054, 1054, 0.07, 0.24, 0.045)],
+      noise: [noise("lowpass", 800, 0.015, 0.2)],
+    },
+  },
+  // A bellboy's desk bell: a bright strike with inharmonic partials («дзынь»); the tick is a soft tap of it.
+  anderson: {
+    tick: { tones: [tone("sine", 2350, 2350, 0.04, 0.16)], noise: [noise("highpass", 5000, 0.006, 0.1)] },
+    click: { tones: [tone("sine", 2093, 2093, 0.12, 0.42), tone("sine", 5230, 5230, 0.08, 0.14), tone("sine", 3140, 3140, 0.1, 0.1)], noise: [noise("highpass", 6000, 0.008, 0.22)] },
+  },
+  // A typewriter: a dry key strike; OK adds the carriage bell.
+  noir: {
+    tick: { tones: [], noise: [noise("bandpass", 3200, 0.014, 0.45, 3), noise("lowpass", 500, 0.02, 0.25)] },
+    click: { tones: [tone("sine", 2350, 2330, 0.09, 0.22, 0.02)], noise: [noise("bandpass", 2600, 0.016, 0.55, 3), noise("lowpass", 420, 0.025, 0.35)] },
+  },
+  // A splice on the editing table: a short snap, OK a firmer cut.
+  vague: {
+    tick: { tones: [], noise: [noise("highpass", 4200, 0.008, 0.35)] },
+    click: { tones: [tone("triangle", 240, 140, 0.035, 0.3)], noise: [noise("highpass", 3800, 0.01, 0.4), noise("bandpass", 1400, 0.02, 0.3, 2, 0.025)] },
+  },
+  // A spur's jingle on a move; a revolver hammer cocking (two dry clicks) on OK.
+  western: {
+    tick: { tones: [tone("triangle", 3200, 3000, 0.02, 0.12)], noise: [noise("bandpass", 5200, 0.016, 0.22, 6)] },
+    click: { tones: [], noise: [noise("bandpass", 2600, 0.012, 0.55, 3), noise("bandpass", 1900, 0.016, 0.6, 3, 0.05)] },
+  },
+  // Soft and slightly wrong: a low falling sine, and a rising one, as if played backwards.
+  redroom: {
+    tick: { tones: [tone("sine", 520, 440, 0.03, 0.3)], noise: [] },
+    click: { tones: [tone("sine", 330, 660, 0.08, 0.45), tone("triangle", 990, 990, 0.03, 0.08, 0.07)], noise: [] },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */

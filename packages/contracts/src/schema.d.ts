@@ -3795,7 +3795,7 @@ export interface components {
             audio?: ("aac" | "ac3" | "eac3" | "dts" | "truehd" | "mp3" | "opus" | "flac")[];
             containers?: ("mkv" | "mp4" | "ts")[];
             /** @description Video variants (codec, 10-bit, 1080p / 2160p) the device decodes but not smoothly: mediaCapabilities.decodingInfo says smooth = false, or playback dropped many frames there. Ranking demotes matching releases (warning may_stutter). */
-            rough?: ("h264_1080p" | "h264_2160p" | "hevc_1080p" | "hevc_2160p" | "hevc_10bit_1080p" | "hevc_10bit_2160p" | "av1_1080p" | "av1_2160p" | "av1_10bit_1080p" | "av1_10bit_2160p")[];
+            rough?: ("h264_1080p" | "h264_2160p" | "hevc_1080p" | "hevc_2160p" | "hevc_10bit_1080p" | "hevc_10bit_2160p" | "av1_1080p" | "av1_2160p" | "av1_10bit_1080p" | "av1_10bit_2160p" | "silent" | "anderson")[];
             hls?: boolean | null;
             /** @description Compat streams (AAC transcode) are usable. */
             compat?: boolean | null;
@@ -4983,11 +4983,11 @@ export interface components {
              */
             theme: "system" | "dark" | "light";
             /**
-             * @description Visual direction (Cineko-directions, Oct 2026): kinozal = «Кинозал» (Lampa evolution, lime «Сигнал», recommended); terminal = «Терминал» (HUD, orange, mono labels); projector = «Проектор» (immersive artwork, teal); wireframe = «Каркас» (synthwave neon grid, on the projector layout); cyberpunk = «Киберпанк» (neon HUD, clipped corners, on the terminal layout); deco = «Ар-деко» (gold-on-black movie palace, on the kinozal layout); retro80 = «Ретро 80-е» (VHS/arcade sunset chrome, on the kinozal layout); retro90 = «Ретро 90-е» (Windows 95 bevels on a teal desktop, on the terminal layout); popart = «Поп-арт» (comic Ben-Day dots, black outlines and hard shadows, on the projector layout); constructivism = «Конструктивизм» (1920s–30s poster graphics, red/black/cream diagonals, on the terminal layout); matrix = «Матрица» (green phosphor digital rain, glowing mono type, on the terminal layout); stickerbook = «Стикербук» (die-cut sticker posters with white borders, washi tape, tilted tiles, on the kinozal layout); pocketpet = «Тамагочи» (a pastel toy shell around an LCD screen, Cineko as a pixel pet, on the terminal layout). Only kinozal has a light variant.
+             * @description Visual direction (Cineko-directions, Oct 2026): kinozal = «Кинозал» (Lampa evolution, lime «Сигнал», recommended); terminal = «Терминал» (HUD, orange, mono labels); projector = «Проектор» (immersive artwork, teal); wireframe = «Каркас» (synthwave neon grid, on the projector layout); cyberpunk = «Киберпанк» (neon HUD, clipped corners, on the terminal layout); deco = «Ар-деко» (gold-on-black movie palace, on the kinozal layout); retro80 = «Ретро 80-е» (VHS/arcade sunset chrome, on the kinozal layout); retro90 = «Ретро 90-е» (Windows 95 bevels on a teal desktop, on the terminal layout); popart = «Поп-арт» (comic Ben-Day dots, black outlines and hard shadows, on the projector layout); constructivism = «Конструктивизм» (1920s–30s poster graphics, red/black/cream diagonals, on the terminal layout); matrix = «Матрица» (green phosphor digital rain, glowing mono type, on the terminal layout); stickerbook = «Стикербук» (die-cut sticker posters with white borders, washi tape, tilted tiles, on the kinozal layout); pocketpet = «Тамагочи» (a pastel toy shell around an LCD screen, Cineko as a pixel pet, on the terminal layout); odyssey = «Одиссея» (late-1960s space-age sci-fi: white spaceship corridors, symmetry, dark ink on station white, one red light as the focus ring, on the projector layout, mult, tarkovsky], on the terminal layout); mult = «Мультфильм» (classic studio animation: gouache backgrounds, paper cut-outs, soft fog; a light palette, on the kinozal layout); tarkovsky = «Созерцание» (rain, water, slow drifts, sepia that turns to colour on focus; dim, on the kinozal layout). Only kinozal has a light variant (pocketpet and mult are light by design); silent = «Немое кино» (silent-film homage: black and white, film grain, intertitle cards with an art-nouveau frame, an iris-in focus, on the projector layout); anderson = «Симметрия» (a symmetric pastel homage: pink, mustard and mint, centred compositions, chapter cards per section, on the projector layout); noir = «Нуар» (1940s film noir homage: monochrome, light through window blinds, rain on the glass, typewriter type, on the terminal layout); vague = «Новая волна» (French New Wave homage: red/blue/white word cards, handwritten notes, jump-cut screen changes, on the terminal layout); western = «Вестерн» (a spaghetti-western homage: sun-bleached desert, wanted-poster cards, letterboxing, on the kinozal layout); redroom = «Красная комната» (a surreal-TV homage: red curtains, a zigzag floor, titles that sometimes play backwards, on the projector layout). Only kinozal has a light variant.
              * @default kinozal
              * @enum {string}
              */
-            design: "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet";
+            design: "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson" | "noir" | "vague" | "western" | "redroom";
             /**
              * @description «Сюрприз»: off = always `design`; day / week = the apps show a design picked from design_favorites per local calendar day / ISO week (deterministic per profile, computed client-side — packages/ui surprise.ts; never the same design two periods in a row). `design` stays the chosen design and is used when there are fewer than 2 candidates.
              * @default off
@@ -4998,7 +4998,7 @@ export interface components {
              * @description «Избранные оформления»: the designs «Сюрприз» picks from (deduped; empty = all designs). Unknown ids → 422.
              * @default []
              */
-            design_favorites: ("kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet")[];
+            design_favorites: ("kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson" | "noir" | "vague" | "western" | "redroom")[];
             /**
              * @description Hide Japanese animation (TMDB genre Animation + original language ja) everywhere in the catalog.
              * @default false
@@ -5050,11 +5050,30 @@ export interface components {
              *     minimal = backdrop with a thin progress line and status text;
              *     marty = Cineko the mascot's loading loop with a progress bar; he cheers at 100%;
              *     marty_popcorn = the same with Cineko munching popcorn while it loads;
-             *     matrix = «Матрица»: «> Загрузка конструкта…», the percentage counting up in green and a block bar over the digital rain (also what the matrix design always shows).
+             *     matrix = «Матрица»: «> Загрузка конструкта…», the percentage counting up in green and a block bar over the digital rain (also what the matrix design always shows);
+             *     paws = «Следы лапок»: paw prints walk across the bottom, one per 5 %; the last one taps impatiently when progress stalls;
+             *     aquarium = «Аквариум»: pieces fall as little fish into Cineko's bowl, his eyes follow the newest; a full bowl turns into ▶;
+             *     speed88 = «Назад в будущее»: a speedometer needle / digital readout climbs to 88 mph; at 88 fire trails shoot off as the film starts;
+             *     odyssey = «Космическая одиссея»: a dark monolith rises as a moon and a sun line up; at 100 % one quiet note (only with the device's interface sounds on);
+             *     balloons = «Вверх»: balloons get tied to a little house one by one; at 100 % it floats off;
+             *     catch = «Лови!»: a waiting game in an LCD-handheld look — Cineko catches pieces rolling down four chutes, the TV remote's arrows move the basket, a miss cracks (a soft sound only with interface sounds on); the big number is the load's percentage, playback never waits for it;
+             *     water_glass = «Стакан воды»: ripples in a glass of water grow with the buffer; one big ripple at 100%;
+             *     poster_dig = «Подкоп»: the title's poster on a wall, a little hammer digs behind it; at 100% the poster tears open;
+             *     chocolate_box = «Коробка конфет»: one chocolate eaten every ~8%, each with a fact about the title (cached facts, else Details lines);
+             *     coffee_cup = «Чашка кофе»: a cup fills with coffee;
+             *     honey_pot = «Горшочек мёда»: bees (one per few torrent peers) fill a honey pot; a caption when progress stalls;
+             *     hyperjump = «Гиперпрыжок»: drifting stars stretch into lines at 100%;
+             *     ghost_meter = «Призракометр»: a gauge's needle and lights rise; a short beep at 100% (only with the device's interface sounds on);
+             *     target_scan = «Сканер цели»: a red scanning HUD with the percentage; the runtime at 100%;
+             *     docking = «Стыковка»: a craft docks with a spinning ring;
+             *     claw_machine = «Кран-машина»: a claw picks the title's poster from a pile of toys (slips and retries when progress stalls);
+             *     surprise = «Сюрприз»: a different one of the styles above for each load (random, never the same twice in a row; remembered per device), fixed for the whole load;
+             *     match = «Под фильм»: the style that suits the title, from what the client already has (genres, kind, title and overview text): hackers / virtual reality → matrix, time travel → speed88, space → odyssey, cats / animals → paws, animation / family → balloons or aquarium, horror / thriller → minimal, comedy → popcorn, documentary / drama → film_reel or poster_reveal, else a stable pick per title; fixed for the whole load.
+             *     A design with its own loader (matrix, constructivism) still shows that one for surprise and match.
              * @default popcorn
              * @enum {string}
              */
-            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix";
+            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix" | "paws" | "aquarium" | "speed88" | "odyssey" | "balloons" | "catch" | "water_glass" | "poster_dig" | "chocolate_box" | "coffee_cup" | "honey_pot" | "hyperjump" | "ghost_meter" | "target_scan" | "docking" | "claw_machine" | "surprise" | "match";
             /**
              * @description «О моих вкусах»: the viewer's own description of their tastes (trimmed, at most 600 characters; "" clears it).
              *     Sent to DeepSeek only as delimited data (`viewer_note`) in the AI collections and Ask AI prompts. A change
@@ -5135,6 +5154,11 @@ export interface components {
              * @default true
              */
             show_curated: boolean;
+            /**
+             * @description «Тема под фильм»: Details and the player's loading screen take a look matching the film (silent → black and white, Soviet animation → a soft painted palette, noir, 80s neon, anime…), classified on the client from MediaDetail. The menu and catalog keep the profile's design.
+             * @default false
+             */
+            film_theme: boolean;
         };
         AdminAppearance: {
             seasonal_effects: boolean;
