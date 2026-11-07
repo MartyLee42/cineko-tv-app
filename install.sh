@@ -252,6 +252,7 @@ env_default POSTGRES_PASSWORD "$(rand 32)"
 env_default TRANSCODER_SECRET "$(rand 48)"
 env_default INVIDIOUS_DB_PASSWORD "$(rand 32)"
 env_default INVIDIOUS_HMAC_KEY "$(rand 48)"
+env_default METRICS_TOKEN "$(rand 48)"   # GET /metrics bearer token (Prometheus, compose network only)
 [[ $(env_get INVIDIOUS_COMPANION_KEY) =~ ^[A-Za-z0-9]{16}$ ]] || env_set INVIDIOUS_COMPANION_KEY "$(rand 16)"
 ok "secrets present (generated where missing)"
 

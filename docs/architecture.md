@@ -51,6 +51,7 @@ installable.
 | `iptv` | Phase 7 live TV: M3U playlists (iptv-org presets, provider URLs/uploads), XMLTV guide, per-profile favorites/order/numbers/hidden, channel health, logo proxy, admin ([IPTV](#iptv-phase-7)); the live stream proxy is `playback/live.go` |
 | `audit` | `audit_events` writer |
 | `sysmon` | Admin system monitor: `/proc` parsers, the host monitor served by `cmd/martytv-hostmon`, and the API client with container fallback |
+| `metrics` | `GET /metrics` (Prometheus, `METRICS_TOKEN` bearer, 404 when unset): HTTP counters/latency by route template (middleware), Go/process/DB-pool collectors, and a snapshot refreshed every 20 s while scraped from sysmon, integrations, DB counts, TV health and AI usage ([Metrics](deployment.md#metrics--prometheus)) |
 | `clientlog` | Client error logging: `POST /client-errors` (web/TV batches, scrubbed, rate limited, 202 even when dropped), the API's own 5xx (`app: api`, hooked around the httpx error handler), fingerprint groups with the last 20 samples, resolve/regression, admin Errors tab endpoints, `client_error.new` realtime; retention 30 d samples / 60 d groups via `RunCleanup` |
 | `appsettings` | Server-wide admin switches (`app_settings`, migration 00019): the holiday-animations switch, `/admin/appearance`, `/status` `seasonal_effects` ([Holiday animations](#holiday-animations-праздничные-анимации)) |
 | `server` | Wiring, health endpoints, MSX launch files |

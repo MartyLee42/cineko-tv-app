@@ -56,8 +56,8 @@ The installer:
    optional **outbound proxy** (see [Blocked TMDB / YouTube](#blocked-tmdb--youtube-vpn-profile)).
 4. Writes `.env` (mode 0600) and generates every secret: `APP_SESSION_SECRET`,
    `POSTGRES_PASSWORD`, `TRANSCODER_SECRET`, `INVIDIOUS_DB_PASSWORD`,
-   `INVIDIOUS_HMAC_KEY`, `INVIDIOUS_COMPANION_KEY`. Existing values are never
-   replaced.
+   `INVIDIOUS_HMAC_KEY`, `INVIDIOUS_COMPANION_KEY`, `METRICS_TOKEN`
+   ([metrics](#metrics--prometheus)). Existing values are never replaced.
 5. Pulls the prebuilt images from GHCR (or builds them from the checkout when
    they aren't available, or with `--build`) and starts the stack.
 6. Waits for Prowlarr, copies its generated API key into `.env`
@@ -375,6 +375,90 @@ services:
   api:
     volumes: ["/run/martytv:/run/martytv:ro"]
 ```
+
+## Metrics / Prometheus
+
+«Метрики»: the API and Cineko Music serve `GET /metrics` in the Prometheus text
+format, for Prometheus, VictoriaMetrics, Grafana Agent / Alloy and the like.
+
+- **Off** unless `METRICS_TOKEN` is set in `.env` (then `/metrics` answers
+  404). `install.sh` generates one; set or change it by hand and run
+  `scripts/cineko.sh up -d`.
+- Every scrape needs `Authorization: Bearer <METRICS_TOKEN>` (else 401).
+- **Not public**: Caddy only proxies `/api`, `/msx`, `/music…` and `/healthz`, so
+  `https://<your domain>/metrics` is just the PWA. Scrape from inside the
+  compose network: `api:8080/metrics` and `music:8080/metrics`.
+- Cheap: the snapshot (host load, DB counts, device health, AI usage,
+  integrations) is refreshed every 20 s only while someone scrapes; a 15–60 s
+  scrape interval is fine.
+
+What's there (all prefixed `cineko_`; Go runtime and process series as usual):
+
+| Area | Series |
+|---|---|
+| HTTP | `http_requests_total{method,route,status}` (route = template like `/api/v1/media/:id`, status = `2xx`…), `http_request_duration_seconds{method,route}` |
+| Server tab | `host_cpu_usage_ratio`, `host_load1/5/15`, `host_memory_*_bytes`, `host_swap_*_bytes`, `host_disk_{total,used,free}_bytes{mount}`, `host_network_{receive,transmit}_bytes_total{iface}`, `container_{running,cpu_ratio,memory_bytes,memory_limit_bytes}{container}` (with the [host monitor](#host-monitor-optional); otherwise the API container's own numbers, `host_info{scope="container"}`), `db_size_bytes`, `image_cache_bytes` |
+| Database | `db_pool_{acquired,idle,total,max}_conns`, `db_pool_acquires_total`, `db_pool_acquire_duration_seconds_total`, … |
+| Playback | `active_streams`, `playback_sessions_active{client}`, `websocket_connections{kind}`, `transcoder_{up,active_jobs,max_jobs}`, `transcoder_jobs_{started,rejected,failed}_total`, `torrserver_{up,torrents,active_torrents,peers}`, `torrserver_{download,upload}_bytes_per_second` |
+| Downloads | `downloads{status}`, `downloads_size_bytes{status}`, `downloads_done_bytes{status}` |
+| Integrations | `integration_up{name}`, `integration_configured{name}` (tmdb, prowlarr, torrserver, kinopoisk; checked every 30 s), `integration_budget_remaining{name="kinopoisk"}`, `invidious_{configured,up,latency_seconds}` |
+| AI | `ai_enabled`, `ai_tokens_today`, `ai_calls_today`, `ai_daily_token_budget`, `ai_asks_today`, `ai_ask_daily_limit_per_user`, `ai_balance{currency}`; music: `music_ai_tokens_today`, `music_ai_daily_token_budget` («today» = the Moscow day the budgets use) |
+| Errors | `client_error_groups_open{app}`, `client_error_events{app}` (Admin → Errors) |
+| TVs | `devices_paired`, `devices_seen_1d`, `users`, `profiles`; latest health report per TV (≤ 1 day old) `device_health_{fps,heap_used_bytes,heap_limit_bytes,event_loop_lag_seconds,slow_frames_ratio,long_tasks,dropped_frames,total_frames,…}{device,model}` — labelled by device id and model, never the TV's name |
+| Meta | `build_info{version}`, `metrics_source_up{source}` (0 = that part of the snapshot failed; see the API log) |
+
+Example: Prometheus next to Cineko, in `deployments/compose.override.yaml`.
+Put the token in a file Prometheus reads (it isn't printed):
+
+```sh
+grep '^METRICS_TOKEN=' .env | cut -d= -f2- > deployments/metrics_token && chmod 600 deployments/metrics_token
+```
+
+```yaml
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    user: "0"   # reads the 0600 token file
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=30d"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./metrics_token:/etc/prometheus/metrics_token:ro
+      - prometheus-data:/prometheus
+    ports: ["127.0.0.1:9090:9090"]   # UI through an SSH tunnel
+    networks: [internal]
+volumes:
+  prometheus-data:
+```
+
+`deployments/prometheus.yml`:
+
+```yaml
+global:
+  scrape_interval: 30s
+scrape_configs:
+  - job_name: cineko-api
+    metrics_path: /metrics
+    authorization: { credentials_file: /etc/prometheus/metrics_token }
+    static_configs: [{ targets: ["api:8080"] }]
+  - job_name: cineko-music
+    authorization: { credentials_file: /etc/prometheus/metrics_token }
+    static_configs: [{ targets: ["music:8080"] }]
+```
+
+**Prometheus on another machine**: tunnel or publish the API's port only on a
+private interface (LAN / VPN address), e.g. in the override
+`services: { api: { ports: ["10.8.0.1:9101:8080"] } }`, and scrape
+`10.8.0.1:9101` with the same bearer token. Don't add `/metrics` to the
+Caddyfile unless you also restrict who can reach it — the token protects it,
+but the numbers describe your household's viewing.
+
+**Grafana**: add the Prometheus data source and build panels from e.g.
+`sum by (route) (rate(cineko_http_requests_total{status="5xx"}[5m]))`,
+`histogram_quantile(0.95, sum by (le, route) (rate(cineko_http_request_duration_seconds_bucket[5m])))`,
+`cineko_host_cpu_usage_ratio`, `cineko_active_streams`,
+`cineko_ai_tokens_today / cineko_ai_daily_token_budget`,
+`cineko_device_health_fps`, `cineko_integration_up == 0` (alert).
 
 ## Troubleshooting
 
