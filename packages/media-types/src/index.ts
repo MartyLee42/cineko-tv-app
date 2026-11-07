@@ -83,3 +83,4 @@ export * from "./fileFormat";
 export * from "./videoNext";
 export * from "./smooth";
 export * from "./chapters";
+export * from "./filmTheme";

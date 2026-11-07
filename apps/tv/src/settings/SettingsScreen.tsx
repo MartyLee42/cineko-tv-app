@@ -51,6 +51,7 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
     // Light colours exist for «Кинозал» only.
     ...(looks.includes("kinozal") ? [r.theme] : []),
     r.loading,
+    r.filmTheme,
     ...season.rows,
     ...cozy,
     r.posterRating,

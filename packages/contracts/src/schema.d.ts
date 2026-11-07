@@ -5057,13 +5057,23 @@ export interface components {
              *     odyssey = «Космическая одиссея»: a dark monolith rises as a moon and a sun line up; at 100 % one quiet note (only with the device's interface sounds on);
              *     balloons = «Вверх»: balloons get tied to a little house one by one; at 100 % it floats off;
              *     catch = «Лови!»: a waiting game in an LCD-handheld look — Cineko catches pieces rolling down four chutes, the TV remote's arrows move the basket, a miss cracks (a soft sound only with interface sounds on); the big number is the load's percentage, playback never waits for it;
+             *     water_glass = «Стакан воды»: ripples in a glass of water grow with the buffer; one big ripple at 100%;
+             *     poster_dig = «Подкоп»: the title's poster on a wall, a little hammer digs behind it; at 100% the poster tears open;
+             *     chocolate_box = «Коробка конфет»: one chocolate eaten every ~8%, each with a fact about the title (cached facts, else Details lines);
+             *     coffee_cup = «Чашка кофе»: a cup fills with coffee;
+             *     honey_pot = «Горшочек мёда»: bees (one per few torrent peers) fill a honey pot; a caption when progress stalls;
+             *     hyperjump = «Гиперпрыжок»: drifting stars stretch into lines at 100%;
+             *     ghost_meter = «Призракометр»: a gauge's needle and lights rise; a short beep at 100% (only with the device's interface sounds on);
+             *     target_scan = «Сканер цели»: a red scanning HUD with the percentage; the runtime at 100%;
+             *     docking = «Стыковка»: a craft docks with a spinning ring;
+             *     claw_machine = «Кран-машина»: a claw picks the title's poster from a pile of toys (slips and retries when progress stalls);
              *     surprise = «Сюрприз»: a different one of the styles above for each load (random, never the same twice in a row; remembered per device), fixed for the whole load;
              *     match = «Под фильм»: the style that suits the title, from what the client already has (genres, kind, title and overview text): hackers / virtual reality → matrix, time travel → speed88, space → odyssey, cats / animals → paws, animation / family → balloons or aquarium, horror / thriller → minimal, comedy → popcorn, documentary / drama → film_reel or poster_reveal, else a stable pick per title; fixed for the whole load.
              *     A design with its own loader (matrix, constructivism) still shows that one for surprise and match.
              * @default popcorn
              * @enum {string}
              */
-            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix" | "paws" | "aquarium" | "speed88" | "odyssey" | "balloons" | "catch" | "surprise" | "match";
+            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix" | "paws" | "aquarium" | "speed88" | "odyssey" | "balloons" | "catch" | "water_glass" | "poster_dig" | "chocolate_box" | "coffee_cup" | "honey_pot" | "hyperjump" | "ghost_meter" | "target_scan" | "docking" | "claw_machine" | "surprise" | "match";
             /**
              * @description «О моих вкусах»: the viewer's own description of their tastes (trimmed, at most 600 characters; "" clears it).
              *     Sent to DeepSeek only as delimited data (`viewer_note`) in the AI collections and Ask AI prompts. A change
@@ -5144,6 +5154,11 @@ export interface components {
              * @default true
              */
             show_curated: boolean;
+            /**
+             * @description «Тема под фильм»: Details and the player's loading screen take a look matching the film (silent → black and white, Soviet animation → a soft painted palette, noir, 80s neon, anime…), classified on the client from MediaDetail. The menu and catalog keep the profile's design.
+             * @default false
+             */
+            film_theme: boolean;
         };
         AdminAppearance: {
             seasonal_effects: boolean;

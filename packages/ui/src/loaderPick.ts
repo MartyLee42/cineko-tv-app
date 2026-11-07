@@ -22,6 +22,17 @@ export const LOADER_ANIMATIONS = [
   "odyssey",
   "balloons",
   "catch",
+  // The film homages.
+  "water_glass",
+  "poster_dig",
+  "chocolate_box",
+  "coffee_cup",
+  "honey_pot",
+  "hyperjump",
+  "ghost_meter",
+  "target_scan",
+  "docking",
+  "claw_machine",
 ] as const;
 export type LoaderAnimation = (typeof LOADER_ANIMATIONS)[number];
 

@@ -7,8 +7,11 @@
 // profile's style is fetched — ahead of time, with the player's code (see
 // loaderChunks.ts); until it's there, Minimal stands in.
 import { Suspense, useEffect, useRef, useState } from "react";
-import type { PlaybackSource } from "@martytv/contracts";
+import type { MediaDetail, PlaybackSource } from "@martytv/contracts";
+import { catalogLang } from "@martytv/media-types";
 import { isLoaderPicker, Spinner, useAppliedDesign, useI18n, type LoaderPicker } from "@martytv/ui";
+import { queryClient } from "../catalog/queries";
+import { useFilmTheme } from "../filmtheme/load";
 import { loadTracker, SHOW_EVERY_MS, type LoadStage } from "./loading";
 import type { LoadingStyle } from "../profile/settings";
 import { Backdrop, pct, Status, type LoaderModel } from "./loaderParts";
@@ -46,17 +49,26 @@ export function useLoadProgress(loadKey: string, stage: LoadStage, source: LoadI
   return p;
 }
 
+/** The title's Details if already cached (`seed` is the media id); never fetched here. */
+function cachedDetail(id: string, locale: string): MediaDetail | null {
+  return (queryClient.getQueryData(["media", id, catalogLang(locale)]) as MediaDetail | undefined) ?? null;
+}
+
 /** The loading screen in the chosen style. `preview` = settings thumbnail (no stats). */
 export function Loader({ style, m, preview = false }: { style: LoadingStyle; m: LoaderModel; preview?: boolean }) {
+  const { locale } = useI18n();
   // «Конструктивизм» and «Матрица»: their own loader whatever the style.
   const applied = useAppliedDesign();
   // «Сюрприз»: only Settings shows the setting itself (a load gets the picked style).
   if (isLoaderPicker(style)) return <PickTile picker={style} />;
   const kind = loaderKind(style, applied ?? "kinozal", preview);
+  // «Тема под фильм»: the title's look (from its cached Details; not in Settings' preview).
+  const filmTheme = useFilmTheme(preview ? null : cachedDetail(m.seed, locale));
   return (
     <div
       data-testid={preview ? "loader-preview" : m.done ? "loader-finale" : "player-preparing"}
       data-loader={style}
+      data-film-theme={filmTheme ?? undefined}
       data-cv={kind === "poster" ? "1" : undefined}
       data-progress={Math.round(m.p * 100)}
       className={`tv-loader absolute left-0 top-0 h-full w-full overflow-hidden bg-bg${m.done && !preview ? " tv-loader-finale" : ""}`}
@@ -101,6 +113,11 @@ function LazyStyle({ kind, m, mood, preview }: { kind: Exclude<LoaderKind, "mini
       return <LOADERS.balloons m={m} />;
     case "catch":
       return <LOADERS.catch m={m} preview={preview} />;
+    default: {
+      // The rest take just the model.
+      const Style = LOADERS[kind];
+      return <Style m={m} />;
+    }
   }
 }
 

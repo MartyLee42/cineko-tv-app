@@ -1,0 +1,7 @@
+/* «Тема под фильм» — western: Вестерн: выгоревшая охра, пыльная виньетка. Its own chunk (filmtheme/load.ts). */
+:root [data-film-theme="western"] > .tv-fade img,
+:root .tv-loader[data-film-theme="western"] img { -webkit-filter: sepia(.55) saturate(1.25) contrast(1.1); filter: sepia(.55) saturate(1.25) contrast(1.1); }
+:root [data-film-theme="western"] h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+:root [data-film-theme="western"]::after { background-image: radial-gradient(ellipse at 50% 40%, rgba(80, 40, 10, 0) 55%, rgba(80, 40, 10, .55) 100%), var(--ft-grain); opacity: .7; }
+/* The loader takes the theme's palette too (Details keeps the design's). */
+:root .tv-loader[data-film-theme="western"] { --mt-bg: 40, 24, 14; --mt-surface: 60, 38, 24; --mt-surface-2: 80, 52, 32; --mt-text: 250, 236, 210; --mt-muted: 200, 176, 140; --mt-accent: 232, 150, 60; --mt-accent-strong: 255, 200, 120; --mt-on-accent: 36, 18, 4; color: rgb(var(--mt-text)); }

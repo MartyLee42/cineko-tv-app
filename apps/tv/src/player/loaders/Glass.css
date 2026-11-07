@@ -1,0 +1,17 @@
+/* «Стакан воды» (Glass.tsx). */
+.lw-table {
+  background: linear-gradient(180deg, #5a4030 0px, #4a3325 6px, #3a281c 60px, rgba(58, 40, 28, 0) 130px);
+  box-shadow: inset 0 3px 0 rgba(255, 220, 180, .18);
+}
+@keyframes lw-ring { from { transform: scale(.12); opacity: 1; } to { transform: scale(1); opacity: 0; } }
+.lw-ring { animation: lw-ring 1.8s ease-out infinite; }
+@keyframes lw-big { from { transform: scale(.1); opacity: 1; } to { transform: scale(1.05); opacity: 0; } }
+.lw-big { animation: lw-big 1.4s ease-out both; }
+@keyframes lw-jolt {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  15% { transform: translate3d(-4px, -6px, 0); }
+  30% { transform: translate3d(4px, 2px, 0); }
+  45% { transform: translate3d(-2px, -2px, 0); }
+  60% { transform: translate3d(1px, 0, 0); }
+}
+.lw-jolt { animation: lw-jolt 700ms ease-out both; }
