@@ -71,6 +71,12 @@ export function SkinBackground({ dim = false }: { dim?: boolean }) {
   );
 }
 
+/** The skin's companion over the catalog (Тамагочи's pet), if it has one. */
+export function SkinCompanion({ onHome }: { onHome: boolean }) {
+  const Companion = useLook(useSkin())?.Companion;
+  return Companion ? <Companion onHome={onHome} /> : null;
+}
+
 // ================================================================ ornaments
 
 /** Headline size factor of the applied skin (1 on the original designs). */
@@ -113,7 +119,7 @@ export function TitlePlate({ children, kind, eyebrow }: { children: ReactNode; k
 // ================================================================ previews
 
 /** A small tile drawn in a design's own colours (Settings / first-run guide). */
-export function DesignTile({ id, active, width = 196 }: { id: DesignSetting; active: boolean; width?: number }) {
+export function DesignTile({ id, active, width = 196, star = false }: { id: DesignSetting; active: boolean; width?: number; star?: boolean }) {
   const { t } = useI18n();
   const sw = DESIGN_SWATCH[id];
   const h = Math.round(width * 0.5625);
@@ -127,18 +133,24 @@ export function DesignTile({ id, active, width = 196 }: { id: DesignSetting; act
         {[0, 1, 2].map((i) => (
           <span key={i} className="dt-poster" style={{ left: `${30 + i * 20}%`, borderColor: i === 0 ? sw.accent2 : sw.surface, background: sw.surface }} />
         ))}
+        {/* «Сюрприз»: a favourite. */}
+        {star && (
+          <span data-star="1" className="absolute right-[8px] top-[2px] text-[26px] leading-none" style={{ color: sw.accent, textShadow: "0 1px 3px rgba(0,0,0,.8)" }}>
+            ★
+          </span>
+        )}
       </div>
       <p className={`mt-2 truncate text-[20px] ${active ? "font-bold text-text" : "text-muted"}`}>{t(`settings.design.${id}`)}</p>
     </div>
   );
 }
 
-/** Every design's tile, the current one highlighted. */
-export function DesignPreviews({ current, width = 196 }: { current: DesignSetting; width?: number }) {
+/** Every design's tile, the current one highlighted (and «Сюрприз» favourites starred). */
+export function DesignPreviews({ current, width = 196, stars }: { current: DesignSetting; width?: number; stars?: readonly DesignSetting[] }) {
   return (
     <div data-testid="design-previews" style={{ width: (width + 14) * 3 }}>
       {DESIGNS.map((d) => (
-        <DesignTile key={d} id={d} active={d === current} width={width} />
+        <DesignTile key={d} id={d} active={d === current} width={width} star={!!stars?.includes(d)} />
       ))}
     </div>
   );

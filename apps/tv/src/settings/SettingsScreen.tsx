@@ -1,11 +1,12 @@
 import { useState } from "react";
 import type { Profile } from "@martytv/contracts";
-import { useI18n } from "@martytv/ui";
+import { useEffectiveDesign, useI18n } from "@martytv/ui";
 import { OptionRows, ROW_GAP, ROW_H, useOptionKeys, type Row } from "./OptionList";
 import { LoaderPreview, useSettingRows } from "./rows";
 import { DeviceInfo } from "./DeviceInfo";
 import { useSourceRows } from "./sources";
 import { TasteNoteEditor } from "./TasteNoteEditor";
+import { DesignFavorites } from "./DesignFavorites";
 import { TasteQuiz } from "../taste/TasteQuiz";
 import { useQuizState } from "../taste/data";
 import { useQuizGenerate } from "../taste/useQuizGenerate";
@@ -22,8 +23,12 @@ import { healthPref, useHealthPref } from "../health/agent";
  */
 export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose: () => void }) {
   const { t } = useI18n();
-  const { rows: r, settings, saveError, set, tasteNote } = useSettingRows();
+  const { rows: r, settings, saveError, set, tasteNote, favorites } = useSettingRows();
   const [editingNote, setEditingNote] = useState(false);
+  const [pickingFavs, setPickingFavs] = useState(false);
+  // «Сюрприз»: the design shown today (may differ from the chosen one).
+  const shown = useEffectiveDesign(settings, profile.id) ?? settings.design;
+  const looks = [settings.design, shown];
   const [quiz, setQuiz] = useState(false);
   const quizState = useQuizState();
   const quizGen = useQuizGenerate(profile.id);
@@ -39,9 +44,11 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
   const rows: Row[] = [
     { kind: "header", key: "h-profile", label: t("settings.profile_section", { name: profile.name }), hint: t("tv.settings.profile_hint") },
     r.design,
-    ...(settings.design === "wireframe" || settings.design === "matrix" ? [r.motion] : []),
+    r.surprise,
+    ...(settings.design_surprise !== "off" ? [favorites(() => setPickingFavs(true))] : []),
+    ...(looks.includes("wireframe") || looks.includes("matrix") ? [r.motion] : []),
     // Light colours exist for «Кинозал» only.
-    ...(settings.design === "kinozal" ? [r.theme] : []),
+    ...(looks.includes("kinozal") ? [r.theme] : []),
     r.loading,
     ...season.rows,
     ...cozy,
@@ -125,11 +132,18 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
             <p className="mb-5 text-2xl text-muted">{t("tv.settings.preview")}</p>
             <LoaderPreview key={settings.loading_style} style={settings.loading_style} width={620} />
           </>
-        ) : focused === "design" ? (
+        ) : focused === "design" || focused === "design_surprise" || focused === "design_favorites" ? (
           <>
-            <p className="text-4xl font-semibold">{t(`settings.design.${settings.design}`)}</p>
-            <p className="mb-8 mt-4 text-2xl leading-snug text-muted">{t(`settings.design.${settings.design}_hint`)}</p>
-            <DesignPreviews current={settings.design} width={186} />
+            <p className="text-4xl font-semibold">{focused === "design" ? t(`settings.design.${settings.design}`) : row?.kind === "choice" || row?.kind === "text" ? row.label : ""}</p>
+            {shown !== settings.design && (
+              <p data-testid="tv-settings-surprise-today" className="mt-3 text-2xl font-semibold text-accent">
+                {t(settings.design_surprise === "week" ? "surprise.this_week" : "surprise.today", { design: t(`settings.design.${shown}`) })}
+              </p>
+            )}
+            <p className="mb-8 mt-4 text-2xl leading-snug text-muted">
+              {focused === "design" ? t(`settings.design.${settings.design}_hint`) : row?.kind === "choice" || row?.kind === "text" ? row.hint : ""}
+            </p>
+            <DesignPreviews current={settings.design} width={186} stars={settings.design_surprise !== "off" ? settings.design_favorites : undefined} />
           </>
         ) : (
           (row?.kind === "choice" || row?.kind === "text") && (
@@ -141,6 +155,7 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
         )}
       </aside>
       {info && <DeviceInfo onClose={() => setInfo(false)} />}
+      {pickingFavs && <DesignFavorites favorites={settings.design_favorites} onChange={(next) => set({ design_favorites: next })} onClose={() => setPickingFavs(false)} />}
       {quiz && <TasteQuiz profileId={profile.id} onClose={() => setQuiz(false)} />}
       {editingNote && (
         <TasteNoteEditor

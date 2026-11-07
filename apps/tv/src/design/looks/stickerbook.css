@@ -1,0 +1,115 @@
+/* «stickerbook»: this design's own rules (loaded with the design's chunk, design/looks).
+   ---------------------------------------------------------------- Стикербук (kinozal skeleton)
+   A sticker album on a dark ink board (dot grid, faint chalk doodles). Posters are die-cut
+   stickers: a thick cream border, a soft drop shadow, a slight tilt per title and sometimes a
+   strip of washi tape ([data-sticker] from the id: design/sticker.ts). Focus lifts the sticker
+   and straightens it, with a sunny outline. OK on a card «peels» it (.sb-peel, ≈¼ s). The rail
+   is a stitched strip; its focused tab is a cream label taped on. Transform/opacity only. */
+.sb-board {
+  background-color: rgb(42,36,56);
+  background-image:
+    radial-gradient(ellipse 1300px 760px at 72% -6%, rgba(255,111,165,.09), rgba(255,111,165,0)),
+    radial-gradient(ellipse 1000px 620px at -4% 104%, rgba(95,211,196,.08), rgba(95,211,196,0)),
+    radial-gradient(circle, rgba(255,248,239,.085) 0px, rgba(255,248,239,.085) 1.6px, rgba(255,248,239,0) 2.3px);
+  background-size: 100% 100%, 100% 100%, 36px 36px;
+}
+
+/* Washi tape: semi-transparent paper strips with a printed pattern (used by cards, hero, plate, intro). */
+.sb-tape { position: absolute; display: block; height: 30px; pointer-events: none; box-shadow: 0 1px 2px rgba(0,0,0,.22); }
+.sb-tape-pink { background-color: rgba(255,111,165,.78); background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0px, rgba(255,255,255,.34) 5px, rgba(255,255,255,0) 5px, rgba(255,255,255,0) 11px); }
+.sb-tape-mint { background-color: rgba(95,211,196,.8); background-image: radial-gradient(circle, rgba(255,255,255,.55) 0px, rgba(255,255,255,.55) 2.4px, rgba(255,255,255,0) 3px); background-size: 12px 12px; }
+.sb-tape-sun { background-color: rgba(255,209,102,.82); background-image: linear-gradient(90deg, rgba(160,90,0,.16) 1px, rgba(0,0,0,0) 1px), linear-gradient(rgba(160,90,0,.16) 1px, rgba(0,0,0,0) 1px); background-size: 10px 10px; }
+.sb-tape-lilac { background-color: rgba(178,150,255,.8); background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.3) 0px, rgba(255,255,255,.3) 4px, rgba(255,255,255,0) 4px, rgba(255,255,255,0) 9px); }
+
+/* ---- the rail: a stitched dark strip, the focused tab a cream label with a bit of tape. */
+html.design-stickerbook nav[data-design-nav="kinozal"] > div:first-child {
+  background-color: rgb(33,28,45);
+  background-image: repeating-linear-gradient(180deg, rgba(255,248,239,.3) 0px, rgba(255,248,239,.3) 11px, rgba(255,248,239,0) 11px, rgba(255,248,239,0) 21px);
+  background-size: 2px 100%; background-repeat: no-repeat; background-position: right 10px top 0;
+  box-shadow: inset -3px 0 0 rgba(255,111,165,.4), 4px 0 14px rgba(0,0,0,.35);
+}
+html.design-stickerbook .tv-menu-panel { background: linear-gradient(90deg, rgb(33,28,45) 0%, rgb(33,28,45) 72%, rgba(33,28,45,0) 100%); }
+html.design-stickerbook .k-rail-focus { background: #fff8ef; color: rgb(42,36,56); transform: rotate(-1.6deg); box-shadow: 0 5px 12px rgba(0,0,0,.45); }
+html.design-stickerbook .k-rail-focus::before {
+  content: ""; position: absolute; left: -10px; top: 50%; width: 26px; height: 36px; margin-top: -18px; transform: rotate(10deg);
+  background-color: rgba(255,111,165,.82); background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0px, rgba(255,255,255,.34) 4px, rgba(255,255,255,0) 4px, rgba(255,255,255,0) 9px);
+}
+html.design-stickerbook .k-rail-active { background: rgba(255,111,165,.2); color: rgb(var(--mt-text)); box-shadow: inset 0 0 0 2px rgba(255,111,165,.45); }
+
+/* ---- stickers: posters and wide cards. */
+html.design-stickerbook .mt-card { border: 7px solid #fffaf0; border-radius: 16px; box-shadow: 0 7px 14px rgba(0,0,0,.42), 0 1px 2px rgba(0,0,0,.4); }
+html.design-stickerbook .mt-card.is-focused { box-shadow: 0 0 0 4px rgb(42,36,56), 0 0 0 10px rgb(255,209,102), 0 26px 40px rgba(0,0,0,.55); }
+html.design-stickerbook [data-sticker] > .relative { transition: transform 170ms ease-out; }
+html.design-stickerbook [data-sticker="0"] > .relative { transform: rotate(-2deg); }
+html.design-stickerbook [data-sticker="1"] > .relative { transform: rotate(1.6deg); }
+html.design-stickerbook [data-sticker="2"] > .relative { transform: rotate(-1.2deg); }
+html.design-stickerbook [data-sticker="3"] > .relative { transform: rotate(2.2deg); }
+html.design-stickerbook [data-sticker="4"] > .relative { transform: rotate(-1.7deg); }
+html.design-stickerbook [data-sticker="5"] > .relative { transform: rotate(1deg); }
+/* Focus: the sticker straightens and lifts (the wrapper's .mt-hop marks the focused card). */
+html.design-stickerbook [data-sticker].mt-hop > .relative { transform: translate3d(0,-3px,0) scale(1.04); }
+/* Washi tape on four of the six variants (over the border, outside the card's clip): top-centre
+   or across a bottom corner, clear of the rating (top-right) and the ✓/♥ marks (top-left). */
+html.design-stickerbook [data-sticker] > .relative::before { position: absolute; z-index: 3; height: 30px; pointer-events: none; box-shadow: 0 1px 2px rgba(0,0,0,.22); }
+html.design-stickerbook [data-sticker="0"] > .relative::before {
+  content: ""; left: 50%; top: -13px; width: 104px; margin-left: -52px; transform: rotate(-4deg);
+  background-color: rgba(255,111,165,.8); background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,.34) 0px, rgba(255,255,255,.34) 5px, rgba(255,255,255,0) 5px, rgba(255,255,255,0) 11px);
+}
+html.design-stickerbook [data-sticker="2"] > .relative::before {
+  content: ""; left: -22px; bottom: 18px; width: 86px; transform: rotate(40deg);
+  background-color: rgba(95,211,196,.82); background-image: radial-gradient(circle, rgba(255,255,255,.55) 0px, rgba(255,255,255,.55) 2.4px, rgba(255,255,255,0) 3px); background-size: 12px 12px;
+}
+html.design-stickerbook [data-sticker="3"] > .relative::before {
+  content: ""; right: -22px; bottom: 18px; width: 86px; transform: rotate(-40deg);
+  background-color: rgba(255,209,102,.85); background-image: linear-gradient(90deg, rgba(160,90,0,.16) 1px, rgba(0,0,0,0) 1px), linear-gradient(rgba(160,90,0,.16) 1px, rgba(0,0,0,0) 1px); background-size: 10px 10px;
+}
+html.design-stickerbook [data-sticker="5"] > .relative::before {
+  content: ""; left: 50%; top: -12px; width: 96px; margin-left: -40px; transform: rotate(3deg);
+  background-color: rgba(178,150,255,.82); background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.3) 0px, rgba(255,255,255,.3) 4px, rgba(255,255,255,0) 4px, rgba(255,255,255,0) 9px);
+}
+
+/* ---- «peel»: OK on a card → its corner curls up (a paper flap scaling in from the corner) and
+   the sticker lifts off, then Details opens (looks/stickerbook.tsx; skipped in calm motion). */
+@keyframes sb-lift { from { transform: translate3d(0,-3px,0) scale(1.04); } to { transform: translate3d(4px,-16px,0) rotate(-2deg) scale(1.06); } }
+@keyframes sb-curl { from { transform: scale(0); } to { transform: scale(1); } }
+html.design-stickerbook .sb-peel > .relative { animation: sb-lift 240ms cubic-bezier(.3,.7,.3,1) both; }
+html.design-stickerbook .sb-peel > .relative::after {
+  content: ""; position: absolute; right: -7px; bottom: -7px; z-index: 4; width: 56%; height: 0; padding-bottom: 56%; pointer-events: none;
+  border-top-left-radius: 22px; transform-origin: 100% 100%;
+  background-image: linear-gradient(315deg, rgb(42,36,56) 0%, rgb(42,36,56) 49.5%, rgba(0,0,0,.45) 50%, #d9d0c2 52%, #fffaf0 68%, #efe7da 84%, #cfc5b5 100%);
+  animation: sb-curl 240ms cubic-bezier(.3,.7,.3,1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.design-stickerbook .sb-peel > .relative, html.design-stickerbook .sb-peel > .relative::after { animation: none; }
+}
+
+/* ---- the rest of the kinozal skeleton. */
+html.design-stickerbook .k-primary { background: rgb(255,111,165); color: rgb(42,12,26); box-shadow: 0 0 0 4px #fffaf0, 0 6px 14px rgba(0,0,0,.4); }
+html.design-stickerbook .k-icon-btn { background: rgba(58,50,80,.94); box-shadow: inset 0 0 0 3px rgba(255,248,239,.75); }
+/* (these restyle box-shadow, so the focus ring is restated: a cream edge, a gap, the sunny outline) */
+html.design-stickerbook .k-primary.is-focused { box-shadow: 0 0 0 4px #fffaf0, 0 0 0 8px rgb(42,36,56), 0 0 0 14px rgb(255,209,102), 0 10px 22px rgba(0,0,0,.45); transform: rotate(-1.5deg); }
+html.design-stickerbook .k-icon-btn.is-focused { box-shadow: 0 0 0 5px rgb(42,36,56), 0 0 0 11px rgb(255,209,102); transform: rotate(2deg); }
+html.design-stickerbook .k-badge { background: #fffaf0; color: rgb(42,36,56); transform: rotate(-2deg); }
+html.design-stickerbook .tv-rate-good, html.design-stickerbook .tv-rate-mid, html.design-stickerbook .tv-rate-bad { background: #fffaf0; box-shadow: 0 2px 4px rgba(0,0,0,.35); }
+html.design-stickerbook .tv-rate-good { color: #13806f; }
+html.design-stickerbook .tv-rate-mid { color: #8a5a00; }
+html.design-stickerbook .tv-rate-bad { color: #c22a5c; }
+html.design-stickerbook .k-fade-left { background: linear-gradient(90deg, rgb(42,36,56) 0%, rgba(42,36,56,.94) 22%, rgba(42,36,56,.6) 42%, rgba(42,36,56,.12) 70%, rgba(42,36,56,0) 100%); }
+html.design-stickerbook .k-fade-bottom { background: linear-gradient(0deg, rgb(42,36,56) 0%, rgba(42,36,56,.9) 20%, rgba(42,36,56,0) 62%); }
+html.design-stickerbook .tv-key-hint { background: rgba(58,50,80,.94); box-shadow: inset 0 0 0 2px rgba(255,248,239,.5); }
+html.design-stickerbook .tv-chip.is-focused { background: rgb(255,209,102); color: rgb(42,36,56); }
+html.design-stickerbook .tv-progress-fill, html.design-stickerbook .tv-check { background: rgb(95,211,196); color: rgb(10,40,36); }
+/* Row titles: handwritten, like captions in an album. */
+html.design-stickerbook h3 { font-family: var(--mt-font-display); line-height: 1.32; letter-spacing: .01em; padding-right: .1em; position: relative; top: -10px; }
+html.design-stickerbook h3.text-\[31px\] { font-size: 41px; }
+html.design-stickerbook h3.text-\[34px\] { font-size: 44px; }
+html.design-stickerbook [data-testid="hero"] h2, html.design-stickerbook [data-media-id] h1 { line-height: 1; text-shadow: 0 3px 0 rgba(0,0,0,.35); }
+html.design-stickerbook .tv-panel, html.design-stickerbook .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 2px rgba(255,248,239,.22); }
+
+/* Over Home's hero artwork: two strips of tape holding the picture. */
+.sb-hero-tape-a { left: 34%; top: -8px; width: 210px; transform: rotate(-3deg); }
+.sb-hero-tape-b { right: 300px; top: -6px; width: 150px; transform: rotate(4deg); }
+
+/* Details: the title on a label sticker. */
+.sb-label { display: inline-block; max-width: 1060px; background: rgba(58,50,80,.94); border: 6px solid #fffaf0; border-radius: 24px; transform: rotate(-1deg); box-shadow: 0 12px 26px rgba(0,0,0,.45); }
+.sb-label-kind { font-family: var(--mt-font-display); font-weight: 700; font-size: 34px; line-height: 1; color: rgb(255,111,165); }

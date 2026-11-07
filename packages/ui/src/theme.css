@@ -13,6 +13,8 @@
      design-popart             — «Поп-арт»: comic blue, Ben-Day dots, yellow/red, black ink outlines (projector skeleton)
      design-constructivism     — «Конструктивизм»: 20s–30s poster graphics: red/black/cream, diagonals (terminal skeleton)
      design-matrix             — «Матрица»: green phosphor digital rain, glowing mono type (terminal skeleton)
+     design-stickerbook        — «Стикербук»: die-cut sticker posters, washi tape, cream/pink/mint on ink (kinozal skeleton)
+     design-pocketpet          — «Тамагочи»: pastel toy shell around a grey-green LCD, pixel ink and type (terminal skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {
@@ -239,6 +241,48 @@ html.design-matrix {
   color-scheme: dark;
 }
 
+/* «Стикербук»: a sticker album on a dark ink board: cream paper, bubblegum pink, mint, sunny focus;
+   handwritten Caveat headings (has Cyrillic), the body stays Onest for legibility. */
+html.design-stickerbook {
+  --mt-bg: 42, 36, 56;
+  --mt-surface: 58, 50, 80;
+  --mt-surface-2: 76, 66, 104;
+  --mt-border: 112, 100, 146;
+  --mt-text: 255, 248, 239;
+  --mt-muted: 204, 194, 222;
+  --mt-accent: 255, 111, 165;
+  --mt-accent-strong: 95, 211, 196;
+  --mt-on-accent: 42, 12, 26;
+  --mt-focus: 255, 209, 102;
+  --mt-font-display: "Caveat", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 14px;
+  --mt-radius-control: 16px;
+  color-scheme: dark;
+}
+
+/* «Тамагочи»: a pastel toy with an LCD. The app content is the LCD (light grey-green, near-black pixel
+   ink, almost monochrome: «accent» is the ink too, so accent buttons read as lit pixel blocks); the
+   pastel shell (pink, lilac, mint) is drawn around it by the TV look / PWA chrome. Headings and labels
+   in Press Start 2P (chunky 8×8 pixels; its Cyrillic reads at TV distance, unlike Pixelify's), mixed
+   case; small labels in JetBrains Mono (Press Start is too wide for tables), body text Onest. */
+html.design-pocketpet {
+  --mt-bg: 196, 208, 170;
+  --mt-surface: 181, 195, 153;
+  --mt-surface-2: 166, 182, 138;
+  --mt-border: 72, 86, 56;
+  --mt-text: 24, 32, 18;
+  --mt-muted: 52, 64, 40;
+  --mt-accent: 24, 32, 18;
+  --mt-accent-strong: 196, 58, 122;
+  --mt-on-accent: 206, 218, 180;
+  --mt-focus: 24, 32, 18;
+  --mt-font-display: "Press Start 2P", "JetBrains Mono", ui-monospace, monospace;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: light;
+}
+
 /* Headings in the later designs use their display face (web and TV). */
 html.design-deco h1, html.design-deco h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2 { font-family: var(--mt-font-display); }
@@ -248,6 +292,8 @@ html.design-retro90 h1, html.design-retro90 h2 { font-family: var(--mt-font-disp
 html.design-popart h1, html.design-popart h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; word-spacing: -.35em; }
 html.design-constructivism h1, html.design-constructivism h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
 html.design-matrix h1, html.design-matrix h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 0 10px rgba(0, 255, 65, .55); }
+html.design-stickerbook h1, html.design-stickerbook h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
+html.design-pocketpet h1, html.design-pocketpet h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; line-height: 1.25; }
 
 html, body, #root { height: 100%; }
 body {
@@ -275,7 +321,7 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--mt-muted), 0.7); }
 ::-webkit-scrollbar-corner { background: transparent; }
-html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb, html.design-matrix ::-webkit-scrollbar-thumb { border-radius: 0; }
+html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb, html.design-matrix ::-webkit-scrollbar-thumb, html.design-pocketpet ::-webkit-scrollbar-thumb { border-radius: 0; }
 
 /* ---------------------------------------------------------------- season layer (SeasonLayer.tsx)
    Pointer-events-free overlay; transform/opacity animations only, one

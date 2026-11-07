@@ -1,0 +1,22 @@
+/* ---- pocketpet: a pastel egg-shaped toy pops in; on its LCD a pixel egg wobbles, cracks and hatches
+   Cineko (two-frame bob), four hearts fill up, «Cineko» types in. Pixel motion = steps(), transform/opacity only. */
+@keyframes in-pp-toy { 0% { opacity: 0; transform: scale(.7); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes in-pp-wobble { 0% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 50% { transform: rotate(0); } 75% { transform: rotate(8deg); } 100% { transform: rotate(0); } }
+@keyframes in-pp-gone { to { opacity: 0; } }
+@keyframes in-pp-on { from { opacity: 0; } to { opacity: 1; } }
+@keyframes in-pp-pop { 0% { opacity: 1; transform: translate(0, 60px); } 100% { opacity: 1; transform: translate(0, 0); } }
+@keyframes in-pp-bob { 0% { transform: translate(0, 0); } 50% { transform: translate(0, -10px); } }
+@keyframes in-pp-fly { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 50% { opacity: 1; } 100% { opacity: 0; transform: translate(110px, -26px) rotate(35deg); } }
+@keyframes in-pp-drop { 0% { opacity: 1; } 60% { opacity: 1; transform: translate(0, 0); } 100% { opacity: 0; transform: translate(0, 36px); } }
+@keyframes in-pp-spark { 0% { opacity: 0; transform: scale(.4); } 30% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(1); } }
+.in-pp-toy { transform-origin: 50% 50%; animation: in-pp-toy .32s steps(4, end) both; }
+/* Wobbles from 0.4 s, faster once cracked; gone at the hatch (1.7 s). */
+.in-pp-egg { transform-origin: 50% 100%; animation: in-pp-wobble .5s steps(4, end) .4s 2, in-pp-wobble .25s steps(4, end) 1.4s 1, in-pp-gone .01s linear 1.7s forwards; }
+.in-pp-crack { opacity: 0; animation: in-pp-on .01s linear forwards; }
+.in-pp-cat { opacity: 0; animation: in-pp-pop .24s steps(3, end) forwards; }
+.in-pp-cat svg { animation: in-pp-bob .6s steps(1, end) 2.1s infinite; }
+.in-pp-shell-t { opacity: 0; transform-origin: 30% 100%; animation: in-pp-fly .4s steps(4, end) forwards; }
+.in-pp-shell-b { opacity: 0; animation: in-pp-drop .8s steps(4, end) forwards; }
+.in-pp-spark { opacity: 0; animation: in-pp-spark .45s steps(3, end) forwards; }
+.in-pp-heart { opacity: 0; animation: in-pp-on .01s linear forwards; }
+.in-pp-letter { opacity: 0; animation: in-pp-on .01s linear forwards; }

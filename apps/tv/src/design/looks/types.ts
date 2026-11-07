@@ -8,4 +8,8 @@ export interface Look {
   HeroEdges?: ComponentType<{ height: number }>;
   /** Details title framed in a plate (labelled with the kind). */
   TitlePlate?: ComponentType<{ kind: string; children: ReactNode }>;
+  /** OK on a card → Details: start a short «pick» animation on the card's wrapper; Details opens after `ms` (≤ 300). */
+  pick?: { ms: number; start: (card: HTMLElement) => void };
+  /** Drawn over the catalog (under the menu and overlays), e.g. Тамагочи's pixel pet. `onHome`: Home with nothing over it. */
+  Companion?: ComponentType<{ onHome: boolean }>;
 }
