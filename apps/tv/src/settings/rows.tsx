@@ -53,6 +53,8 @@ const MOTION_HINT: Partial<Record<string, MessageKey>> = {
   mult: "mult.motion_hint",
   tarkovsky: "tarkovsky.motion_hint",
   silent: "designs.motion_hint_silent",
+  noir: "designs.motion_hint_noir",
+  vague: "designs.motion_hint_vague",
 };
 
 const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {

@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { navigateByDirection } from "@noriginmedia/norigin-spatial-navigation";
 import type { ContinueItem, Episode, IptvChannel, MediaDetail, MediaSummary, Profile, Release } from "@martytv/contracts";
 import { useI18n } from "@martytv/ui";
@@ -432,15 +432,15 @@ export function CatalogShell({
   const box = frame.box;
   const chrome = route.name !== "details";
   return (
-    <div data-design-shell={design} data-design-skin={skin} className={`relative h-full w-full overflow-hidden ${design === "terminal" ? "t-grid" : "bg-bg"}`}>
+    <div data-design-shell={design} data-design-skin={skin} data-calm={calm ? "1" : undefined} className={`relative h-full w-full overflow-hidden ${design === "terminal" ? "t-grid" : "bg-bg"}`}>
       <SkinBackground />
       <FocusRecorderProvider value={record}>
         <FocusSection key={top.key} focusKey={`content-${top.key}`} forceFocus className="absolute" style={{ left: box.left, top: box.top, width: box.width, height: box.height }}>
           {/* Screens draw on the full 1920×1080 canvas (backdrops may run under the chrome). */}
-          <div className="absolute overflow-hidden" style={{ left: -box.left, top: -box.top, width: 1920, height: 1080 }}>
+          <ScreenFrame left={-box.left} top={-box.top}>
             {/* Lazily loaded screens (lazy.tsx): a late spinner until the chunk arrives; the screen focuses itself once ready. */}
             <Suspense fallback={<ScreenWait />}>{screen}</Suspense>
-          </div>
+          </ScreenFrame>
         </FocusSection>
       </FocusRecorderProvider>
       {/* «Уютный режим»: palette while the catalog is up, the ambience on Home only (under the holiday layer). */}
@@ -501,6 +501,29 @@ export function CatalogShell({
           />
         </Suspense>
       )}
+    </div>
+  );
+}
+
+/** How long a screen counts as just opened (its first data usually lands within this). */
+const SCREEN_FRESH_MS = 2500;
+
+/**
+ * A screen's 1920×1080 root, remounted per screen (inside the stack entry's
+ * keyed section). Skins hook one-off entrances on it: `.mt-screen > *` (the
+ * screen once its lazy chunk is in: Новая волна's jump cut), or
+ * `[data-fresh]` for its first moments, so rows that mount later on
+ * scrolling skip them (Нуар's typed headings).
+ */
+function ScreenFrame({ left, top, children }: { left: number; top: number; children: ReactNode }) {
+  const [fresh, setFresh] = useState(true);
+  useEffect(() => {
+    const id = setTimeout(() => setFresh(false), SCREEN_FRESH_MS);
+    return () => clearTimeout(id);
+  }, []);
+  return (
+    <div className="mt-screen absolute overflow-hidden" data-fresh={fresh ? "1" : undefined} style={{ left, top, width: 1920, height: 1080 }}>
+      {children}
     </div>
   );
 }

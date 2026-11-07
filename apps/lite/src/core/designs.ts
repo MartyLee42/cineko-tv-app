@@ -1,9 +1,9 @@
 // The main app's visual designs (tokens vendored in ../shared/theme.css).
 // <html> gets `design-<id>` + `skel-<skeleton>`; Кинозал alone has a light mode.
-export type DesignId = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson";
+export type DesignId = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson" | "noir" | "vague";
 export type Skeleton = "kinozal" | "terminal" | "projector";
 
-export const DESIGNS: DesignId[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson"];
+export const DESIGNS: DesignId[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson", "noir", "vague"];
 
 
 export const DESIGN_SKELETON: Record<DesignId, Skeleton> = {
@@ -25,6 +25,8 @@ export const DESIGN_SKELETON: Record<DesignId, Skeleton> = {
   tarkovsky: "kinozal",
   silent: "projector",
   anderson: "projector",
+  noir: "terminal",
+  vague: "terminal",
 };
 
 export const DESIGN_NAMES: Record<DesignId, { ru: string; kk: string; en: string }> = {
@@ -46,6 +48,8 @@ export const DESIGN_NAMES: Record<DesignId, { ru: string; kk: string; en: string
   tarkovsky: { ru: "Созерцание", kk: "Толғаныс", en: "Contemplation" },
   silent: { ru: "Немое кино", kk: "Үнсіз кино", en: "Silent Film" },
   anderson: { ru: "Симметрия", kk: "Симметрия", en: "Symmetry" },
+  noir: { ru: "Нуар", kk: "Нуар", en: "Noir" },
+  vague: { ru: "Новая волна", kk: "Жаңа толқын", en: "New Wave" },
 };
 
 export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; accent: string; accent2: string; text: string }> = {
@@ -67,6 +71,8 @@ export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; acce
   tarkovsky: { bg: "#141613", surface: "#22241f", accent: "#c8a46a", accent2: "#7f9a8c", text: "#e2dccb" },
   silent: { bg: "#0c0c0c", surface: "#1c1c1c", accent: "#f2f2f2", accent2: "#9a9a9a", text: "#f4f4f4" },
   anderson: { bg: "#f6d6d6", surface: "#fbeee6", accent: "#d9a520", accent2: "#8fcfb8", text: "#3a2a2e" },
+  noir: { bg: "#0c0c0d", surface: "#1c1c1d", accent: "#f2efe6", accent2: "#8c8a84", text: "#ebe9e3" },
+  vague: { bg: "#0a0a0c", surface: "#345cde", accent: "#e6281e", accent2: "#fafaf8", text: "#fafaf8" },
 };
 
 export function isDesign(v: unknown): v is DesignId {

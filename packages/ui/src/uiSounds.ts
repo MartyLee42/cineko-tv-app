@@ -140,6 +140,16 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [tone("sine", 2350, 2350, 0.04, 0.16)], noise: [noise("highpass", 5000, 0.006, 0.1)] },
     click: { tones: [tone("sine", 2093, 2093, 0.12, 0.42), tone("sine", 5230, 5230, 0.08, 0.14), tone("sine", 3140, 3140, 0.1, 0.1)], noise: [noise("highpass", 6000, 0.008, 0.22)] },
   },
+  // A typewriter: a dry key strike; OK adds the carriage bell.
+  noir: {
+    tick: { tones: [], noise: [noise("bandpass", 3200, 0.014, 0.45, 3), noise("lowpass", 500, 0.02, 0.25)] },
+    click: { tones: [tone("sine", 2350, 2330, 0.09, 0.22, 0.02)], noise: [noise("bandpass", 2600, 0.016, 0.55, 3), noise("lowpass", 420, 0.025, 0.35)] },
+  },
+  // A splice on the editing table: a short snap, OK a firmer cut.
+  vague: {
+    tick: { tones: [], noise: [noise("highpass", 4200, 0.008, 0.35)] },
+    click: { tones: [tone("triangle", 240, 140, 0.035, 0.3)], noise: [noise("highpass", 3800, 0.01, 0.4), noise("bandpass", 1400, 0.02, 0.3, 2, 0.025)] },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */

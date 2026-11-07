@@ -29,6 +29,8 @@ const IMPORTS: Record<DesignSetting, () => Promise<Mod>> = {
   tarkovsky: () => import("./tarkovsky"),
   silent: () => import("./silent"),
   anderson: () => import("./anderson"),
+  noir: () => import("./noir"),
+  vague: () => import("./vague"),
 };
 
 const loaders = new Map<DesignSetting, () => Promise<Mod>>();
