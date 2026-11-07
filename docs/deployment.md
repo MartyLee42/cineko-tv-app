@@ -444,6 +444,40 @@ and move with Cineko updates. When YouTube playback breaks, a newer
 `invidious-companion` tag usually fixes it: override its `image:` in
 `deployments/compose.override.yaml`.
 
+### Old releases' assets (the asset archive)
+
+A page opened before an update keeps running the release it started with —
+TVs for days (the TV app reloads by itself only at a quiet moment, never
+during playback). Its screens, players, loading styles, designs and strings
+are lazy chunks with hashed names, fetched from the server when first
+needed. So that they don't vanish with the update, the web container keeps
+earlier releases' hashed files in the **asset archive**, the `asset-archive`
+volume mounted at `/srv/asset-archive`:
+
+- At start, the container adds its own `/assets/*` (PWA) and `/tv/assets/*`
+  (TV app) files to the archive (hashed names never collide), notes which
+  files the release has, and prunes: a file goes once it is older than 14
+  days **and** none of the last 3 releases has it (`ASSET_ARCHIVE_DAYS`,
+  `ASSET_ARCHIVE_RELEASES` on the `web` service). Only immutable hashed files
+  go in — never `index.html`, `sw.js` or the manifest.
+- Caddy serves `/assets/*` and `/tv/assets/*` from the current build first,
+  then from the archive (both with the long immutable cache header); a file
+  in neither is a `404` with `Cache-Control: no-store` (never the app's
+  `index.html`).
+- Cineko Music does the same in its own data volume
+  (`music-data:/data/asset-archive`, `MUSIC_ASSET_ARCHIVE=off` disables it)
+  for both of its builds.
+- `scripts/update.sh` (and the owner's `deployments/deploy.sh`) also copy the
+  assets of the release running *before* the update into the archive, so the
+  first update with the archive already covers it.
+
+Without the archive (the volume removed) or once a file is pruned, the apps
+still recover: a chunk that fails to download while the server has a newer
+release reloads the page once («Обновляем приложение…»; a sessionStorage
+marker prevents reload loops), and the TV app comes back to the title it was
+starting or playing, at the same position and source (or to the Details
+page it showed).
+
 ## Backup and restore
 
 ```sh

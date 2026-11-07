@@ -6,10 +6,11 @@ import { lazy, Suspense, useEffect, type ComponentType } from "react";
 import { DESIGN_SWATCH, type DesignSetting } from "@martytv/ui";
 import { INTRO_FADE_MS, INTRO_MS } from "./logic";
 import { SCENE_IMPORTS } from "./sceneImports";
+import { watched } from "../chunkReload";
 import "./intro.css";
 
 const SCENES = {} as Record<DesignSetting, ComponentType>;
-for (const id of Object.keys(SCENE_IMPORTS) as DesignSetting[]) SCENES[id] = lazy(() => SCENE_IMPORTS[id]().then((m) => ({ default: m.Scene })));
+for (const id of Object.keys(SCENE_IMPORTS) as DesignSetting[]) SCENES[id] = lazy(() => watched(SCENE_IMPORTS[id]()).then((m) => ({ default: m.Scene })));
 
 export function StartupIntro({ design, onDone }: { design: DesignSetting; onDone: () => void }) {
   useEffect(() => {

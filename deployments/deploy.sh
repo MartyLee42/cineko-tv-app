@@ -190,6 +190,21 @@ for img in "${THIRD_PARTY[@]}"; do
   rm -f "$TMP/third.tar.gz"
 done
 
+# Pages opened before this deploy (a TV runs one for days) keep loading their
+# release's lazy chunks: the new web container archives its own assets at
+# start (deployments/web-entrypoint.sh); the release running now goes into the
+# archive here first (its image may predate the archive). Idempotent: existing
+# files are kept, copies are dated now (pruned after ASSET_ARCHIVE_DAYS).
+# The volume is created like compose would (its labels), so compose adopts it.
+echo "==> asset archive"
+remote "docker volume inspect martytv_asset-archive >/dev/null 2>&1 \
+    || docker volume create --label com.docker.compose.project=martytv --label com.docker.compose.volume=asset-archive martytv_asset-archive >/dev/null
+  if [ \"\$(docker inspect -f '{{.State.Running}}' martytv-web-1 2>/dev/null)\" = true ]; then
+    docker exec martytv-web-1 tar -C /srv -cf - web/assets tv/assets 2>/dev/null \
+      | docker run --rm -i --network none -v martytv_asset-archive:/srv/asset-archive martytv-web:$VERSION seed \
+      && echo 'running release archived' || echo 'WARNING: running release not archived (its pages reload once instead)'
+  fi"
+
 echo "==> starting"
 # The remote shell has no pipefail: keep compose's exit status explicitly.
 remote 'cd /opt/martytv && out=$(docker compose up -d --remove-orphans 2>&1); rc=$?; printf "%s\n" "$out" | tail -5; exit $rc' \

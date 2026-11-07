@@ -9,6 +9,7 @@
 // EXT-X-MEDIA rendition, which the light build can't play (silent video).
 // Without either, the source is reported as unplayable ("HLS").
 import { hasMediaSource, hlsMode, isHlsSource, type HlsMode } from "@martytv/media-types";
+import { watched } from "../chunkReload";
 
 export interface HlsHandle {
   destroy(): void;
@@ -46,7 +47,14 @@ let loader: Promise<typeof import("hls.js").default> | null = null;
 
 /** Plays `url` through hls.js from `startAt`; `onFatal` once nothing more can be done in place. */
 export async function attachHlsJs(video: HTMLVideoElement, url: string, onFatal: (kind: "network" | "decode") => void, startAt = 0): Promise<HlsHandle> {
-  loader ??= import("hls.js").then((m) => m.default);
+  // A failed download is fetched again next time (and may mean a newer release: chunkReload.ts).
+  loader ??= watched(import("hls.js")).then(
+    (m) => m.default,
+    (e: unknown) => {
+      loader = null;
+      throw e;
+    },
+  );
   const Hls = await loader;
   const hls = new Hls(hlsConfig(startAt));
   let recovered = false;

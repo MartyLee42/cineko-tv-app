@@ -17,6 +17,7 @@ import type { LoadingStyle } from "../profile/settings";
 import { Backdrop, pct, Status, type LoaderModel } from "./loaderParts";
 import { loaderKind, type LoaderKind } from "./loaderChunks";
 import { LOADERS } from "./loaderStyles";
+import { ChunkBoundary } from "../ChunkBoundary";
 
 export type { LoaderModel };
 
@@ -78,9 +79,12 @@ export function Loader({ style, m, preview = false }: { style: LoadingStyle; m: 
       {kind === "minimal" ? (
         <Minimal m={m} />
       ) : (
-        <Suspense fallback={<Minimal m={m} />}>
-          <LazyStyle kind={kind} m={m} mood={style === "marty_popcorn" ? "popcorn" : "loading"} preview={preview} />
-        </Suspense>
+        // A style whose chunk is gone (a newer release): the plain loader, never a crash.
+        <ChunkBoundary fallback={<Minimal m={m} />}>
+          <Suspense fallback={<Minimal m={m} />}>
+            <LazyStyle kind={kind} m={m} mood={style === "marty_popcorn" ? "popcorn" : "loading"} preview={preview} />
+          </Suspense>
+        </ChunkBoundary>
       )}
     </div>
   );

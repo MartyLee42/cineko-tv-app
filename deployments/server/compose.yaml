@@ -267,6 +267,9 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
+      # Earlier releases' hashed /assets and /tv/assets for pages opened before
+      # a deploy (TVs run one page for days); filled and pruned at start.
+      - asset-archive:/srv/asset-archive
     depends_on: [api, music]
     mem_limit: 128m
     networks: [internal]
@@ -286,6 +289,7 @@ volumes:
   images:
   caddy_data:
   caddy_config:
+  asset-archive:
   invidious-pgdata:
   companion-cache:
   transcoder-hls:

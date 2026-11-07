@@ -1,7 +1,20 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { apiErrorMiddleware, ErrorBoundary, I18nProvider, initialLocale, installClickSounds, installErrorReporter, loadLocale } from "@martytv/ui";
+import {
+  apiErrorMiddleware,
+  createChunkReload,
+  ErrorBoundary,
+  fetchLatestEntry,
+  I18nProvider,
+  initialLocale,
+  installChunkReload,
+  installClickSounds,
+  installErrorReporter,
+  loadLocale,
+  pageEntry,
+  setChunkFailedHandler,
+} from "@martytv/ui";
 import { registerSW } from "virtual:pwa-register";
 import { initInstall } from "./install/install";
 import { api, queryClient } from "./api";
@@ -43,6 +56,13 @@ installErrorReporter({
 });
 api.use(apiErrorMiddleware());
 
+// A lazy chunk of this release gone from the server (a deploy while the page
+// was open): one reload into the new release instead of a crash
+// (@martytv/ui chunkReload.ts; a sessionStorage marker stops loops).
+const chunkFailed = createChunkReload({ ownEntry: () => pageEntry(), latestEntry: () => fetchLatestEntry("/index.html") });
+setChunkFailedHandler(chunkFailed);
+installChunkReload(chunkFailed);
+
 // The start language's strings are a chunk of their own: render once they're here.
 void loadLocale(initialLocale())
   .catch(() => undefined)
@@ -51,7 +71,7 @@ void loadLocale(initialLocale())
       <StrictMode>
         <QueryClientProvider client={queryClient}>
           <I18nProvider>
-            <ErrorBoundary variant="web">
+            <ErrorBoundary variant="web" recover={chunkFailed}>
               <App />
             </ErrorBoundary>
           </I18nProvider>

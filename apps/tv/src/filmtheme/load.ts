@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { filmTheme, type FilmTheme, type FilmThemeInput } from "@martytv/media-types";
 import { useSettings } from "../profile/settings";
+import { watched } from "../chunkReload";
 
 const imports: Record<FilmTheme, () => Promise<unknown>> = {
   silent: () => import("./themes/silent"),
@@ -24,7 +25,7 @@ const loads: Partial<Record<FilmTheme, Promise<unknown>>> = {};
 
 /** Fetches a theme's chunk (once; a failure is retried next time). */
 export function loadFilmTheme(t: FilmTheme): Promise<unknown> {
-  return (loads[t] ??= imports[t]().then(
+  return (loads[t] ??= watched(imports[t]()).then(
     () => loaded.add(t),
     (e: unknown) => {
       delete loads[t];
