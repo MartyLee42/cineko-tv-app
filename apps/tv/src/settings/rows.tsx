@@ -30,6 +30,7 @@ const LOADING_LABEL = {
   speed88: "settings.loading.speed88",
   odyssey: "settings.loading.odyssey",
   balloons: "settings.loading.balloons",
+  catch: "settings.loading.catch",
 } as const;
 
 /** The focused style's one-line explanation (styles that need one). */
@@ -40,6 +41,7 @@ const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
   speed88: "settings.loading.speed88_hint",
   odyssey: "settings.loading.odyssey_hint",
   balloons: "settings.loading.balloons_hint",
+  catch: "settings.loading.catch_hint",
 };
 
 export function useSettingRows() {
