@@ -59,6 +59,7 @@ import {
   rateStore,
   rebufferDead,
   rebufferDone,
+  rebufferOutrun,
   rebufferPercent,
   rebufferTarget,
   sessionRate,
@@ -274,7 +275,10 @@ export class PlayerController {
 
   // Rebuffering to a threshold and the bandwidth estimate (rebuffer.ts).
   /** `shown`: the highest «Буферизация N%» shown in this rebuffer (the buffered end may shrink: never back). */
-  private rebuf: { since: number; target: number; canPlayThrough: boolean; shown: number; end: number; grewAt: number } | null = null;
+  private advancing = false;
+  private lastTickTime = 0;
+  private lastBusy = false;
+  private rebuf: { since: number; target: number; canPlayThrough: boolean; shown: number; end: number; grewAt: number; at: number } | null = null;
   /** Rebuffers ended on a plateau lately (each makes the next plateau wait longer). */
   private plateaus = 0;
   private plateauAt = 0;
@@ -1915,7 +1919,7 @@ export class PlayerController {
     const v = this.video;
     if (!v) return;
     this.stallAt = null;
-    this.rebuf = { since: now, target, canPlayThrough: false, shown: 0, end: -1, grewAt: now };
+    this.rebuf = { since: now, target, canPlayThrough: false, shown: 0, end: -1, grewAt: now, at: v.currentTime };
     try {
       v.pause();
     } catch {
@@ -1983,6 +1987,16 @@ export class PlayerController {
       return;
     }
     this.watchFrames(v, now, f.source);
+    // The picture moves on: never «buffering», whatever readyState says (some TV engines resume after a long pause
+    // with only timeupdates and a stale readyState). And redraw when that state flips without a media event.
+    const t = v.currentTime;
+    this.advancing = !v.paused && t > this.lastTickTime + 0.05;
+    this.lastTickTime = t;
+    const busy = !this.advancing && (v.seeking || v.readyState < 3);
+    if (busy !== this.lastBusy) {
+      this.lastBusy = busy;
+      this.emit("playback");
+    }
     const ahead = bufferedAhead(rangesOf(v), v.currentTime);
     const bitrate = this.bitrate();
     // Buffer growth measures the link only while the engine is still
@@ -2018,6 +2032,12 @@ export class PlayerController {
     }
     const r = this.rebuf;
     if (!r) return;
+    // Playing again without us (phone resume, play key, the engine after a long pause): the rebuffer is over.
+    if (rebufferOutrun({ paused: v.paused, readyState: v.readyState, time: v.currentTime, timeAtStart: r.at })) {
+      this.rebuf = null;
+      this.emit("playback");
+      return;
+    }
     // Watch the buffered end: a paused engine that stopped fetching below the
     // target (stuck at «99 %») plays what it has; a stream that delivers
     // nothing at all for long is reloaded here (bounded by MAX_RECOVERIES).
@@ -2046,6 +2066,11 @@ export class PlayerController {
       return;
     }
     this.emit("playback");
+  }
+
+  /** The video's time moved since the last tick (500 ms): it plays, whatever readyState says. */
+  advancingNow(): boolean {
+    return this.advancing;
   }
 
   /** A short native stall after a played-out rebuffer: keep the picture, no spinner. */
