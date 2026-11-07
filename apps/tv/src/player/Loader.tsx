@@ -6,10 +6,10 @@
 // Each style except «Минимализм» is a chunk of its own (loaders/*): only the
 // profile's style is fetched — ahead of time, with the player's code (see
 // loaderChunks.ts); until it's there, Minimal stands in.
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import type { PlaybackSource } from "@martytv/contracts";
 import { Spinner, useAppliedDesign } from "@martytv/ui";
-import { loadTracker, type LoadStage } from "./loading";
+import { loadTracker, SHOW_EVERY_MS, type LoadStage } from "./loading";
 import type { LoadingStyle } from "../profile/settings";
 import { Backdrop, pct, Status, type LoaderModel } from "./loaderParts";
 import { LOADERS, loaderKind, type LoaderKind } from "./loaderChunks";
@@ -19,26 +19,30 @@ export type { LoaderModel };
 /** The first load's progress: one tracker for the app, so a remount (or a page restart) doesn't restart it. */
 const tracker = loadTracker;
 
+type LoadInputs = { stage: LoadStage; source: Pick<PlaybackSource, "id" | "torrent" | "file" | "release"> | null; metadata: boolean; title?: string };
+
 /**
- * Drives the tracker: recomputes every 400 ms (time-based creep inside a
- * stage) and whenever the stage/source changes. Never goes backwards within
- * one load (`loadKey`); a new load or another source starts from 0.
+ * Reads the app's one tracker (the only owner of the number) on a fixed
+ * SHOW_EVERY_MS tick with the latest inputs — not once per poll / re-render
+ * (the controller's poll and the screen's own torrent poll used to restart
+ * it). Never goes backwards within one load attempt (`loadKey`).
  */
-export function useLoadProgress(
-  loadKey: string,
-  stage: LoadStage,
-  source: Pick<PlaybackSource, "id" | "torrent" | "file" | "release"> | null,
-  metadata: boolean,
-  title?: string,
-): number {
-  const [p, setP] = useState(() => tracker.current(loadKey));
+export function useLoadProgress(loadKey: string, stage: LoadStage, source: LoadInputs["source"], metadata: boolean, title?: string): number {
+  const [p, setP] = useState(() => tracker.current(loadKey, title));
+  const inputs = useRef<LoadInputs>({ stage, source, metadata, title });
   useEffect(() => {
-    const calc = () => setP(tracker.update(loadKey, { stage, source, sourceId: source?.id ?? null, metadata, title }, Date.now()));
+    inputs.current = { stage, source, metadata, title };
+  });
+  useEffect(() => {
+    const calc = () => {
+      const i = inputs.current;
+      setP(tracker.update(loadKey, { stage: i.stage, source: i.source, sourceId: i.source?.id ?? null, metadata: i.metadata, title: i.title }, Date.now()));
+    };
     calc();
     if (stage === "done") return;
-    const id = setInterval(calc, 400);
+    const id = setInterval(calc, SHOW_EVERY_MS);
     return () => clearInterval(id);
-  }, [loadKey, stage, source, metadata, title]);
+  }, [loadKey, stage]);
   return p;
 }
 

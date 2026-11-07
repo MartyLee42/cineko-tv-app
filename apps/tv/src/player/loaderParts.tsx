@@ -40,7 +40,8 @@ export function useStatus(m: LoaderModel): { status: string; stats: string[] } {
   return { status: t(status.key, status.vars), stats: stats.map((l) => t(l.key, l.vars)) };
 }
 
-export const pct = (p: number) => `${Math.round(p * 100)}%`;
+/** Whole percent, rounded down: «100 %» only once it is really there. */
+export const pct = (p: number) => `${p >= 1 ? 100 : Math.max(0, Math.floor(p * 100))}%`;
 
 export function Status({ m, className = "" }: { m: LoaderModel; className?: string }) {
   const { status, stats } = useStatus(m);
