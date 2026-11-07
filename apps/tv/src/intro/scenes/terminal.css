@@ -1,0 +1,7 @@
+/* ---- terminal: boot log, then the name typed */
+@keyframes in-line { from { opacity: 0; } to { opacity: 1; } }
+@keyframes in-type { from { width: 0; } to { width: 6ch; } }
+.in-line { opacity: 0; animation: in-line .01s linear both; }
+.in-type { display: inline-block; overflow: hidden; white-space: nowrap; width: 0; animation: in-type .7s steps(6) 1.25s both; }
+.in-cursor { animation: in-blink .8s steps(1) infinite; }
+.in-scan { background: repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0, rgba(255,255,255,.035) 1px, transparent 1px, transparent 4px); }

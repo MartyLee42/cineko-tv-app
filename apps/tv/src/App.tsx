@@ -56,6 +56,7 @@ import { qualityInPlace, videoControl } from "./video/remote";
 import { PillLayer } from "./design/PillDialog";
 import { PausedSaver } from "./idle/PausedSaver";
 import { introEnv, shouldShowIntro } from "./intro/logic";
+import { preloadIntroScene } from "./intro/sceneImports";
 
 // The startup animation is its own chunk: TVs with it switched off never fetch it.
 const StartupIntro = lazy(() => import("./intro/StartupIntro").then((m) => ({ default: m.StartupIntro })));
@@ -108,6 +109,10 @@ export function App() {
   // Startup intro: once per app start, in the design this TV last showed.
   const [intro, setIntro] = useState(() => (shouldShowIntro(introEnv()) ? themeCache.design() : null));
   const endIntro = useCallback(() => setIntro(null), []);
+  // The intro's scene is its own chunk: fetch it with the intro shell.
+  useEffect(() => {
+    if (intro) preloadIntroScene(intro);
+  }, [intro]);
   // Screen stack inside the signed-in area (Home → Details → …). Kept here,
   // outside the "home" screen, so switching profiles and coming back keeps it.
   const [stack, setStack] = useState<StackEntry[]>(initialStack);
