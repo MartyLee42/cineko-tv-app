@@ -399,7 +399,8 @@ func (s Settings) validate() map[string]string {
 	return f
 }
 
-// GetSettings returns a profile's settings with defaults filled in.
+// GetSettings returns a profile's base settings with defaults filled in
+// (what server-side features read: none of them uses a layered key).
 func (s *Store) GetSettings(ctx context.Context, profileID string) (Settings, error) {
 	var raw []byte
 	err := s.q.QueryRow(ctx, `SELECT settings FROM profile_settings WHERE profile_id = $1`, profileID).Scan(&raw)
@@ -485,15 +486,27 @@ func (h *Handlers) getSettings(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	st, err := h.store.GetSettings(c.Context(), id)
+	l, err := layerOf(c)
+	if err != nil {
+		return err
+	}
+	st, err := h.store.GetEffective(c.Context(), id, l)
 	if err != nil {
 		return err
 	}
 	return c.JSON(st)
 }
 
+// putSettings saves a partial update. A TV's and a browser's (with
+// ?device_class=) layered keys go to their own layer (layers.go); the rest,
+// and everything from callers without a layer, to the profile base. The
+// answer is the caller's effective settings.
 func (h *Handlers) putSettings(c fiber.Ctx) error {
 	id, err := h.usable(c)
+	if err != nil {
+		return err
+	}
+	l, err := layerOf(c)
 	if err != nil {
 		return err
 	}
@@ -511,22 +524,29 @@ func (h *Handlers) putSettings(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	if err := h.store.MergeSettings(c.Context(), id, in); err != nil {
-		return err
-	}
-	after, err := h.store.GetSettings(c.Context(), id)
+	baseChanged, err := h.store.ApplyPatch(c.Context(), id, l, in)
 	if err != nil {
 		return err
 	}
-	for _, f := range h.onSettings {
-		f(c.Context(), id, before, after)
+	if baseChanged {
+		after, err := h.store.GetSettings(c.Context(), id)
+		if err != nil {
+			return err
+		}
+		for _, f := range h.onSettings {
+			f(c.Context(), id, before, after)
+		}
 	}
-	return c.JSON(after)
+	st, err := h.store.GetEffective(c.Context(), id, l)
+	if err != nil {
+		return err
+	}
+	return c.JSON(st)
 }
 
-// OnSettingsChanged registers a callback run after every successful
-// settings PUT with the settings before and after (defaults filled). It
-// must return quickly (start background work itself).
+// OnSettingsChanged registers a callback run after a settings PUT that
+// touched the profile base, with the base before and after (defaults
+// filled). It must return quickly (start background work itself).
 func (h *Handlers) OnSettingsChanged(f func(ctx context.Context, profileID string, before, after Settings)) {
 	h.onSettings = append(h.onSettings, f)
 }

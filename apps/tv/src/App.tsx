@@ -29,12 +29,13 @@ import { flowScreen, type PlayContext } from "./player/session";
 import { currentPlayers, defaultPlayerStore, resolvePlayer } from "./players/select";
 import { devicePrefs } from "./settings/devicePrefs";
 import { startSpeedtest } from "./settings/speedtest";
+import { tvOwn, useTvOwnLanguage } from "./settings/tvOwn";
 import { setHealthScreen, startHealth } from "./health/agent";
 import { PairingScreen } from "./screens/PairingScreen";
 import { TokenScreen } from "./screens/TokenScreen";
 import { ProfilesScreen } from "./screens/ProfilesScreen";
 import { CatalogShell, type PlayHow } from "./screens/catalog/CatalogShell";
-import { activeProfile, themeCache, useLoadedSettings } from "./profile/settings";
+import { activeProfile, settingsKey, themeCache, useLoadedSettings } from "./profile/settings";
 import { MessageLayer } from "./messages/MessageLayer";
 import { DesignProvider, DeviceProvider } from "./design/context";
 import { runBackFirst } from "./design/topJump";
@@ -123,6 +124,8 @@ export function App() {
   const detailsRef = useRef(details);
   const pendingRef = useRef<Pending | null>(null);
   const { t, locale } = useI18n();
+  // «Язык» is one of this TV's own options (a phone may change it).
+  useTvOwnLanguage();
   const flow = useFlow();
   const liveSession = useLive();
   const videoOn = useVideoSession();
@@ -144,6 +147,8 @@ export function App() {
         unwrap(api.GET("/profiles")).then((r) => r.items),
       ]);
       realtime.start();
+      // This TV's own options (screensaver, sounds, language…): server copy, seeded from here once.
+      void tvOwn.sync();
       // This TV's playback profile: report what it detects (quietly, later on).
       setTimeout(() => void devicePrefs.sync(), 3000);
       // Background speed test (first one ~25 s later; never while playing).
@@ -576,7 +581,19 @@ export function App() {
     });
     return realtime.on((env: Envelope) => {
       // (Re)connected: the server and controllers learn the state right away.
-      if (env.type === "hello") return sendState(true);
+      if (env.type === "hello") {
+        // Changed from a phone while this TV was offline: pick it up.
+        void tvOwn.sync();
+        return sendState(true);
+      }
+      // Settings changed from a phone / computer (an event: never acked):
+      // this TV's own options and, with profile_id, that profile's look here.
+      if (env.type === "settings.changed") {
+        void tvOwn.sync();
+        const pid = (env.payload as { profile_id?: unknown } | undefined)?.profile_id;
+        if (typeof pid === "string") void queryClient.invalidateQueries({ queryKey: settingsKey(pid) });
+        return;
+      }
       // Admin message (an event: never acked).
       if (env.type === "message") {
         void queryClient.invalidateQueries({ queryKey: ["inbox"] });
