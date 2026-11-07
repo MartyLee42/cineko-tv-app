@@ -8,7 +8,8 @@
 # with TorrServer), streams them over SSH, and (re)starts the stack in
 # /opt/martytv. Also installs the martytv-hostmon systemd service (host load
 # for the admin Server tab). Never touches other containers or services
-# on the server.
+# on the server, except three TorrServer settings through its API (cache
+# size, cache cleanup, rutor search; scripts/torrserver-settings.sh).
 #
 # Needs: docker, ssh. Server login from ./.remote_server (SERVER_URL,
 # SERVER_USER, SERVER_PWD) or your SSH keys. Settings in
@@ -232,6 +233,18 @@ if grep -q '^  invidious:' "$COMPOSE_SRC"; then
     if docker exec martytv-invidious-1 wget -qO- "http://127.0.0.1:3000/api/v1/search?q=test" 2>/dev/null | grep -q videoId; then echo "invidious healthy (YouTube reachable)";
     else echo "WARNING: invidious not answering or YouTube unreachable through awg-socks («Видео» unavailable)"; fi'
 fi
+
+# TorrServer (the server's own, host networking) gets Cineko's cache settings
+# from .env (TORRSERVER_CACHE_MB, …; defaults 128 MB / drop cache / no rutor).
+# A no-op when they already match; never restarts it. TORRSERVER_SETTINGS=off
+# in .env.server leaves TorrServer alone. Warnings only.
+echo "==> TorrServer settings"
+put_small "$SRC/scripts/torrserver-settings.sh" /opt/martytv/torrserver-settings.sh 700
+remote 'cd /opt/martytv
+  if grep -q "^TORRSERVER_SETTINGS=off" .env; then echo "skipped (TORRSERVER_SETTINGS=off)"; exit 0; fi
+  u=$(grep -m1 "^TORRSERVER_URL=" .env | cut -d= -f2- | sed "s#//host.docker.internal#//127.0.0.1#")
+  [ -n "$u" ] && CINEKO_ENV_FILE=/opt/martytv/.env sh torrserver-settings.sh --url "$u" \
+    || echo "WARNING: TorrServer settings not applied"'
 
 # Keep the two newest MartyTV image versions; never touches other images.
 remote "for repo in martytv-api martytv-web martytv-transcoder martytv-music; do docker image ls \$repo --format '{{.Tag}}' | sort -r | tail -n +3 | xargs -r -I{} docker image rm -f \$repo:{} >/dev/null; done"
