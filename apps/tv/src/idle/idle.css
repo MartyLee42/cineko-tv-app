@@ -28,8 +28,8 @@
 @-webkit-keyframes idle-dance { from { -webkit-transform: translate3d(-30px, 0, 0) rotate(-10deg); } to { -webkit-transform: translate3d(30px, -50px, 0) rotate(10deg); } }
 @keyframes idle-dance { from { transform: translate3d(-30px, 0, 0) rotate(-10deg); } to { transform: translate3d(30px, -50px, 0) rotate(10deg); } }
 
-/* ---- screensaver: near-black (OLED), the content slowly drifts */
-.idle-saver { background: rgba(0, 0, 0, .94); -webkit-animation: idle-fade 1.2s ease-out both; animation: idle-fade 1.2s ease-out both; }
+/* ---- screensaver: black (OLED), the content slowly drifts */
+.idle-saver { background: #000; -webkit-animation: idle-fade 1.2s ease-out both; animation: idle-fade 1.2s ease-out both; }
 @-webkit-keyframes idle-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes idle-fade { from { opacity: 0; } to { opacity: 1; } }
 .idle-drift { -webkit-animation: idle-drift 90s ease-in-out infinite alternate; animation: idle-drift 90s ease-in-out infinite alternate; }
@@ -52,5 +52,22 @@
 @-webkit-keyframes idle-zzz { 0% { -webkit-transform: translate3d(0, 20px, 0); opacity: 0; } 20% { opacity: .9; } 100% { -webkit-transform: translate3d(30px, -90px, 0); opacity: 0; } }
 @keyframes idle-zzz { 0% { transform: translate3d(0, 20px, 0); opacity: 0; } 20% { opacity: .9; } 100% { transform: translate3d(30px, -90px, 0); opacity: 0; } }
 
-/* ---- DVD: a still picture moved by transform only (its own layer) */
-.idle-dvd { will-change: transform; }
+/* ---- DVD: a still picture; x and y slide separately (durations/delays set inline) */
+.idle-dvd { will-change: transform; -webkit-animation-timing-function: linear; animation-timing-function: linear; -webkit-animation-iteration-count: infinite; animation-iteration-count: infinite; -webkit-animation-direction: alternate; animation-direction: alternate; }
+.idle-dvd-x { -webkit-animation-name: idle-dvd-x; animation-name: idle-dvd-x; }
+.idle-dvd-y { -webkit-animation-name: idle-dvd-y; animation-name: idle-dvd-y; }
+/* «Конструктивизм»: the 170 px emblem has more room */
+.idle-dvd-cv { -webkit-animation-name: idle-dvd-x-cv; animation-name: idle-dvd-x-cv; }
+.idle-dvd-cv .idle-dvd-y { -webkit-animation-name: idle-dvd-y-cv; animation-name: idle-dvd-y-cv; }
+@-webkit-keyframes idle-dvd-x { from { -webkit-transform: translate3d(0, 0, 0); } to { -webkit-transform: translate3d(1520px, 0, 0); } }
+@keyframes idle-dvd-x { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(1520px, 0, 0); } }
+@-webkit-keyframes idle-dvd-y { from { -webkit-transform: translate3d(0, 0, 0); } to { -webkit-transform: translate3d(0, 900px, 0); } }
+@keyframes idle-dvd-y { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 900px, 0); } }
+@-webkit-keyframes idle-dvd-x-cv { from { -webkit-transform: translate3d(0, 0, 0); } to { -webkit-transform: translate3d(1750px, 0, 0); } }
+@keyframes idle-dvd-x-cv { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(1750px, 0, 0); } }
+@-webkit-keyframes idle-dvd-y-cv { from { -webkit-transform: translate3d(0, 0, 0); } to { -webkit-transform: translate3d(0, 910px, 0); } }
+@keyframes idle-dvd-y-cv { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 910px, 0); } }
+
+/* ---- while a screensaver is up: the rest of the page is hidden and paused */
+html[data-saver-on] body * { visibility: hidden; -webkit-animation-play-state: paused; animation-play-state: paused; }
+html[data-saver-on] body .idle-saver, html[data-saver-on] body .idle-saver * { visibility: visible; -webkit-animation-play-state: running; animation-play-state: running; }
