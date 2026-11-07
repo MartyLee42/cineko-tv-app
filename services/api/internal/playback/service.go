@@ -11,6 +11,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -742,6 +743,12 @@ func (s *Service) present(ctx context.Context, src *source, live bool) *Playback
 		}
 		out.Markers = s.markersFor(ctx, src, season, episode, nil, length)
 	}
+	// Until ffprobe reports the length, the slow-torrent hint needs the
+	// release's bitrate: estimate it from the TMDB runtime (the snapshot
+	// taken when the source was created may not carry it).
+	if live && out.Release.EstBitrateBps == nil && (src.MediaInfo == nil || src.MediaInfo.DurationSeconds == nil) {
+		out.Release.EstBitrateBps = s.estBitrate(ctx, src)
+	}
 	// Probe when there's no media info yet, or (once per MediaInfoRetry)
 	// re-probe an older row for the newer fields — unless the file plays
 	// from disk, where the torrent isn't worth waking for that.
@@ -750,6 +757,28 @@ func (s *Service) present(ctx context.Context, src *source, live bool) *Playback
 		s.probeLater(src.ID, src.InfoHash, *src.FileIndex)
 	}
 	return out
+}
+
+// estBitrate is the playing file's size × 8 / the TMDB runtime of the film
+// or episode, bits/s; nil when either is unknown. Before a file is chosen
+// only a single-title release has a meaningful size.
+func (s *Service) estBitrate(ctx context.Context, src *source) *float64 {
+	var size int64
+	switch {
+	case src.FileSize != nil:
+		size = *src.FileSize
+	case src.EpisodeID == nil:
+		size = src.Release.SizeBytes
+	}
+	if size <= 0 {
+		return nil
+	}
+	minutes, err := s.st.runtime(ctx, src.MediaID, src.EpisodeID)
+	if err != nil || minutes <= 0 {
+		return nil
+	}
+	v := math.Round(float64(size) * 8 / float64(minutes*60))
+	return &v
 }
 
 // wakeIdleEvery: at most one preload per source this often.

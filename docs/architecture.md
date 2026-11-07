@@ -460,7 +460,10 @@ applies `device_id` (same access as above, else 404), else the caller's
 judge is ignored. It only re-ranks the cached candidates per request (cache
 keys unchanged) and reports `ReleaseList.device {kind, id, name,
 constraints}`. Every release gets `est_bitrate_bps` = size × 8 / TMDB
-runtime (per episode for packs; null when unknown). Factors (multiplied into
+runtime (per episode for packs; null when unknown). A playback source
+whose length ffprobe hasn't reported yet fills a missing one from the
+playing file's size, so the slow-torrent hint works from the first second.
+Factors (multiplied into
 preference; nothing is hidden):
 
 | Check | Factor | Warning |
