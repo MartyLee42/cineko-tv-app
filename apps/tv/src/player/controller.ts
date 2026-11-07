@@ -913,8 +913,23 @@ export class PlayerController {
     const seasons = media?.seasons ?? [];
     const later = seasons.filter((s) => s.season_number > ctx.season!).sort((a, b) => a.season_number - b.season_number)[0];
     const nextList = later ? cachedSeason(ctx.media_id, later.season_number, ctx.lang)?.episodes : undefined;
-    if (!cur && !media) return { season: ctx.season, episode: ctx.episode + 1 };
+    // Nothing cached (started from the phone, after a reload…): fetch it for next time, offer nothing now —
+    // a guessed «episode + 1» may not exist (S02E13 → «S02E14», the season's end).
+    if (!cur || !media) this.warmEpisodes(ctx);
+    if (!cur && !media) return null;
     return resolveNext({ season: ctx.season, episode: ctx.episode }, cur?.episodes, seasons, nextList);
+  }
+
+  /** Loads the series, the current season and the next one into the cache (for «next episode»). */
+  private warmEpisodes(ctx: PlayContext) {
+    if (ctx.kind !== "series" || ctx.season === null) return;
+    const season = ctx.season;
+    void loadMedia(ctx.media_id, ctx.lang)
+      .then((m) => {
+        const later = (m.seasons ?? []).filter((s) => s.season_number > season).sort((a, b) => a.season_number - b.season_number)[0];
+        return Promise.all([loadSeason(ctx.media_id, season, ctx.lang), later ? loadSeason(ctx.media_id, later.season_number, ctx.lang) : null]);
+      })
+      .catch(() => undefined);
   }
 
   /** The episode before the current one, from cached catalog data. */
@@ -1392,6 +1407,8 @@ export class PlayerController {
   private load(url: string, at: number, play: boolean, compat = false) {
     const v = this.video;
     if (!v) return;
+    const lctx = this.ctx();
+    if (lctx && !this.started) this.warmEpisodes(lctx);
     // A new stream mid-film (compat seek / track switch, refreshed URL,
     // recovery): swapping src blanks the element until the new stream has
     // a frame — keep the last picture up meanwhile.
