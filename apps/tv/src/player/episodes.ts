@@ -24,8 +24,10 @@ function aired(ep: EpisodeLike, today: string): boolean {
 /**
  * The episode after `cur`: the next aired one in the same season, else the
  * first aired one of the next regular season. Specials (season 0) never roll
- * over into regular seasons. `nextSeasonEpisodes` is the next season's list
- * when known; without it the next season's episode 1 is returned without id.
+ * over into regular seasons. Without the season's list, its episode_count
+ * decides (unknown → null: never a guessed episode that may not exist).
+ * `nextSeasonEpisodes` is the next season's list when known; without it the
+ * next season's episode 1 is returned without id.
  */
 export function nextEpisode(
   cur: { season: number; episode: number },
@@ -39,6 +41,11 @@ export function nextEpisode(
       .filter((e) => e.season_number === cur.season && e.episode_number > cur.episode)
       .sort((a, b) => a.episode_number - b.episode_number)[0];
     if (after) return aired(after, today) ? toRef(after) : null;
+  } else {
+    // No episode list: the season's episode count says whether this one was its last.
+    const count = seasons.find((s) => s.season_number === cur.season)?.episode_count;
+    if (count === undefined) return null; // unknown: never offer a guessed episode
+    if (cur.episode < count) return { season: cur.season, episode: cur.episode + 1 };
   }
   if (cur.season === 0) return null;
   const next = seasons

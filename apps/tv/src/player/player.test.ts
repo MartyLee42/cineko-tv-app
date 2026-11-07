@@ -323,6 +323,15 @@ describe("next episode", () => {
     expect(nextEpisode({ season: 0, episode: 3 }, eps(0, 3), seasons, undefined, today)).toBeNull();
     expect(nextEpisode({ season: 1, episode: 8 }, eps(1, 8), [...seasons.slice(0, 2), { season_number: 2, air_date: "2999-01-01" }], undefined, today)).toBeNull();
   });
+  it("without the season's list: its episode count decides, never a guessed episode (S02E13 of 13 → S03E01)", () => {
+    const counted = [{ season_number: 1, episode_count: 13 }, { season_number: 2, episode_count: 13 }, { season_number: 3, episode_count: 13 }];
+    expect(nextEpisode({ season: 2, episode: 13 }, undefined, counted, undefined, today)).toEqual({ season: 3, episode: 1 });
+    expect(nextEpisode({ season: 2, episode: 13 }, undefined, counted, eps(3, 13), today)).toMatchObject({ season: 3, episode: 1, id: "s3e1" });
+    expect(nextEpisode({ season: 2, episode: 5 }, undefined, counted, undefined, today)).toEqual({ season: 2, episode: 6 });
+    expect(nextEpisode({ season: 3, episode: 13 }, undefined, counted, undefined, today)).toBeNull();
+    // Episode count unknown: no offer at all.
+    expect(nextEpisode({ season: 2, episode: 13 }, undefined, seasons, undefined, today)).toBeNull();
+  });
   it("knows when a season pack covers the next episode", () => {
     expect(packCovers(release({ is_season_pack: true, seasons: [1] }), 1, 5)).toBe(true);
     expect(packCovers(release({ is_season_pack: true, seasons: [1] }), 2, 1)).toBe(false);
