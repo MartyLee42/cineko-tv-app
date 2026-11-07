@@ -61,7 +61,7 @@ const selectDevice = `
 	FROM devices d
 	JOIN users u ON u.id = d.owner_user_id
 	LEFT JOIN device_permissions dp ON dp.device_id = d.id AND dp.user_id = $1
-	WHERE d.revoked_at IS NULL AND (d.owner_user_id = $1 OR dp.user_id IS NOT NULL)`
+	WHERE d.revoked_at IS NULL AND NOT d.demo AND (d.owner_user_id = $1 OR dp.user_id IS NOT NULL)`
 
 func scan(row interface{ Scan(...any) error }) (*Device, error) {
 	var d Device

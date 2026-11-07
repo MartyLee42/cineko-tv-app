@@ -271,8 +271,8 @@ func dbFamilies(ctx context.Context, pool *pgxpool.Pool) ([]Family, error) {
 	if err := pool.QueryRow(ctx, `
 		SELECT (SELECT count(*) FROM users),
 		       (SELECT count(*) FROM profiles),
-		       (SELECT count(*) FROM devices WHERE revoked_at IS NULL),
-		       (SELECT count(*) FROM devices WHERE revoked_at IS NULL AND last_seen_at > now() - interval '1 day')`).
+		       (SELECT count(*) FROM devices WHERE revoked_at IS NULL AND NOT demo),
+		       (SELECT count(*) FROM devices WHERE revoked_at IS NULL AND NOT demo AND last_seen_at > now() - interval '1 day')`).
 		Scan(&users, &profiles, &devs, &seen); err != nil {
 		return nil, err
 	}
@@ -296,7 +296,7 @@ func deviceHealth(ctx context.Context, pool *pgxpool.Pool) ([]Family, error) {
 	rows, err := pool.Query(ctx, `
 		SELECT DISTINCT ON (h.device_id) h.device_id::text, h.at, h.sample
 		FROM device_health_samples h JOIN devices d ON d.id = h.device_id
-		WHERE d.revoked_at IS NULL AND h.at > now() - interval '1 day'
+		WHERE d.revoked_at IS NULL AND NOT d.demo AND h.at > now() - interval '1 day'
 		ORDER BY h.device_id, h.id DESC`)
 	if err != nil {
 		return nil, err

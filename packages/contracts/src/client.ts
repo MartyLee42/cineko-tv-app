@@ -97,8 +97,8 @@ export interface ApiOptions {
   getCsrfToken?: () => string | undefined;
   /** Bearer credential (TV device credential). */
   getBearer?: () => string | undefined;
-  /** Called on 401 so the app can return to login/pairing. */
-  onUnauthorized?: () => void;
+  /** Called on 401 so the app can return to login/pairing (with the rejected request). */
+  onUnauthorized?: (request: Request) => void;
 }
 
 const UNSAFE = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -123,7 +123,7 @@ export function createApi(opts: ApiOptions = {}) {
     onResponse({ response, request }) {
       // Pairing polls use their own auth scheme; their 401s are not "signed out".
       if (response.status === 401 && !request.url.includes("/pairing")) {
-        opts.onUnauthorized?.();
+        opts.onUnauthorized?.(request);
       }
       return response;
     },

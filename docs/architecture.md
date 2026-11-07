@@ -88,6 +88,35 @@ Packages share no global state. The hub implements `auth.Disconnector` and
 - **Logs:** never include passwords, tokens, cookies, query strings or request
   bodies.
 
+### Demo TV (`/demo_tv`)
+
+`/demo_tv` (Caddy and the PWA redirect it to `/tv/?demo=1`) opens the TV app
+in a browser that is signed in to the PWA, without pairing: a desktop preview
+of every design and screen, with playback in the browser player.
+
+- **Credential:** the app (`apps/tv/src/demo.ts`) reads the CSRF token from
+  `GET /auth/session` and calls `POST /devices/demo` (browser session only,
+  cookie + CSRF + Origin; API tokens and TVs get 403). The server returns a
+  normal `mtd_…` credential for the session's own demo device
+  (`devices.demo`, `demo_session_id`; one per session, reused by every tab,
+  created on first use). The TV app then runs unchanged with that Bearer
+  credential (kept under `martytv.demo_credential`, apart from a paired TV's).
+- **Lifetime:** demo credentials expire after 12 hours (at most 5 live per
+  device) and work only while the session is valid
+  (`ResolveDeviceCredential` checks it): signing out or a revoked/expired
+  session ends the demo at once. A rejected credential is re-requested once;
+  without a session the app shows «Войти» (→ `/login?next=/demo_tv`). The
+  periodic auth cleanup unpairs demo devices whose session ended and deletes
+  their spent credentials (the row stays for watch history).
+- **Hidden:** demo devices are left out of `GET /devices` (and `scope=all`),
+  device lookups by id (so no remote commands, sharing or renaming), the
+  admin TV list and metrics. The realtime socket refuses them (no presence,
+  pushes or remote control) and the app doesn't connect; health posts are
+  dropped (204); the app runs no speed test.
+- **Parity:** the demo device is owned by the signed-in user and never
+  shared, so it sees only that user's profiles and can do only what a TV of
+  theirs could — which is never more than the user's own session.
+
 ## Roles
 
 `user` < `admin` < `super_admin` (`users.role`, CHECK widened in migration

@@ -1,0 +1,19 @@
+{
+  "id": "russo-one",
+  "family": "Russo One",
+  "subsets": ["cyrillic", "latin", "latin-ext"],
+  "weights": [400],
+  "styles": ["normal"],
+  "defSubset": "latin",
+  "variable": false,
+  "lastModified": "2025-09-16",
+  "version": "v18",
+  "category": "sans-serif",
+  "license": {
+    "type": "OFL-1.1",
+    "url": "https://openfontlicense.org",
+    "attribution": "Copyright (c) 2011-2012, Jovanny Lemonad (lemonad@jovanny.ru), with Reserved Font Name \"Russo\""
+  },
+  "source": "https://github.com/google/fonts",
+  "type": "google"
+}
