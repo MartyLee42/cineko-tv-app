@@ -42,6 +42,9 @@ type App struct {
 	resolving map[string]*resolveCall
 
 	lyrics *ttlCache
+
+	stMu   sync.Mutex
+	stBusy map[string]chan struct{} // soundtrack builds in progress (user|media)
 }
 
 type cachedSession struct {
@@ -286,6 +289,7 @@ func (a *App) routes() http.Handler {
 	api("HEAD /music/api/ytq", a.hYTQuery)
 	api("POST /music/api/import/match", a.hImportMatch)
 	api("POST /music/api/ai/playlist", a.hAIPlaylist)
+	api("POST /music/api/soundtrack", a.hSoundtrack)
 	api("GET /music/api/tabs/search", a.hTabsSearch)
 	api("PUT /music/api/torrentchoice", a.hTorrentChoice)
 	api("GET /music/api/zv/search", a.hZvSearch)

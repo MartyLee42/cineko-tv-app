@@ -53,6 +53,26 @@ that is not about music answers `200 {refused: true, answer, tracks: []}`.
   0 = unlimited; a call needs 3000 left). Failed model calls are refunded.
   Only token counts are logged, never prompts.
 
+## Soundtracks (`/music/soundtrack/<media id>?lang=`)
+
+«Послушать саундтрек» on a Cineko title (PWA details; on the TV the More
+menu shows a QR code of this page) opens `/music/soundtrack/<id>`, which calls
+`POST /music/api/soundtrack` `{media, lang}` and then opens the playlist.
+
+- The title, original title, year and composer (TMDB «Original Music Composer»)
+  are read from Cineko's `GET /api/v1/media/{id}` with the listener's session;
+  the client sends only the id.
+- Tracks: Deezer album searches («<title> soundtrack», «<composer> <title>», …);
+  candidates are scored (title as a whole phrase, soundtrack words or the
+  composer as artist, release year, no karaoke / covers / sequels) and the best
+  songs album plus the best score album are merged (≤ 100 tracks).
+- No such album: the AI playlist call with a fixed request built from the title
+  (still in the JSON `request` field, checked by the injection guard, counted
+  against the daily limits, «precise» temperature).
+- One playlist per account and title («<Title> — саундтрек», table
+  `soundtracks`): pressing again opens it; if the listener deleted it, it is
+  built again. Concurrent presses wait for the first build.
+
 ## Development
 
 ```sh
