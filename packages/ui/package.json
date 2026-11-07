@@ -17,7 +17,8 @@
     "./loaders/aquarium": "./src/loaders/Aquarium.tsx",
     "./loaders/speedo": "./src/loaders/Speedo.tsx",
     "./loaders/odyssey": "./src/loaders/Odyssey.tsx",
-    "./loaders/balloons": "./src/loaders/Balloons.tsx"
+    "./loaders/balloons": "./src/loaders/Balloons.tsx",
+    "./loaders/catch": "./src/loaders/Catch.tsx"
   },
   "scripts": {
     "typecheck": "tsc -p .",

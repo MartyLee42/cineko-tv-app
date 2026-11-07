@@ -63,7 +63,7 @@ export function Loader({ style, m, preview = false }: { style: LoadingStyle; m: 
         <Minimal m={m} />
       ) : (
         <Suspense fallback={<Minimal m={m} />}>
-          <LazyStyle kind={kind} m={m} mood={style === "marty_popcorn" ? "popcorn" : "loading"} />
+          <LazyStyle kind={kind} m={m} mood={style === "marty_popcorn" ? "popcorn" : "loading"} preview={preview} />
         </Suspense>
       )}
     </div>
@@ -71,7 +71,7 @@ export function Loader({ style, m, preview = false }: { style: LoadingStyle; m: 
 }
 
 /** The chosen style's (lazy) component; Marty also takes the mood. */
-function LazyStyle({ kind, m, mood }: { kind: Exclude<LoaderKind, "minimal">; m: LoaderModel; mood: "loading" | "popcorn" }) {
+function LazyStyle({ kind, m, mood, preview }: { kind: Exclude<LoaderKind, "minimal">; m: LoaderModel; mood: "loading" | "popcorn"; preview: boolean }) {
   switch (kind) {
     case "popcorn":
       return <LOADERS.popcorn m={m} />;
@@ -97,6 +97,8 @@ function LazyStyle({ kind, m, mood }: { kind: Exclude<LoaderKind, "minimal">; m:
       return <LOADERS.odyssey m={m} />;
     case "balloons":
       return <LOADERS.balloons m={m} />;
+    case "catch":
+      return <LOADERS.catch m={m} preview={preview} />;
   }
 }
 

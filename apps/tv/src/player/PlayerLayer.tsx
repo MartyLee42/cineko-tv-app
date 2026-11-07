@@ -5,6 +5,7 @@ import type { PlaybackSource, Release } from "@martytv/contracts";
 import { chapterIndexAt, chapterTicks, fileChapters, imageUrl, nextChapterStart, prevChapterStart, releaseBitrate, skipMode, type Chapter } from "@martytv/media-types";
 import { CvIcon, loadStatsLines, useAppliedDesign, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
 import { FINALE_MS, hasFinale, loaderKind } from "./loaderChunks";
+import { loaderKey } from "./loaderKeys";
 import { FocusButton, FocusLine } from "../focus";
 import { useCatalogConfig } from "../catalog/queries";
 import { Backdrop } from "../components/Img";
@@ -671,6 +672,8 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         if (k === "back" || (k === "ok" && sl.focus === "wait")) return setWaitKey(sl.key);
         if (k === "ok") return player.slowAnother(sl.slow.speedBps * 8);
       }
+      // «Лови!»: the loading screen's game takes the arrows (Back / OK / media keys stay the player's).
+      if (player.loading() && loaderKey(k)) return;
       if (flow.phase !== "playing") {
         if (k === "back") player.back();
         if (k === "stop") player.close();

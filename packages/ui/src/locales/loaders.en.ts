@@ -10,4 +10,7 @@ export const loadersEn = {
   "settings.loading.odyssey_hint": "A black monolith rises over the horizon as the stars line up. At 100 %, one quiet note (with interface sounds on).",
   "settings.loading.balloons": "Up",
   "settings.loading.balloons_hint": "Balloons get tied to a little house one by one. When there are enough, it floats away.",
+  "settings.loading.catch": "Catch!",
+  "settings.loading.catch_hint": "A little game while it loads: Cineko catches pieces of the film in a basket. The remote's arrows move the basket; the big number is how much has loaded. The film starts by itself when it's ready.",
+  "loaders.catch.caught": "Caught: {n}",
 };
