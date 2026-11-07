@@ -3037,3 +3037,17 @@ integrations it reuses: Invidious (YouTube audio), Prowlarr and TorrServer
 (lossless albums). Catalog metadata comes from Deezer's public API, lyrics
 from LRCLIB. See [services/music/README.md](../services/music/README.md).
 
+**Own host (optional, `MUSIC_DOMAIN`).** The web app is built twice (Vite
+`base` `/music/` → `/srv/music`, `/` → `/srv/music-root`); the service serves
+the first under `/music/` and the second at every other path, which only
+Caddy's second site (`MUSIC_SITE_ADDRESS`) sends it. Each build has its own
+manifest (id/start_url/scope = its base) and registers `sw.js` with that
+scope; the worker derives its base from `registration.scope`. The music API
+stays at `/music/api` on both hosts, and `/api/*` is proxied there too. The
+API adds the music origin to `AllowedOrigins` and, when the two hosts share a
+registrable parent domain, sets `mt_session` with that `Domain`
+(`config.DeriveCookieDomain`, never a public suffix; `COOKIE_DOMAIN`
+overrides). Because a browser may then hold an old host-only cookie and the
+shared one, the auth middleware tries every `mt_session` value, `SetCookie`
+deletes the host-only variant first, and `ClearCookie` deletes both.
+

@@ -1,8 +1,22 @@
-// Cineko Music service worker (scope /music/).
-// - Offline audio: /music/offline/<id> from Cache Storage, with Range support.
+// Cineko Music service worker. Its scope is the app's base: /music/ on the
+// Cineko host, / on Music's own host (MUSIC_DOMAIN). The API is /music/api
+// on both.
+// - Offline audio: <base>offline/<id> from Cache Storage, with Range support.
 // - App shell: the page and its hashed assets, so the app opens offline.
 // - Covers of downloaded tracks: /music/api/img from cache when present.
 // Everything else goes to the network untouched.
+
+const BASE = new URL(self.registration.scope).pathname;
+const escaped = BASE.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+const ASSET_RE = new RegExp(escaped + "assets/[^\"' )]+", "g");
+const FONT_RE = new RegExp(escaped + "assets/[^\"' )]+\\.woff2?", "g");
+
+// Paths of the app itself (not the APIs: on Music's own host the scope "/"
+// also covers /api/ and /music/api/).
+function isAppPath(p) {
+  if (!p.startsWith(BASE)) return false;
+  return !p.startsWith("/api/") && !p.startsWith("/music/api/") && !(BASE === "/" && p.startsWith("/music/"));
+}
 
 const SHELL = "mm-shell-v1";
 const AUDIO = "mm-audio-v1";
@@ -12,12 +26,12 @@ const IMG = "mm-img-v1";
 // opens offline even if those files were loaded before this worker existed.
 async function cacheShell() {
   const c = await caches.open(SHELL);
-  const res = await fetch("/music/", { cache: "no-store" });
+  const res = await fetch(BASE, { cache: "no-store" });
   if (!res.ok) return;
   const html = await res.clone().text();
-  await c.put("/music/", res);
-  const assets = [...new Set(html.match(/\/music\/assets\/[^"' )]+/g) || [])];
-  const extra = ["/music/manifest.webmanifest", "/music/icon.svg", "/music/icon-192.png", "/music/pulsar.svg"];
+  await c.put(BASE, res);
+  const assets = [...new Set(html.match(ASSET_RE) || [])];
+  const extra = ["manifest.webmanifest", "icon.svg", "icon-192.png", "pulsar.svg"].map((f) => BASE + f);
   await Promise.all(
     [...assets, ...extra].map(async (u) => {
       if (await c.match(u)) return;
@@ -26,7 +40,7 @@ async function cacheShell() {
       // The CSS pulls fonts: cache those too.
       if (r.ok && u.endsWith(".css")) {
         const css = await (await c.match(u)).text();
-        const fonts = [...new Set(css.match(/\/music\/assets\/[^"' )]+\.woff2?/g) || [])];
+        const fonts = [...new Set(css.match(FONT_RE) || [])];
         await Promise.all(fonts.map(async (f) => (await c.match(f)) || fetch(f).then((fr) => fr.ok && c.put(f, fr))));
       }
     }),
@@ -77,9 +91,9 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  if (url.origin !== location.origin || !url.pathname.startsWith("/music")) return;
+  if (url.origin !== location.origin) return;
 
-  if (url.pathname.startsWith("/music/offline/")) {
+  if (url.pathname.startsWith(BASE + "offline/")) {
     e.respondWith(
       caches
         .open(AUDIO)
@@ -94,7 +108,9 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  if (url.pathname.startsWith("/music/assets/")) {
+  if (!isAppPath(url.pathname)) return;
+
+  if (url.pathname.startsWith(BASE + "assets/")) {
     // Hashed file names: cache forever.
     e.respondWith(
       caches.open(SHELL).then((c) =>
@@ -114,7 +130,7 @@ self.addEventListener("fetch", (e) => {
   if (req.mode === "navigate") {
     // Offline: the saved app at once. Online: the network (fresh deploys),
     // but not longer than 4 s — Wi-Fi without internet can hang for minutes.
-    const cached = () => caches.open(SHELL).then((c) => c.match("/music/"));
+    const cached = () => caches.open(SHELL).then((c) => c.match(BASE));
     if (self.navigator && self.navigator.onLine === false) {
       e.respondWith(cached().then((hit) => hit || fetch(req)));
       return;
@@ -133,9 +149,9 @@ self.addEventListener("fetch", (e) => {
         fetch(req)
           .then((res) => {
             clearTimeout(timer);
-            if (res.ok) {
+            if (res.ok && (res.headers.get("Content-Type") || "").startsWith("text/html")) {
               const copy = res.clone();
-              caches.open(SHELL).then((c) => c.put("/music/", copy));
+              caches.open(SHELL).then((c) => c.put(BASE, copy));
             }
             if (!done) {
               done = true;

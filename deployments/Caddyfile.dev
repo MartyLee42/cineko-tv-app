@@ -32,3 +32,27 @@
 		reverse_proxy web:5173
 	}
 }
+
+# Cineko Music on its own host, as with MUSIC_DOMAIN in production:
+# http://music.localhost:8080/ (the app built for "/", from the music image).
+{$MUSIC_SITE_ADDRESS:http://music.localhost:8080} {
+	@stream path /api/v1/stream/* /api/v1/vstream/* /api/v1/speedtest
+	handle @stream {
+		reverse_proxy api:8080 {
+			flush_interval -1
+		}
+	}
+	@api path /api/* /healthz
+	handle @api {
+		reverse_proxy api:8080
+	}
+	@metrics path /metrics /metrics/*
+	handle @metrics {
+		respond 404
+	}
+	handle {
+		reverse_proxy music:8080 {
+			flush_interval -1
+		}
+	}
+}

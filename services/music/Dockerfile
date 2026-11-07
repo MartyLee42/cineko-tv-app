@@ -31,8 +31,10 @@ RUN apk add --no-cache "ffmpeg~8.1.3" ca-certificates tzdata \
  && ffmpeg -hide_banner -encoders 2>/dev/null | grep -q libmp3lame
 COPY --from=build /out/martytv-music /usr/local/bin/martytv-music
 COPY --from=web /web/dist /srv/music
+# The same app built for "/" (Cineko Music on its own host, MUSIC_DOMAIN).
+COPY --from=web /web/dist-root /srv/music-root
 USER 65532:65532
-ENV LISTEN_ADDR=:8080 MUSIC_DATA_DIR=/data MUSIC_STATIC_DIR=/srv/music
+ENV LISTEN_ADDR=:8080 MUSIC_DATA_DIR=/data MUSIC_STATIC_DIR=/srv/music MUSIC_ROOT_STATIC_DIR=/srv/music-root
 VOLUME /data
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=4s --start-period=5s --retries=3 CMD ["martytv-music", "healthcheck"]

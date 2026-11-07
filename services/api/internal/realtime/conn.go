@@ -79,7 +79,7 @@ func (h *Handler) Upgrade() fiber.Handler {
 		// message and any session cookie in the browser must be ignored.
 		if p := auth.PrincipalFrom(c); p != nil && c.Query("auth") != "token" {
 			c.Locals("ws_principal", p)
-			c.Locals("ws_cookie", c.Cookies(auth.SessionCookie))
+			c.Locals("ws_cookie", auth.SessionToken(c))
 			c.Locals("ws_bearer", auth.ParseBearer(c.Get(fiber.HeaderAuthorization)))
 		}
 		if c.Get(fiber.HeaderOrigin) != "" && !httpx.MatchOrigin(c.Get(fiber.HeaderOrigin), h.origins) {

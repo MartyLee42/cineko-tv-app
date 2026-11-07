@@ -50,6 +50,9 @@ services:
       APP_SESSION_SECRET: ${APP_SESSION_SECRET:-dev-only-session-secret-change-me-0123456789}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+      # Music's own host (Caddyfile.dev); localhost can't share cookies, so
+      # it has its own sign-in there.
+      MUSIC_DOMAIN: ${MUSIC_DOMAIN:-music.localhost:8080}
       TRUSTED_PROXIES: 172.16.0.0/12,10.0.0.0/8,192.168.0.0/16
       LOG_LEVEL: debug
       # e2e runs log in ~150 times in 20 min (production keeps 20 per 5 min).
@@ -97,6 +100,7 @@ services:
       LISTEN_ADDR: ":8080"
       MARTYTV_API_URL: http://api:8080
       INVIDIOUS_URL: http://invidious:3000
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
       LOG_LEVEL: debug
     volumes:
       - music-data-dev:/data

@@ -3,6 +3,8 @@ package auth
 import (
 	"crypto/subtle"
 	"errors"
+	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
@@ -20,10 +22,19 @@ type Middleware struct {
 	svc     *Service
 	origins []string
 	secure  bool
+	// domain is the session cookie's Domain ("" = host-only), shared by the
+	// main host and Cineko Music's own host (config.CookieDomain).
+	domain string
 }
 
 func NewMiddleware(svc *Service, allowedOrigins []string, cookieSecure bool) *Middleware {
 	return &Middleware{svc: svc, origins: allowedOrigins, secure: cookieSecure}
+}
+
+// WithCookieDomain sets the session cookie's Domain attribute.
+func (m *Middleware) WithCookieDomain(domain string) *Middleware {
+	m.domain = strings.TrimPrefix(strings.ToLower(domain), ".")
+	return m
 }
 
 // Authenticate attaches a Principal when the request carries valid
@@ -47,19 +58,57 @@ func (m *Middleware) Authenticate() fiber.Handler {
 			m.attach(c, p)
 			return c.Next()
 		}
-		if cookie := c.Cookies(SessionCookie); cookie != "" {
+		// A browser can hold two session cookies: an old host-only one and a
+		// shared one (Domain=…, after MUSIC_DOMAIN was set). The first valid
+		// one wins; only when none is valid are they cleared.
+		cookies := sessionCookies(c.Get(fiber.HeaderCookie))
+		for _, cookie := range cookies {
 			p, err := m.svc.ResolveSession(c.Context(), cookie)
-			switch {
-			case errors.Is(err, ErrNotFound):
-				m.ClearCookie(c)
-			case err != nil:
-				return err
-			default:
-				m.attach(c, p)
+			if errors.Is(err, ErrNotFound) {
+				continue
 			}
+			if err != nil {
+				return err
+			}
+			m.attach(c, p)
+			c.Locals(sessionTokenKey{}, cookie)
+			return c.Next()
+		}
+		if len(cookies) > 0 {
+			m.ClearCookie(c)
 		}
 		return c.Next()
 	}
+}
+
+type sessionTokenKey struct{}
+
+// SessionToken returns the session cookie value that authenticated the
+// request ("" for other principals).
+func SessionToken(c fiber.Ctx) string {
+	v, _ := c.Locals(sessionTokenKey{}).(string)
+	return v
+}
+
+// sessionCookies returns the distinct non-empty mt_session values of a Cookie
+// header, in order (at most 4).
+func sessionCookies(header string) []string {
+	var out []string
+	for part := range strings.SplitSeq(header, ";") {
+		name, value, ok := strings.Cut(strings.TrimSpace(part), "=")
+		if !ok || name != SessionCookie {
+			continue
+		}
+		value = strings.Trim(strings.TrimSpace(value), `"`)
+		if value == "" || slices.Contains(out, value) {
+			continue
+		}
+		out = append(out, value)
+		if len(out) == 4 {
+			break
+		}
+	}
+	return out
 }
 
 func (m *Middleware) attach(c fiber.Ctx, p *Principal) {
@@ -239,18 +288,31 @@ func RequireReader() fiber.Handler {
 	}
 }
 
+// SetCookie sets the session cookie. With a cookie domain, it also deletes
+// this host's old host-only cookie, so the browser keeps just one.
 func (m *Middleware) SetCookie(c fiber.Ctx, s *NewSession) {
-	c.Cookie(&fiber.Cookie{
-		Name: SessionCookie, Value: s.Token, Path: "/", Expires: s.ExpiresAt,
-		HTTPOnly: true, Secure: m.secure, SameSite: fiber.CookieSameSiteLaxMode,
-	})
+	if m.domain != "" {
+		m.addCookie(c, &http.Cookie{MaxAge: -1})
+	}
+	m.addCookie(c, &http.Cookie{Value: s.Token, Expires: s.ExpiresAt, Domain: m.domain})
 }
 
+// ClearCookie deletes the session cookie (the host-only one, and the shared
+// one when a cookie domain is set).
 func (m *Middleware) ClearCookie(c fiber.Ctx) {
-	c.Cookie(&fiber.Cookie{
-		Name: SessionCookie, Value: "", Path: "/", MaxAge: -1,
-		HTTPOnly: true, Secure: m.secure, SameSite: fiber.CookieSameSiteLaxMode,
-	})
+	m.addCookie(c, &http.Cookie{MaxAge: -1})
+	if m.domain != "" {
+		m.addCookie(c, &http.Cookie{MaxAge: -1, Domain: m.domain})
+	}
+}
+
+// addCookie appends a Set-Cookie header: c.Cookie would replace an earlier
+// cookie of the same name, and deleting the host-only cookie while setting
+// the shared one needs both headers.
+func (m *Middleware) addCookie(c fiber.Ctx, ck *http.Cookie) {
+	ck.Name, ck.Path = SessionCookie, "/"
+	ck.HttpOnly, ck.Secure, ck.SameSite = true, m.secure, http.SameSiteLaxMode
+	c.Response().Header.Add(fiber.HeaderSetCookie, ck.String())
 }
 
 // Origins returns the allowed browser origins.

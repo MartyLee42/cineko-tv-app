@@ -6,6 +6,12 @@ Cineko's API, PWA and TV app are untouched. Same accounts: the Cineko
 session cookie is checked against the API (`/api/v1/auth/session`), and the
 login form posts to `/api/v1/auth/login`.
 
+Optionally also on its own host (`MUSIC_DOMAIN=music.example.com`): the same
+app built for base `/` is served at the root there, as a separately
+installable PWA (docs/deployment.md, "Cineko Music on its own domain").
+`npm run build` produces both builds (`dist/` for `/music/`, `dist-root/` for
+`/`); the API path is `/music/api` on both hosts.
+
 ## Sources
 
 | What | Where from |
