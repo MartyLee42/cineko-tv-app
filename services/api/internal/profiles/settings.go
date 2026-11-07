@@ -182,7 +182,7 @@ func SetKnownSources(f func() []string) { knownSources = f }
 var (
 	themes        = []string{"system", "dark", "light"}
 	loadingStyles = []string{"popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix"}
-	designs       = []string{"kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix"}
+	designs       = []string{"kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet"}
 	posterRatings = []string{"kp", "tmdb", "imdb", "off"}
 )
 
