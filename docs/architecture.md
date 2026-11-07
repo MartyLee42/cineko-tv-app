@@ -2693,7 +2693,7 @@ up to 2 h, then it is skipped for the night. The restart is a
 
 - **Designs** are skins on three skeletons: kinozal (кинозал, deco,
   retro80), terminal (terminal, cyberpunk, retro90, constructivism) and
-  projector (projector, wireframe, popart). `retro80` = VHS/arcade sunset
+  projector (projector, wireframe, popart, odyssey). `retro80` = VHS/arcade sunset
   chrome (Russo One), `retro90` = Windows 95 bevels on a teal desktop
   (Pixelify Sans), `popart` = «Поп-арт» comic page (Ben-Day dots, black ink
   outlines, hard offset shadows, Rubik Mono One), `constructivism` =
@@ -2727,6 +2727,16 @@ up to 2 h, then it is skipped for the night. The restart is a
   (`pocketpetMood.ts`); it eats a popcorn when the score rose since last seen
   (`martytv.pocketpet.score.<profile>`) and dozes (Zz) after a minute without
   keys.
+  `odyssey` = «Одиссея» (projector skeleton): late-60s space-age sci-fi mood,
+  original drawings only — a static white spaceship corridor in one-point
+  perspective (`design/looks/odyssey.tsx`: ribs, wall panels, lit ceiling, a
+  black door at the end), light tokens (dark ink on station white, like
+  «Тамагочи»), black-slab buttons, wide letter-spaced capitals (Unbounded
+  Light); the focus ring is the only colour: a single red glowing light.
+  Failures (`ErrorState`, the player's failed screen) add the calm line «Я не
+  могу это сделать, Дейв.» (`components/failHint.ts`, `FailHint`). Its intro
+  is in space: the moon, the planet's limb and the sun align, a black slab
+  rises, «CINEKO» fades in.
 - **Startup intro** (`apps/tv/src/intro/`): a ~3 s animation in the
   design's style (kinozal = the wave terrain) on every launch; any key skips.
   «Анимация при запуске» (per TV, `martytv.startup_intro`) turns it off;

@@ -9,6 +9,7 @@ import { loaderKey } from "./loaderKeys";
 import { FocusButton, FocusLine } from "../focus";
 import { useCatalogConfig } from "../catalog/queries";
 import { Backdrop } from "../components/Img";
+import { FailHint } from "../components/States";
 import { player } from "./controller";
 import { useFlow } from "./flow";
 import { episodeLabel, formatClock, releaseRow } from "./format";
@@ -338,6 +339,7 @@ function FailedScreen({ flow }: { flow: Extract<Flow, { phase: "failed" }> }) {
         <p data-testid="player-failed-text" className="mt-6 max-w-[1500px] text-4xl leading-snug">
           {unplayable ? t("player.unplayable", { reason }) : errText(flow.code)}
         </p>
+        <FailHint />
         {flow.release && <p className="mt-6 truncate text-3xl text-muted">{releaseSummary(flow.release, locale)}</p>}
         <FocusLine focusKey="failed" keys={keys} axis="horizontal" className="mt-14 flex">
           <FocusButton

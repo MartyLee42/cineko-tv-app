@@ -15,6 +15,7 @@
      design-matrix             — «Матрица»: green phosphor digital rain, glowing mono type (terminal skeleton)
      design-stickerbook        — «Стикербук»: die-cut sticker posters, washi tape, cream/pink/mint on ink (kinozal skeleton)
      design-pocketpet          — «Тамагочи»: pastel toy shell around a grey-green LCD, pixel ink and type (terminal skeleton)
+     design-odyssey            — «Одиссея»: late-60s space age: white ship corridors, symmetry, dark ink, one red light as focus (projector skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {
@@ -283,6 +284,28 @@ html.design-pocketpet {
   color-scheme: light;
 }
 
+/* «Одиссея»: late-1960s space-age sci-fi (mood only): white spaceship corridors and symmetry; station-
+   white panels, dark ink, grey ribs, black-slab buttons; colour only in the focus ring, a single red
+   glowing light. Headings in wide, letter-spaced capitals (Unbounded Light, has Cyrillic); labels
+   in JetBrains Mono. Light tokens like «Тамагочи» (the theme switch stays Кинозал-only). */
+html.design-odyssey {
+  --mt-bg: 238, 241, 244;
+  --mt-surface: 255, 255, 255;
+  --mt-surface-2: 226, 231, 236;
+  --mt-border: 180, 188, 198;
+  --mt-text: 16, 19, 24;
+  --mt-muted: 74, 85, 99;
+  --mt-accent: 16, 19, 24;
+  --mt-accent-strong: 226, 30, 22;
+  --mt-on-accent: 255, 255, 255;
+  --mt-focus: 226, 30, 22;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 2px;
+  --mt-radius-control: 2px;
+  color-scheme: light;
+}
+
 /* Headings in the later designs use their display face (web and TV). */
 html.design-deco h1, html.design-deco h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2 { font-family: var(--mt-font-display); }
@@ -294,6 +317,7 @@ html.design-constructivism h1, html.design-constructivism h2 { font-family: var(
 html.design-matrix h1, html.design-matrix h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 0 10px rgba(0, 255, 65, .55); }
 html.design-stickerbook h1, html.design-stickerbook h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-pocketpet h1, html.design-pocketpet h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; line-height: 1.25; }
+html.design-odyssey h1, html.design-odyssey h2 { font-family: var(--mt-font-display); font-weight: 300; text-transform: uppercase; letter-spacing: .14em; }
 
 html, body, #root { height: 100%; }
 body {
