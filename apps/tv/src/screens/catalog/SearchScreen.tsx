@@ -24,7 +24,7 @@ export function SearchScreen({ mem, onOpen }: { mem: RouteMemory; onOpen: (item:
   const COLS = g.cols;
   const cfg = useCatalogConfig();
   const [text, setText] = useState(() => mem.get<string>("text") ?? "");
-  const [layout, setLayout] = useState<Layout>(() => mem.get<Layout>("layout") ?? (locale === "ru" ? "ru" : "en"));
+  const [layout, setLayout] = useState<Layout>(() => mem.get<Layout>("layout") ?? (locale === "en" ? "en" : "ru"));
   const [q, setQ] = useState(() => normalizeQuery(text));
   const [ty, setTy] = useState(() => mem.get<number>("ty") ?? 0);
   const search = useSearch(q);

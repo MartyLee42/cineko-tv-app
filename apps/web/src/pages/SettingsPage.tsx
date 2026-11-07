@@ -6,6 +6,7 @@ import {
   COZY_AMBIENCES,
   DESIGN_SWATCH,
   DESIGNS,
+  LOCALE_NAMES,
   LOCALES,
   Mascot,
   matrixPillSeen,
@@ -755,7 +756,7 @@ function DeviceCard() {
         <Select value={locale} onChange={(e) => setLocale(e.target.value as Locale)} className="sm:w-72" data-testid="language-select">
           {LOCALES.map((l) => (
             <option key={l} value={l}>
-              {l === "en" ? "English" : "Русский"}
+              {LOCALE_NAMES[l]}
             </option>
           ))}
         </Select>

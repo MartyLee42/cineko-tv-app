@@ -1,0 +1,27 @@
+import type { triviaEn } from "./trivia.en";
+
+export const triviaKk: Record<keyof typeof triviaEn, string> = {
+  "trivia.quotes": "Дәйексөздер",
+  "trivia.facts": "Деректер",
+  "trivia.quotes_title": "Дәйексөздер · {title}",
+  "trivia.facts_title": "Деректер · {title}",
+  "trivia.quotes_loading": "Дәйексөздерді іздеп жатырмыз…",
+  "trivia.facts_loading": "Деректерді жинап жатырмыз…",
+  "trivia.slow_hint": "Алғаш рет бұл бірнеше секундқа созылуы мүмкін.",
+  "trivia.quotes_empty": "Белгілі дәйексөздер табылмады.",
+  "trivia.facts_empty": "Әзірге деректер жоқ.",
+  "trivia.load_error": "Жүктеу мүмкін болмады. Қайталап көріңіз.",
+  "trivia.counter": "{i} / {n}",
+  "trivia.other_lang_en": "Орыс тіліндегі дәйексөздер табылмады — ағылшынша көрсетеміз.",
+  "trivia.other_lang_ru": "Ағылшын тіліндегі дәйексөздер табылмады — орысша көрсетеміз.",
+  "trivia.blooper": "Қате",
+  "trivia.spoiler": "Спойлер",
+  "trivia.show_spoiler": "Спойлерді көрсету",
+  "trivia.ai_badge": "✦ ЖИ",
+  "trivia.ai_note": "Деректерді ЖИ жинады, оларда дәлсіздіктер болуы мүмкін.",
+  "trivia.source.wikiquote": "Дереккөз: Уикидәйексөз",
+  "trivia.source.kinopoisk": "Дереккөз: Кинопоиск",
+  "trivia.source.ai": "Дереккөз: ЖИ",
+  "trivia.tv_quotes_hint": "◀ ▶ парақтау · Артқа: жабу",
+  "trivia.tv_facts_hint": "▲▼ парақтау · OK: спойлерді көрсету · Артқа: жабу",
+};

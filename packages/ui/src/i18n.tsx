@@ -6,7 +6,10 @@ export { detectLocale, type Locale };
 
 export type MessageKey = keyof typeof import("./locales/all.en").messagesEn;
 
-export const LOCALES: Locale[] = ["en", "ru"];
+export const LOCALES: Locale[] = ["en", "ru", "kk"];
+
+/** Each language's own name, for the language pickers. */
+export const LOCALE_NAMES: Record<Locale, string> = { en: "English", ru: "Русский", kk: "Қазақша" };
 
 type Dict = Record<MessageKey, string>;
 
@@ -17,6 +20,7 @@ const dictionaries: Partial<Record<Locale, Dict>> = {};
 const loaders: Record<Locale, () => Promise<Dict>> = {
   en: () => import("./locales/all.en").then((m) => m.messagesEn),
   ru: () => import("./locales/all.ru").then((m) => m.messagesRu),
+  kk: () => import("./locales/all.kk").then((m) => m.messagesKk),
 };
 const loading: Partial<Record<Locale, Promise<void>>> = {};
 
@@ -79,6 +83,16 @@ export const CV_MESSAGES: Record<Locale, Partial<Record<MessageKey, string>>> = 
     "catalog.ai.mode": "Computer",
     "catalog.ai.send": "Ask the Computer",
     "catalog.ai.suggest": "Ask Comrade Computer: “{q}”",
+  },
+  kk: {
+    "ask.title": "Жолдас ЭЕМ-нен сұраңыз",
+    "ask.ai": "ЭЕМ",
+    "ask.thinking": "Жолдас ЭЕМ ойланып жатыр…",
+    "ask.card.title": "Жолдас ЭЕМ",
+    "ask.tv.short": "ЭЕМ",
+    "catalog.ai.mode": "ЭЕМ",
+    "catalog.ai.send": "ЭЕМ-нен сұрау",
+    "catalog.ai.suggest": "Жолдас ЭЕМ-нен сұрау: «{q}»",
   },
 };
 

@@ -1,0 +1,27 @@
+import type { healthEn } from "./health.en";
+
+export const healthKk: Record<keyof typeof healthEn, string> = {
+  "health.title": "Күйі",
+  "health.heap": "Қолданба жады {used} / {limit} МБ",
+  "health.heap_used": "Қолданба жады {used} МБ",
+  "health.ram": "ЖЖҚ ~{gb} ГБ",
+  "health.cores_one": "{n} ядро",
+  "health.cores_few": "{n} ядро",
+  "health.cores_many": "{n} ядро",
+  "health.fps": "{fps} кадр/с",
+  "health.lag": "кідіріс {ms} мс",
+  "health.dropped": "өткізілген кадрлар {pct} %",
+  "health.long_tasks": "қатып қалу {n} ({ms} мс)",
+  "health.range": "кадр/с {min}–{max}, {n} есеп бойынша",
+  "health.none": "әзірге есептер жоқ",
+  "health.not_sending": "жібермейді",
+  "health.last": "соңғысы {when}",
+  "health.hint_slow": "ТВ үлгермей жатыр — анимацияларда «Тыныш» режимін немесе қарапайым безендіруді таңдап көріңіз.",
+  "health.hint_memory": "Қолданбаға жад жетпейді — оны ТВ-да қайта іске қосыңыз.",
+  "health.setting": "ТВ күйін жіберу (жад, бірқалыптылық)",
+  "health.setting_hint": "10 минут сайын және көргеннен кейін: қолданба жады, кадр жиілігі, кідірістер, өткізілген кадрлар. ТВ иесіне «Құрылғылар» бетінде көрінеді.",
+  "health.now": "Қазіргі күйі",
+  "health.measuring": "Өлшеп жатырмын…",
+  "health.unavailable": "бұл ТВ браузері хабарламайды",
+  "health.reporting_off": "жіберу өшірулі",
+};

@@ -20,12 +20,12 @@ export function formatBytes(n: number | null | undefined, locale = "en"): string
   }
   const digits = v < 10 && i >= 2 ? 1 : 0;
   const s = v.toFixed(digits);
-  return `${locale === "ru" ? s.replace(".", ",") : s} ${units[i]}`;
+  return `${locale !== "en" ? s.replace(".", ",") : s} ${units[i]}`;
 }
 
 /** Download speed (bytes per second). */
 export function formatSpeed(bps: number | null | undefined, locale = "en"): string {
-  return `${formatBytes(bps ?? 0, locale)}/${locale === "ru" ? "с" : "s"}`;
+  return `${formatBytes(bps ?? 0, locale)}/${locale !== "en" ? "с" : "s"}`;
 }
 
 /** 4:05 / 1:02:03. */

@@ -88,11 +88,12 @@ export function timeLeft(p: Pick<WatchProgress, "position_seconds" | "duration_s
 
 /** "1 h 12 min" / "12 min" / "45 s" (compact, locale units). */
 export function formatLeft(sec: number, locale: string): string {
-  const ru = locale === "ru";
+  const ru = locale !== "en";
+  const hr = locale === "kk" ? "сағ" : locale === "ru" ? "ч" : "h";
   const m = Math.round(sec / 60);
   if (sec < 60) return ru ? `${Math.round(sec)} с` : `${Math.round(sec)} s`;
   if (m < 60) return ru ? `${m} мин` : `${m} min`;
   const h = Math.floor(m / 60);
   const mm = m % 60;
-  return ru ? `${h} ч${mm ? ` ${mm} мин` : ""}` : `${h} h${mm ? ` ${mm} min` : ""}`;
+  return `${h} ${hr}${mm ? ` ${mm} ${ru ? "мин" : "min"}` : ""}`;
 }
