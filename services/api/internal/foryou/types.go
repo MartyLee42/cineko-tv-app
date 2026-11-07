@@ -19,7 +19,9 @@ const (
 	RowTrending   = "trending"
 	RowRewatch    = "rewatch"
 	RowAI         = "ai_collection"
-	RowPopular    = "popular"
+	// RowTheme «Вам нравятся фильмы про …»: discover by a liked TMDB keyword.
+	RowTheme   = "theme"
+	RowPopular = "popular"
 	// RowFamily «Семья советует» (internal/family; computed per request).
 	RowFamily = "family"
 	// RowCurated «Подборка: …» (internal/curated; one list per day, per request).
@@ -41,6 +43,8 @@ const (
 	ReasonMood      = "mood"
 	ReasonFamily    = "family"
 	ReasonCurated   = "curated"
+	// ReasonTheme: the title has a TMDB keyword the profile likes.
+	ReasonTheme = "theme"
 )
 
 // Reason is the stored, language-agnostic reason (ids only).
@@ -51,6 +55,7 @@ type Reason struct {
 	GenreIDs     []int  `json:"g,omitempty"`
 	CollectionID string `json:"c,omitempty"`
 	Mood         string `json:"mo,omitempty"`
+	KeywordID    int    `json:"k,omitempty"`
 }
 
 // ReasonOut is the contract's ForYouReason.
@@ -66,6 +71,17 @@ type ReasonOut struct {
 	CollectionID    *string  `json:"collection_id"`
 	CollectionTitle *string  `json:"collection_title"`
 	Mood            *string  `json:"mood"`
+	// Theme (type theme): the liked TMDB keyword, its name in the response
+	// language when known (else English).
+	KeywordID   *int    `json:"keyword_id,omitempty"`
+	KeywordName *string `json:"keyword_name,omitempty"`
+	// KeywordLocalized: KeywordName is in the response language (Russian
+	// names come from the AI themes call; until then it is TMDB's English).
+	KeywordLocalized bool `json:"keyword_localized,omitempty"`
+	// AIText: the model's one-line personal reason (AI re-ranking of
+	// «Подобрано для вас»), in the response language; clients show it
+	// instead of the typed reason.
+	AIText *string `json:"ai_text,omitempty"`
 	// Family (type family): who in the family liked the title and how.
 	Family *family.Why `json:"family,omitempty"`
 }

@@ -177,11 +177,13 @@ type tasteSummary struct {
 	Directors      []string `json:"favorite_directors,omitempty"`
 	Actors         []string `json:"favorite_actors,omitempty"`
 	Languages      []string `json:"original_languages,omitempty"`
-	HighlyRated    []string `json:"highly_rated"`
-	Recent         []string `json:"recently_watched,omitempty"`
-	Mostly         string   `json:"mostly_watches"`
-	Constraints    []string `json:"constraints,omitempty"`
-	AvoidThemes    []string `json:"avoid_recent_themes,omitempty"`
+	// Themes: the most liked TMDB keywords ("heist", "slow burn").
+	Themes      []string `json:"favorite_themes,omitempty"`
+	HighlyRated []string `json:"highly_rated"`
+	Recent      []string `json:"recently_watched,omitempty"`
+	Mostly      string   `json:"mostly_watches"`
+	Constraints []string `json:"constraints,omitempty"`
+	AvoidThemes []string `json:"avoid_recent_themes,omitempty"`
 	// ViewerNote is the profile's taste note («О моих вкусах»), cleaned and
 	// guarded by viewerNote; the viewer's own words, sent as data only.
 	ViewerNote string `json:"viewer_note,omitempty"`
@@ -213,6 +215,18 @@ func (s *Service) buildSummary(ctx context.Context, profileID string, t *Taste, 
 		sum.Decades = append(sum.Decades, decadeName("en", d))
 	}
 	sum.Languages = topPositive(t.Languages, 4, 0.2)
+	var kids []int
+	for _, k := range topPositive(t.Keywords, 8, 0.3) {
+		id, _ := strconv.Atoi(k)
+		kids = append(kids, id)
+	}
+	if kn, err := s.keywordNames(ctx, kids); err == nil {
+		for _, k := range kids {
+			if n := kn[k].EN; n != "" {
+				sum.Themes = append(sum.Themes, n)
+			}
+		}
+	}
 	var pids []int
 	for _, k := range append(topPositive(t.Directors, 5, 0.3), topPositive(t.Actors, 5, 0.3)...) {
 		id, _ := strconv.Atoi(k)
@@ -529,6 +543,7 @@ func (s *Service) waitPace(ctx context.Context, run *runState) error {
 // storedCollection is a collection read back for rows/candidates.
 type storedCollection struct {
 	id    string
+	theme bool
 	items []string
 }
 
@@ -544,7 +559,7 @@ func (s *Service) latestCollections(ctx context.Context, profileID string, globa
 			SELECT generated_at::date AS day, run_id FROM foryou_collections
 			WHERE profile_id IS NOT DISTINCT FROM $1::uuid AND generated_at > now() - $2::interval
 			ORDER BY generated_at DESC LIMIT 1)
-		SELECT c.id, COALESCE(array_agg(i.media_id::text ORDER BY i.position) FILTER (WHERE i.media_id IS NOT NULL), '{}')
+		SELECT c.id, c.kind = 'theme', COALESCE(array_agg(i.media_id::text ORDER BY i.position) FILTER (WHERE i.media_id IS NOT NULL), '{}')
 		FROM foryou_collections c
 		JOIN latest l ON (c.run_id IS NOT DISTINCT FROM l.run_id) AND c.generated_at::date = l.day
 		LEFT JOIN foryou_collection_items i ON i.collection_id = c.id
@@ -557,7 +572,7 @@ func (s *Service) latestCollections(ctx context.Context, profileID string, globa
 	var out []storedCollection
 	for rows.Next() {
 		var c storedCollection
-		if err := rows.Scan(&c.id, &c.items); err != nil {
+		if err := rows.Scan(&c.id, &c.theme, &c.items); err != nil {
 			return nil, err
 		}
 		out = append(out, c)

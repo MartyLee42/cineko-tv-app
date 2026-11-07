@@ -2872,6 +2872,8 @@ paths:
                     music: { type: number, minimum: 0, maximum: 1.5 }
                     facts: { type: number, minimum: 0, maximum: 1.5 }
                 facts_ai: { type: boolean, description: "False: «Факты» show only Kinopoisk's (stored AI ones are hidden)." }
+                themes_ai: { type: boolean, description: "False: the daily run doesn't ask the model to group the scorer's candidates into theme rubrics." }
+                picks_ai: { type: boolean, description: "False: no AI re-ranking of «Подобрано для вас» (stored picks still apply until they expire, 48 h)." }
       responses:
         "200":
           description: The new settings.
@@ -5444,11 +5446,14 @@ components:
         trending «В тренде для вас»; rewatch «Пересмотреть любимое»; ai_collection (an AI подборка);
         popular (cold start: the profile has no signals yet);
         family «Семья советует» (GET /profiles/{id}/family; computed per request, second row);
-        curated «Подборка: …» (one curated list per profile per day, GET /curated/{list_id}; computed per request).
-      enum: [top_picks, because_you_rated, director, actor, genre, hidden_gems, something_different, trending, rewatch, ai_collection, popular, family, curated]
+        curated «Подборка: …» (one curated list per profile per day, GET /curated/{list_id}; computed per request);
+        theme «Вам нравятся фильмы про …» (TMDB discover by the profile's most liked keyword; reason.keyword_*).
+        AI theme rubrics (the model grouping the scorer's own candidates) are ai_collection rows too.
+      enum: [top_picks, because_you_rated, director, actor, genre, hidden_gems, something_different, trending, rewatch, ai_collection, popular, family, curated, theme]
     ForYouReasonType:
       type: string
-      enum: [because_you_rated, director, actor, genre, hidden_gem, something_different, trending_for_you, ai_collection, rewatch, popular, mood, family, curated]
+      description: "theme: the title has a TMDB keyword the profile likes (keyword_id / keyword_name; genre_ids are the fallback)."
+      enum: [because_you_rated, director, actor, genre, hidden_gem, something_different, trending_for_you, ai_collection, rewatch, popular, mood, family, curated, theme]
     ForYouReason:
       type: object
       description: |
@@ -5468,6 +5473,18 @@ components:
         collection_id: { type: [string, "null"], format: uuid, description: "ai_collection." }
         collection_title: { type: [string, "null"] }
         mood: { type: [string, "null"], description: "mood (Surprise): the SurpriseMood key." }
+        keyword_id: { type: integer, description: "theme: the TMDB keyword id." }
+        keyword_name:
+          type: string
+          description: "theme: the keyword's name in the response language when known (Russian names come from the AI themes call), else TMDB's English name. Absent when the keyword is unknown."
+        keyword_localized: { type: boolean, description: "theme: keyword_name is in the response language (Russian reads after «фильмы про …»)." }
+        ai_text:
+          type: string
+          maxLength: 140
+          description: |
+            The model's one-line personal reason from the daily AI re-ranking of «Подобрано для вас»
+            («медленный, как любимый вами Тарковский, но с развязкой»), in the profile's language; only
+            when the response language matches it. Clients show it instead of the typed reason.
         family: { $ref: "#/components/schemas/FamilyWhy", description: "family: who in the family liked the title and how (only on family items)." }
     ForYouItem:
       type: object
@@ -5698,6 +5715,8 @@ components:
         enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
         temperature: { $ref: "#/components/schemas/AITemperature" }
         facts_ai: { type: boolean, description: "DeepSeek may write «Факты» for titles Kinopoisk has none for (admin switch, default true)." }
+        themes_ai: { type: boolean, description: "The daily run groups each profile's good unseen candidates into AI theme rubrics (admin switch, default true)." }
+        picks_ai: { type: boolean, description: "The daily run re-ranks «Подобрано для вас» with a personal reason per title (admin switch, default true)." }
         model: { type: string }
         tokens_today: { type: integer, description: "Tokens used today (Moscow date)." }
         daily_budget: { type: integer }
@@ -5726,6 +5745,8 @@ components:
         enabled: { type: boolean, description: "False without DEEPSEEK_API_KEY." }
         temperature: { $ref: "#/components/schemas/AITemperature" }
         facts_ai: { type: boolean, description: "AI-written «Факты» allowed (admin switch)." }
+        themes_ai: { type: boolean, description: "AI theme rubrics allowed (admin switch)." }
+        picks_ai: { type: boolean, description: "AI re-ranking of «Подобрано для вас» allowed (admin switch)." }
         creativity:
           type: object
           description: "Offset each creativity adds to the temperature."
@@ -5876,6 +5897,17 @@ components:
         profile_path: { type: [string, "null"] }
         score: { type: number }
         count: { type: integer }
+    TasteTheme:
+      type: object
+      description: "A TMDB keyword («heist», «time loop») as a taste theme."
+      required: [id, name, name_en, localized, score, count]
+      properties:
+        id: { type: integer, description: "TMDB keyword id." }
+        name: { type: string, description: "In the response language when known, else TMDB's English name." }
+        name_en: { type: string }
+        localized: { type: boolean, description: "name is in the response language (Russian: accusative, reads after «фильмы про …»)." }
+        score: { type: number, description: "−1…1 (damped for keywords common across the catalog)." }
+        count: { type: integer }
     TasteDNA:
       type: object
       required: [profile_id, computed_at, signals, rating_histogram, kinds, genres, decades, languages, countries, directors, actors, credits_coverage]
@@ -5907,6 +5939,10 @@ components:
         countries: { type: array, items: { $ref: "#/components/schemas/TasteAffinity" } }
         directors: { type: array, items: { $ref: "#/components/schemas/TastePerson" } }
         actors: { type: array, items: { $ref: "#/components/schemas/TastePerson" } }
+        themes: { type: array, items: { $ref: "#/components/schemas/TasteTheme" }, description: "TMDB keywords (≥ 2 titles), strongest first, ≤ 20." }
+        writers: { type: array, items: { $ref: "#/components/schemas/TastePerson" }, description: "Screenplay / Writer (≥ 2 titles)." }
+        cinematographers: { type: array, items: { $ref: "#/components/schemas/TastePerson" }, description: "Director of Photography (≥ 2 titles)." }
+        composers: { type: array, items: { $ref: "#/components/schemas/TastePerson" }, description: "Original Music Composer (≥ 2 titles)." }
         credits_coverage:
           type: object
           description: "How many signal titles have cast/crew loaded (filled lazily by the daily run)."

@@ -218,6 +218,9 @@ func (s *Service) runProfile(ctx context.Context, run *runState, pid string, ai 
 	if err := s.fillCredits(pctx, pid); err != nil {
 		run.addError(pid, "credits", errText(err))
 	}
+	if err := s.fillKeywords(pctx, pid); err != nil {
+		run.addError(pid, "keywords", errText(err))
+	}
 	lang := s.profileLang(pctx, pid)
 	t, _, err := s.computeTaste(pctx, pid)
 	if err != nil {
@@ -230,9 +233,13 @@ func (s *Service) runProfile(ctx context.Context, run *runState, pid string, ai 
 		}
 	}
 	// Rows last, so today's collections become rows.
-	if _, err := s.computeProfile(pctx, pid, lang, true); err != nil {
+	c, err := s.computeProfile(pctx, pid, lang, true)
+	if err != nil {
 		run.addError(pid, "rows", errText(err))
 		return
+	}
+	if ai {
+		s.aiExtras(pctx, run, pid, t, c)
 	}
 	s.notify(ctx, []string{pid}, "run")
 }
@@ -326,6 +333,7 @@ func (s *Service) housekeeping(ctx context.Context) {
 		`DELETE FROM foryou_feedback WHERE created_at < now() - interval '180 days'`,
 		`DELETE FROM foryou_runs WHERE started_at < now() - interval '60 days' AND status <> 'running'`,
 		`DELETE FROM foryou_ai_usage WHERE day < current_date - 90`,
+		`DELETE FROM foryou_ai_picks WHERE generated_at < now() - interval '7 days'`,
 	} {
 		if _, err := s.pool.Exec(ctx, q); err != nil && ctx.Err() == nil {
 			s.log.Warn("foryou: housekeeping failed", "err", err)
