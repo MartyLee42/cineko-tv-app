@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { MascotHat } from "./seasonSprites";
+import { MascotHat } from "./mascotHat";
 import { MARTY_ANIMATED, MARTY_MOODS, MAYAKOVSKY, type MascotMood } from "./marty";
 import { useSeasonHat, type MascotHatId } from "./seasonStore";
 import { useAppliedDesign } from "./designs";

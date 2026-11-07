@@ -4829,6 +4829,7 @@ components:
         hide_anime: { type: boolean, default: false, description: "Hide Japanese animation (TMDB genre Animation + original language ja) everywhere in the catalog." }
         hide_watched: { type: boolean, default: false, description: "Default for hiding completed titles in catalog lists." }
         autoplay_next_episode: { type: boolean, default: true }
+        autoplay_countdown: { type: boolean, default: true, description: "«Отсчёт перед следующим»: the next episode (autoplay_next_episode) and the next YouTube video (video_autoplay) wait on a card with a countdown first; false starts them at once." }
         skip_segments: { type: string, enum: [button, auto, "off"], default: button, description: "«Заставки и титры» (SkipMarker): button = show «Пропустить заставку» / «Пропустить пересказ» during them and «Следующая серия» at a series' credits; auto = skip intros and recaps by themselves (with «Вернуть» for a few seconds) and start the next-episode countdown at the credits; off = never." }
         spoiler_free_episodes: { type: boolean, default: false, description: "Blur stills/overviews of unwatched episodes." }
         poster_rating: { type: string, enum: [kp, tmdb, imdb, "off"], default: kp, description: "Which rating the small badge in the top-right corner of posters shows (falls back kp → tmdb when unknown)." }
@@ -4871,6 +4872,7 @@ components:
           description: 'Which IPTV playlists this profile shows («ТВ»). Default "all". Unknown ids → 422.'
         video_quality: { type: integer, enum: [480, 720, 1080], default: 720, description: "«Видео»: maximum YouTube playback height." }
         video_hide_shorts: { type: boolean, default: true, description: "«Видео»: hide YouTube Shorts (≤ 60 s or #shorts) from lists." }
+        video_autoplay: { type: boolean, default: true, description: "«Видео»: when a video ends, play the next one after a 5 s card — the next part of its series («Часть 3» → «Часть 4», \"Episode 3\", \"#3\", S01E03…, same channel: related videos, then the channel's uploads), else a random related video (not a Short or live, unwatched first)." }
         seasonal_effects: { type: string, enum: ["on", calm, "off"], default: "off", description: "«Праздничные анимации»: seasonal/holiday decorations (snow at New Year, Maslenitsa suns…). on = animated; calm = still decorations; off = none (the default: users turn them on in Settings). The admin switch (GET /status seasonal_effects) turns them off for everyone." }
         hidden_tabs:
           type: array

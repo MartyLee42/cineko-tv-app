@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { apiErrorMiddleware, ErrorBoundary, I18nProvider, installClickSounds, installErrorReporter } from "@martytv/ui";
+import { apiErrorMiddleware, ErrorBoundary, I18nProvider, initialLocale, installClickSounds, installErrorReporter, loadLocale } from "@martytv/ui";
 import { registerSW } from "virtual:pwa-register";
 import { initInstall } from "./install/install";
 import { api, queryClient } from "./api";
@@ -43,14 +43,19 @@ installErrorReporter({
 });
 api.use(apiErrorMiddleware());
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <I18nProvider>
-        <ErrorBoundary variant="web">
-          <App />
-        </ErrorBoundary>
-      </I18nProvider>
-    </QueryClientProvider>
-  </StrictMode>,
-);
+// The start language's strings are a chunk of their own: render once they're here.
+void loadLocale(initialLocale())
+  .catch(() => undefined)
+  .then(() => {
+    createRoot(document.getElementById("root")!).render(
+      <StrictMode>
+        <QueryClientProvider client={queryClient}>
+          <I18nProvider>
+            <ErrorBoundary variant="web">
+              <App />
+            </ErrorBoundary>
+          </I18nProvider>
+        </QueryClientProvider>
+      </StrictMode>,
+    );
+  });

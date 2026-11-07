@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { MARTY_FAVICON } from "./marty";
 import { EMBLEM_FAVICON } from "./emblem";
+import { loadCvGlyphs } from "./cvIcons";
 // Visual designs (ProfileSettings.design). Each design is a *skin* drawn on
 // one of three layout *skeletons* — the original Кинозал / Терминал /
 // Проектор layouts, whose focus, scroll and navigation code is shared:
@@ -65,6 +66,8 @@ export function applyDesign(design: DesignSetting): void {
   for (const d of DESIGNS) root.classList.toggle(`design-${d}`, d === design);
   for (const s of SKELETONS) root.classList.toggle(`skel-${s}`, s === skel);
   applyFavicon(design);
+  // «Конструктивизм» draws its own pictograms: fetch them now, before the first icon.
+  if (design === "constructivism") loadCvGlyphs().catch(() => undefined);
 }
 
 /** Points the page's SVG favicon (the browser tab icon) at the design's icon. */

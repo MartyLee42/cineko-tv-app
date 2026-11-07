@@ -1,3 +1,4 @@
+import { PopcornLoader } from "@martytv/ui/popcorn";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { isAdminRole } from "@martytv/contracts";
@@ -8,7 +9,6 @@ import {
   LOCALES,
   Mascot,
   matrixPillSeen,
-  PopcornLoader,
   ProfileAvatar,
   requestPill,
   shouldAskPill,
@@ -245,6 +245,13 @@ function ProfileSettingsCard() {
               on={s.autoplay_next_episode}
               onChange={(v) => set({ autoplay_next_episode: v })}
             />
+            <Toggle
+              testId="setting-autoplay-countdown"
+              label={t("settings.autoplay_countdown")}
+              hint={t("settings.autoplay_countdown_hint")}
+              on={s.autoplay_countdown ?? true}
+              onChange={(v) => set({ autoplay_countdown: v })}
+            />
             <label className="block px-3.5 py-3">
               <span className="block font-medium">{t("skip.setting")}</span>
               <span className="mt-0.5 block text-xs text-muted">{t("skip.setting_hint")}</span>
@@ -275,6 +282,13 @@ function ProfileSettingsCard() {
               label={t("video.settings.hide_shorts")}
               on={s.video_hide_shorts ?? true}
               onChange={(v) => set({ video_hide_shorts: v })}
+            />
+            <Toggle
+              testId="setting-video-autoplay"
+              label={t("video.settings.autoplay")}
+              hint={t("video.settings.autoplay_hint")}
+              on={s.video_autoplay ?? true}
+              onChange={(v) => set({ video_autoplay: v })}
             />
             <Toggle
               testId="setting-poster-wobble"

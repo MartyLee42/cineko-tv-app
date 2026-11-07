@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { getCurrentFocusKey, init } from "@noriginmedia/norigin-spatial-navigation";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { apiErrorMiddleware, ErrorBoundary, I18nProvider, installErrorReporter, installKeySounds, parseDeviceModel } from "@martytv/ui";
+import { apiErrorMiddleware, ErrorBoundary, I18nProvider, initialLocale, installErrorReporter, installKeySounds, loadLocale, parseDeviceModel } from "@martytv/ui";
 import { queryClient } from "./catalog/queries";
 import { App } from "./App";
 import { api } from "./api";
@@ -70,12 +70,18 @@ fit();
 document.documentElement.style.removeProperty("background");
 document.documentElement.style.removeProperty("color");
 
-createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={queryClient}>
-    <I18nProvider>
-      <ErrorBoundary variant="tv">
-        <App />
-      </ErrorBoundary>
-    </I18nProvider>
-  </QueryClientProvider>,
-);
+// The start language's strings first (preloaded by main.tsx: usually already here).
+// A failed download still renders (keys, then the provider retries).
+void loadLocale(initialLocale())
+  .catch(() => undefined)
+  .then(() => {
+    createRoot(document.getElementById("root")!).render(
+      <QueryClientProvider client={queryClient}>
+        <I18nProvider>
+          <ErrorBoundary variant="tv">
+            <App />
+          </ErrorBoundary>
+        </I18nProvider>
+      </QueryClientProvider>,
+    );
+  });

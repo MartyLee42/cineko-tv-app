@@ -141,6 +141,8 @@ export interface PlayerProps {
   /** Series: the previous episode (⏮ in the controls), when there is one. */
   prev?: NextUpInfo | null;
   autoplayNext: boolean;
+  /** «Отсчёт перед следующим» (default on); off: the next episode starts at once. */
+  autoplayCountdown?: boolean;
   /** «Заставки и титры» (profile skip_segments): button (default), auto, off. */
   skipMode?: SkipMode;
   /** Overlays from the page (no-sound banner, stale notice). */
@@ -668,7 +670,10 @@ export function Player(props: PlayerProps) {
         reporter.report("ended");
         P.current.onEnded();
         dispatch({ type: "activity", now: Date.now() });
-        if (P.current.next) setCountdown(P.current.autoplayNext ? NEXT_COUNTDOWN : -1);
+        if (P.current.next) {
+          if (P.current.autoplayNext && P.current.autoplayCountdown === false) P.current.next.go();
+          else setCountdown(P.current.autoplayNext ? NEXT_COUNTDOWN : -1);
+        }
         sync();
       },
       timeupdate: () => {
@@ -1056,7 +1061,10 @@ export function Player(props: PlayerProps) {
       done.add(k);
       if (!autoSkipDue(m, time)) return;
       if (m.kind === "ending") {
-        if (P.current.autoplayNext && P.current.next) setCountdown((c) => c ?? NEXT_COUNTDOWN);
+        if (P.current.autoplayNext && P.current.next) {
+          if (P.current.autoplayCountdown === false) P.current.next.go();
+          else setCountdown((c) => c ?? NEXT_COUNTDOWN);
+        }
         return;
       }
       seek(m.end_seconds);

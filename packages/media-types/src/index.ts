@@ -79,3 +79,4 @@ export * from "./speedtestAgent";
 export * from "./newEpisodes";
 export * from "./fit";
 export * from "./fileFormat";
+export * from "./videoNext";

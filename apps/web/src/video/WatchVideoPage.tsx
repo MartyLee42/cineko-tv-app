@@ -2,15 +2,17 @@
 // with «Подписаться», actions («Смотреть позже», «На ТВ»), the description
 // (collapsed, links clickable) and related videos (below on phones, a side
 // column from lg up).
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { nextInSeries, pickNextVideo, seriesPart } from "@martytv/media-types";
+import { useSettings } from "../watch/queries";
 import { Link, useNavigate, useParams } from "react-router";
 import { useI18n } from "@martytv/ui";
 import { ChevronLeft, BookmarkIcon, CastIcon, CheckIcon, HeartIcon } from "../icons";
 import { useActiveProfile } from "../watch/ActiveProfile";
 import { compactCount, isNotFound, linkify } from "./logic";
-import { useVideoDetail, useWatchLaterToggle, type VideoDetail } from "./queries";
+import { fetchChannelUploads, useVideoDetail, useWatchLaterToggle, type VideoDetail } from "./queries";
 import { SendVideoProvider, useSendVideo } from "./SendVideo";
-import { ChannelAvatar, channelHref, EmptyState, SubscribeButton, VideoError, VideoRow, useVideoFormat } from "./ui";
+import { ChannelAvatar, channelHref, watchHref, EmptyState, SubscribeButton, VideoError, VideoRow, useVideoFormat } from "./ui";
 import { VideoPlayer, type PlayerHandle } from "./VideoPlayer";
 
 export function WatchVideoPage() {
@@ -88,11 +90,15 @@ function Main({ v }: { v: VideoDetail }) {
     player.current = h;
   }, []);
   const meta = [f.views(v.views), v.live ? "" : f.date(v.published_at)].filter(Boolean).join(" · ");
+  const upNext = useUpNext(v);
 
   return (
     <div className="min-w-0">
       {v.playable ? (
-        <VideoPlayer key={v.id} videoId={v.id} poster={v.thumbnail_hd} qualities={v.qualities} startAt={v.progress?.finished ? 0 : v.progress?.position_seconds} onReady={onReady} />
+        <div className="relative">
+          <VideoPlayer key={v.id} videoId={v.id} poster={v.thumbnail_hd} qualities={v.qualities} startAt={v.progress?.finished ? 0 : v.progress?.position_seconds} onReady={onReady} onEnded={upNext.onEnded} />
+          {upNext.card}
+        </div>
       ) : (
         <div className="relative -mx-4 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl">
           <img src={v.thumbnail_hd} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
@@ -185,3 +191,62 @@ function Description({ text }: { text: string }) {
     </div>
   );
 }
+
+type Next = { video: VideoDetail["related"][number]; why: "series" | "random"; n: number };
+/** Played in this tab: random picks skip them (no ping-pong between two videos). */
+const played = new Set<string>();
+
+/**
+ * «Автовоспроизведение» (video_autoplay): when the video ends, the next part
+ * of its series (same channel), else a random related video — after a 5 s
+ * card unless «Отсчёт перед следующим» is off.
+ */
+function useUpNext(v: VideoDetail) {
+  const { t } = useI18n();
+  const navigate = useNavigate();
+  const settings = useSettings();
+  const { profileId } = useActiveProfile();
+  const [next, setNext] = useState<Next | null>(null);
+  useEffect(() => {
+    played.add(v.id);
+  }, [v.id]);
+  const go = useCallback((id: string) => {
+    setNext(null);
+    navigate(watchHref(id));
+  }, [navigate]);
+  useEffect(() => {
+    if (!next) return;
+    const timer = setTimeout(() => (next.n > 1 ? setNext({ ...next, n: next.n - 1 }) : go(next.video.id)), 1000);
+    return () => clearTimeout(timer);
+  }, [next, go]);
+  const onEnded = useCallback(async () => {
+    if (settings.video_autoplay === false) return;
+    let channel: VideoDetail["related"] = [];
+    if (seriesPart(v.title) && !nextInSeries(v, v.related)) channel = await fetchChannelUploads(v.channel_id, profileId ?? undefined).catch(() => []);
+    const pick = pickNextVideo(v, v.related, channel, { recent: played });
+    if (!pick) return;
+    if (settings.autoplay_countdown === false) return go(pick.video.id);
+    setNext({ video: pick.video, why: pick.why, n: 5 });
+  }, [v, settings.video_autoplay, settings.autoplay_countdown, profileId, go]);
+  const card = next && (
+    <div data-testid="video-up-next" data-why={next.why} className="absolute bottom-3 right-3 z-10 flex max-w-[calc(100%-1.5rem)] items-center gap-3 rounded-xl bg-black/85 p-3 text-white shadow-xl sm:w-[420px]">
+      <img src={next.video.thumbnail} alt="" className="hidden h-[68px] w-[120px] shrink-0 rounded-lg object-cover sm:block" />
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+          {t("video.next.title")} · {t(next.why === "series" ? "video.next.series" : "video.next.random")} · {t("video.next.in", { n: next.n })}
+        </p>
+        <p className="mt-0.5 line-clamp-2 text-sm font-semibold">{next.video.title}</p>
+        <div className="mt-2 flex gap-2">
+          <button type="button" onClick={() => go(next.video.id)} className="min-h-[36px] rounded-lg bg-white px-3 text-sm font-semibold text-black" data-testid="video-up-next-play">
+            {t("video.next.play")}
+          </button>
+          <button type="button" onClick={() => setNext(null)} className="min-h-[36px] rounded-lg bg-white/15 px-3 text-sm font-semibold" data-testid="video-up-next-cancel">
+            {t("video.next.cancel")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+  return { onEnded: () => void onEnded(), card };
+}
+
