@@ -29,7 +29,6 @@ import {
   bufferedAhead,
   estimateRate,
   mbit,
-  rebufferDead,
   rebufferDone,
   rebufferPercent,
   rebufferTarget,
@@ -172,10 +171,12 @@ describe("rebuffer", () => {
     // After a seek (target 8) a smaller buffer is enough.
     expect(rebufferDone({ ...base, target: 3, ahead: 3.5, stuckMs: 0 })).toBe("threshold");
   });
-  it("a stream that delivers nothing for 25 s is dead (reloaded at the spot); a full one is not", () => {
-    expect(rebufferDead(0, 25_000)).toBe(true);
-    expect(rebufferDead(0, 24_000)).toBe(false);
-    expect(rebufferDead(10, 60_000)).toBe(false);
+  it("never waits without end: after 20 s it plays whatever is buffered (a slow torrent)", () => {
+    const base = { target: 20, canPlayThrough: false, time: 1570, duration: 8553, stuckMs: 0 };
+    expect(rebufferDone({ ...base, ahead: 2, elapsedMs: 19_000 })).toBeNull();
+    expect(rebufferDone({ ...base, ahead: 2, elapsedMs: 20_000 })).toBe("cap");
+    // Nothing to play yet: the stall watchdog (starve.ts) reopens it instead.
+    expect(rebufferDone({ ...base, ahead: 0.5, elapsedMs: 60_000 })).toBeNull();
   });
 });
 
