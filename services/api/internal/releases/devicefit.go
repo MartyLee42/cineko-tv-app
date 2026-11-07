@@ -26,7 +26,7 @@ type DeviceFit struct {
 // device that never reported and has no overrides ranks like no device).
 func HasDeviceLimits(e devices.EffectivePrefs) bool {
 	return e.MaxResolution != nil || e.MaxBitrateBps != nil || e.MaxSizeGB != nil || e.VideoCodec != nil ||
-		e.AvoidHDR || e.Audio != nil || e.PreferSmaller || e.Video != nil || e.AudioCodecs != nil
+		e.AvoidHDR || e.Audio != nil || e.PreferSmaller || e.Video != nil || e.AudioCodecs != nil || e.Rough != nil
 }
 
 // perItemBytes is the size of one movie/episode (packs: size / episodes).
@@ -119,6 +119,29 @@ func isHDR(c candidate, r *Release) bool {
 	return r.HDR != nil || c.HDR10 || c.DolbyVision
 }
 
+var tenBitTitle = regexp.MustCompile(`(?i)(?:^|[^0-9])10[- ]?bit|\bHi10P?\b`)
+
+// smoothToken is the auto.rough token of a release ("hevc_10bit_2160p"; ""
+// = not judged). Mirrors releaseSmoothToken in @martytv/media-types smooth.ts.
+func smoothToken(c candidate, r *Release) string {
+	codec := deref(r.VideoCodec)
+	if codec != "h264" && codec != "hevc" && codec != "av1" {
+		return ""
+	}
+	res := deref(r.Resolution)
+	if res != "1080p" && res != "2160p" {
+		return ""
+	}
+	ten := isHDR(c, r) || c.TenBit || tenBitTitle.MatchString(r.Title)
+	if ten && codec == "h264" {
+		return "" // 10-bit H.264 is a decodability question, not smoothness
+	}
+	if ten {
+		return codec + "_10bit_" + res
+	}
+	return codec + "_" + res
+}
+
 // deviceFit is the device-profile factor of one release; it adds warnings
 // and the device_fit reason when nothing was penalized.
 func deviceFit(c candidate, r *Release, d devices.EffectivePrefs, warn func(string)) float64 {
@@ -161,6 +184,10 @@ func deviceFit(c candidate, r *Release, d devices.EffectivePrefs, warn func(stri
 	}
 	if d.AvoidHDR && isHDR(c, r) {
 		miss(0.6, "hdr_avoided")
+	}
+	// Decodes, but not smoothly here (decodingInfo / dropped frames).
+	if t := smoothToken(c, r); t != "" && slices.Contains(d.Rough, t) {
+		miss(0.6, "may_stutter")
 	}
 	if d.VideoCodec != nil && deref(r.VideoCodec) == *d.VideoCodec {
 		f *= 1.1
