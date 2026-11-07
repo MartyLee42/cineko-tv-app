@@ -105,6 +105,9 @@ func serve() error {
 	go srv.InvidiousRestart.Run(ctx) // nightly Invidious restart (INVIDIOUS_RESTART_AT), postponed while a video plays
 	// Server downloads: queue, resume after restarts, hourly eviction janitor.
 	go srv.Downloads.Run(ctx)
+	if srv.Metrics != nil {
+		go srv.Metrics.Run(ctx) // /metrics snapshot every 20 s while scraped (METRICS_TOKEN set)
+	}
 
 	n, _ := users.NewStore(pool).Count(ctx)
 	if n == 0 {
