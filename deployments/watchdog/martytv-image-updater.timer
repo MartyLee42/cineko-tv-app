@@ -1,10 +1,10 @@
 [Unit]
-Description=Check for new Invidious / companion images every 6 hours
+Description=Check for new Invidious / companion images every 5 minutes
 
 [Timer]
-OnBootSec=10min
-OnUnitActiveSec=6h
-RandomizedDelaySec=10min
+OnBootSec=5min
+OnUnitActiveSec=5min
+RandomizedDelaySec=30s
 
 [Install]
 WantedBy=timers.target

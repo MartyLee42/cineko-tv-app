@@ -9,7 +9,7 @@
 # Upgrade = pull, pin in /opt/martytv/compose.yaml, `docker compose up -d <svc>`,
 # wait for healthy (≤ 120 s); unhealthy → back to the previous tag. Pins are
 # saved in /opt/martytv/image-pins (svc=image). Runs from
-# martytv-image-updater.timer (every 6 h); installed by deployments/deploy.sh.
+# martytv-image-updater.timer (every 5 min); installed by deployments/deploy.sh.
 # Logs: journalctl -u martytv-image-updater
 set -uo pipefail
 DIR=${MARTYTV_DIR:-/opt/martytv}
@@ -57,6 +57,9 @@ newest() {
     | jq -r --arg re "$2" '[.tags[] | select(.name | test($re))] | sort_by(.start_ts) | last | .name // empty'
 }
 
+# The release date of a tag: 2026.11.07-07ae73c → 2026.11.07, 2.20261103.0 → itself.
+tagdate() { echo "${1%%-*}"; }
+
 apply() {
   [ -f "$PINS" ] || exit 0
   while IFS='=' read -r svc img; do
@@ -79,8 +82,9 @@ check() {
     [ -n "$tag" ] || continue
     want="$repo:$tag"
     [ "$want" = "$cur" ] && continue
-    # Only move forward: release tags sort by date.
-    [ "$(printf '%s\n%s\n' "${cur##*:}" "$tag" | sort -V | tail -1)" = "$tag" ] || continue
+    # Only move forward. newest() is the latest push, so compare dates only:
+    # same-day companion tags differ by commit hash, which doesn't sort.
+    [ "$(printf '%s\n%s\n' "$(tagdate "${cur##*:}")" "$(tagdate "$tag")" | sort -V | tail -1)" = "$(tagdate "$tag")" ] || continue
     log "$svc: $cur → $want"
     timeout 900 docker pull -q "$want" >/dev/null || { log "$svc: pull failed"; continue; }
     pin "$svc" "$want" || continue
