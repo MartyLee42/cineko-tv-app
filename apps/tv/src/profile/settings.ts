@@ -4,7 +4,7 @@
 // them synchronously through currentSettings().
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { unwrap, type ProfileSettings, type Schemas } from "@martytv/contracts";
-import { DESIGNS as UI_DESIGNS } from "@martytv/ui";
+import { DESIGNS as UI_DESIGNS, effectiveDesign } from "@martytv/ui";
 import { api } from "../api";
 import { queryClient } from "../catalog/queries";
 import { storage } from "../platform";
@@ -37,6 +37,8 @@ export const DEFAULT_SETTINGS: Settings = {
   loading_style: "popcorn",
   onboarding_completed: false,
   design: "kinozal",
+  design_surprise: "off",
+  design_favorites: [],
   poster_rating: "kp",
   taste_note: "",
   min_votes: 100,
@@ -62,6 +64,8 @@ export function withDefaults(s: ProfileSettings | null | undefined): Settings {
   if (s.theme && THEMES.includes(s.theme)) out.theme = s.theme;
   if (s.loading_style && LOADING_STYLES.includes(s.loading_style)) out.loading_style = s.loading_style;
   if (s.design && DESIGNS.includes(s.design)) out.design = s.design;
+  if (s.design_surprise === "off" || s.design_surprise === "day" || s.design_surprise === "week") out.design_surprise = s.design_surprise;
+  if (Array.isArray(s.design_favorites)) out.design_favorites = DESIGNS.filter((d) => s.design_favorites!.includes(d));
   if (s.poster_rating && POSTER_RATINGS.includes(s.poster_rating)) out.poster_rating = s.poster_rating;
   if (typeof s.taste_note === "string") out.taste_note = s.taste_note;
   if (s.min_votes !== undefined && MIN_VOTES.includes(s.min_votes)) out.min_votes = s.min_votes;
@@ -83,6 +87,14 @@ export const settingsKey = (profileId: string | null) => ["profile-settings", pr
 /** Last theme/design applied on this TV (so the next start doesn't flash the wrong one). */
 const THEME_KEY = "martytv.theme";
 const DESIGN_KEY = "martytv.design";
+/** The last profile's «Сюрприз» inputs: the next start (intro, first chunk) shows today's pick, not yesterday's. */
+const SURPRISE_KEY = "martytv.design_surprise";
+interface CachedSurprise {
+  p: string;
+  d: DesignSetting;
+  m: Settings["design_surprise"];
+  f: string[];
+}
 export const themeCache = {
   get(): ThemeSetting {
     const v = storage.get(THEME_KEY);
@@ -90,10 +102,23 @@ export const themeCache = {
   },
   set: (v: ThemeSetting) => storage.set(THEME_KEY, v),
   design(): DesignSetting {
+    try {
+      const c = JSON.parse(storage.get(SURPRISE_KEY) ?? "null") as CachedSurprise | null;
+      if (c && (DESIGNS as readonly string[]).includes(c.d)) return effectiveDesign({ design: c.d, design_surprise: c.m, design_favorites: c.f }, c.p);
+    } catch {
+      /* garbled: the plain cache below */
+    }
     const v = storage.get(DESIGN_KEY);
     return v && (DESIGNS as readonly string[]).includes(v) ? (v as DesignSetting) : "kinozal";
   },
-  setDesign: (v: DesignSetting) => storage.set(DESIGN_KEY, v),
+  /** Remembers the shown design (index.html paints its background) and the surprise inputs behind it. */
+  setDesign: (v: DesignSetting, s?: Settings, profileId?: string | null) => {
+    storage.set(DESIGN_KEY, v);
+    if (s && profileId && s.design_surprise !== "off") {
+      const c: CachedSurprise = { p: profileId, d: s.design, m: s.design_surprise, f: s.design_favorites };
+      storage.set(SURPRISE_KEY, JSON.stringify(c));
+    } else storage.remove(SURPRISE_KEY);
+  },
 };
 
 function fetchSettings(id: string): Promise<Settings> {

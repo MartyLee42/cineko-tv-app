@@ -48,11 +48,14 @@ export function useOptionKeys({
   initial,
   onBack,
   onFocusRow,
+  nested = false,
 }: {
   rows: Row[];
   initial?: string;
   onBack: () => void;
   onFocusRow?: (key: string) => void;
+  /** Opened over another option list (which already paused spatial navigation). */
+  nested?: boolean;
 }) {
   const first = Math.max(0, rows.findIndex((r) => (initial ? r.key === initial : focusable(r))));
   const [index, setIndex] = useState(first);
@@ -70,7 +73,7 @@ export function useOptionKeys({
   }, [focusedKey]);
 
   useEffect(() => {
-    pauseNav();
+    if (!nested) pauseNav();
     const c = claimKeys();
     const onKey = (e: KeyboardEvent) => {
       if (!c.top) return;
@@ -105,8 +108,9 @@ export function useOptionKeys({
     return () => {
       window.removeEventListener("keydown", onKey, true);
       c.release();
-      resumeNav();
+      if (!nested) resumeNav();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `nested` is fixed for a list's lifetime
   }, []);
 
   // Rows can change (e.g. a step changes): keep the index on a focusable row.

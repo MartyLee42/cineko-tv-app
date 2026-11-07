@@ -14,6 +14,8 @@ export const DESIGNS = [
   { id: "popart", name: "Поп-арт", bg: "#143a96", surface: "#0e2262", accent: "#ffd600", accent2: "#ff2d3c" },
   { id: "constructivism", name: "Конструктивизм", bg: "#181412", surface: "#28221e", accent: "#d7261e", accent2: "#efe4cc" },
   { id: "matrix", name: "Матрица", bg: "#000602", surface: "#04140a", accent: "#00ff41", accent2: "#c8ffd2" },
+  { id: "stickerbook", name: "Стикербук", bg: "#2a2438", surface: "#3a3250", accent: "#ff6fa5", accent2: "#5fd3c4" },
+  { id: "pocketpet", name: "Тамагочи", bg: "#f3c6dc", surface: "#b9c9a0", accent: "#2f3a24", accent2: "#8fd3e8" },
   // Music-only: the classic Winamp 2 skin.
   { id: "winamp", name: "Winamp", bg: "#2b2b3d", surface: "#000000", accent: "#00e000", accent2: "#ffcc2e" },
   // Music-only: post-punk black and white, a pulsar ridge plot (Joy Division mood).

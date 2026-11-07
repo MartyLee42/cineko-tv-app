@@ -101,6 +101,16 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [], noise: [noise("bandpass", 2400, 0.018, 0.5, 2)] },
     click: { tones: [tone("triangle", 320, 220, 0.04, 0.25)], noise: [noise("bandpass", 1800, 0.025, 0.6, 2), noise("highpass", 3500, 0.012, 0.3, 1, 0.03)] },
   },
+  // A soft paper «flick» and a sticker press (projector's sine, softer).
+  stickerbook: {
+    tick: { tones: [tone("sine", 1200, 1000, 0.02, 0.25)], noise: [noise("highpass", 3000, 0.01, 0.12)] },
+    click: { tones: [tone("sine", 700, 520, 0.05, 0.45)], noise: [noise("highpass", 2200, 0.015, 0.18)] },
+  },
+  // A toy LCD chirp.
+  pocketpet: {
+    tick: { tones: [tone("square", 2637, 2637, 0.018, 0.12)], noise: [] },
+    click: { tones: [tone("square", 1568, 2093, 0.05, 0.16)], noise: [] },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */

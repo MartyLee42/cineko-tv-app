@@ -1,9 +1,9 @@
 // The main app's visual designs (tokens vendored in ../shared/theme.css).
 // <html> gets `design-<id>` + `skel-<skeleton>`; Кинозал alone has a light mode.
-export type DesignId = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix";
+export type DesignId = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet";
 export type Skeleton = "kinozal" | "terminal" | "projector";
 
-export const DESIGNS: DesignId[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix"];
+export const DESIGNS: DesignId[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet"];
 
 export const DESIGN_SKELETON: Record<DesignId, Skeleton> = {
   kinozal: "kinozal",
@@ -17,6 +17,8 @@ export const DESIGN_SKELETON: Record<DesignId, Skeleton> = {
   popart: "projector",
   constructivism: "terminal",
   matrix: "terminal",
+  stickerbook: "kinozal",
+  pocketpet: "terminal",
 };
 
 export const DESIGN_NAMES: Record<DesignId, { ru: string; kk: string; en: string }> = {
@@ -31,6 +33,8 @@ export const DESIGN_NAMES: Record<DesignId, { ru: string; kk: string; en: string
   popart: { ru: "Поп-арт", kk: "Поп-арт", en: "Pop Art" },
   constructivism: { ru: "Конструктивизм", kk: "Конструктивизм", en: "Constructivism" },
   matrix: { ru: "Матрица", kk: "Матрица", en: "Matrix" },
+  stickerbook: { ru: "Стикербук", kk: "Стикербук", en: "Sticker Book" },
+  pocketpet: { ru: "Тамагочи", kk: "Тамагочи", en: "Pocket Pet" },
 };
 
 export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; accent: string; accent2: string; text: string }> = {
@@ -45,6 +49,8 @@ export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; acce
   popart: { bg: "#143a96", surface: "#0e2262", accent: "#ffd600", accent2: "#ff2d3c", text: "#ffffff" },
   constructivism: { bg: "#181412", surface: "#28221e", accent: "#d7261e", accent2: "#efe4cc", text: "#f3ead6" },
   matrix: { bg: "#000602", surface: "#04140a", accent: "#00ff41", accent2: "#c8ffd2", text: "#b4ffc4" },
+  stickerbook: { bg: "#2a2438", surface: "#3a3250", accent: "#ff6fa5", accent2: "#5fd3c4", text: "#fff8ef" },
+  pocketpet: { bg: "#f3c6dc", surface: "#b9c9a0", accent: "#2f3a24", accent2: "#8fd3e8", text: "#1f2818" },
 };
 
 export function isDesign(v: unknown): v is DesignId {

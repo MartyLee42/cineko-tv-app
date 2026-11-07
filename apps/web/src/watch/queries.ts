@@ -16,6 +16,7 @@ import {
   type MediaUserState,
   type ProfileSettings,
 } from "@martytv/contracts";
+import { effectiveDesign, useEffectiveDesign } from "@martytv/ui";
 import { api } from "../api";
 import { useCatalogLang } from "../catalog/queries";
 import { useActiveProfile } from "./ActiveProfile";
@@ -39,11 +40,17 @@ export function useProfileSettings() {
   });
 }
 
-/** Applies the active profile's design + theme once its settings load (and on switch). */
+/** The design shown for these settings now: the chosen one or today's «Сюрприз». */
+export function shownDesign(s: Settings, profileId: string | undefined) {
+  return effectiveDesign({ design: s.design ?? "kinozal", design_surprise: s.design_surprise, design_favorites: s.design_favorites }, profileId);
+}
+
+/** Applies the active profile's design + theme once its settings load (and on switch, and when the «Сюрприз» rolls over). */
 export function useThemeSync() {
   const data = useProfileSettings().data;
+  const { profileId } = useActiveProfile();
   const theme = data?.theme;
-  const design = data?.design;
+  const design = useEffectiveDesign(data?.design ? { design: data.design, design_surprise: data.design_surprise, design_favorites: data.design_favorites } : null, profileId);
   useEffect(() => {
     if (theme && design) setLook({ theme, design });
   }, [theme, design]);
@@ -67,13 +74,16 @@ export function useUpdateSettings() {
       await qc.cancelQueries({ queryKey: key });
       const prev = qc.getQueryData<Settings>(key);
       qc.setQueryData<Settings>(key, mergeSettings(prev, patch));
-      if (patch.theme || patch.design) setLook({ ...(patch.theme && { theme: patch.theme }), ...(patch.design && { design: patch.design }) });
+      if (patch.theme || patch.design || patch.design_surprise || patch.design_favorites) {
+        const next = mergeSettings(prev, patch);
+        setLook({ theme: next.theme ?? "system", design: shownDesign(next, profileId) });
+      }
       return { prev };
     },
     onError: (_e, _patch, ctx) => {
       if (ctx?.prev) {
         qc.setQueryData(key, ctx.prev);
-        setLook({ theme: ctx.prev.theme, design: ctx.prev.design });
+        setLook({ theme: ctx.prev.theme, design: shownDesign(ctx.prev, profileId) });
       }
     },
     onSuccess: (saved, patch) => {

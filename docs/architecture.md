@@ -2663,6 +2663,16 @@ up to 2 h, then it is skipped for the night. The restart is a
   `applyDesign` also sets the favicon — one Cineko icon for every design
   since 2026-10-31 (see [Cineko](#marty-mascot-and-branding)); «Конструктивизм»
   uses the emblem.
+  `pocketpet` = «Тамагочи» (terminal skeleton): the app is a toy's grey-green
+  LCD (ink-only, `accent` = the ink, Press Start 2P headings/menu/ticker),
+  framed by a pastel plastic shell drawn over the content's edges
+  (`design/looks/pocketpet.tsx`, z 19, under the menu) with the ticker as a
+  small LCD strip on its bottom band. On Home a pixel Cineko (`Look.Companion`)
+  shows 0–4 hearts from the profile's first history page: finished titles /
+  episodes of the last 7 days count 1, unfinished ones by minutes
+  (`pocketpetMood.ts`); it eats a popcorn when the score rose since last seen
+  (`martytv.pocketpet.score.<profile>`) and dozes (Zz) after a minute without
+  keys.
 - **Startup intro** (`apps/tv/src/intro/`): a ~3 s animation in the
   design's style (kinozal = the wave terrain) on every launch; any key skips.
   «Анимация при запуске» (per TV, `martytv.startup_intro`) turns it off;
@@ -2673,6 +2683,19 @@ up to 2 h, then it is skipped for the night. The restart is a
   classes the app sets — and `#root` holds a small «marty tv» splash until
   React mounts; `boot.tsx` drops the inline colours once the app CSS is in.
   No white page and no dark→light flash for a light «Кинозал» on slow links.
+- **«Сюрприз»** (2026-11): `design_surprise` (`off`|`day`|`week`) and
+  `design_favorites` (empty = all) in the profile settings. The pick is
+  computed client-side by `effectiveDesign` (`packages/ui/src/surprise.ts`):
+  per local calendar day / ISO week (Monday), a seeded shuffle of the
+  favourites per run of n periods (seed = profile id + run), so each
+  favourite shows once per run and never twice in a row; fewer than two
+  candidates → the chosen `design`. TV (`App.tsx`) and PWA (`useThemeSync`)
+  apply the effective design and roll over at the boundary (timer +
+  visibility/focus). `design` stays the «home» design shown in pickers; the
+  TV also caches the surprise inputs (`martytv.design_surprise`) so the next
+  start (intro, first chunk) shows today's pick. Settings: TV «Сюрприз» row +
+  «Избранные оформления» checklist (`settings/DesignFavorites.tsx`), PWA
+  period buttons + a star per design card; both show «Сегодня: …».
   E2E `tv-startup-slow.spec.ts` serves the production bundle (build it first:
   `pnpm --filter @martytv/tv build`; skipped without `apps/tv/dist`) at
   ~1.5 Mbit/s + 300 ms with CPU ×6, screenshots every 400 ms and fails on

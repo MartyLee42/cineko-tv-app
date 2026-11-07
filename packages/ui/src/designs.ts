@@ -11,12 +11,13 @@ import { loadCvGlyphs } from "./cvIcons";
 //   retro80   → kinozal skeleton (VHS/arcade)  retro90   → terminal skeleton (Win95)
 //   popart    → projector skeleton (comic)     constructivism → terminal skeleton (20s–30s poster)
 //   matrix    → terminal skeleton (green digital rain)
+//   stickerbook → kinozal skeleton (die-cut stickers, washi tape)   pocketpet → terminal skeleton (a pastel toy with an LCD)
 // <html> gets `design-<id>` (tokens, skin CSS) and `skel-<skeleton>` (layout CSS).
-export type DesignSetting = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix";
+export type DesignSetting = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet";
 export type Skeleton = "kinozal" | "terminal" | "projector";
 
 /** All designs, in the order pickers show them (the contract's enum order). */
-export const DESIGNS: DesignSetting[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix"];
+export const DESIGNS: DesignSetting[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet"];
 export const SKELETONS: Skeleton[] = ["kinozal", "terminal", "projector"];
 
 export const DESIGN_SKELETON: Record<DesignSetting, Skeleton> = {
@@ -31,6 +32,8 @@ export const DESIGN_SKELETON: Record<DesignSetting, Skeleton> = {
   popart: "projector",
   constructivism: "terminal",
   matrix: "terminal",
+  stickerbook: "kinozal",
+  pocketpet: "terminal",
 };
 
 /** The layout skeleton a design is drawn on (unknown values → Кинозал). */
@@ -56,6 +59,8 @@ export const DESIGN_SWATCH: Record<DesignSetting, { bg: string; surface: string;
   popart: { bg: "#143a96", surface: "#0e2262", accent: "#ffd600", accent2: "#ff2d3c", text: "#ffffff" },
   constructivism: { bg: "#181412", surface: "#28221e", accent: "#d7261e", accent2: "#efe4cc", text: "#f3ead6" },
   matrix: { bg: "#000602", surface: "#04140a", accent: "#00ff41", accent2: "#c8ffd2", text: "#b4ffc4" },
+  stickerbook: { bg: "#2a2438", surface: "#3a3250", accent: "#ff6fa5", accent2: "#5fd3c4", text: "#fff8ef" },
+  pocketpet: { bg: "#f3c6dc", surface: "#b9c9a0", accent: "#2f3a24", accent2: "#8fd3e8", text: "#1f2818" },
 };
 
 let onApply: ((design: DesignSetting) => void) | null = null;

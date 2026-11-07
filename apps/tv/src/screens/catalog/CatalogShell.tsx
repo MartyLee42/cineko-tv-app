@@ -8,7 +8,8 @@ import { playerKey } from "../../player/keys";
 import { openSection, push, type Route, type StackEntry } from "../../catalog/nav";
 import { useCatalogConfig } from "../../catalog/queries";
 import { FRAMES, useDesign, useSkin } from "../../design/context";
-import { SkinBackground } from "../../design/skins";
+import { SkinBackground, SkinCompanion, useCalmMotion, useLook } from "../../design/skins";
+import { openWithPick } from "../../design/pick";
 import { useInbox, useWatchlist } from "../../design/data";
 import { KinozalRail, ProjectorBar, TerminalBar, TerminalTicker, type MenuId, type NavProps } from "../../design/shell";
 import { HomeCatalog } from "./HomeCatalog";
@@ -163,6 +164,8 @@ export function CatalogShell({
 
   const design = useDesign();
   const skin = useSkin();
+  const look = useLook(skin);
+  const calm = useCalmMotion();
   const frame = FRAMES[design];
   const inbox = useInbox();
   const unread = inbox.data?.unread ?? 0;
@@ -172,7 +175,10 @@ export function CatalogShell({
   /** Opens Details; `from` names the row/section it was opened from (back hint, breadcrumb). */
   const open = (item: MediaSummary, from?: string, at?: { season: number; episode: number } | null) => {
     rememberFocus(mem);
-    setStack((s) => push(s, { name: "details", id: item.id, preview: item, ...(from ? { from } : {}), ...(at ? { season: at.season, episode: at.episode } : {}) }));
+    // Стикербук: the sticker peels off first (a moment; not in calm motion).
+    openWithPick(look, calm, () =>
+      setStack((s) => push(s, { name: "details", id: item.id, preview: item, ...(from ? { from } : {}), ...(at ? { season: at.season, episode: at.episode } : {}) })),
+    );
   };
 
   const onMenu = (id: MenuId) => {
@@ -445,6 +451,8 @@ export function CatalogShell({
       {chrome && !settings && !guide && <TvSeasonLayer />}
       {/* «Конструктивизм»: «очередь за дефицитом» over a popular title opened in the catalog (not from the phone). */}
       {route.name === "details" && skin === "constructivism" && route.preview && <CvQueue key={top.key} entryKey={String(top.key)} media={route.preview} />}
+      {/* The skin's companion (Тамагочи's pixel pet), over the content, under the menu. */}
+      {chrome && <SkinCompanion onHome={route.name === "home" && !settings && !guide && !quiz} />}
       {/* Details is full-screen in every design (the PDF's p5/p8/p11): Back returns. */}
       {chrome && design === "kinozal" && <KinozalRail {...nav} />}
       {chrome && design === "terminal" && (

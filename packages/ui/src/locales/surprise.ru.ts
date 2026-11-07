@@ -1,0 +1,20 @@
+// «Сюрприз»: каждый день или неделю — другое оформление из избранных. Ключи совпадают с surprise.en.ts.
+export const surpriseRu = {
+  "surprise.setting": "Сюрприз",
+  "surprise.setting_hint": "Каждый день или каждую неделю — другое оформление из избранных, наугад. Выбранное выше остаётся «домашним»: оно вернётся, когда сюрприз выключен.",
+  "surprise.mode.off": "Выкл",
+  "surprise.mode.day": "Каждый день",
+  "surprise.mode.week": "Каждую неделю",
+  "surprise.today": "Сегодня: {design}",
+  "surprise.this_week": "На этой неделе: {design}",
+  "surprise.favorites": "Избранные оформления",
+  "surprise.favorites_hint": "Сюрприз выбирает только из отмеченных звёздочкой. Ничего не отмечено — из всех.",
+  "surprise.favorites_all": "Все оформления",
+  "surprise.favorites_count": "{count} из {total}",
+  "surprise.favorite_on": "★ В избранном",
+  "surprise.favorite_off": "—",
+  "surprise.favorite_toggle": "В избранное: {design}",
+  "surprise.picker_hint": "OK — отметить или снять звёздочку. Назад — готово.",
+  "surprise.picker_none": "Ничего не отмечено — сюрприз выбирает из всех оформлений.",
+  "surprise.picker_one": "Отмечено одно — отметьте хотя бы два, а пока остаётся выбранное оформление.",
+};

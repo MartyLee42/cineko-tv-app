@@ -34,7 +34,15 @@ type Settings struct {
 	LoadingStyle        *string `json:"loading_style,omitempty"`
 	OnboardingCompleted *bool   `json:"onboarding_completed,omitempty"`
 	Design              *string `json:"design,omitempty"`
-	PosterRating        *string `json:"poster_rating,omitempty"`
+	// DesignSurprise («Сюрприз»): "off" (default), "day" or "week" — the
+	// apps then show a design picked from DesignFavorites per local
+	// calendar day / ISO week (computed client-side, packages/ui surprise.ts).
+	// Design stays the chosen («home») design.
+	DesignSurprise *string `json:"design_surprise,omitempty"`
+	// DesignFavorites are the designs the surprise picks from (deduped;
+	// empty = all designs).
+	DesignFavorites *[]string `json:"design_favorites,omitempty"`
+	PosterRating    *string   `json:"poster_rating,omitempty"`
 	// Sources picks the providers this profile searches (default all).
 	Sources *SourcesSetting `json:"sources,omitempty"`
 	// TasteNote is the viewer's own description of their tastes (≤ 600
@@ -84,6 +92,9 @@ type Settings struct {
 
 // SkipModes are the allowed skip_segments values.
 var SkipModes = []string{"button", "auto", "off"}
+
+// SurpriseModes are the allowed design_surprise values.
+var SurpriseModes = []string{"off", "day", "week"}
 
 // CozyAmbiences are the allowed cozy_ambience values.
 var CozyAmbiences = []string{"rain", "fireplace", "off"}
@@ -182,7 +193,7 @@ func SetKnownSources(f func() []string) { knownSources = f }
 var (
 	themes        = []string{"system", "dark", "light"}
 	loadingStyles = []string{"popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix"}
-	designs       = []string{"kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix"}
+	designs       = []string{"kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet"}
 	posterRatings = []string{"kp", "tmdb", "imdb", "off"}
 )
 
@@ -191,7 +202,7 @@ func DefaultSettings() Settings {
 	t, l, ds := "system", "popcorn", "kinozal"
 	f, tr := false, true
 	return Settings{Theme: &t, HideAnime: &f, HideWatched: ptr(f), AutoplayNextEpisode: &tr, AutoplayCountdown: &tr, SkipSegments: ptr("button"),
-		SpoilerFreeEpisodes: ptr(f), LoadingStyle: &l, OnboardingCompleted: ptr(f), Design: &ds, PosterRating: ptr("kp"),
+		SpoilerFreeEpisodes: ptr(f), LoadingStyle: &l, OnboardingCompleted: ptr(f), Design: &ds, DesignSurprise: ptr("off"), DesignFavorites: &[]string{}, PosterRating: ptr("kp"),
 		Sources: &SourcesSetting{All: true}, TasteNote: ptr(""), MinVotes: ptr(DefaultMinVotes),
 		IPTVPlaylists: &IPTVPlaylistsSetting{All: true}, VideoQuality: ptr(720), VideoHideShorts: ptr(true), VideoAutoplay: ptr(true),
 		SeasonalEffects: ptr("off"), HiddenTabs: &[]string{},
@@ -227,6 +238,18 @@ func (s Settings) withDefaults() Settings {
 	}
 	if s.Design != nil && slices.Contains(designs, *s.Design) {
 		d.Design = s.Design
+	}
+	if s.DesignSurprise != nil && slices.Contains(SurpriseModes, *s.DesignSurprise) {
+		d.DesignSurprise = s.DesignSurprise
+	}
+	if s.DesignFavorites != nil {
+		favs := []string{}
+		for _, id := range *s.DesignFavorites {
+			if slices.Contains(designs, id) && !slices.Contains(favs, id) {
+				favs = append(favs, id)
+			}
+		}
+		d.DesignFavorites = &favs
 	}
 	if s.PosterRating != nil && slices.Contains(posterRatings, *s.PosterRating) {
 		d.PosterRating = s.PosterRating
@@ -307,6 +330,17 @@ func (s Settings) validate() map[string]string {
 	}
 	if s.Design != nil && !slices.Contains(designs, *s.Design) {
 		f["design"] = "must be one of " + strings.Join(designs, ", ")
+	}
+	if s.DesignSurprise != nil && !slices.Contains(SurpriseModes, *s.DesignSurprise) {
+		f["design_surprise"] = "must be one of " + strings.Join(SurpriseModes, ", ")
+	}
+	if s.DesignFavorites != nil {
+		for _, id := range *s.DesignFavorites {
+			if !slices.Contains(designs, id) {
+				f["design_favorites"] = "unknown design; allowed: " + strings.Join(designs, ", ")
+				break
+			}
+		}
 	}
 	if s.PosterRating != nil && !slices.Contains(posterRatings, *s.PosterRating) {
 		f["poster_rating"] = "must be one of kp, tmdb, imdb, off"
