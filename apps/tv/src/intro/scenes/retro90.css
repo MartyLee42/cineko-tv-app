@@ -1,0 +1,11 @@
+/* ---- retro90: sky and clouds, a bevelled window with a block progress bar, then the desktop + taskbar */
+@keyframes r9i-cloud { from { transform: translateX(-30px); } to { transform: translateX(30px); } }
+@keyframes r9i-win { 0% { opacity: 0; transform: scale(.2); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes r9i-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes r9i-desk { from { opacity: 0; } to { opacity: 1; } }
+@keyframes r9i-task { from { transform: translateY(60px); } to { transform: translateY(0); } }
+.r9i-cloud { animation: r9i-cloud 3s linear both; }
+.r9i-win { transform-origin: 50% 50%; animation: r9i-win .35s steps(4) .45s both; }
+.r9i-bar { transform-origin: 0 50%; animation: r9i-bar 1.5s steps(23) .9s both; }
+.r9i-desk { opacity: 0; animation: r9i-desk .3s steps(2) 2.3s both; }
+.r9i-task { animation: r9i-task .3s steps(3) 2.35s both; }

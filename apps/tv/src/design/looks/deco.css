@@ -1,0 +1,49 @@
+/* «deco»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
+/* ---------------------------------------------------------------- Ар-деко (kinozal skeleton) */
+.dc-lacquer {
+  background-color: rgb(11,10,8);
+  background-image:
+    radial-gradient(ellipse 1100px 520px at 60% -8%, rgba(201,165,76,.13), rgba(201,165,76,0)),
+    repeating-linear-gradient(90deg, rgba(201,165,76,.035) 0px, rgba(201,165,76,.035) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 48px);
+}
+/* The rail: a gold double rule on its edge; focus = gold. */
+html.design-deco nav[data-design-nav="kinozal"] > div:first-child { box-shadow: inset -1px 0 0 rgba(201,165,76,.55), inset -5px 0 0 rgb(11,10,8), inset -6px 0 0 rgba(201,165,76,.3); }
+html.design-deco .k-rail-focus { background: linear-gradient(180deg, #e8cf8a 0%, #c9a54c 100%); color: #120d03; }
+html.design-deco .k-rail-active { background: rgba(201,165,76,.14); color: rgb(var(--mt-text)); box-shadow: inset 0 0 0 1px rgba(201,165,76,.45); }
+html.design-deco .tv-menu-panel { background: linear-gradient(90deg, rgb(11,10,8) 0%, rgb(11,10,8) 72%, rgba(11,10,8,0) 100%); }
+/* Cards: thin gold frame with stepped corners (9-slice SVG; the corner steps are painted in the lacquer colour). */
+html.design-deco .mt-card::after {
+  content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none;
+  border: 12px solid transparent;
+  border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath fill='%230b0a08' fill-rule='evenodd' d='M0 0H36V36H0Z M8 3H28V6H30V8H33V28H30V30H28V33H8V30H6V28H3V8H6V6H8Z'/%3E%3Cpath fill='none' stroke='%23c9a54c' stroke-width='1.6' d='M8 3H28V6H30V8H33V28H30V30H28V33H8V30H6V28H3V8H6V6H8Z'/%3E%3C/svg%3E") 12 stretch;
+}
+html.design-deco .tv-focus.is-focused { box-shadow: 0 0 0 5px rgb(11,10,8), 0 0 0 8px rgb(232,207,138), 0 0 0 13px rgb(11,10,8), 0 0 0 15px rgb(201,165,76); }
+html.design-deco .k-primary { background: linear-gradient(180deg, #f0dc9c 0%, #c9a54c 100%); color: #140f04; }
+html.design-deco .k-icon-btn { background: rgba(27,24,18,.92); box-shadow: inset 0 0 0 1px rgba(201,165,76,.55); }
+html.design-deco .k-badge { background: transparent; color: #e8cf8a; box-shadow: inset 0 0 0 2px #c9a54c; }
+html.design-deco .tv-rate-good, html.design-deco .tv-rate-mid, html.design-deco .tv-rate-bad { background: rgba(11,10,8,.86); box-shadow: inset 0 0 0 1.5px #c9a54c; border-radius: 3px; }
+html.design-deco .tv-rate-good { color: #f0dc9c; }
+html.design-deco .tv-rate-mid { color: #f4ecd8; }
+html.design-deco .tv-rate-bad { color: #f0a08c; }
+html.design-deco h3 { font-family: var(--mt-font-display); letter-spacing: .02em; line-height: 1.3; position: relative; top: -8px; }
+html.design-deco .k-fade-left { background: linear-gradient(90deg, rgb(11,10,8) 0%, rgba(11,10,8,.94) 22%, rgba(11,10,8,.6) 42%, rgba(11,10,8,.12) 70%, rgba(11,10,8,0) 100%); }
+html.design-deco .k-fade-bottom { background: linear-gradient(0deg, rgb(11,10,8) 0%, rgba(11,10,8,.9) 20%, rgba(11,10,8,0) 62%); }
+html.design-deco .tv-key-hint { background: rgba(11,10,8,.86); box-shadow: inset 0 0 0 1px rgba(201,165,76,.5); }
+html.design-deco .tv-chip.is-focused { background: linear-gradient(180deg, #f0dc9c 0%, #c9a54c 100%); color: #140f04; }
+/* Curtain hint on the Home hero's right edge, a scalloped valance on top. */
+.dc-curtain-r {
+  background-image:
+    linear-gradient(90deg, rgba(11,10,8,0) 0%, rgba(11,10,8,.35) 40%, rgba(11,10,8,0) 100%),
+    repeating-linear-gradient(90deg, rgba(92,14,22,.0) 0px, rgba(92,14,22,.85) 14px, rgba(40,4,8,.95) 28px, rgba(92,14,22,.85) 42px, rgba(92,14,22,.0) 56px);
+  box-shadow: inset 3px 0 0 rgba(201,165,76,.5);
+  -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, #000 45%);
+}
+.dc-valance { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40'%3E%3Cpath d='M0 0 Q60 46 120 0Z' fill='%23400810'/%3E%3Cpath d='M0 0 Q60 30 120 0Z' fill='%23571019'/%3E%3Cpath d='M0 0 Q60 46 120 0' fill='none' stroke='%23c9a54c' stroke-width='2'/%3E%3Cpath d='M0 0 V16' stroke='%23c9a54c' stroke-width='2'/%3E%3Ccircle cx='0' cy='19' r='3.5' fill='%23c9a54c'/%3E%3Ccircle cx='120' cy='19' r='3.5' fill='%23c9a54c'/%3E%3C/svg%3E"); background-size: 120px 40px; background-repeat: repeat-x; -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, #000 30%); }
+/* Marquee title plate (Details). */
+.dc-plate { box-shadow: inset 0 0 0 1px #c9a54c, inset 0 0 0 5px rgb(11,10,8), inset 0 0 0 6px rgba(201,165,76,.55); background: linear-gradient(180deg, rgba(27,24,18,.86) 0%, rgba(11,10,8,.82) 100%); }
+.dc-bulbs { background-image: radial-gradient(circle, #f6e3a6 0px, #f6e3a6 2.5px, rgba(246,227,166,.25) 3.5px, rgba(246,227,166,0) 4.5px); background-size: 26px 8px; background-repeat: repeat-x; background-position: center; }
+.dc-plate-label { font-family: var(--mt-font-body); }
+html.design-deco [data-media-id] h1 { letter-spacing: .01em; }
+html.design-deco .tv-panel, html.design-deco .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 1px rgba(201,165,76,.5); }
+/* Ар-деко taglines in the display face's italic. */
+html.design-deco [data-media-id] p.italic { font-family: var(--mt-font-display); font-weight: 400; }

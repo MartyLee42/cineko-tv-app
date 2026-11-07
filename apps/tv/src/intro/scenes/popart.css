@@ -1,0 +1,13 @@
+/* ---- popart: Ben-Day dots, panels slide in, speed lines, a white burst, the logo drops, «ВАУ!» */
+@keyframes pai-lines { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+@keyframes pai-slide-l { from { transform: translate(-560px, -260px); } to { transform: translate(0, 0); } }
+@keyframes pai-slide-r { from { transform: translate(560px, 260px); } to { transform: translate(0, 0); } }
+@keyframes pai-burst { 0% { transform: scale(0) rotate(-30deg); } 60% { transform: scale(1.1) rotate(4deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes pai-bubble { 0% { opacity: 0; transform: scale(0); } 70% { opacity: 1; transform: scale(1.12); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes pai-tv { 0% { opacity: 0; transform: rotate(-30deg) scale(0); } 70% { opacity: 1; transform: rotate(-2deg) scale(1.15); } 100% { opacity: 1; transform: rotate(-6deg) scale(1); } }
+.pai-lines { transform-origin: 640px 372px; animation: pai-lines .6s ease-out .45s both; }
+.pai-slide-l { animation: pai-slide-l .5s cubic-bezier(.2,.8,.2,1) both; }
+.pai-slide-r { animation: pai-slide-r .5s cubic-bezier(.2,.8,.2,1) .1s both; }
+.pai-burst { transform-origin: 640px 372px; animation: pai-burst .5s cubic-bezier(.3,.7,.3,1) .55s both; }
+.pai-bubble { transform-origin: 20% 100%; animation: pai-bubble .4s cubic-bezier(.3,.7,.3,1) both; }
+.pai-tv { display: inline-block; animation: pai-tv .4s cubic-bezier(.3,.7,.3,1) 1.5s both; }

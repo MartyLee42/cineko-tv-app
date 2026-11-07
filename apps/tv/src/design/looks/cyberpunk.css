@@ -1,0 +1,50 @@
+/* «cyberpunk»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
+/* ---------------------------------------------------------------- Киберпанк (terminal skeleton) */
+.cp-city {
+  background-color: rgb(6,6,10);
+  background-image:
+    radial-gradient(ellipse 900px 520px at 88% 0%, rgba(255,46,136,.20), rgba(255,46,136,0)),
+    radial-gradient(ellipse 800px 520px at 0% 100%, rgba(0,240,255,.13), rgba(0,240,255,0)),
+    linear-gradient(rgba(0,240,255,.05) 1px, rgba(0,240,255,0) 1px),
+    linear-gradient(90deg, rgba(0,240,255,.05) 1px, rgba(0,240,255,0) 1px);
+  background-size: 100% 100%, 100% 100%, 64px 64px, 64px 64px;
+}
+.cp-city svg { opacity: .55; }
+html.design-cyberpunk .t-grid { background: rgb(var(--mt-bg)); }
+/* Clipped corners (Chrome 53: -webkit-clip-path; elsewhere square). The focused card unclips: its frame is a glow + the brackets. */
+html.design-cyberpunk .mt-card { -webkit-clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px); clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px); }
+html.design-cyberpunk .mt-card.is-focused { -webkit-clip-path: none; clip-path: none; }
+html.design-cyberpunk .tv-focus.is-focused { box-shadow: 0 0 0 3px rgb(6,6,10), 0 0 0 6px rgb(0,240,255), 0 0 22px 6px rgba(0,240,255,.5), 0 0 0 9px rgba(255,46,136,.7); }
+/* Holographic brackets: cyan with a magenta echo. */
+html.design-cyberpunk .t-bracket { border-color: rgb(0,240,255); box-shadow: -3px -3px 0 -1px rgba(255,46,136,.0); }
+html.design-cyberpunk .t-bracket-tl, html.design-cyberpunk .t-bracket-br { border-color: rgb(0,240,255); }
+html.design-cyberpunk .t-bracket-tr, html.design-cyberpunk .t-bracket-bl { border-color: rgb(255,46,136); }
+/* Glitch headings: a static chromatic offset; the focused tab jitters briefly. */
+html.design-cyberpunk h1, html.design-cyberpunk h2 { text-shadow: 3px 0 rgba(255,46,136,.85), -3px 0 rgba(0,240,255,.8); }
+html.design-cyberpunk h1.t-label { text-shadow: 2px 0 rgba(255,46,136,.8), -2px 0 rgba(0,240,255,.75); }
+@keyframes cp-jitter { 0%, 100% { transform: translate3d(0,0,0); } 20% { transform: translate3d(-2px,1px,0); } 40% { transform: translate3d(2px,-1px,0); } 60% { transform: translate3d(-1px,0,0); } 80% { transform: translate3d(1px,1px,0); } }
+html.design-cyberpunk .t-tab.bg-text > * { display: inline-block; animation: cp-jitter .32s steps(4) 2; }
+html.design-cyberpunk .t-tab.bg-text { background: rgb(245,240,60); color: #0a0a04; }
+html.design-cyberpunk nav[data-design-nav="terminal"] { background: linear-gradient(180deg, rgba(6,6,10,.92) 0%, rgba(6,6,10,.6) 75%, rgba(6,6,10,0) 100%); }
+html.design-cyberpunk nav[data-design-nav="terminal"]::after { content: ""; position: absolute; left: 96px; right: 48px; bottom: 18px; height: 2px; background: linear-gradient(90deg, rgb(255,46,136) 0%, rgba(0,240,255,.8) 55%, rgba(0,240,255,0) 100%); }
+/* HUD labels: [BRACKETS] on column labels, magenta slashes. */
+html.design-cyberpunk .t-hair p.t-label:first-child::before { content: "["; color: rgb(255,46,136); }
+html.design-cyberpunk .t-hair p.t-label:first-child::after { content: "]"; color: rgb(255,46,136); }
+html.design-cyberpunk .t-hair { border-color: rgba(0,240,255,.3); }
+html.design-cyberpunk .t-tag { background: rgba(6,6,10,.88); box-shadow: inset 3px 0 0 rgb(255,46,136); }
+html.design-cyberpunk .tv-rate-t-good { color: rgb(0,240,255); }
+html.design-cyberpunk .tv-rate-t-mid { color: rgb(245,240,60); }
+html.design-cyberpunk .tv-rate-t-bad { color: rgb(255,96,160); }
+html.design-cyberpunk .t-row-best { background: rgba(245,240,60,.12); }
+html.design-cyberpunk .t-row.is-focused { background: rgb(0,240,255); color: #04080a; }
+html.design-cyberpunk .t-seg-on { background: rgb(0,240,255); }
+/* Primary (accent-filled) buttons get a clipped corner too; focus unclips. */
+html.design-cyberpunk .bg-accent.tv-focus:not(.is-focused), html.design-cyberpunk [data-focus-key="d-play"]:not(.is-focused) { -webkit-clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px)); clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px)); }
+html.design-cyberpunk [data-testid="status-ticker"] { background: rgb(245,240,60); }
+html.design-cyberpunk [data-testid="status-ticker"]::after { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0px, rgba(0,0,0,.12) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 3px); pointer-events: none; }
+html.design-cyberpunk .t-scanlines { background-image: repeating-linear-gradient(0deg, rgba(6,0,20,.45) 0px, rgba(6,0,20,.45) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 4px); }
+html.design-cyberpunk .t-mono-img { -webkit-filter: grayscale(1) contrast(1.1); filter: grayscale(1) contrast(1.1); opacity: .8; }
+html.design-cyberpunk .t-band-fade { background: linear-gradient(0deg, rgb(6,6,10) 0%, rgba(6,6,10,.55) 35%, rgba(40,0,40,.25) 70%, rgba(6,6,10,.4) 100%); }
+html.design-cyberpunk .tv-chip.is-focused { background: rgb(0,240,255); color: #04080a; }
+html.design-cyberpunk .tv-progress-fill, html.design-cyberpunk .tv-check { background: rgb(0,240,255); color: #04080a; }
+html.design-cyberpunk .tv-panel, html.design-cyberpunk .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 1px rgba(0,240,255,.35); }

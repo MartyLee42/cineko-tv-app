@@ -14,19 +14,10 @@ import { live } from "./iptv/live";
 import { videoSession } from "./video/session";
 import { currentSettings } from "./profile/settings";
 import { loaderKind, preloadLoader } from "./player/loaderChunks";
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+import { retrying } from "./retry";
 
 /** A chunk loader: fetched once, retried on a network hiccup, retried again later after a failure. */
-function chunk<M>(load: () => Promise<M>): () => Promise<M> {
-  let p: Promise<M> | null = null;
-  const attempt = (n: number): Promise<M> => load().catch((e: unknown) => (n > 1 ? sleep(1000).then(() => attempt(n - 1)) : Promise.reject(e)));
-  return () =>
-    (p ??= attempt(3).catch((e: unknown) => {
-      p = null;
-      throw e;
-    }));
-}
+const chunk = retrying;
 
 const details = chunk(() => import("./screens/catalog/DetailsScreen"));
 const catalog = chunk(() => import("./screens/catalog/chunkCatalog"));
