@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LoadMeter, LoadTracker, preloadTarget, rawProgress, RESUME_MS, STAGE_RANGE, stageOf, TorrentHold, type LoadStage } from "./loading";
+import { LoadMeter, LoadTracker, newAttempt, preloadGoal, preloadTarget, rawProgress, RESUME_MS, SHOW_EVERY_MS, STAGE_RANGE, stageOf, TorrentHold, type LoadStage } from "./loading";
 
 const MB = 1024 * 1024;
 const tor = (preloaded: number, peers = 5) => ({ peers, seeders: 3, download_speed_bps: 1, preloaded_bytes: preloaded });
@@ -32,11 +32,11 @@ describe("loading progress model", () => {
     }
   });
 
-  it("preloading follows preloaded bytes from 0.35 to 0.85", () => {
+  it("preloading follows preloaded bytes from 0.15 to 0.9", () => {
     const src = (n: number) => ({ torrent: tor(n), file: { index: 0, path: "x", size_bytes: 1000 * MB, is_video: true, season: null, episode: null }, release: null } as never);
-    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(0) })).toBeCloseTo(0.35);
-    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(10 * MB) })).toBeCloseTo(0.6);
-    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(40 * MB) })).toBeCloseTo(0.85);
+    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(0) })).toBeCloseTo(0.15);
+    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(10 * MB) })).toBeCloseTo(0.525);
+    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(40 * MB) })).toBeCloseTo(0.9);
   });
 
   it("metadata moves 'starting' forward; done is 1", () => {
@@ -87,7 +87,7 @@ describe("one load's progress (LoadTracker)", () => {
     step("starting", src("s1", 32 * MB, 40_000 * MB));
     step("starting", src("s1", 32 * MB, 40_000 * MB), true);
     expect(monotonic(seq)).toBe(true);
-    expect(seq[seq.length - 1]!).toBeGreaterThan(0.85);
+    expect(seq[seq.length - 1]!).toBeGreaterThan(0.9);
     // The old per-stage computation went back on that sequence.
     expect(rawProgress({ stage: "preloading", stageMs: 0, source: src("s1", 13 * MB, 40_000 * MB) })).toBeLessThan(
       rawProgress({ stage: "preloading", stageMs: 0, source: src("s1", 12 * MB) }),
@@ -97,10 +97,10 @@ describe("one load's progress (LoadTracker)", () => {
   it("survives a remount of the loading screen (same load)", () => {
     const t = new LoadTracker();
     const a = t.update("g1", { stage: "preloading", source: src("s1", 10 * MB, 1000 * MB), sourceId: "s1" }, 1000);
-    expect(a).toBeCloseTo(0.6);
+    expect(a).toBeCloseTo(0.525);
     // A remounted screen starts from what was shown, and continues from there.
-    expect(t.current("g1")).toBeCloseTo(0.6);
-    expect(t.update("g1", { stage: "metadata", source: src("s1", null, 1000 * MB), sourceId: "s1" }, 1400)).toBeCloseTo(0.6);
+    expect(t.current("g1")).toBeCloseTo(0.525);
+    expect(t.update("g1", { stage: "metadata", source: src("s1", null, 1000 * MB), sourceId: "s1" }, 1400)).toBeCloseTo(0.525);
     expect(t.current("g2")).toBe(0);
   });
 
@@ -138,7 +138,7 @@ describe("load progress across a page restart", () => {
     expect(shown).toBeGreaterThan(0.1);
     // The TV reloads the page: a fresh tracker (and controller counter).
     const after = new LoadTracker(store);
-    expect(after.update("m1||0", { stage: "resolving", title: "m1|" }, 20_000)).toBeGreaterThanOrEqual(shown - 0.01);
+    expect(after.update("m1||0", { stage: "resolving", title: "m1|" }, 20_000)).toBeGreaterThanOrEqual(shown);
   });
 
   it("starts at 0 for another title, after a while, or after leaving the player", () => {
@@ -164,5 +164,85 @@ describe("torrent numbers on the loading screen (TorrentHold)", () => {
     expect(h.hold("s1", null, 900 * MB).fileBytes).toBe(1000 * MB);
     // Another source: its own numbers.
     expect(h.hold("s2", { preloaded_bytes: 1 * MB }, 500 * MB)).toEqual({ torrent: { preloaded_bytes: 1 * MB }, fileBytes: 500 * MB });
+  });
+});
+
+describe("one number for one load attempt", () => {
+  const monotonic = (xs: number[]) => xs.every((x, i) => i === 0 || x >= xs[i - 1]!);
+  const file = { index: 0, path: "x", size_bytes: 4000 * MB, is_video: true, season: null, episode: null };
+  const src = (id: string, pre: number, preloadSize = 0, status: "preparing" | "ready" = "preparing") =>
+    ({ id, status, torrent: { ...tor(pre), preload_size: preloadSize }, file, release: null }) as never;
+
+  it("mixed producers (controller poll, live poll, stage flaps, failover, first frame) never move it back", () => {
+    const t = new LoadTracker();
+    // A seeded pseudo-random interleaving of what the screen gets fed.
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+    const out: number[] = [];
+    let now = 0;
+    let pre = 0;
+    for (let i = 0; i < 400; i++) {
+      now += 50 + Math.floor(rnd() * 400);
+      pre += Math.floor(rnd() * 2 * MB);
+      const r = rnd();
+      const sid = i > 250 ? "s2" : "s1";
+      const stage: LoadStage = r < 0.1 ? "metadata" : r < 0.2 ? "creating" : i > 330 ? "starting" : "preloading";
+      // The other feed: TorrServer restarted its preload elsewhere, or reports its own (bigger) goal.
+      const bytes = rnd() < 0.3 ? Math.floor(pre * rnd()) : pre;
+      out.push(t.update("load|1", { stage, source: src(sid, bytes, rnd() < 0.5 ? 64 * MB : 0), sourceId: sid, metadata: rnd() < 0.5, title: "m|" }, now));
+    }
+    expect(monotonic(out)).toBe(true);
+    expect(out[out.length - 1]!).toBeGreaterThan(0.9);
+    expect(out[out.length - 1]!).toBeLessThan(1);
+  });
+
+  it("steps at most every SHOW_EVERY_MS; reaching 1 shows at once", () => {
+    const t = new LoadTracker();
+    const a = t.update("k", { stage: "preloading", source: src("s", 4 * MB), sourceId: "s" }, 1000);
+    expect(t.update("k", { stage: "preloading", source: src("s", 8 * MB), sourceId: "s" }, 1000 + SHOW_EVERY_MS - 10)).toBe(a);
+    const b = t.update("k", { stage: "preloading", source: src("s", 8 * MB), sourceId: "s" }, 1000 + SHOW_EVERY_MS);
+    expect(b).toBeGreaterThan(a);
+    expect(t.update("k", { stage: "done" }, 1000 + SHOW_EVERY_MS + 1)).toBe(1);
+  });
+
+  it("phases share one scale: preload up to 0.9, the first frame the rest", () => {
+    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src("s", 64 * MB) })).toBeCloseTo(0.9);
+    expect(rawProgress({ stage: "starting", stageMs: 0 })).toBeGreaterThanOrEqual(0.9);
+    expect(rawProgress({ stage: "starting", stageMs: 600_000, metadata: true })).toBeLessThan(1);
+  });
+
+  it("the bar and the «N МБ из M» text use the same goal", () => {
+    expect(preloadGoal({ preload_size: 50 * MB }, 1000 * MB)).toBe(50 * MB);
+    expect(preloadGoal({ preload_size: 0 }, 1000 * MB)).toBe(preloadTarget(1000 * MB));
+    expect(preloadGoal(null, null)).toBe(16 * MB);
+  });
+
+  it("a new attempt only when the user starts something else", () => {
+    const ctx = (media_id: string, episode_id: string | null = null, season: number | null = null, episode: number | null = null) => ({ media_id, episode_id, season, episode });
+    const start = (c: ReturnType<typeof ctx>) => ({ type: "start", ctx: c });
+    // From Details / the picker / the chooser: new.
+    expect(newAttempt({ phase: "idle" }, start(ctx("m")))).toBe(true);
+    expect(newAttempt({ phase: "picker", ctx: ctx("m") }, start(ctx("m")))).toBe(true);
+    expect(newAttempt({ phase: "choose", ctx: ctx("m") }, start(ctx("m")))).toBe(true);
+    // Failover / «Другая раздача» / a phone re-sending the same title: same attempt.
+    expect(newAttempt({ phase: "failed", ctx: ctx("m") }, start(ctx("m")))).toBe(false);
+    expect(newAttempt({ phase: "preparing", ctx: ctx("m") }, start(ctx("m")))).toBe(false);
+    expect(newAttempt({ phase: "playing", ctx: ctx("s", "e1", 1, 1) }, start(ctx("s", null, 1, 1)))).toBe(false);
+    // Another title / episode: new.
+    expect(newAttempt({ phase: "preparing", ctx: ctx("m") }, start(ctx("n")))).toBe(true);
+    expect(newAttempt({ phase: "playing", ctx: ctx("s", "e1", 1, 1) }, start(ctx("s", null, 1, 2)))).toBe(true);
+    expect(newAttempt({ phase: "playing", ctx: ctx("s", "e1") }, start(ctx("s", "e2")))).toBe(true);
+    // The episode id arriving later is a "ctx" patch, never a new attempt.
+    expect(newAttempt({ phase: "preparing", ctx: ctx("s") }, { type: "ctx" })).toBe(false);
+  });
+
+  it("a remounted / restarted screen's first frame starts at the resumed value, not 0", () => {
+    let v: string | null = null;
+    const store = { get: () => v, set: (x: string | null) => void (v = x) };
+    const a = new LoadTracker(store);
+    a.update("load|1", { stage: "metadata", title: "m|" }, 0);
+    const shown = a.update("load|1", { stage: "metadata", title: "m|" }, 9000);
+    expect(new LoadTracker(store).current("load|1", "m|", 10_000)).toBe(shown);
+    expect(new LoadTracker(store).current("load|1", "other|", 10_000)).toBe(0);
   });
 });

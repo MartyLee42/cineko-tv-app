@@ -10,7 +10,15 @@
     "./locale-preload": "./src/localePreload.ts",
     "./season-layer": "./src/SeasonLayer.tsx",
     "./cozy-layer": "./src/CozyLayer.tsx",
-    "./popcorn": "./src/PopcornLoader.tsx"
+    "./popcorn": "./src/PopcornLoader.tsx",
+    "./loaders/logic": "./src/loaders/logic.ts",
+    "./loaders/parts": "./src/loaders/parts.tsx",
+    "./loaders/paws": "./src/loaders/Paws.tsx",
+    "./loaders/aquarium": "./src/loaders/Aquarium.tsx",
+    "./loaders/speedo": "./src/loaders/Speedo.tsx",
+    "./loaders/odyssey": "./src/loaders/Odyssey.tsx",
+    "./loaders/balloons": "./src/loaders/Balloons.tsx",
+    "./loaders/catch": "./src/loaders/Catch.tsx"
   },
   "scripts": {
     "typecheck": "tsc -p .",

@@ -13,7 +13,7 @@ import { player } from "./player/controller";
 import { live } from "./iptv/live";
 import { videoSession } from "./video/session";
 import { currentSettings } from "./profile/settings";
-import { loaderKind, preloadLoader } from "./player/loaderChunks";
+import { loaderKind, preloadLoader, upcomingAnimation } from "./player/loaderChunks";
 import { retrying } from "./retry";
 
 /** A chunk loader: fetched once, retried on a network hiccup, retried again later after a failure. */
@@ -27,7 +27,8 @@ const playback = chunk(() => {
   // The profile's loading style travels with the player (it's the first thing the player shows).
   const s = currentSettings();
   // The applied design (a «Сюрприз» may differ from settings.design), as Loader.tsx picks it.
-  void preloadLoader(loaderKind(s.loading_style, getAppliedDesign() ?? s.design)).catch(() => undefined);
+  const next = upcomingAnimation(s.loading_style);
+  if (next) void preloadLoader(loaderKind(next, getAppliedDesign() ?? s.design)).catch(() => undefined);
   return import("./player/chunkPlayback");
 });
 
