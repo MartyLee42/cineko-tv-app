@@ -25,17 +25,21 @@ Cineko comes in two editions:
 | Catalog | TMDB, Kinopoisk/IMDb ratings, curated lists, AI picks | TMDB |
 | Video | Torrents (Prowlarr + TorrServer), online sources, IPTV, YouTube (Invidious) | Online source (CDNVideoHub) |
 | Accounts | Household accounts, profiles, TV pairing by QR, phone as a remote | None — likes, history and settings stay on the device (export/import as JSON) |
-| Extras | Cineko Music (`/music`), server downloads, offline downloads to phones, browser-compatible transcoding | — |
+| Extras | Cineko Music (`/music`), server downloads, offline downloads to phones, browser-compatible transcoding (GPU when present), Prometheus metrics | — |
 | TV | Media Station X app with the native player bridge | Media Station X app (D-pad) |
-| Languages | Russian, English | Russian, Kazakh, English |
+| Languages | Russian, English, Kazakh | Russian, Kazakh, English |
 
 ## Features (full version)
 
-- **TV app** for Media Station X (Samsung, LG, Android TV…): spatial remote navigation, ten designs, a player with voice-over / subtitle / quality switching, «next episode», resume everywhere.
-- **PWA** for phones and computers: browse, search (incl. «Спросить ИИ»), manage household accounts, pair TVs by QR code and use the phone as a remote.
-- **Sources:** torrents through your own **Prowlarr** (+ FlareSolverr) streamed by **TorrServer**, online balancers, **IPTV** playlists with EPG, a **YouTube** tab through a private **Invidious**.
-- **Recommendations:** «Для вас» rows, family picks, taste quiz, curated film lists (Sight & Sound, Ebert, Cahiers du cinéma…), optional AI collections via DeepSeek.
+- **TV app** for Media Station X (Samsung, LG, Android TV…): spatial remote navigation, **13 designs** — Кинозал, Терминал, Проектор, Каркас, Киберпанк, Ар-деко, Ретро 80-е, Ретро 90-е, Поп-арт, Конструктивизм, Матрица, Стикербук, Тамагочи — or «Сюрприз» (a different favourite each day or week), each with its own startup intro, loaders and interface sounds; every design is a lazy chunk, so old TVs start fast.
+- **Player:** voice-over / subtitle / quality switching, chapters on the seek bar, **skip intros, recaps and credits**, «next episode» with a countdown, sleep timer, resume everywhere (even when a TV engine restarts the stream from 0), a screensaver over a long pause; releases are ranked by what plays **smoothly** on that TV, with a lighter-release suggestion when it stutters.
+- **Watch companion:** «Ранее в сериале» recaps before an episode, «После титров» (the ending explained, why it matters, a spoiler chat), title quotes and facts, «Послушать саундтрек» as a Cineko Music playlist.
+- **PWA** for phones and computers: browse, search (incl. «Спросить ИИ»), manage household accounts and profiles, pair TVs by QR code and use the phone as a remote.
+- **Sources:** torrents through your own **Prowlarr** (+ FlareSolverr) streamed by **TorrServer**, online balancers, **IPTV** playlists with EPG, a **YouTube** tab through a private **Invidious** (autoplay of the next part).
+- **Recommendations:** «Для вас» rows, taste by themes, family picks, taste quiz, curated film lists (Sight & Sound, Ebert, Cahiers du cinéma…); optional AI via DeepSeek — daily collections, theme rubrics and picks with a personal reason.
 - **Cineko Music** at `/music`: Deezer catalog, YouTube / zaycev.net / lossless torrent audio, lyrics, tabs, AI playlists, offline downloads.
+- **Cozy extras:** Cineko the robot-cat mascot (with costumes), cozy mode, holiday animations, live posters.
+- **Operations:** one-command install, GPU transcoding auto-detected (NVENC / VAAPI / QSV, CPU fallback), TorrServer tuned from `.env`, nightly Invidious restart, an admin server monitor and Prometheus `/metrics`.
 - **Privacy:** everything runs on your server; nothing is published except the Caddy web server (automatic HTTPS).
 
 ## Install
@@ -55,7 +59,7 @@ The installer:
 2. asks for an optional [TMDB](https://www.themoviedb.org/signup) token (needed for the catalog), an optional DeepSeek key (AI picks) and an optional proxy / VPN (for regions where TMDB or YouTube are blocked);
 3. generates every secret into `.env` (mode 0600, never overwritten on re-runs);
 4. starts the whole stack: Cineko (API, transcoder, music, web), **Prowlarr + FlareSolverr** (preloaded with public indexers), **TorrServer** and **Invidious**;
-5. creates your administrator account and prints the addresses.
+5. applies the TorrServer settings and creates your administrator account, then prints the addresses.
 
 Then:
 
@@ -66,8 +70,9 @@ Then:
 Non-interactive: `./install.sh --yes --domain tv.example.com --tmdb <token> --admin-user me`
 (password from `CINEKO_ADMIN_PASSWORD`). `./install.sh --help` lists every option.
 
-Update with `scripts/update.sh`, back up with `scripts/backup.sh`. Private trackers, the VPN profile,
-nginx, restore and troubleshooting: **[docs/deployment.md](docs/deployment.md)**.
+Operate with `scripts/cineko.sh <compose args>` (e.g. `scripts/cineko.sh ps`, `logs -f api`), update with
+`scripts/update.sh`, back up with `scripts/backup.sh`. Private trackers, GPU transcoding, the VPN profile,
+nginx, metrics, restore and troubleshooting: **[docs/deployment.md](docs/deployment.md)**.
 
 Prebuilt images are published to GHCR (`ghcr.io/martylee42/cineko-tv-app-{api,web,music,transcoder}`);
 the installer falls back to building from source when they can't be pulled.
@@ -88,7 +93,8 @@ Everything runs in Docker:
 ```sh
 make dev                 # Postgres, API (live reload), PWA, TV app, music, proxy on :8080
 make admin USER=me       # create an administrator (prompts for the password)
-make test lint typecheck
+make test               # Go (with the dev Postgres) + JS unit tests
+make lint typecheck
 make e2e                 # Playwright
 ```
 
@@ -103,10 +109,10 @@ services/api         Go (Fiber) modular monolith + SQL migrations
 services/music       Cineko Music at /music (Go + SQLite + React)
 services/transcoder  ffmpeg sidecar for browser-compatible streams
 packages/contracts   OpenAPI contract, generated TS client, realtime client
-packages/ui          shared components, designs, mascot, ru/en translations
+packages/ui          shared components, designs, mascot, ru/en/kk translations
 packages/media-types shared media model
 deployments/         compose files, Caddyfiles, env.example
-scripts/             update, backup, Prowlarr setup
+scripts/             cineko.sh, update, backup, Prowlarr and TorrServer setup
 docs/                architecture, API, pairing, deployment, testing
 e2e/                 Playwright tests
 ```
