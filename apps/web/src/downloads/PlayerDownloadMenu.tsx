@@ -1,5 +1,6 @@
-// Player menu «Скачать на сервер»: the source id is known, so POST /downloads directly;
-// once requested, the menu shows the download's live state instead.
+// Player menu «Скачать»: to this device (offline/ui.tsx) and to the server. The
+// source id is known, so POST /downloads directly; once requested, the menu
+// shows the download's live state instead.
 import { Link } from "react-router";
 import type { PlaybackSource } from "@martytv/contracts";
 import { useI18n } from "@martytv/ui";
@@ -21,8 +22,8 @@ export interface DeviceContext {
   title: string;
   subtitle: string | null;
   poster: string | null;
-  /** At click time: the compat stream to save (the player plays compat), or null for the original file. */
-  compatUrl: () => string | null;
+  /** At click time: what the player plays (compat: with which audio track). */
+  playing: () => { mode: "original" | "compat"; audio: number | null };
 }
 
 export function PlayerDownloadMenu({ source, onClose, device }: { source: PlaybackSource; onClose: () => void; device?: DeviceContext }) {
@@ -38,11 +39,12 @@ export function PlayerDownloadMenu({ source, onClose, device }: { source: Playba
     <div
       className="pointer-events-auto absolute bottom-[calc(6.5rem+env(safe-area-inset-bottom))] right-[max(env(safe-area-inset-right),0.75rem)] z-10 max-h-[60vh] w-72 max-w-[calc(100vw-1.5rem)] overflow-y-auto rounded-2xl border border-white/10 bg-neutral-900/95 p-1.5 text-white shadow-2xl backdrop-blur sm:right-5"
       role="menu"
-      aria-label={t("downloads.download_to_server")}
+      aria-label={t("devicedl.menu")}
       data-testid="player-menu-download"
       onKeyDown={(e) => e.key === "Escape" && onClose()}
     >
-      <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wider text-white/55">{t("downloads.download_to_server")}</p>
+      {device && <DeviceDownloadSection source={source} {...device} />}
+      <p className={`px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wider text-white/55 ${device ? "border-t border-white/10" : ""}`}>{t("downloads.download_to_server")}</p>
       {d && d.status !== "failed" ? (
         <div className="space-y-2 px-3 pb-2 pt-1" data-testid="player-download-state" data-status={d.status}>
           <p className={`flex items-center gap-1.5 text-sm font-semibold ${d.status === "done" ? "text-ok" : ""}`}>
@@ -74,7 +76,6 @@ export function PlayerDownloadMenu({ source, onClose, device }: { source: Playba
           )}
         </>
       )}
-      {device && <DeviceDownloadSection source={source} {...device} />}
     </div>
   );
 }

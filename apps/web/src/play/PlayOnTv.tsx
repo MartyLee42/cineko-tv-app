@@ -17,6 +17,7 @@ import { ReleaseList } from "./ReleaseList";
 import { PlayerPicker } from "./PlayerPicker";
 import { PlayHereSheet } from "./PlayHere";
 import { DownloadSheet } from "../downloads/DownloadSheet";
+import { saveTargetFor, useSaveToDevice } from "../offline/ui";
 import { decidePlayer, rememberedPlayer, rememberPlayer } from "./players";
 import {
   codecLabel,
@@ -69,6 +70,7 @@ export function PlayOnTvProvider({ children }: { children: ReactNode }) {
   const [download, setDownload] = useState<{ target: PlayTarget; release: Release } | null>(null);
   const navigate = useNavigate();
   const { profileId: activeProfileId } = useActiveProfile();
+  const saveDevice = useSaveToDevice();
 
   // Created once: media.play goes out at once — the TV searches / prepares itself.
   const [ctl] = useState(() =>
@@ -144,6 +146,11 @@ export function PlayOnTvProvider({ children }: { children: ReactNode }) {
               setSheet(null);
               setDownload({ target: sheet, release: r });
             }}
+            onSaveDevice={(r) => {
+              setSheet(null);
+              saveDevice(saveTargetFor(qc, sheet, r.id));
+              navigate("/downloads#device");
+            }}
             onWatchHere={(r) => {
               setSheet(null);
               writeWatchWhere("here");
@@ -212,6 +219,7 @@ function SheetBody({
   onPlayHere,
   onWatchHere,
   onDownload,
+  onSaveDevice,
 }: {
   target: PlayTarget;
   profileId: string | undefined;
@@ -222,6 +230,7 @@ function SheetBody({
   onPlayHere: (r: Release) => void;
   onWatchHere: (r: Release) => void;
   onDownload: (r: Release) => void;
+  onSaveDevice: (r: Release) => void;
 }) {
   const { t } = useI18n();
   return (
@@ -237,6 +246,7 @@ function SheetBody({
         onPlayHere={onPlayHere}
         onWatchHere={onWatchHere}
         onDownload={onDownload}
+        onSaveDevice={onSaveDevice}
         budget={target.budget}
       />
     </div>
