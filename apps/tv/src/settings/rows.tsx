@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PlayerKind } from "@martytv/contracts";
 import { imageUrl } from "@martytv/media-types";
-import { matrixPillSeen, requestPill, shouldAskPill, uiSoundsPref, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
+import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, uiSoundsPref, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
 import { useCatalogConfig, useHome } from "../catalog/queries";
 import { Loader } from "../player/Loader";
 import type { LoadStage } from "../player/loading";
@@ -208,10 +208,7 @@ export function useSettingRows() {
       kind: "choice",
       key: "language",
       label: t("settings.language"),
-      choices: [
-        { value: "en", label: "English" },
-        { value: "ru", label: "Русский" },
-      ],
+      choices: LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] })),
       value: locale,
       onChange: (v) => setLocale(v as Locale),
     } as Row,

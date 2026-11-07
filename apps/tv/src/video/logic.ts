@@ -36,7 +36,8 @@ export function formatDuration(sec: number | null | undefined): string | null {
  * hand: Intl's compact notation is missing on old TV engines.
  */
 export function compactCount(n: number, locale: string): string {
-  const ru = locale === "ru";
+  const ru = locale !== "en";
+  const k = locale === "kk" ? "мың" : "тыс.";
   const abs = Math.abs(n);
   const fmt = (v: number) => {
     // One decimal below 10 (1,2 млн), whole numbers above (15 тыс.).
@@ -46,7 +47,7 @@ export function compactCount(n: number, locale: string): string {
   };
   if (abs >= 1e9) return ru ? `${fmt(n / 1e9)} млрд` : `${fmt(n / 1e9)}B`;
   if (abs >= 1e6) return ru ? `${fmt(n / 1e6)} млн` : `${fmt(n / 1e6)}M`;
-  if (abs >= 1e3) return ru ? `${fmt(n / 1e3)} тыс.` : `${fmt(n / 1e3)}K`;
+  if (abs >= 1e3) return ru ? `${fmt(n / 1e3)} ${k}` : `${fmt(n / 1e3)}K`;
   return String(Math.floor(n));
 }
 

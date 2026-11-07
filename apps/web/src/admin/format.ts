@@ -4,10 +4,12 @@ import type { Locale } from "@martytv/ui";
 const BYTE_UNITS: Record<Locale, string[]> = {
   en: ["B", "KB", "MB", "GB", "TB"],
   ru: ["Б", "КБ", "МБ", "ГБ", "ТБ"],
+  kk: ["Б", "КБ", "МБ", "ГБ", "ТБ"],
 };
 const BIT_UNITS: Record<Locale, string[]> = {
   en: ["bit/s", "kbit/s", "Mbit/s", "Gbit/s"],
   ru: ["бит/с", "кбит/с", "Мбит/с", "Гбит/с"],
+  kk: ["бит/с", "кбит/с", "Мбит/с", "Гбит/с"],
 };
 
 /** One decimal below 10, none above: 4.2, 42, 420. */
@@ -51,8 +53,8 @@ export function percentOf(part: number, total: number): number {
 
 /** 93784 s → "1d 2h" / "1 д 2 ч"; under an hour → "12m". */
 export function formatUptime(seconds: number, locale: Locale = "en"): string {
-  const [d, h, m] = locale === "ru" ? ["д", "ч", "мин"] : ["d", "h", "m"];
-  const sp = locale === "ru" ? " " : "";
+  const [d, h, m] = locale === "kk" ? ["күн", "сағ", "мин"] : locale === "ru" ? ["д", "ч", "мин"] : ["d", "h", "m"];
+  const sp = locale !== "en" ? " " : "";
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const mins = Math.floor((seconds % 3600) / 60);

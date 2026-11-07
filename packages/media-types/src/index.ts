@@ -68,7 +68,8 @@ export function placeholderColor(seed: string): string {
 
 /** Content language for catalog requests from a UI locale. */
 export function catalogLang(locale: string): "en" | "ru" {
-  return locale.startsWith("ru") ? "ru" : "en";
+  // Kazakh: the interface is Kazakh, titles and plots come in Russian (TMDB has little Kazakh).
+  return locale.startsWith("ru") || locale.startsWith("kk") ? "ru" : "en";
 }
 
 export * from "./sources";

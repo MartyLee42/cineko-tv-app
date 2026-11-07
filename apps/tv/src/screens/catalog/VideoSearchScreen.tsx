@@ -41,7 +41,7 @@ export function VideoSearchScreen({
   const pitchX = G.w + G.gap;
   const pitchY = G.h + G.caption + 24;
   const [text, setText] = useState(() => mem.get<string>("text") ?? "");
-  const [layout, setLayout] = useState<Layout>(() => mem.get<Layout>("layout") ?? (locale === "ru" ? "ru" : "en"));
+  const [layout, setLayout] = useState<Layout>(() => mem.get<Layout>("layout") ?? (locale === "en" ? "en" : "ru"));
   const [q, setQ] = useState(() => normalizeQuery(text));
   const [ty, setTy] = useState(() => mem.get<number>("ty") ?? 0);
   const sugg = useVideoSuggestions(q);
