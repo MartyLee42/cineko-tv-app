@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/oswald.css"; /* not in the startup CSS */
 /* «Тема под фильм» — noir: Нуар: жёсткий контраст и тени жалюзи. Its own chunk (filmtheme/load.ts). */
 :root [data-film-theme="noir"] > .tv-fade img,
 :root .tv-loader[data-film-theme="noir"] img { -webkit-filter: grayscale(1) contrast(1.55) brightness(.82); filter: grayscale(1) contrast(1.55) brightness(.82); }

@@ -1,0 +1,24 @@
+/* «silent» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Немое кино»: a silent-film print: pure black and white (no sepia), white intertitle type in a
+   period serif (Old Standard TT, has Cyrillic), the body stays Onest for legibility; the accent is
+   white too, so lit buttons read as white intertitle cards. Photos turn grey (TV look / PWA). */
+html.design-silent {
+  --mt-bg: 10, 10, 10;
+  --mt-surface: 26, 26, 26;
+  --mt-surface-2: 44, 44, 44;
+  --mt-border: 120, 120, 120;
+  --mt-text: 244, 244, 244;
+  --mt-muted: 178, 178, 178;
+  --mt-accent: 240, 240, 240;
+  --mt-accent-strong: 255, 255, 255;
+  --mt-on-accent: 10, 10, 10;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "Old Standard TT", "Playfair Display", Georgia, serif;
+  --mt-font-label: "Old Standard TT", "Playfair Display", Georgia, serif;
+  --mt-radius-card: 10px;
+  --mt-radius-control: 6px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-silent h1, html.design-silent h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .02em; }

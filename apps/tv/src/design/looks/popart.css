@@ -1,3 +1,5 @@
+@import "@martytv/ui/themes/popart.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/rubik-mono-one.css";
 /* «popart»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
 /* ---------------------------------------------------------------- Поп-арт (projector skeleton)
    A comic page: process blue with Ben-Day dots, yellow and red, black ink. Cards and buttons get a

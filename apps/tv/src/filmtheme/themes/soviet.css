@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/oswald.css"; /* not in the startup CSS */
 /* «Тема под фильм» — soviet: Советское кино: плёнка киностудии — тёплый цвет, кремовые титры. Its own chunk (filmtheme/load.ts). */
 :root [data-film-theme="soviet"] > .tv-fade img,
 :root .tv-loader[data-film-theme="soviet"] img { -webkit-filter: sepia(.28) saturate(.82) contrast(1.06); filter: sepia(.28) saturate(.82) contrast(1.06); }

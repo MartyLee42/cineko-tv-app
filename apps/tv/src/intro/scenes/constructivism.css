@@ -1,3 +1,5 @@
+@import "@martytv/ui/fonts/oswald.css"; /* not in the startup CSS */
+@import "@martytv/ui/fonts/russo-one.css"; /* not in the startup CSS */
 /* ---- constructivism: cream paper; a red circle rolls in, the black bar draws on a diagonal, «КИНО», «СМОТРИ!» */
 @keyframes cvi-roll { from { transform: translateX(760px); } to { transform: translateX(0); } }
 @keyframes cvi-bar { from { transform: rotate(-14deg) scaleX(0); } to { transform: rotate(-14deg) scaleX(1); } }

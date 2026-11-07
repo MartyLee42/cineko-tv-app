@@ -1,0 +1,22 @@
+/* «matrix» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Матрица»: green phosphor on black; glowing mono display and labels. */
+html.design-matrix {
+  --mt-bg: 0, 6, 2;
+  --mt-surface: 4, 20, 10;
+  --mt-surface-2: 8, 34, 16;
+  --mt-border: 22, 84, 38;
+  --mt-text: 180, 255, 196;
+  --mt-muted: 84, 178, 106;
+  --mt-accent: 0, 255, 65;
+  --mt-accent-strong: 200, 255, 210;
+  --mt-on-accent: 0, 14, 4;
+  --mt-focus: 0, 255, 65;
+  --mt-font-display: "JetBrains Mono", ui-monospace, "Courier New", monospace;
+  --mt-font-label: "JetBrains Mono", ui-monospace, "Courier New", monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-matrix h1, html.design-matrix h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 0 10px rgba(0, 255, 65, .55); }

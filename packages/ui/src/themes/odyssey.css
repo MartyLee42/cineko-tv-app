@@ -1,0 +1,25 @@
+/* «odyssey» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Одиссея»: late-1960s space-age sci-fi (mood only): white spaceship corridors and symmetry; station-
+   white panels, dark ink, grey ribs, black-slab buttons; colour only in the focus ring, a single red
+   glowing light. Headings in wide, letter-spaced capitals (Unbounded Light, has Cyrillic); labels
+   in JetBrains Mono. Light tokens like «Тамагочи» (the theme switch stays Кинозал-only). */
+html.design-odyssey {
+  --mt-bg: 238, 241, 244;
+  --mt-surface: 255, 255, 255;
+  --mt-surface-2: 226, 231, 236;
+  --mt-border: 180, 188, 198;
+  --mt-text: 16, 19, 24;
+  --mt-muted: 74, 85, 99;
+  --mt-accent: 16, 19, 24;
+  --mt-accent-strong: 226, 30, 22;
+  --mt-on-accent: 255, 255, 255;
+  --mt-focus: 226, 30, 22;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 2px;
+  --mt-radius-control: 2px;
+  color-scheme: light;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-odyssey h1, html.design-odyssey h2 { font-family: var(--mt-font-display); font-weight: 300; text-transform: uppercase; letter-spacing: .14em; }

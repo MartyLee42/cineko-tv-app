@@ -1,3 +1,5 @@
+@import "@martytv/ui/themes/vague.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/caveat.css";
 /* ---------------------------------------------------------------- «Новая волна» (terminal skeleton)
    A French New Wave homage (mood only, no copied title cards): a black screen, section titles as big
    bold words on solid red / blue / white cards (Unbounded capitals), handwritten margin notes
