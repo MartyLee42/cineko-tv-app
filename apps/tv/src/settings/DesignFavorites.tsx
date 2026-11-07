@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { DESIGNS, useI18n, type DesignSetting } from "@martytv/ui";
-import { DesignTile, SkinBackground } from "../design/skins";
+import { SkinBackground } from "../design/skins";
+import { DesignTile } from "../design/previews";
 import { OptionRows, ROW_GAP, ROW_H, useOptionKeys, type Row } from "./OptionList";
 
 /** Toggles one design in the favourites (kept in picker order). */

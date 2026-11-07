@@ -298,6 +298,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/devices/demo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description «Демо TV» (`/demo_tv`): the TV app in a browser signed in to the PWA,
+         *     without pairing. Browser session only (cookie + `X-CSRF-Token`; API
+         *     tokens and TVs get 403). Returns a credential for the session's own
+         *     hidden demo device (created on first use, reused by every tab of the
+         *     session). The credential expires after 12 hours and stops working as
+         *     soon as the session ends; at most 5 live per device (older ones are
+         *     revoked). The demo device acts like a TV the user owns (their own
+         *     profiles only, never shared) but is left out of device lists, remote
+         *     control, the admin TV list, metrics, health samples (posts are
+         *     accepted with 204 and dropped) and realtime (its socket is refused).
+         */
+        post: operations["createDemoDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/devices/{id}": {
         parameters: {
             query?: never;
@@ -7496,6 +7524,37 @@ export interface operations {
                     "application/json": components["schemas"]["DeviceCredentialResponse"];
                 };
             };
+            403: components["responses"]["Error"];
+        };
+    };
+    createDemoDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A fresh demo credential (shown once). */
+            201: {
+                headers: {
+                    /** @description no-store */
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        device_id: string;
+                        /** @description Device credential (mtd_…), use as Bearer. */
+                        credential: string;
+                        /** Format: date-time */
+                        expires_at: string;
+                    };
+                };
+            };
+            401: components["responses"]["Error"];
             403: components["responses"]["Error"];
         };
     };

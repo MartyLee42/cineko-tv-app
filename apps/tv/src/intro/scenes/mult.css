@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/neucha.css"; /* not in the startup CSS */
 /* ---- mult: a paper set is laid out — hills slide up, fog drifts in, an oval title card appears */
 .mui-sky { background-image: radial-gradient(circle, rgba(96,64,40,.045) 0px, rgba(96,64,40,.045) 1px, rgba(96,64,40,0) 1.6px), linear-gradient(180deg, #f0dac1 0%, #f3e5cf 50%, #f3e9d6 100%); background-size: 6px 6px, 100% 100%; }
 @keyframes mui-rise { from { transform: translateY(120px); } to { transform: translateY(0); } }

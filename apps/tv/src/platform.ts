@@ -1,5 +1,6 @@
 // TV platform helpers: remote keys, persistent storage, exit behaviour.
 import { leaveThroughTrap } from "./remote/backTrap";
+import { DEMO } from "./demo";
 
 /** Back/Return key codes across TV platforms. */
 const BACK_KEYS = new Set([
@@ -103,12 +104,15 @@ export const storage = {
   },
 };
 
-const CREDENTIAL_KEY = "martytv.device_credential";
+// «Демо TV» keeps its short-lived credential apart from a paired TV's.
+const CREDENTIAL_KEY = DEMO ? "martytv.demo_credential" : "martytv.device_credential";
 const PROFILE_KEY = "martytv.profile_id";
 
 export const credentialStore = {
   get: () => storage.get(CREDENTIAL_KEY),
   set: (v: string) => storage.set(CREDENTIAL_KEY, v),
+  /** Drops only the credential (a demo one is replaced; the profile stays). */
+  forget: () => storage.remove(CREDENTIAL_KEY),
   clear: () => {
     storage.remove(CREDENTIAL_KEY);
     storage.remove(PROFILE_KEY);

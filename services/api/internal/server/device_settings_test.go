@@ -17,6 +17,66 @@ func firstProfile(t *testing.T, c *testutil.Client) string {
 	return items[0]["id"].(string)
 }
 
+// NEW_TV_DESIGN: a TV paired from now on shows «Каркас» for every profile
+// until a design is picked on / for it; TVs paired before keep the profile's.
+func TestNewTVDesign(t *testing.T) {
+	env := testutil.New(t)
+	alice, _ := env.NewUserClient("alice", "user")
+	bob, _ := env.NewUserClient("bob", "user")
+	alicePID, bobPID := firstProfile(t, alice), firstProfile(t, bob)
+	alice.Do("PUT", "/api/v1/profiles/"+alicePID+"/settings", map[string]any{"design": "deco"}).Expect(200)
+
+	// Paired with the default off (= a TV from before the feature / NEW_TV_DESIGN=).
+	_, oldCred := env.Pair(alice, "Old")
+	env.Server.Pairing.NewTVDesign = "wireframe"
+	newID, newCred := env.Pair(alice, "New")
+	oldTV, newTV := env.Client(), env.Client()
+	oldTV.Bearer, newTV.Bearer = oldCred, newCred
+	alice.Do("PUT", "/api/v1/devices/"+newID+"/permissions", map[string]string{"username": "bob", "permission": "use"}).Expect(200)
+
+	design := func(c *testutil.Client, pid string) any {
+		return c.Do("GET", "/api/v1/profiles/"+pid+"/settings", nil).Expect(200).JSON()["design"]
+	}
+	if d := design(oldTV, alicePID); d != "deco" {
+		t.Fatalf("old TV %v", d)
+	}
+	if d, d2 := design(newTV, alicePID), design(newTV, bobPID); d != "wireframe" || d2 != "wireframe" {
+		t.Fatalf("new TV %v / %v", d, d2)
+	}
+	// Browsers and the base are untouched.
+	if d := design(alice, alicePID); d != "deco" {
+		t.Fatalf("base %v", d)
+	}
+	// The phone sees it as the TV's own choice.
+	path := "/api/v1/devices/" + newID + "/settings"
+	v := alice.Do("GET", path+"?profile_id="+alicePID, nil).Expect(200).JSON()
+	if v["overrides"].(map[string]any)["design"] != "wireframe" || v["effective"].(map[string]any)["design"] != "wireframe" {
+		t.Fatalf("view %v", v)
+	}
+	if _, ok := v["device"].(map[string]any)["default_design"]; ok {
+		t.Fatalf("marker leaked into device options %v", v["device"])
+	}
+
+	// A pick on the TV wins (that profile only); the TV's own options keep the marker.
+	newTV.Do("PUT", "/api/v1/profiles/"+alicePID+"/settings", map[string]any{"design": "matrix"}).Expect(200)
+	newTV.Do("PATCH", "/api/v1/devices/me/settings", map[string]any{"device": map[string]any{"ui_sounds": true}, "reset_device": []string{"language"}}).Expect(200)
+	if d, d2 := design(newTV, alicePID), design(newTV, bobPID); d != "matrix" || d2 != "wireframe" {
+		t.Fatalf("after pick %v / %v", d, d2)
+	}
+	// «Как в профиле» from a phone: follows the profile, the default doesn't come back.
+	bob.Do("PATCH", path, map[string]any{"profile_id": bobPID, "reset": []string{"design"}}).Expect(200)
+	if d := design(newTV, bobPID); d != "kinozal" {
+		t.Fatalf("after reset %v", d)
+	}
+	alice.Do("PATCH", path, map[string]any{"profile_id": alicePID, "reset": []string{"design"}}).Expect(200)
+	if d := design(newTV, alicePID); d != "deco" {
+		t.Fatalf("after reset to profile %v", d)
+	}
+	if o := alice.Do("GET", path+"?profile_id="+alicePID, nil).Expect(200).JSON()["overrides"].(map[string]any); o["design"] != nil {
+		t.Fatalf("overrides after reset %v", o)
+	}
+}
+
 // Per-class layers: a phone's look doesn't reach the computer or the base;
 // taste settings stay per profile whatever the class.
 func TestSettingsClassLayers(t *testing.T) {

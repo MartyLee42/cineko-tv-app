@@ -1,3 +1,5 @@
+@import "@martytv/ui/themes/western.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/kelly-slab.css";
 /* «western»: this design's own rules (loaded with the design's chunk, design/looks).
    ---------------------------------------------------------------- Вестерн (kinozal skeleton)
    A spaghetti-western homage on a light, sun-bleached desert (tokens in theme.css). Posters are

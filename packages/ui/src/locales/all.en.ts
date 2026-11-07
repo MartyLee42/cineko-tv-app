@@ -36,7 +36,11 @@ import { sleepEn } from "./sleep.en";
 import { skipEn } from "./skip.en";
 import { pocketpetEn } from "./pocketpet.en";
 import { westernEn } from "./western.en";
+<<<<<<< HEAD
 import { errorsUserEn } from "./errorsuser.en";
+=======
+import { quickEn } from "./quick.en";
+>>>>>>> origin/main
 import { triviaEn } from "./trivia.en";
 import { surpriseEn } from "./surprise.en";
 import { smoothEn } from "./smooth.en";
@@ -50,7 +54,14 @@ import { loaders2En } from "./loaders2.en";
 import { filmthemeEn } from "./filmtheme.en";
 import { multtarkovskyEn } from "./multtarkovsky.en";
 import { andersonEn } from "./anderson.en";
+import { demoEn } from "./demo.en";
 
 
 
+<<<<<<< HEAD
 export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn, ...soundtrackEn, ...themesEn, ...smoothEn, ...chaptersEn, ...companionEn, ...devsettingsEn, ...loadersEn, ...loaders2En, ...filmthemeEn, ...multtarkovskyEn, ...andersonEn, ...westernEn, ...errorsUserEn };
+=======
+
+
+export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn, ...soundtrackEn, ...themesEn, ...smoothEn, ...chaptersEn, ...companionEn, ...devsettingsEn, ...loadersEn, ...loaders2En, ...filmthemeEn, ...multtarkovskyEn, ...andersonEn, ...westernEn, ...quickEn, ...demoEn };
+>>>>>>> origin/main

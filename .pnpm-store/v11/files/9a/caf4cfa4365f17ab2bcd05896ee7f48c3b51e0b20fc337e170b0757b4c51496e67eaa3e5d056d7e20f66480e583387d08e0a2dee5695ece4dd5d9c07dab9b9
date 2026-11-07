@@ -1,0 +1,11 @@
+import { type NextFocusResolver } from '../SpatialNavigation';
+export declare const createRootNode: ({ nextFocusResolver, measureChildrenLayout }?: {
+    nextFocusResolver?: NextFocusResolver;
+    measureChildrenLayout?: boolean;
+}) => void;
+export declare const createHorizontalLayout: () => void;
+export declare const createHorizontalLayoutWithResolver: ({ nextFocusResolver, measureChildrenLayout }: {
+    nextFocusResolver: NextFocusResolver;
+    measureChildrenLayout?: boolean;
+}) => void;
+export declare const createVerticalLayout: () => void;

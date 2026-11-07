@@ -1,3 +1,5 @@
+@import "@martytv/ui/themes/redroom.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/playfair-display.css";
 /* «redroom»: this design's own rules (loaded with the design's chunk, design/looks).
    ---------------------------------------------------------------- Красная комната (projector skeleton)
    A homage to a famous surreal TV series' red room. Near-black and curtain red with ivory;

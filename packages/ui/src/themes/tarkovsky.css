@@ -1,0 +1,22 @@
+/* «tarkovsky» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Созерцание» (a homage to Tarkovsky): dim and low-contrast ground (wet slate, moss), warm parchment
+   text (≈13:1, so it still reads), candle amber, a water green; Cormorant Garamond headings. */
+html.design-tarkovsky {
+  --mt-bg: 20, 22, 19;
+  --mt-surface: 33, 35, 31;
+  --mt-surface-2: 45, 47, 42;
+  --mt-border: 74, 76, 66;
+  --mt-text: 226, 220, 203;
+  --mt-muted: 158, 152, 134;
+  --mt-accent: 200, 164, 106;
+  --mt-accent-strong: 140, 168, 152;
+  --mt-on-accent: 22, 18, 10;
+  --mt-focus: 232, 216, 176;
+  --mt-font-display: "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  --mt-radius-card: 4px;
+  --mt-radius-control: 6px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-tarkovsky h1, html.design-tarkovsky h2 { font-family: var(--mt-font-display); font-weight: 600; letter-spacing: .01em; }

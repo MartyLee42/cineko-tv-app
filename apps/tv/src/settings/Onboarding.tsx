@@ -3,7 +3,8 @@ import type { Profile } from "@martytv/contracts";
 import { useI18n } from "@martytv/ui";
 import { OptionRows, useOptionKeys, type Row } from "./OptionList";
 import { LoaderPreview, useSettingRows } from "./rows";
-import { DesignPreviews, SkinBackground } from "../design/skins";
+import { SkinBackground } from "../design/skins";
+import { DesignPreviews } from "../design/previews";
 
 const STEPS = 4;
 

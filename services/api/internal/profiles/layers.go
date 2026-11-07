@@ -135,14 +135,46 @@ func (s *Store) rawBase(ctx context.Context, profileID string) ([]byte, error) {
 	return raw, nil
 }
 
+// IsDesign reports whether d is a known design id.
+func IsDesign(d string) bool { return slices.Contains(designs, d) }
+
+// DefaultDesignKey in devices.settings is the design a TV paired with
+// NEW_TV_DESIGN set shows for every profile whose TV layer has no `design`
+// key (pairing.Service.NewTVDesign). Picking a design there writes the
+// layer as usual (it wins); «Как в профиле» stores design: null, which
+// follows the profile and ends the default for that profile.
+const DefaultDesignKey = "default_design"
+
+// WithDeviceDefault puts the TV's default design into its raw layer when the
+// layer has no `design` key at all (a null one = follow the profile).
+func WithDeviceDefault(layer []byte, def string) []byte {
+	if def == "" || !IsDesign(def) {
+		return layer
+	}
+	m := rawMap(layer)
+	if _, ok := m["design"]; ok {
+		return layer
+	}
+	m["design"], _ = json.Marshal(def)
+	b, _ := json.Marshal(m)
+	return b
+}
+
 // RawLayer returns a layer's stored keys (nil for the base or nothing set).
+// A TV's layer includes its default design (WithDeviceDefault).
 func (s *Store) RawLayer(ctx context.Context, profileID string, l Layer) ([]byte, error) {
 	var raw []byte
 	var err error
 	switch {
 	case l.DeviceID != "":
-		err = s.q.QueryRow(ctx, `SELECT settings FROM profile_device_settings WHERE profile_id = $1 AND device_id = $2`,
-			profileID, l.DeviceID).Scan(&raw)
+		var def *string
+		err = s.q.QueryRow(ctx, `
+			SELECT pds.settings, d.settings->>'`+DefaultDesignKey+`'
+			FROM devices d LEFT JOIN profile_device_settings pds ON pds.device_id = d.id AND pds.profile_id = $1
+			WHERE d.id = $2`, profileID, l.DeviceID).Scan(&raw, &def)
+		if def != nil {
+			raw = WithDeviceDefault(raw, *def)
+		}
 	case l.Class != "":
 		err = s.q.QueryRow(ctx, `SELECT settings FROM profile_class_settings WHERE profile_id = $1 AND device_class = $2`,
 			profileID, l.Class).Scan(&raw)
@@ -197,6 +229,10 @@ func (s *Store) ResetLayer(ctx context.Context, profileID string, l Layer, keys 
 	if l.DeviceID != "" {
 		_, err = s.q.Exec(ctx, `UPDATE profile_device_settings SET settings = settings - $3::text[], updated_at = now()
 			WHERE profile_id = $1 AND device_id = $2`, profileID, l.DeviceID, keys)
+		if err == nil && slices.Contains(keys, "design") {
+			// An explicit «follow the profile»: outranks the TV's default design.
+			err = s.MergeLayer(ctx, profileID, l, []byte(`{"design":null}`))
+		}
 	} else {
 		_, err = s.q.Exec(ctx, `UPDATE profile_class_settings SET settings = settings - $3::text[], updated_at = now()
 			WHERE profile_id = $1 AND device_class = $2`, profileID, l.Class, keys)

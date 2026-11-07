@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/playfair-display.css"; /* not in the startup CSS */
 /* «Тема под фильм» — classic: Классический Голливуд: сепия, мягкая виньетка. Its own chunk (filmtheme/load.ts). */
 :root [data-film-theme="classic"] > .tv-fade img,
 :root .tv-loader[data-film-theme="classic"] img { -webkit-filter: sepia(.6) grayscale(.35) contrast(1.08); filter: sepia(.6) grayscale(.35) contrast(1.08); }

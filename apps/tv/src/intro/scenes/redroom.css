@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/playfair-display.css"; /* not in the startup CSS */
 /* ---- redroom: the curtains part on a red room and a zigzag floor; the name plays backwards, then rights itself */
 .rri-wall {
   background-color: #170607;
