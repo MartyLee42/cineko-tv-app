@@ -251,6 +251,11 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 .dt-matrix { background-image: repeating-linear-gradient(90deg, rgba(0,255,65,.0) 0px, rgba(0,255,65,.0) 7px, rgba(0,255,65,.35) 7px, rgba(0,255,65,.35) 9px, rgba(0,255,65,0) 9px, rgba(0,255,65,0) 16px), linear-gradient(180deg, rgba(0,6,2,0) 0%, rgba(0,6,2,.9) 100%) !important; background-size: 16px 22px, 100% 100% !important; }
 .dt-matrix .dt-title { box-shadow: 0 0 8px rgb(0,255,65); }
 .dt-matrix .dt-poster { border-radius: 0; }
+/* «Тамагочи»: a pink shell around a small LCD (light, ink-dark marks). */
+.dt-pocketpet { background: #c4d0aa !important; box-shadow: inset 0 0 0 6px #f3c6dc, inset 0 0 0 8px #c7a6d6; }
+.dt-pocketpet.dt-on { box-shadow: inset 0 0 0 6px #f3c6dc, inset 0 0 0 8px #c7a6d6, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
+.dt-pocketpet .dt-nav { left: 6px; top: 6px; width: calc(100% - 12px); background: rgba(24,32,18,.12) !important; }
+.dt-pocketpet .dt-poster { border-radius: 0; border-color: #182012 !important; background: #b5c399 !important; }
 
 /* Проектор-skeleton flat elements never scale on focus (any skin). The doubled
    class outweighs the skins' focus rules, which load later (design/looks/*.css). */

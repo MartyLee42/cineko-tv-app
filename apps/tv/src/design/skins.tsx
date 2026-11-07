@@ -71,6 +71,12 @@ export function SkinBackground({ dim = false }: { dim?: boolean }) {
   );
 }
 
+/** The skin's companion over the catalog (Тамагочи's pet), if it has one. */
+export function SkinCompanion({ onHome }: { onHome: boolean }) {
+  const Companion = useLook(useSkin())?.Companion;
+  return Companion ? <Companion onHome={onHome} /> : null;
+}
+
 // ================================================================ ornaments
 
 /** Headline size factor of the applied skin (1 on the original designs). */
