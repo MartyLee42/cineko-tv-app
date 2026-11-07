@@ -104,6 +104,16 @@ for attempt in 1 2 3; do
 done
 rm -f "$TMP/images.tar.gz"
 
+echo "==> system logs capped at 500 MB (journald)"
+put_small "$SRC/deployments/journald/martytv.conf" /tmp/martytv-journald.conf 644
+remote "mkdir -p /etc/systemd/journald.conf.d
+  if ! cmp -s /tmp/martytv-journald.conf /etc/systemd/journald.conf.d/martytv.conf; then
+    mv /tmp/martytv-journald.conf /etc/systemd/journald.conf.d/martytv.conf
+    systemctl restart systemd-journald
+    journalctl --vacuum-size=500M >/dev/null 2>&1
+  else rm -f /tmp/martytv-journald.conf; fi
+  journalctl --disk-usage"
+
 echo "==> host monitor (martytv-hostmon systemd service)"
 # Idempotent; only touches its own binary, unit and /run/martytv.
 put_big "$TMP/hostmon/martytv-hostmon" /usr/local/bin/martytv-hostmon.new 755
