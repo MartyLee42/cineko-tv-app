@@ -1,0 +1,20 @@
+/* «Стыковка» (Docking.tsx): space on every design. */
+.lx-space {
+  background-color: #04060b;
+  background-image:
+    radial-gradient(1.5px 1.5px at 120px 80px, #fff, rgba(255, 255, 255, 0)),
+    radial-gradient(1.5px 1.5px at 420px 260px, rgba(255, 255, 255, .8), rgba(255, 255, 255, 0)),
+    radial-gradient(2px 2px at 760px 140px, #fff, rgba(255, 255, 255, 0)),
+    radial-gradient(1.5px 1.5px at 1500px 90px, rgba(255, 255, 255, .7), rgba(255, 255, 255, 0)),
+    radial-gradient(2px 2px at 1720px 420px, #fff, rgba(255, 255, 255, 0)),
+    radial-gradient(1.5px 1.5px at 1300px 520px, rgba(255, 255, 255, .8), rgba(255, 255, 255, 0)),
+    radial-gradient(1.5px 1.5px at 260px 560px, rgba(255, 255, 255, .7), rgba(255, 255, 255, 0)),
+    radial-gradient(ellipse at 80% 110%, rgba(70, 110, 170, .35), rgba(0, 0, 0, 0) 55%);
+}
+.lx-root { color: #fff; }
+.lx-root .text-muted { color: rgba(220, 230, 255, .72); }
+@keyframes lx-spin { to { transform: rotate(360deg); } }
+.lx-ring { animation: lx-spin 16s linear infinite; }
+.lx-spin { animation: lx-spin 16s linear infinite; }
+.lx-glow { width: 560px; height: 560px; border-radius: 50%; box-shadow: 0 0 80px 20px rgba(140, 200, 255, .55), inset 0 0 90px 20px rgba(140, 200, 255, .35); opacity: 0; animation: lx-glow 2s ease-out both; }
+@keyframes lx-glow { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: .35; } }

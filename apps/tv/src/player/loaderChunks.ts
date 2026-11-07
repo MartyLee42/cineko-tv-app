@@ -6,7 +6,31 @@ import { upcomingSurprise, type DesignSetting, type LoaderAnimation } from "@mar
 import type { LoadingStyle } from "../profile/settings";
 import type { LoaderModel } from "./loaderParts";
 
-export type LoaderKind = "minimal" | "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "marty" | "matrix" | "poster" | "paws" | "aquarium" | "speed88" | "odyssey" | "balloons" | "catch";
+export type LoaderKind =
+  | "minimal"
+  | "popcorn"
+  | "fill_title"
+  | "poster_reveal"
+  | "film_reel"
+  | "marty"
+  | "matrix"
+  | "poster"
+  | "paws"
+  | "aquarium"
+  | "speed88"
+  | "odyssey"
+  | "balloons"
+  | "catch"
+  | "water_glass"
+  | "poster_dig"
+  | "chocolate_box"
+  | "coffee_cup"
+  | "honey_pot"
+  | "hyperjump"
+  | "ghost_meter"
+  | "target_scan"
+  | "docking"
+  | "claw_machine";
 
 type StyleProps = { m: LoaderModel; mood?: "loading" | "popcorn"; preview?: boolean };
 type StyleModule = { default: ComponentType<StyleProps> };
@@ -25,6 +49,16 @@ const imports: Record<Exclude<LoaderKind, "minimal">, () => Promise<StyleModule>
   odyssey: () => import("./loaders/Odyssey") as Promise<StyleModule>,
   balloons: () => import("./loaders/Balloons") as Promise<StyleModule>,
   catch: () => import("./loaders/Catch") as Promise<StyleModule>,
+  water_glass: () => import("./loaders/Glass") as Promise<StyleModule>,
+  poster_dig: () => import("./loaders/Dig") as Promise<StyleModule>,
+  chocolate_box: () => import("./loaders/Chocolates") as Promise<StyleModule>,
+  coffee_cup: () => import("./loaders/Coffee") as Promise<StyleModule>,
+  honey_pot: () => import("./loaders/Honey") as Promise<StyleModule>,
+  hyperjump: () => import("./loaders/Hyperjump") as Promise<StyleModule>,
+  ghost_meter: () => import("./loaders/GhostMeter") as Promise<StyleModule>,
+  target_scan: () => import("./loaders/Scanner") as Promise<StyleModule>,
+  docking: () => import("./loaders/Docking") as Promise<StyleModule>,
+  claw_machine: () => import("./loaders/Claw") as Promise<StyleModule>,
 };
 
 /** Which loader draws: «Конструктивизм» / «Матрица» have their own whatever the style (not in Settings' previews). */
@@ -76,4 +110,14 @@ export const LOADERS = {
   odyssey: lazy(() => preloadLoader("odyssey") as Promise<StyleModule>),
   balloons: lazy(() => preloadLoader("balloons") as Promise<StyleModule>),
   catch: lazy(() => preloadLoader("catch") as Promise<StyleModule>),
+  water_glass: lazy(() => preloadLoader("water_glass") as Promise<StyleModule>),
+  poster_dig: lazy(() => preloadLoader("poster_dig") as Promise<StyleModule>),
+  chocolate_box: lazy(() => preloadLoader("chocolate_box") as Promise<StyleModule>),
+  coffee_cup: lazy(() => preloadLoader("coffee_cup") as Promise<StyleModule>),
+  honey_pot: lazy(() => preloadLoader("honey_pot") as Promise<StyleModule>),
+  hyperjump: lazy(() => preloadLoader("hyperjump") as Promise<StyleModule>),
+  ghost_meter: lazy(() => preloadLoader("ghost_meter") as Promise<StyleModule>),
+  target_scan: lazy(() => preloadLoader("target_scan") as Promise<StyleModule>),
+  docking: lazy(() => preloadLoader("docking") as Promise<StyleModule>),
+  claw_machine: lazy(() => preloadLoader("claw_machine") as Promise<StyleModule>),
 } satisfies Record<Exclude<LoaderKind, "minimal">, ComponentType<StyleProps>>;

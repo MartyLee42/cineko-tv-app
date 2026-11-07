@@ -19,6 +19,7 @@ import { formatClock } from "../../player/format";
 import { useReleasesLazy } from "../../player/data";
 import { engineProbe, nextRelease } from "../../player/codecs";
 import { useSettings } from "../../profile/settings";
+import { useFilmTheme } from "../../filmtheme/load";
 import type { PlayHow } from "./CatalogShell";
 import { FRAMES, useDesign, type Design } from "../../design/context";
 import { useRecoInbox, useRecoSeen, useSettled, useToggleWatchlist } from "../../design/data";
@@ -101,6 +102,8 @@ export function DetailsScreen({
   const cfg = useCatalogConfig();
   const q = useMedia(id);
   const d = q.data;
+  // «Тема под фильм»: on once the theme's chunk is here (never delays the page).
+  const filmTheme = useFilmTheme(d);
   const settings = useSettings();
   const progressQ = useMediaProgress(id);
   const mp = progressQ.data ?? null;
@@ -470,7 +473,7 @@ export function DetailsScreen({
   let n = 2;
 
   return (
-    <div data-media-id={id} data-design={design} className="relative h-full w-full overflow-hidden">
+    <div data-media-id={id} data-design={design} data-film-theme={filmTheme ?? undefined} className="relative h-full w-full overflow-hidden">
       <Back item={base} cfg={cfg.data} dim={ty > 0} />
 
       <FocusLine focusKey="d-sections" keys={keys} className="d-track tv-track absolute left-0 right-0 top-0" style={{ transform: `translate3d(0,${-ty}px,0)` }}>

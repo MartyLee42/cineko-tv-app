@@ -41,6 +41,7 @@ import { ServerDownloadIcon } from "../downloads/ui";
 import { VideoQualityRow } from "../video/VideoSettings";
 import { LOADING_STYLES, supportsLight, THEMES, type LoadingStyle, type Settings } from "../watch/settings";
 import { ArtOf, isArtStyle, type ArtStyleId } from "../player/art";
+import { HomagePreview, homageKeys } from "./HomagePreview";
 import { SeasonalSetting } from "../seasons/SeasonalSetting";
 import { ThisDeviceCard } from "../devprefs/ui";
 import { deviceClass, useDeviceClass } from "../devsettings/deviceClass";
@@ -337,6 +338,17 @@ function ProfileSettingsCard() {
                 onChange={(v) => set({ show_family: v })}
               />
             </div>
+          </div>
+
+          {/* «Тема под фильм»: Details takes the film's look (off by default). */}
+          <div className="divide-y divide-border rounded-xl border border-border">
+            <Toggle
+              testId="setting-film-theme"
+              label={t("filmtheme.setting")}
+              hint={t("filmtheme.setting_hint")}
+              on={s.film_theme ?? false}
+              onChange={(v) => set({ film_theme: v })}
+            />
           </div>
 
           {/* «Подборки»: the daily curated-list row on Home (on by default). */}
@@ -685,12 +697,13 @@ export function LoadingOption({ value, on, onPick }: { value: LoadingStyle; on: 
       aria-checked={on}
       data-value={value}
       onClick={onPick}
+      title={homageKeys(value) ? t(homageKeys(value)!.hint) : undefined}
       className={`overflow-hidden rounded-xl border text-left transition ${on ? "border-accent ring-1 ring-accent" : "border-border hover:border-muted"}`}
     >
       <LoadingPreview style={value} />
       <span className="flex items-center gap-1.5 px-2.5 py-2 text-sm font-semibold">
         {on && <CheckIcon className="text-accent" />}
-        {t(`settings.loading.${value}` as MessageKey)}
+        {t(homageKeys(value)?.name ?? (`settings.loading.${value}` as MessageKey))}
       </span>
     </button>
   );
@@ -720,6 +733,7 @@ export function LoadingPreview({ style }: { style: LoadingStyle }) {
           </svg>
         </span>
       )}
+      <HomagePreview style={style} />
       {(style === "marty" || style === "marty_popcorn") && (
         <span className="absolute inset-0 flex flex-col items-center justify-center gap-1">
           <Mascot size={56} mood={style === "marty" ? "loading" : "popcorn"} animated hat={null} />

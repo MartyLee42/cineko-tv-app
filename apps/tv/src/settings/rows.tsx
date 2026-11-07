@@ -34,6 +34,16 @@ const LOADING_LABEL = {
   catch: "settings.loading.catch",
   surprise: "settings.loading.surprise",
   match: "settings.loading.match",
+  water_glass: "loaders2.water_glass",
+  poster_dig: "loaders2.poster_dig",
+  chocolate_box: "loaders2.chocolate_box",
+  coffee_cup: "loaders2.coffee_cup",
+  honey_pot: "loaders2.honey_pot",
+  hyperjump: "loaders2.hyperjump",
+  ghost_meter: "loaders2.ghost_meter",
+  target_scan: "loaders2.target_scan",
+  docking: "loaders2.docking",
+  claw_machine: "loaders2.claw_machine",
 } as const;
 
 /** The focused style's one-line explanation (styles that need one). */
@@ -47,6 +57,16 @@ const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
   catch: "settings.loading.catch_hint",
   surprise: "settings.loading.surprise_hint",
   match: "settings.loading.match_hint",
+  water_glass: "loaders2.water_glass_hint",
+  poster_dig: "loaders2.poster_dig_hint",
+  chocolate_box: "loaders2.chocolate_box_hint",
+  coffee_cup: "loaders2.coffee_cup_hint",
+  honey_pot: "loaders2.honey_pot_hint",
+  hyperjump: "loaders2.hyperjump_hint",
+  ghost_meter: "loaders2.ghost_meter_hint",
+  target_scan: "loaders2.target_scan_hint",
+  docking: "loaders2.docking_hint",
+  claw_machine: "loaders2.claw_machine_hint",
 };
 
 export function useSettingRows() {
@@ -70,7 +90,7 @@ export function useSettingRows() {
     { value: true, label: t("tv.settings.on") },
     { value: false, label: t("tv.settings.off") },
   ];
-  const bool = (key: "hide_anime" | "hide_watched" | "autoplay_next_episode" | "autoplay_countdown" | "spoiler_free_episodes" | "video_hide_shorts" | "video_autoplay", label: string, hint?: string): Row => ({
+  const bool = (key: "hide_anime" | "hide_watched" | "autoplay_next_episode" | "autoplay_countdown" | "spoiler_free_episodes" | "video_hide_shorts" | "video_autoplay" | "film_theme", label: string, hint?: string): Row => ({
     kind: "choice",
     key,
     label,
@@ -181,6 +201,7 @@ export function useSettingRows() {
       value: settings.loading_style,
       onChange: (v) => set({ loading_style: v as LoadingStyle }),
     } as Row,
+    filmTheme: bool("film_theme", t("filmtheme.setting"), t("filmtheme.setting_hint")),
     hideAnime: bool("hide_anime", t("settings.hide_anime"), t("settings.hide_anime_hint")),
     hideWatched: bool("hide_watched", t("settings.hide_watched"), t("settings.hide_watched_hint")),
     autoplay: bool("autoplay_next_episode", t("settings.autoplay_next")),

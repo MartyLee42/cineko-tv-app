@@ -1,0 +1,30 @@
+/* «Горшочек мёда» (Honey.tsx). */
+.lh-meadow { background: linear-gradient(180deg, #8fc6e8 0%, #c6e3ef 62%, #7fb35a 62%, #5d9440 100%); }
+.lh-flight { width: 0; height: 0; }
+.lh-bee {
+  position: absolute; left: -26px; top: -18px; width: 52px; height: 36px; border-radius: 50%;
+  background: repeating-linear-gradient(90deg, #ffcc1a 0px, #ffcc1a 10px, #1d1a14 10px, #1d1a14 17px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .3);
+}
+.lh-wing { position: absolute; top: -16px; width: 22px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, .8); border: 2px solid rgba(60, 80, 100, .35); }
+.lh-wing-a { left: 8px; }
+.lh-wing-b { left: 22px; }
+@keyframes lh-flap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.4); } }
+.lh-wing { transform-origin: 50% 100%; animation: lh-flap .18s linear infinite; }
+/* Four loops from the sides to the pot's mouth (x 0 = the pot's middle, y 0 = above it) and back. */
+@keyframes lh-path-0 { 0% { transform: translate3d(-760px, 40px, 0); } 45% { transform: translate3d(-40px, 10px, 0); } 55% { transform: translate3d(-30px, 30px, 0); } 100% { transform: translate3d(-760px, 120px, 0); } }
+@keyframes lh-path-1 { 0% { transform: translate3d(760px, -40px, 0); } 45% { transform: translate3d(50px, 0, 0); } 55% { transform: translate3d(40px, 24px, 0); } 100% { transform: translate3d(760px, 60px, 0); } }
+@keyframes lh-path-2 { 0% { transform: translate3d(-520px, -140px, 0); } 45% { transform: translate3d(10px, -20px, 0); } 55% { transform: translate3d(0, 10px, 0); } 100% { transform: translate3d(-620px, -60px, 0); } }
+@keyframes lh-path-3 { 0% { transform: translate3d(560px, 200px, 0); } 45% { transform: translate3d(-10px, 0, 0); } 55% { transform: translate3d(10px, 20px, 0); } 100% { transform: translate3d(600px, -120px, 0); } }
+.lh-path-0 { animation: lh-path-0 6s ease-in-out infinite; }
+.lh-path-1 { animation: lh-path-1 6s ease-in-out infinite; }
+.lh-path-2 { animation: lh-path-2 6s ease-in-out infinite; }
+.lh-path-3 { animation: lh-path-3 6s ease-in-out infinite; }
+/* Calm: the bees sit around the pot instead of flying. */
+.hg-root[data-calm] .lh-path-0 { transform: translate3d(-260px, 60px, 0); }
+.hg-root[data-calm] .lh-path-1 { transform: translate3d(260px, 20px, 0); }
+.hg-root[data-calm] .lh-path-2 { transform: translate3d(-200px, -60px, 0); }
+.hg-root[data-calm] .lh-path-3 { transform: translate3d(220px, -70px, 0); }
+/* The wrong sort of bees: they hover and buzz in place. */
+@keyframes lh-buzz { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(6px, -6px, 0); } }
+.lh-flight.is-wrong .lh-bee { animation: lh-buzz .25s linear infinite; }

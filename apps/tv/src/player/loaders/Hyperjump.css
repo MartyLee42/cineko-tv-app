@@ -1,0 +1,12 @@
+/* «Гиперпрыжок» (Hyperjump.tsx): always deep space, whatever the design. */
+.lj-space { background: radial-gradient(ellipse at 50% 45%, #10182c 0%, #05070d 70%); }
+.lj-root { color: #fff; }
+.lj-root .text-muted { color: rgba(220, 230, 255, .72); }
+/* Every star sits at the screen's centre; its transform turns and moves it out. */
+.lj-star { left: 960px; top: 400px; border-radius: 2px; background: #fff; transform-origin: 0 50%; transition: transform 1100ms cubic-bezier(.7, 0, .25, 1); }
+/* After the jump the lines fade, and the flash, so the text reads again. */
+.lj-star.is-gone { opacity: 0 !important; transition: transform 1100ms cubic-bezier(.7, 0, .25, 1), opacity 500ms ease 900ms; }
+@keyframes lj-drift { from { transform: scale(1); } to { transform: scale(1.14); } }
+.lj-drift { transform-origin: 960px 400px; animation: lj-drift 18s ease-in-out infinite alternate; }
+@keyframes lj-flash { 0% { opacity: 0; } 55% { opacity: 0; } 72% { opacity: .8; } 100% { opacity: 0; } }
+.lj-flash { background: #eaf2ff; opacity: 0; animation: lj-flash 1.5s ease-out both; }
