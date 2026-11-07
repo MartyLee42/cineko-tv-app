@@ -2,6 +2,9 @@
 #
 # SITE_ADDRESS: a domain (e.g. tv.example.com) gets automatic HTTPS from
 # Let's Encrypt; ":80" serves plain HTTP on the LAN.
+# MUSIC_SITE_ADDRESS: Cineko Music on its own host (MUSIC_DOMAIN in .env,
+# e.g. music.example.com, automatic HTTPS too). Unset = a placeholder that
+# never matches a real request; /music/ on the main host works either way.
 {
 	admin off
 	servers {
@@ -13,7 +16,8 @@
 	}
 }
 
-{$SITE_ADDRESS::80} {
+# Compression and headers shared by both sites.
+(common) {
 	# Never compress the video stream proxy (it would break Range requests)
 	# nor the speed test (random bytes; it must time the raw link).
 	@compressible not path /api/v1/stream/* /api/v1/vstream/* /api/v1/speedtest /music/api/play/* /music/api/stream/* /music/api/yt/*
@@ -24,7 +28,10 @@
 		Referrer-Policy strict-origin-when-cross-origin
 		-Server
 	}
+}
 
+# The Cineko API (both sites: Music signs in and reads settings through it).
+(api) {
 	# Video stream proxy: flush immediately, no buffering, no timeouts
 	# (a film can stream for hours; Range requests pass through).
 	# /api/v1/vstream: YouTube videos («Видео», byte-range fMP4).
@@ -46,16 +53,25 @@
 			header_up X-Forwarded-For {client_ip}
 		}
 	}
+}
 
-	# Cineko Music (services/music): its own app, API and audio streams.
-	# Audio is flushed immediately and never buffered (Range requests pass
-	# through; a track or a transcode can stream for a long time).
+# Cineko Music (services/music): its own app, API and audio streams.
+# Audio is flushed immediately and never buffered (Range requests pass
+# through; a track or a transcode can stream for a long time).
+(music) {
+	reverse_proxy music:8080 {
+		header_up X-Forwarded-For {client_ip}
+		flush_interval -1
+	}
+}
+
+{$SITE_ADDRESS::80} {
+	import common
+	import api
+
 	@music path /music /music/*
 	handle @music {
-		reverse_proxy music:8080 {
-			header_up X-Forwarded-For {client_ip}
-			flush_interval -1
-		}
+		import music
 	}
 
 	# «Демо TV»: the TV app in a browser signed in to the PWA, without
@@ -86,5 +102,23 @@
 		header @sw Cache-Control "no-cache"
 		try_files {path} /index.html
 		file_server
+	}
+}
+
+# Cineko Music as its own app (an installable PWA with scope "/"): the music
+# service serves the app built for "/" at the root and its API at
+# /music/api; /api/* is the Cineko API (sign-in, settings), same-origin.
+{$MUSIC_SITE_ADDRESS:http://music.invalid} {
+	import common
+	import api
+
+	# The music service's metrics are for the internal network only.
+	@metrics path /metrics /metrics/*
+	handle @metrics {
+		respond 404
+	}
+
+	handle {
+		import music
 	}
 }

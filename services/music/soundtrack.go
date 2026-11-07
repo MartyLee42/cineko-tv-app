@@ -477,9 +477,7 @@ func (a *App) fetchMedia(ctx context.Context, r *http.Request, id, lang string) 
 	if err != nil {
 		return nil, err
 	}
-	if c, err := r.Cookie(sessionCookie); err == nil && c.Value != "" {
-		req.AddCookie(&http.Cookie{Name: sessionCookie, Value: c.Value})
-	}
+	forwardSession(req, r)
 	resp, err := (&http.Client{Timeout: 15 * time.Second, Transport: a.auth.Transport}).Do(req)
 	if err != nil {
 		return nil, errStatus(503, "auth_unavailable", "Cineko недоступен")

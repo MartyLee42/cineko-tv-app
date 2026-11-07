@@ -21,6 +21,7 @@ ADDRESS=${CINEKO_ADDRESS:-}          # domain or IP (or empty → ask)
 LAN=${CINEKO_LAN:-0}
 HTTP_PORT_OPT=${CINEKO_HTTP_PORT:-}
 HTTPS_PORT_OPT=${CINEKO_HTTPS_PORT:-}
+MUSIC_DOMAIN_OPT=${CINEKO_MUSIC_DOMAIN:-}   # Cineko Music's own host; "off" = /music/ only
 TMDB_OPT=${CINEKO_TMDB:-}
 DEEPSEEK_OPT=${CINEKO_DEEPSEEK_KEY:-}
 PROXY_OPT=${CINEKO_PROXY:-}
@@ -45,6 +46,9 @@ Usage: ./install.sh [options]
   --lan [IP]             plain HTTP on the local network (default IP: detected)
   --http-port N          host port for HTTP  (default 80)
   --https-port N         host port for HTTPS (default 443)
+  --music-domain NAME    also serve Cineko Music as its own app at NAME (e.g.
+                         music.example.com; DNS → this server). Installs as a
+                         separate PWA; "off" = only /music/ (the default)
   --tmdb TOKEN           TMDB v4 read access token or v3 API key (catalog)
   --deepseek-key KEY     DeepSeek API key (optional AI picks)
   --proxy URL            outbound proxy for TMDB / YouTube / music where they
@@ -85,6 +89,8 @@ while [ $# -gt 0 ]; do
     --lan=*) LAN=1; ADDRESS=${1#*=} ;;
     --http-port) HTTP_PORT_OPT=${2:?}; shift ;;
     --https-port) HTTPS_PORT_OPT=${2:?}; shift ;;
+    --music-domain) MUSIC_DOMAIN_OPT=${2:?--music-domain needs a value}; shift ;;
+    --music-domain=*) MUSIC_DOMAIN_OPT=${1#*=} ;;
     --tmdb) TMDB_OPT=${2:?}; shift ;;
     --deepseek-key) DEEPSEEK_OPT=${2:?}; shift ;;
     --proxy) PROXY_OPT=${2:?}; shift ;;
@@ -259,6 +265,24 @@ else
 fi
 [ -n "$HTTP_PORT_OPT" ] && env_set HTTP_PORT "$HTTP_PORT_OPT"
 [ -n "$HTTPS_PORT_OPT" ] && env_set HTTPS_PORT "$HTTPS_PORT_OPT"
+
+# Cineko Music on its own host (optional; the API derives the shared cookie
+# domain and allows the origin, Caddy serves the site).
+if [ "$MUSIC_DOMAIN_OPT" = off ]; then
+  env_set MUSIC_DOMAIN ""
+  ok "Cineko Music: /music/ only"
+elif [ -n "$MUSIC_DOMAIN_OPT" ]; then
+  md=${MUSIC_DOMAIN_OPT#http://}; md=${md#https://}; md=${md%%/*}
+  [ -n "$md" ] || die "--music-domain: no host name"
+  if [ "$(env_get SITE_ADDRESS)" = ":80" ]; then
+    # LAN mode: plain HTTP there too.
+    env_set MUSIC_DOMAIN "http://$md"
+    ok "Cineko Music: http://$md/ (plain HTTP, like the main site)"
+  else
+    env_set MUSIC_DOMAIN "$md"
+    ok "Cineko Music: https://$md/ (its DNS must point here too)"
+  fi
+fi
 
 # Secrets (generated once, never replaced).
 env_default APP_SESSION_SECRET "$(rand 64)"

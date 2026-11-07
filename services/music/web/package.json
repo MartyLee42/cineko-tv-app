@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p . && vite build",
+    "build": "tsc -p . && vite build && vite build --base / --outDir dist-root",
     "typecheck": "tsc -p ."
   },
   "dependencies": {

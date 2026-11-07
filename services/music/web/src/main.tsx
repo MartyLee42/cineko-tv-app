@@ -11,11 +11,15 @@ import { initDesign } from "./themes";
 
 initDesign();
 
-// Offline play and the cached app shell (scope /music/ only).
+// The app is built twice: for /music/ on the Cineko host and for / on
+// Music's own host (MUSIC_DOMAIN). The API stays at /music/api on both.
+const BASE = import.meta.env.BASE_URL;
+
+// Offline play and the cached app shell (scope = the app's base only).
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register("/music/sw.js", { scope: "/music/" })
+      .register(`${BASE}sw.js`, { scope: BASE })
       .then(() => navigator.serviceWorker.ready)
       .then((reg) => {
         // Keep the offline copy of the app current after every deploy.
@@ -37,7 +41,7 @@ const qc = new QueryClient({
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={qc}>
-      <BrowserRouter basename="/music">
+      <BrowserRouter basename={BASE.replace(/\/$/, "") || "/"}>
         <App />
       </BrowserRouter>
     </QueryClientProvider>

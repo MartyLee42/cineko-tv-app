@@ -125,7 +125,7 @@ function Sidebar({ me }: { me: Me }) {
   return (
     <nav className="sidebar">
       <NavLink to="/" className="logo">
-        <img src="/music/icon.svg" alt="" />
+        <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" />
         <span>Cineko Music</span>
       </NavLink>
       <div className="nav-group">
@@ -197,18 +197,23 @@ function Sidebar({ me }: { me: Me }) {
   );
 }
 
+// The Cineko site: "/" next to /music/, the main host from Music's own host.
+function cinekoHome(me: Me): string {
+  return import.meta.env.BASE_URL === "/" ? `${me.cinekoUrl || ""}/` : "/";
+}
+
 function UserBox({ me }: { me: Me }) {
   const qc = useQueryClient();
   return (
     <div className="user-box">
-      <a href="/" className="muted small back-tv" title="Вернуться в Cineko">
+      <a href={cinekoHome(me)} className="muted small back-tv" title="Вернуться в Cineko">
         <BackIcon size={14} /> Cineko
       </a>
       <button
         className="user-btn"
         onClick={(e) =>
           openMenu(e, [
-            { label: "Вернуться в Cineko", onClick: () => location.assign("/") },
+            { label: "Вернуться в Cineko", onClick: () => location.assign(cinekoHome(me)) },
             { label: "Оформление", onClick: openDesignPicker },
             { label: "Установить приложение на телефон", onClick: openInstallGuide },
             {
@@ -242,7 +247,7 @@ function TopBar({ me }: { me: Me }) {
           <BackIcon size={18} />
         </button>
       ) : (
-        <a href="/" className="tv-pill" title="Вернуться в Cineko">
+        <a href={cinekoHome(me)} className="tv-pill" title="Вернуться в Cineko">
           <BackIcon size={14} /> Cineko
         </a>
       )}
@@ -251,7 +256,7 @@ function TopBar({ me }: { me: Me }) {
         title={me.user.displayName}
         onClick={(e) =>
           openMenu(e, [
-            { label: "Вернуться в Cineko", onClick: () => location.assign("/") },
+            { label: "Вернуться в Cineko", onClick: () => location.assign(cinekoHome(me)) },
             { label: "Оформление", onClick: openDesignPicker },
             { label: "Установить приложение", onClick: openInstallGuide },
             {
@@ -314,7 +319,7 @@ function LoginPage() {
   };
   return (
     <div className="center-screen login">
-      <img src="/music/icon.svg" alt="" className="login-logo" />
+      <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" className="login-logo" />
       <h1>Cineko Music</h1>
       <p className="muted">Войдите с аккаунтом Cineko</p>
       <form onSubmit={submit} className="form">

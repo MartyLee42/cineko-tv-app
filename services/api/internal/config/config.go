@@ -27,8 +27,14 @@ type Config struct {
 	// requests and open WebSockets. Always includes PublicBaseURL's origin.
 	AllowedOrigins []string
 	CookieSecure   bool
-	SessionSecret  []byte
-	LogLevel       string
+	// MusicDomain is Cineko Music's own host (MUSIC_DOMAIN, e.g.
+	// music.example.com; empty = only /music/ on the main host).
+	MusicDomain string
+	// CookieDomain is the session cookie's Domain attribute, derived from
+	// PUBLIC_BASE_URL + MUSIC_DOMAIN or set by COOKIE_DOMAIN; empty = host-only.
+	CookieDomain  string
+	SessionSecret []byte
+	LogLevel      string
 	// TrustedProxies are IPs/CIDRs whose X-Forwarded-For header is trusted.
 	TrustedProxies []string
 
@@ -351,6 +357,8 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 	for _, o := range splitList(get("ALLOWED_ORIGINS", "")) {
 		c.AllowedOrigins = append(c.AllowedOrigins, strings.TrimRight(o, "/"))
 	}
+
+	c.loadMusicHost(getenv, &errs)
 
 	c.CookieSecure = c.PublicBaseURL != nil && c.PublicBaseURL.Scheme == "https"
 	if v := get("COOKIE_SECURE", ""); v != "" {

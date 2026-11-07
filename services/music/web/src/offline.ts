@@ -3,7 +3,7 @@ import { dzId, img, sized, type Track } from "./api";
 import { toast } from "./toast";
 
 // Tracks saved on this device for offline play. Audio lives in Cache Storage
-// under /music/offline/<id> (served with Range support by public/sw.js);
+// under <base>offline/<id> (served with Range support by public/sw.js);
 // the track list is in localStorage.
 
 const AUDIO_CACHE = "mm-audio-v1";
@@ -48,7 +48,7 @@ function saveMeta() {
 export const offlineSupported = typeof caches !== "undefined" && "serviceWorker" in navigator;
 
 export function offlineUrl(id: string) {
-  return `/music/offline/${encodeURIComponent(id)}`;
+  return `${import.meta.env.BASE_URL}offline/${encodeURIComponent(id)}`;
 }
 
 export function isDownloaded(id: string) {
