@@ -3,10 +3,8 @@
 # the transcoder and music tests, and the TypeScript typecheck + unit tests.
 name: ci
 
+# Run by hand only (Actions → this workflow → «Run workflow», or `gh workflow run`).
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 permissions:
