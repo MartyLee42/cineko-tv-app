@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-spatial-navigation";
 import type { PlaybackSource, Release } from "@martytv/contracts";
 import { chapterIndexAt, chapterTicks, fileChapters, imageUrl, nextChapterStart, prevChapterStart, releaseBitrate, skipMode, type Chapter } from "@martytv/media-types";
-import { CvIcon, loadStatsLines, useAppliedDesign, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
+import { CvIcon, loaderPick, loadStatsLines, useAppliedDesign, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
 import { FINALE_MS, hasFinale, loaderKind } from "./loaderChunks";
 import { loaderKey } from "./loaderKeys";
 import { FocusButton, FocusLine } from "../focus";
@@ -296,10 +296,12 @@ function PreparingOverlay({ flow, done = false }: { flow: Extract<Flow, { phase:
   // Tell phones following this load (device state) what the screen shows.
   const loadKey = player.loadKey();
   useEffect(() => player.reportLoad(loadKey, p, torrent), [loadKey, p, torrent]);
-  if (done && !hasFinale(loaderKind(settings.loading_style, applied ?? "kinozal"))) return null;
+  // «Сюрприз»: one pick per load attempt (the same key keeps it through remounts and the finale).
+  const style = loaderPick.resolve(settings.loading_style, loadKey);
+  if (done && !hasFinale(loaderKind(style, applied ?? "kinozal"))) return null;
   return (
     <Loader
-      style={settings.loading_style}
+      style={style}
       m={{
         done,
         p,

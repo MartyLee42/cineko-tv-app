@@ -698,6 +698,13 @@ export function LoadingPreview({ style }: { style: LoadingStyle }) {
     <span aria-hidden className={`relative block aspect-video overflow-hidden ${backdrop}`}>
       {style === "popcorn" && <PopcornPreview />}
       {isArtStyle(style) && <ArtPreview style={style} />}
+      {style === "surprise" && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="absolute h-[62%] w-[26%] -translate-x-[45%] -rotate-12 rounded-md border-2 border-accent/40 bg-white/5" />
+          <span className="absolute h-[62%] w-[26%] translate-x-[45%] rotate-12 rounded-md border-2 border-accent/40 bg-white/5" />
+          <span className="relative text-5xl font-black text-accent">?</span>
+        </span>
+      )}
       {(style === "marty" || style === "marty_popcorn") && (
         <span className="absolute inset-0 flex flex-col items-center justify-center gap-1">
           <Mascot size={56} mood={style === "marty" ? "loading" : "popcorn"} animated hat={null} />

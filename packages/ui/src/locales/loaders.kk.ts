@@ -13,4 +13,6 @@ export const loadersKk = {
   "settings.loading.catch": "Ұста!",
   "settings.loading.catch_hint": "Жүктеу кезіндегі шағын ойын: Cineko фильм бөліктерін себетпен ұстайды. Пульттің бағыт түймелері себетті жылжытады, үлкен сан — қаншасы жүктелгені. Фильм дайын болғанда өзі басталады.",
   "loaders.catch.caught": "Ұсталды: {n}",
+  "settings.loading.surprise": "Тосын сый",
+  "settings.loading.surprise_hint": "Әр жолы кездейсоқ басқа жүктеу анимациясы (бірдейі қатарынан екі рет болмайды).",
 };
