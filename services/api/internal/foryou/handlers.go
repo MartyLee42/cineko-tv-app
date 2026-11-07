@@ -486,7 +486,7 @@ func (s *Service) hRuns(c fiber.Ctx) error {
 		"items": runs,
 		"ai": fiber.Map{"enabled": s.ai != nil, "model": s.cfg.DeepSeekModel, "tokens_today": used,
 			"daily_budget": s.cfg.AIDailyTokens, "run_budget": s.cfg.AIRunTokens, "balance": s.aiBalance(c.Context()),
-			"temperature": s.aiTemperature(c.Context()), "facts_ai": s.factsAI(c.Context())},
+			"temperature": s.aiTemperature(c.Context()), "facts_ai": s.factsAI(c.Context()), "companion_ai": s.companionAI(c.Context())},
 		"daily_at":    s.cfg.DailyAt(),
 		"next_run_at": next,
 	})
@@ -497,41 +497,32 @@ func (s *Service) hRuns(c fiber.Ctx) error {
 // aiSettingsView is GET /foryou/ai-settings (ForYouAISettings): what clients
 // and Cineko Music need to apply a viewer's creativity.
 func (s *Service) aiSettingsView(ctx context.Context) fiber.Map {
-	return fiber.Map{"enabled": s.ai != nil, "temperature": s.aiTemperature(ctx), "facts_ai": s.factsAI(ctx), "creativity": appsettings.Creativity,
-		"min": appsettings.TemperatureMin, "max": appsettings.TemperatureMax}
+	return fiber.Map{"enabled": s.ai != nil, "temperature": s.aiTemperature(ctx), "facts_ai": s.factsAI(ctx), "companion_ai": s.companionAI(ctx),
+		"creativity": appsettings.Creativity, "min": appsettings.TemperatureMin, "max": appsettings.TemperatureMax}
 }
 
 func (s *Service) hAISettings(c fiber.Ctx) error {
 	return c.JSON(s.aiSettingsView(c.Context()))
 }
 
-// hPutAI is PUT /admin/foryou/ai {temperature?: {collections, ask, music, facts}, facts_ai?}.
+// hPutAI is PUT /admin/foryou/ai {temperature?: {collections, ask, music, facts, companion}, facts_ai?, companion_ai?}.
 func (s *Service) hPutAI(c fiber.Ctx) error {
 	if s.settings == nil {
 		return httpx.NewError(fiber.StatusServiceUnavailable, "unavailable", "Settings are not available.")
 	}
 	var in struct {
-		Temperature *struct {
-			Collections *float64 `json:"collections"`
-			Ask         *float64 `json:"ask"`
-			Music       *float64 `json:"music"`
-			Facts       *float64 `json:"facts"`
-		} `json:"temperature"`
-		FactsAI *bool `json:"facts_ai"`
+		Temperature *tempInput `json:"temperature"`
+		FactsAI     *bool      `json:"facts_ai"`
+		CompanionAI *bool      `json:"companion_ai"`
 	}
 	if err := httpx.BindJSON(c, &in); err != nil {
 		return err
 	}
-	if in.Temperature == nil && in.FactsAI == nil {
-		return httpx.Validation(map[string]string{"temperature": "temperature or facts_ai is required"})
+	if in.Temperature == nil && in.FactsAI == nil && in.CompanionAI == nil {
+		return httpx.Validation(map[string]string{"temperature": "temperature, facts_ai or companion_ai is required"})
 	}
 	if in.Temperature == nil {
-		in.Temperature = &struct {
-			Collections *float64 `json:"collections"`
-			Ask         *float64 `json:"ask"`
-			Music       *float64 `json:"music"`
-			Facts       *float64 `json:"facts"`
-		}{}
+		in.Temperature = &tempInput{}
 	}
 	t := s.aiTemperature(c.Context())
 	f := map[string]string{}
@@ -549,6 +540,7 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 	set("ask", in.Temperature.Ask, &t.Ask)
 	set("music", in.Temperature.Music, &t.Music)
 	set("facts", in.Temperature.Facts, &t.Facts)
+	set("companion", in.Temperature.Companion, &t.Companion)
 	if len(f) > 0 {
 		return httpx.Validation(f)
 	}
@@ -561,12 +553,26 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 			return err
 		}
 	}
+	if in.CompanionAI != nil {
+		if err := s.settings.SetCompanionAIEnabled(c.Context(), *in.CompanionAI, p.UserID); err != nil {
+			return err
+		}
+	}
 	if s.audit != nil {
 		s.audit.Record(c.Context(), audit.Event{UserID: p.UserID, Action: "foryou.ai_updated", TargetType: "app_settings", TargetID: "ai_temperature",
 			IP: c.IP(), RequestID: httpx.RequestID(c), Metadata: map[string]any{"collections": t.Collections, "ask": t.Ask, "music": t.Music, "facts": t.Facts,
-				"facts_ai": s.factsAI(c.Context())}})
+				"companion": t.Companion, "facts_ai": s.factsAI(c.Context()), "companion_ai": s.companionAI(c.Context())}})
 	}
 	return c.JSON(s.aiSettingsView(c.Context()))
+}
+
+// tempInput is the temperature part of PUT /admin/foryou/ai.
+type tempInput struct {
+	Collections *float64 `json:"collections"`
+	Ask         *float64 `json:"ask"`
+	Music       *float64 `json:"music"`
+	Facts       *float64 `json:"facts"`
+	Companion   *float64 `json:"companion"`
 }
 
 // ---- ask AI ----

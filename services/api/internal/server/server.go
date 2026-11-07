@@ -18,6 +18,7 @@ import (
 	"martytv/api/internal/awards"
 	"martytv/api/internal/catalog"
 	"martytv/api/internal/clientlog"
+	"martytv/api/internal/companion"
 	"martytv/api/internal/config"
 	"martytv/api/internal/curated"
 	"martytv/api/internal/devices"
@@ -203,6 +204,9 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	// «Цитаты» / «Факты» (internal/trivia): Wikiquote, Kinopoisk facts, DeepSeek stand-ins.
 	triviaSvc := trivia.New(trivia.Options{Pool: pool, KP: ratingsSvc, AI: forYouSvc, Log: log})
 	triviaSvc.Routes(api)
+	// «Ранее в сериале» / «После титров» (internal/companion): on-demand DeepSeek recaps and the after-credits companion.
+	companion.New(companion.Options{Pool: pool, Profiles: profileStore, AI: forYouSvc, Seasons: catalogSvc,
+		DailyLimit: cfg.ForYou.CompanionDailyPerProfile, Log: log}).Routes(api)
 	profileHandlers.OnSettingsChanged(forYouSvc.SettingsChanged)
 
 	catalogHandlers := catalog.NewHandlers(catalogSvc, catalog.NewImageProxy(cfg.TMDB, cfg.Catalog.ImageCacheDir, log))

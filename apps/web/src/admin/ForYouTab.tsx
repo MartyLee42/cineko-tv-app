@@ -5,7 +5,7 @@ import { useProfiles } from "../queries";
 import { useAdminUsers } from "../pages/AdminPage";
 import { ProgressBar } from "../watch/components";
 import { anyRunning, runProgress } from "../foryou/logic";
-import { useForYouRuns, useRerun, useSetAITemperature, useSetFactsAI, type AITemperature, type ForYouRun, type RerunBody } from "../foryou/queries";
+import { useForYouRuns, useRerun, useSetAITemperature, useSetCompanionAI, useSetFactsAI, type AITemperature, type ForYouRun, type RerunBody } from "../foryou/queries";
 import { balanceLow, formatBalance, type AIBalance } from "../foryou/taste";
 
 type Scope = RerunBody["scope"];
@@ -135,7 +135,7 @@ export function ForYouTab() {
         </form>
       </Card>
 
-      {ai$?.enabled && ai$.temperature && <TemperatureCard current={ai$.temperature} factsAI={ai$.facts_ai} />}
+      {ai$?.enabled && ai$.temperature && <TemperatureCard current={ai$.temperature} factsAI={ai$.facts_ai} companionAI={ai$.companion_ai} />}
 
       <Card className="space-y-3">
         <h2 className="font-semibold">{t("fy.admin.runs")}</h2>
@@ -232,13 +232,14 @@ function BalanceLine({ balance }: { balance: AIBalance | null | undefined }) {
   );
 }
 
-const TEMP_KEYS: (keyof AITemperature)[] = ["collections", "ask", "music", "facts"];
+const TEMP_KEYS: (keyof AITemperature)[] = ["collections", "ask", "music", "facts", "companion"];
 
 /** DeepSeek temperature per feature (0–1.5); viewers nudge it with «Точнее / Смелее». */
-function TemperatureCard({ current, factsAI }: { current: AITemperature; factsAI: boolean }) {
+function TemperatureCard({ current, factsAI, companionAI }: { current: AITemperature; factsAI: boolean; companionAI: boolean }) {
   const { t, locale } = useI18n();
   const save = useSetAITemperature();
   const setFactsAI = useSetFactsAI();
+  const setCompanionAI = useSetCompanionAI();
   const [draft, setDraft] = useState<AITemperature>(current);
   const [saved, setSaved] = useState(false);
   const changed = TEMP_KEYS.some((k) => draft[k] !== current[k]);
@@ -285,7 +286,7 @@ function TemperatureCard({ current, factsAI }: { current: AITemperature; factsAI
             className="text-sm text-muted underline-offset-2 hover:text-text hover:underline"
             onClick={() => {
               setSaved(false);
-              setDraft({ collections: 1, ask: 1, music: 1, facts: 0.7 });
+              setDraft({ collections: 1, ask: 1, music: 1, facts: 0.7, companion: 0.3 });
             }}
           >
             {t("fy.admin.temp_reset")}
@@ -308,6 +309,21 @@ function TemperatureCard({ current, factsAI }: { current: AITemperature; factsAI
         </label>
         <p className="text-xs text-muted">{t("fy.admin.facts_ai_hint")}</p>
         <ErrorText error={setFactsAI.error} />
+      </div>
+      <div className="space-y-1 border-t border-border pt-3">
+        <label className="flex items-center gap-2 text-sm font-medium">
+          <input
+            type="checkbox"
+            checked={companionAI}
+            disabled={setCompanionAI.isPending}
+            onChange={(e) => setCompanionAI.mutate(e.target.checked)}
+            className="accent-[rgb(var(--mt-accent))]"
+            data-testid="foryou-companion-ai"
+          />
+          {t("companion.admin.switch")}
+        </label>
+        <p className="text-xs text-muted">{t("companion.admin.switch_hint")}</p>
+        <ErrorText error={setCompanionAI.error} />
       </div>
     </Card>
   );

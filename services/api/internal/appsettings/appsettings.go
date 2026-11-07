@@ -29,6 +29,7 @@ const (
 	keySeasonal      = "seasonal_effects"
 	keyAITemperature = "ai_temperature"
 	keyFactsAI       = "ai_facts"
+	keyCompanionAI   = "ai_companion"
 )
 
 // AI temperature range and default (DeepSeek accepts 0–2; above 1.5 the
@@ -40,20 +41,27 @@ const (
 )
 
 // AITemperature is the admin's DeepSeek temperature per feature: AI
-// collections, «Спросить ИИ», Cineko Music playlists and the AI «Факты».
+// collections, «Спросить ИИ», Cineko Music playlists, the AI «Факты» and
+// the watch companion («Ранее в сериале», «После титров»).
 type AITemperature struct {
 	Collections float64 `json:"collections"`
 	Ask         float64 `json:"ask"`
 	Music       float64 `json:"music"`
 	Facts       float64 `json:"facts"`
+	Companion   float64 `json:"companion"`
 }
 
 // FactsTemperatureDefault: facts should be accurate rather than varied.
 const FactsTemperatureDefault = 0.7
 
+// CompanionTemperatureDefault: recaps and «После титров» must stick to what
+// is known (low: no invented plot points or claims).
+const CompanionTemperatureDefault = 0.3
+
 // DefaultAITemperature is used until an admin changes it.
 func DefaultAITemperature() AITemperature {
-	return AITemperature{Collections: TemperatureDefault, Ask: TemperatureDefault, Music: TemperatureDefault, Facts: FactsTemperatureDefault}
+	return AITemperature{Collections: TemperatureDefault, Ask: TemperatureDefault, Music: TemperatureDefault, Facts: FactsTemperatureDefault,
+		Companion: CompanionTemperatureDefault}
 }
 
 // ClampTemperature keeps t within [TemperatureMin, TemperatureMax], rounded to 0.05.
@@ -82,6 +90,9 @@ type Store struct {
 
 	factsAILoaded bool
 	factsAI       bool
+
+	companionAILoaded bool
+	companionAI       bool
 }
 
 func NewStore(q db.Querier, auditLog *audit.Logger, log *slog.Logger) *Store {
@@ -159,7 +170,8 @@ func (s *Store) AITemperature(ctx context.Context) AITemperature {
 			return def
 		}
 		s.temp = AITemperature{Collections: pick("collections", TemperatureDefault), Ask: pick("ask", TemperatureDefault),
-			Music: pick("music", TemperatureDefault), Facts: pick("facts", FactsTemperatureDefault)}
+			Music: pick("music", TemperatureDefault), Facts: pick("facts", FactsTemperatureDefault),
+			Companion: pick("companion", CompanionTemperatureDefault)}
 		s.tempLoaded = true
 	}
 	return s.temp
@@ -210,6 +222,44 @@ func (s *Store) SetFactsAIEnabled(ctx context.Context, enabled bool, by string) 
 	}
 	s.mu.Lock()
 	s.factsAI, s.factsAILoaded = enabled, true
+	s.mu.Unlock()
+	return nil
+}
+
+// CompanionAIEnabled reports whether the watch companion may ask DeepSeek
+// («Ранее в сериале», «После титров»; default true, a database error also
+// answers true and is retried on the next call).
+func (s *Store) CompanionAIEnabled(ctx context.Context) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.companionAILoaded {
+		return s.companionAI
+	}
+	var raw []byte
+	err := s.q.QueryRow(ctx, `SELECT value FROM app_settings WHERE key = $1`, keyCompanionAI).Scan(&raw)
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+		s.companionAI, s.companionAILoaded = true, true
+	case err != nil:
+		if s.log != nil {
+			s.log.Warn("app settings: read failed", "err", err)
+		}
+		return true
+	default:
+		v := seasonalValue{Enabled: true}
+		_ = json.Unmarshal(raw, &v)
+		s.companionAI, s.companionAILoaded = v.Enabled, true
+	}
+	return s.companionAI
+}
+
+// SetCompanionAIEnabled stores the watch companion switch.
+func (s *Store) SetCompanionAIEnabled(ctx context.Context, enabled bool, by string) error {
+	if err := s.put(ctx, keyCompanionAI, seasonalValue{Enabled: enabled}, by); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	s.companionAI, s.companionAILoaded = enabled, true
 	s.mu.Unlock()
 	return nil
 }
