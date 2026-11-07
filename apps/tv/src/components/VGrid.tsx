@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FocusContext, getCurrentFocusKey, useFocusable, type FocusableComponent } from "@noriginmedia/norigin-spatial-navigation";
 import { clamp, gridNeighbor, gridPos, gridWindow, trackedIndex, type Direction } from "../catalog/virtual";
 import { Slot } from "./HRow";
+import type { QuickTarget } from "../quick/store";
 import { SkinEnd, useHasSkinEnd } from "../design/skins";
 
 /**
@@ -23,6 +24,7 @@ export function VGrid<T>({
   onIndexChange,
   onSelect,
   onLongPress,
+  quick,
   renderItem,
 }: {
   focusKey: string;
@@ -39,6 +41,8 @@ export function VGrid<T>({
   onSelect?: (item: T, index: number) => void;
   /** Holding OK (secondary action); without it OK acts on press. */
   onLongPress?: (item: T, index: number) => void;
+  /** Poster cards: holding OK (or ☰ / Info) opens the quick actions for this title. */
+  quick?: (item: T, index: number) => QuickTarget | null;
   renderItem: (item: T, focused: boolean, index: number) => ReactNode;
 }) {
   /** The focused item (index and key): when the list changes around it (a refresh, a video moving to another row, items added in front), the row/grid follows its key. */
@@ -91,6 +95,7 @@ export function VGrid<T>({
         }}
         onPress={() => onSelect?.(item, i)}
         onLongPress={onLongPress ? () => onLongPress(item, i) : undefined}
+        quick={quick ? () => quick(item, i) : undefined}
       >
         {(focused) => renderItem(item, focused, i)}
       </Slot>,

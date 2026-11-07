@@ -8,6 +8,7 @@ import { awardBadgeTitle, hasQualityMark, QualityMark, udarnikLabel, useAppliedD
 import { useDesign, type Design } from "./context";
 import { indexTag, posterBadge, type RatingsInput } from "./format";
 import { stickerOf } from "./sticker";
+import { QuickHint } from "../quick/QuickHint";
 
 /** The rating badge in a card's top-right corner (hidden when unknown / off). */
 export function RatingBadge({ item, design }: { item: RatingsInput; design: Design }) {
@@ -124,6 +125,7 @@ export function PosterCard({
           <RatingBadge item={item} design={design} />
           <AwardMark item={item} design={design} />
           <WatchBadges me={item.me} top={square && !overlay && index !== undefined ? 40 : 12} />
+          <QuickHint focused={focused} />
         </div>
         {square && focused && <Brackets small />}
       </div>
@@ -198,6 +200,7 @@ export function WideCard({
           <AwardMark item={media} design={design} />
           {badge && <span className="tv-check absolute left-4 top-4 rounded-full px-4 py-1 text-[18px] font-bold">{badge}</span>}
           {marks}
+          <QuickHint focused={focused} />
           <p className="absolute bottom-7 left-6 right-6 truncate text-[26px] font-bold text-white">
             {title}
             {sub ? <span className="font-medium text-white/80"> · {sub}</span> : null}
@@ -227,6 +230,7 @@ export function WideCard({
           <AwardMark item={media} design={design} />
           {badge && <span className="tv-check absolute bottom-4 right-3 rounded-full px-4 py-1 text-[18px] font-bold">{badge}</span>}
           {marks}
+          <QuickHint focused={focused} />
           {frac !== null && <ProgressBar fraction={frac} className="h-[6px]" />}
         </div>
         {square && focused && <Brackets small />}
