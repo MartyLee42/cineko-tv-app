@@ -45,7 +45,7 @@ export function useSettingRows() {
     { value: true, label: t("tv.settings.on") },
     { value: false, label: t("tv.settings.off") },
   ];
-  const bool = (key: "hide_anime" | "hide_watched" | "autoplay_next_episode" | "spoiler_free_episodes" | "video_hide_shorts", label: string, hint?: string): Row => ({
+  const bool = (key: "hide_anime" | "hide_watched" | "autoplay_next_episode" | "autoplay_countdown" | "spoiler_free_episodes" | "video_hide_shorts" | "video_autoplay", label: string, hint?: string): Row => ({
     kind: "choice",
     key,
     label,
@@ -155,6 +155,7 @@ export function useSettingRows() {
     hideAnime: bool("hide_anime", t("settings.hide_anime"), t("settings.hide_anime_hint")),
     hideWatched: bool("hide_watched", t("settings.hide_watched"), t("settings.hide_watched_hint")),
     autoplay: bool("autoplay_next_episode", t("settings.autoplay_next")),
+    countdown: bool("autoplay_countdown", t("settings.autoplay_countdown"), t("settings.autoplay_countdown_hint")),
     // «Заставки и титры»: the skip pill, skipping by itself, or nothing.
     skipSegments: {
       kind: "choice",
@@ -177,6 +178,7 @@ export function useSettingRows() {
       onChange: (v) => set({ video_quality: v as Settings["video_quality"] }),
     } as Row,
     hideShorts: bool("video_hide_shorts", t("video.settings.hide_shorts"), t("video.tv.hide_shorts_hint")),
+    videoAutoplay: bool("video_autoplay", t("video.settings.autoplay"), t("video.settings.autoplay_hint")),
     player: {
       kind: "choice",
       key: "default_player",

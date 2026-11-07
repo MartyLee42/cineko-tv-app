@@ -249,3 +249,9 @@ export function useCheckVideo() {
     onSuccess: (s) => qc.setQueryData(["admin", "video", "status"], s),
   });
 }
+
+/** A channel's latest uploads (first page): where a series' next part may be when related videos miss it. */
+export async function fetchChannelUploads(channelId: string, profileId: string | undefined): Promise<Schemas["VideoItem"][]> {
+  const ch = await unwrap(api.GET("/video/channels/{channel_id}", { params: { path: { channel_id: channelId }, query: pid(profileId) } }));
+  return ch.videos;
+}

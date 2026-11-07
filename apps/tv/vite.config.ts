@@ -28,7 +28,8 @@ function staticReach(ctx: Ctx, from: string): Set<string> {
  * a high-latency link). Instead: what boot needs statically goes into two
  * chunks fetched in parallel with it — `vendor` (React, react-query, focus
  * engine: changes rarely, stays cached across releases) and `core` (the app)
- * — and what only lazy chunks share goes into one `shared` chunk.
+ * — and what only lazy chunks share goes into one `shared` chunk (optional
+ * features excepted: see `season`).
  */
 function chunkGroups() {
   let cache: { boot: Set<string>; main: Set<string> } | null = null;
@@ -43,6 +44,14 @@ function chunkGroups() {
         return /[\\/]node_modules[\\/]/.test(id) || id.startsWith("\0") ? "vendor" : "core";
       },
       priority: 2,
+      includeDependenciesRecursively: false,
+    },
+    {
+      // Optional features stay apart from `shared` even when two chunks use
+      // them (the holiday layer: Home's layer and Settings' preview), so TVs
+      // that never show them never fetch them.
+      name: (id: string) => (/[\\/]packages[\\/]ui[\\/]src[\\/](SeasonLayer|seasonSprites)\.tsx$/.test(id) ? "season" : null),
+      priority: 3,
       includeDependenciesRecursively: false,
     },
     {
