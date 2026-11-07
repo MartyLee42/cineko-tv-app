@@ -7,7 +7,8 @@ import { unwrap, type ProfileSettings, type Schemas } from "@martytv/contracts";
 import { DESIGNS as UI_DESIGNS, effectiveDesign } from "@martytv/ui";
 import { api } from "../api";
 import { queryClient } from "../catalog/queries";
-import { storage } from "../platform";
+import { credentialStore, storage } from "../platform";
+import { DESIGN_KEY, startDesign } from "../design/newTv";
 import { activeProfile, useActiveProfileId } from "./active";
 
 export { activeProfile, useActiveProfileId };
@@ -87,7 +88,6 @@ export const settingsKey = (profileId: string | null) => ["profile-settings", pr
 
 /** Last theme/design applied on this TV (so the next start doesn't flash the wrong one). */
 const THEME_KEY = "martytv.theme";
-const DESIGN_KEY = "martytv.design";
 /** The last profile's «Сюрприз» inputs: the next start (intro, first chunk) shows today's pick, not yesterday's. */
 const SURPRISE_KEY = "martytv.design_surprise";
 interface CachedSurprise {
@@ -109,8 +109,8 @@ export const themeCache = {
     } catch {
       /* garbled: the plain cache below */
     }
-    const v = storage.get(DESIGN_KEY);
-    return v && (DESIGNS as readonly string[]).includes(v) ? (v as DesignSetting) : "kinozal";
+    const v = startDesign(storage.get(DESIGN_KEY), !!credentialStore.get());
+    return (DESIGNS as readonly string[]).includes(v) ? (v as DesignSetting) : "kinozal";
   },
   /** Remembers the shown design (index.html paints its background) and the surprise inputs behind it. */
   setDesign: (v: DesignSetting, s?: Settings, profileId?: string | null) => {
