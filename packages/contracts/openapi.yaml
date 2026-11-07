@@ -1176,8 +1176,9 @@ paths:
         only re-rank per request (penalties, never hiding): warnings
         too_heavy_for_device, over_device_resolution, codec_unsupported,
         codec_unknown (likely XviD: an old-style rip naming no codec or resolution),
-        audio_needs_conversion, audio_unsupported, hdr_avoided; reason
-        device_fit when a release fits every constraint.
+        audio_needs_conversion, audio_unsupported, hdr_avoided, may_stutter
+        (the variant is in the device's auto.rough); reason device_fit when a
+        release fits every constraint.
       parameters:
         - { name: season, in: query, schema: { type: integer, minimum: 0 } }
         - { name: episode, in: query, schema: { type: integer, minimum: 1 } }
@@ -3886,6 +3887,11 @@ components:
         video: { type: array, maxItems: 16, items: { type: string, enum: [h264, hevc, vp9, av1, hdr10, dv] }, description: "Decodable video codecs/formats." }
         audio: { type: array, maxItems: 16, items: { type: string, enum: [aac, ac3, eac3, dts, truehd, mp3, opus, flac] }, description: "Decodable audio codecs." }
         containers: { type: array, maxItems: 16, items: { type: string, enum: [mkv, mp4, ts] } }
+        rough:
+          type: array
+          maxItems: 16
+          items: { type: string, enum: [h264_1080p, h264_2160p, hevc_1080p, hevc_2160p, hevc_10bit_1080p, hevc_10bit_2160p, av1_1080p, av1_2160p, av1_10bit_1080p, av1_10bit_2160p] }
+          description: "Video variants (codec, 10-bit, 1080p / 2160p) the device decodes but not smoothly: mediaCapabilities.decodingInfo says smooth = false, or playback dropped many frames there. Ranking demotes matching releases (warning may_stutter)."
         hls: { type: [boolean, "null"] }
         compat: { type: [boolean, "null"], description: "Compat streams (AAC transcode) are usable." }
         throughput_bps: { type: [number, "null"], minimum: 0, maximum: 10000000000, description: "Current estimate of the device → server throughput, bits/s: the median of recent playback sessions and background speed tests (GET /speedtest), the newest test weighing most (a new network replaces older samples)." }
@@ -3908,7 +3914,7 @@ components:
     PlaybackEffective:
       type: object
       description: "auto + manual merged (manual wins); what release ranking uses. Null limits = none. Mirrors effectivePrefs() in @martytv/media-types."
-      required: [max_resolution, max_bitrate_bps, max_size_gb, video_codec, avoid_hdr, audio, prefer_smaller, video, audio_codecs, compat, default_player]
+      required: [max_resolution, max_bitrate_bps, max_size_gb, video_codec, avoid_hdr, audio, prefer_smaller, video, audio_codecs, rough, compat, default_player]
       properties:
         max_resolution: { type: [string, "null"], enum: ["720p", "1080p", "2160p", null] }
         max_bitrate_bps: { type: [number, "null"] }
@@ -3919,6 +3925,7 @@ components:
         prefer_smaller: { type: boolean }
         video: { type: [array, "null"], items: { type: string }, description: "Decodable video (null = unknown)." }
         audio_codecs: { type: [array, "null"], items: { type: string }, description: "Decodable audio (null = unknown)." }
+        rough: { type: [array, "null"], items: { type: string }, description: "auto.rough: variants that don't play smoothly (null = none known)." }
         compat: { type: boolean }
         default_player: { type: [string, "null"], enum: [builtin, msx, external, null] }
     PlaybackConstraint:
@@ -4595,7 +4602,7 @@ components:
         confidence: { type: number, minimum: 0, maximum: 1, description: "How sure we are this is the requested title/episode." }
         score: { type: number, description: "Ranking score (confidence × quality × preferences × availability)." }
         reasons: { type: array, items: { type: string }, description: "Machine-readable match reasons, e.g. title_exact, year_match, imdb_match, episode_match." }
-        warnings: { type: array, items: { type: string }, description: "e.g. low_seeders, cam_quality, over_size_limit, no_preferred_language, likely_unplayable_codec, disc_image, 3d, uncertain_match; with a device profile also too_heavy_for_device, over_device_resolution, codec_unsupported, codec_unknown (an old-style rip naming neither codec nor resolution: likely XviD), audio_needs_conversion, audio_unsupported, hdr_avoided." }
+        warnings: { type: array, items: { type: string }, description: "e.g. low_seeders, cam_quality, over_size_limit, no_preferred_language, likely_unplayable_codec, disc_image, 3d, uncertain_match; with a device profile also too_heavy_for_device, over_device_resolution, codec_unsupported, codec_unknown (an old-style rip naming neither codec nor resolution: likely XviD), audio_needs_conversion, audio_unsupported, hdr_avoided, may_stutter (decodes here but not smoothly)." }
         est_bitrate_bps: { type: [number, "null"], description: "Estimated average bitrate (size × 8 / runtime; per episode for packs), bits/s. null when the runtime is unknown." }
     Voiceover:
       type: object

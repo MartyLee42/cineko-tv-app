@@ -440,6 +440,7 @@ preference; nothing is hidden):
 | size per item | stricter of profile/device limit, ×0.3 | `over_size_limit` |
 | video not in the decodable list (h264/hevc/av1; DV without HDR10 needs dv) | ×0.3 | `codec_unsupported` |
 | HDR/DV while HDR is avoided | ×0.6 | `hdr_avoided` |
+| variant in `auto.rough` (codec × 10-bit × 1080p/2160p decoded but not smoothly, see «Плавность») | ×0.6 | `may_stutter` |
 | preferred `video_codec` | ×1.1 | |
 | no decodable audio track (detected list; avoid_dts_truehd marks DTS/TrueHD) | compat ×0.85 / none ×0.4; always_compat + compat: none | `audio_needs_conversion` / `audio_unsupported` |
 | a decodable audio track | ×1.05 (prefer_aac_ac3 with AAC/AC3: another ×1.05) | |
@@ -606,6 +607,51 @@ feeds `markers` (opening/ending; see «Заставки и титры» below). 
 explicit `quality`, the profile's preferred resolution caps the pick.
 Same-origin HLS also sidesteps CDN CORS and old TV engines' cross-origin
 limits.
+
+### «Плавность» (decodes ≠ plays smoothly)
+
+canPlayType only says a TV *can* decode a file. `apps/tv/src/player/smooth.ts`
+adds two per-device signals, both feature-detected (old engines lack them and
+behave exactly as before):
+
+- `navigator.mediaCapabilities.decodingInfo` for H.264 / HEVC / AV1 ×
+  1080p / 2160p × 8 / 10-bit (30 fps, typical bitrates), asked once per
+  engine (UA) and cached 30 days in `martytv.smooth_probe`;
+- dropped frames while playing: `getVideoPlaybackQuality()` (else WebKit's
+  `webkitDroppedFrameCount` / `webkitDecodedFrameCount`) sampled every 2 s
+  by the controller. `stutterStep` (pure) only counts steady playback (not
+  paused / seeking / buffering / hidden, 10 s grace after a start or seek, no
+  re-encoded compat video, torrent sources only) and fires when ≥ 15 % of the
+  frames dropped over 30 s with ≥ 8 % in ¾ of the 2 s slices. Then the variant
+  is noted in `martytv.stutter` (90 days; a later ≥ 10 min session under 2 %
+  clears it) and the player offers «Картинка подтормаживает — включить более
+  лёгкую раздачу?» once per source (Left/Right/OK like the slow-link hint,
+  «Не сейчас» focused). «Включить полегче» starts the best-ranked untried
+  release that is cheaper to decode (`smootherInstead`: lower resolution, then
+  H.264 < HEVC < AV1, SDR < 10-bit/HDR) and not rough, at the same position;
+  none → the picker.
+
+Tokens `<codec>[_10bit]_<1080p|2160p>` (`SMOOTH_TOKENS`,
+`@martytv/media-types` smooth.ts ≡ `smoothToken` in devicefit.go) that are
+supported-but-not-smooth or stuttered go to the server as `auto.rough`
+(server ranking ×0.6, `may_stutter`); the TV's own ranking (`rankForTv`, used
+for automatic picks and when the server had no profile) applies the same
+×0.6, and ×0.95 for smooth-but-not-power-efficient variants. Dropped frames
+show in the Up stats panel once ≥ 0.5 %; device health already reports the
+session's dropped/total frames.
+
+### Chapters on the seek bar
+
+`media_info.chapters` (titled chapters from ffprobe, ≤ 64) also reach the
+players: `fileChapters` (`@martytv/media-types` chapters.ts) sorts them and
+drops generic titles («Chapter 01», «00:05:00.000» → «Глава N»). The TV draws
+ticks on the seek bar and the current chapter next to the time; ◀▶ keep their
+steps and acceleration, but a step that passes a chapter start stops there
+(`snapToChapter`; never further than the plain step, not for starts < 5 s
+away), so tapping or holding walks chapter by chapter where chapters are close
+and seeks as usual inside long ones. In films ⏮ / ⏭ jump to the previous /
+next chapter (series keep episodes). The web seek bar shows ticks and the
+chapter name in the hover / drag bubble.
 
 ### «Заставки и титры» (skip markers)
 

@@ -22,6 +22,8 @@ type PlaybackAuto struct {
 	Video         []string   `json:"video,omitempty"`
 	Audio         []string   `json:"audio,omitempty"`
 	Containers    []string   `json:"containers,omitempty"`
+	// Rough: video variants ("hevc_10bit_2160p") decoded, but not smoothly.
+	Rough         []string   `json:"rough,omitempty"`
 	HLS           *bool      `json:"hls,omitempty"`
 	Compat        *bool      `json:"compat,omitempty"`
 	ThroughputBps *float64   `json:"throughput_bps,omitempty"`
@@ -55,6 +57,7 @@ type EffectivePrefs struct {
 	PreferSmaller bool     `json:"prefer_smaller"`
 	Video         []string `json:"video"`
 	AudioCodecs   []string `json:"audio_codecs"`
+	Rough         []string `json:"rough"` // nil = none known
 	Compat        bool     `json:"compat"`
 	DefaultPlayer *string  `json:"default_player"`
 }
@@ -148,6 +151,9 @@ func Effective(a PlaybackAuto, m PlaybackManual) EffectivePrefs {
 	if len(a.Audio) > 0 {
 		e.AudioCodecs = a.Audio
 	}
+	if len(a.Rough) > 0 {
+		e.Rough = a.Rough
+	}
 	e.Compat = a.Compat != nil && *a.Compat
 	e.DefaultPlayer = m.DefaultPlayer
 	return e
@@ -216,6 +222,9 @@ var (
 	videoTokens     = []string{"h264", "hevc", "vp9", "av1", "hdr10", "dv"}
 	audioTokens     = []string{"aac", "ac3", "eac3", "dts", "truehd", "mp3", "opus", "flac"}
 	containerTokens = []string{"mkv", "mp4", "ts"}
+	// RoughTokens mirrors SMOOTH_TOKENS in @martytv/media-types smooth.ts.
+	RoughTokens = []string{"h264_1080p", "h264_2160p", "hevc_1080p", "hevc_2160p", "hevc_10bit_1080p", "hevc_10bit_2160p",
+		"av1_1080p", "av1_2160p", "av1_10bit_1080p", "av1_10bit_2160p"}
 	presetRe        = regexp.MustCompile(`^[a-z0-9_]{0,32}$`)
 )
 
@@ -282,6 +291,9 @@ func (a *PlaybackAuto) Normalize(fields map[string]string) {
 	}
 	if a.Containers != nil {
 		a.Containers = checkTokens(fields, "auto.containers", a.Containers, containerTokens)
+	}
+	if a.Rough != nil {
+		a.Rough = checkTokens(fields, "auto.rough", a.Rough, RoughTokens)
 	}
 	checkRange(fields, "auto.throughput_bps", a.ThroughputBps, 0, 10e9)
 	a.Model = clipStr(a.Model, 128)

@@ -81,3 +81,5 @@ export * from "./newEpisodes";
 export * from "./fit";
 export * from "./fileFormat";
 export * from "./videoNext";
+export * from "./smooth";
+export * from "./chapters";
