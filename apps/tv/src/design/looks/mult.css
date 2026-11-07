@@ -1,0 +1,93 @@
+/* «mult»: this design's own rules (loaded with the design's chunk, design/looks).
+   ---------------------------------------------------------------- Мультфильм (kinozal skeleton)
+   A LIGHT design in the spirit of classic Soviet studio animation: a gouache sky on warm paper,
+   cut-out hills and trees (mult.tsx), one slow fog band. Posters are paper cut-outs (a cream edge
+   and a soft lifted shadow); focus lifts the cut-out over a deep brick ring. Umber ink on paper
+   (≈11:1). Hand-lettered Neucha headings. Every row / grid ends with a «Конец фильма» card.
+   Transform/opacity only; the fog stops in calm motion. */
+.mu-sky {
+  background-color: rgb(243,233,214);
+  /* The gouache washes stay right of x≈1000 (under Home's / Details' artwork, whose left edge is the
+     plain paper colour), so no seam shows where the artwork fades out. */
+  background-image:
+    radial-gradient(circle, rgba(96,64,40,.03) 0px, rgba(96,64,40,.03) 1px, rgba(96,64,40,0) 1.6px),
+    radial-gradient(ellipse 620px 420px at 74% 0%, rgba(244,206,170,.6), rgba(244,206,170,0)),
+    radial-gradient(ellipse 560px 460px at 92% 42%, rgba(205,222,222,.6), rgba(205,222,222,0));
+  background-size: 7px 7px, 100% 100%, 100% 100%;
+}
+.mu-fog {
+  position: absolute; left: 0; top: 820px; width: 3840px; height: 300px; pointer-events: none; opacity: .85;
+  background-image:
+    radial-gradient(ellipse 520px 70px at 300px 150px, rgba(255,252,246,.9), rgba(255,252,246,0)),
+    radial-gradient(ellipse 700px 90px at 1080px 200px, rgba(255,252,246,.85), rgba(255,252,246,0)),
+    radial-gradient(ellipse 460px 60px at 1620px 130px, rgba(255,252,246,.75), rgba(255,252,246,0)),
+    radial-gradient(ellipse 600px 80px at 1900px 240px, rgba(255,252,246,.8), rgba(255,252,246,0));
+  background-size: 1920px 300px; background-repeat: repeat-x;
+}
+@keyframes mu-drift { from { transform: translate3d(0,0,0); } to { transform: translate3d(-1920px,0,0); } }
+.mu-fog-on { animation: mu-drift 150s linear infinite; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .mu-fog-on { animation: none; } }
+
+/* ---- the rail: a strip of ochre paper with a torn (scalloped) edge; focus = a terracotta tab. */
+html.design-mult nav[data-design-nav="kinozal"] > div:first-child {
+  background-color: rgb(233,214,180);
+  background-image: radial-gradient(circle at 0 50%, rgba(243,233,214,1) 0px, rgba(243,233,214,1) 5px, rgba(243,233,214,0) 5.5px);
+  background-size: 10px 14px; background-repeat: repeat-y; background-position: right -5px top 0;
+  box-shadow: 3px 0 10px rgba(96,64,40,.16);
+}
+html.design-mult .tv-menu-panel { background: linear-gradient(90deg, rgb(233,214,180) 0%, rgb(233,214,180) 70%, rgba(233,214,180,0) 100%); }
+html.design-mult .k-rail-focus { background: rgb(184,72,40); color: rgb(255,248,236); box-shadow: 0 4px 0 rgba(96,40,20,.25); }
+html.design-mult .k-rail-active { background: rgba(184,72,40,.13); color: rgb(var(--mt-text)); box-shadow: inset 0 0 0 2px rgba(184,72,40,.4); }
+
+/* ---- paper cut-outs: posters and wide cards. */
+html.design-mult .mt-card { border: 6px solid #fffaf0; border-radius: 10px; box-shadow: 0 5px 0 rgba(96,64,40,.12), 0 10px 18px rgba(96,64,40,.2); }
+html.design-mult .mt-card.is-focused { box-shadow: 0 0 0 4px rgb(243,233,214), 0 0 0 10px rgb(150,52,28), 0 18px 28px rgba(96,64,40,.3); }
+/* Focus lifts the cut-out (the wrapper's .mt-hop marks the focused card). */
+html.design-mult [data-card-id] > .relative { transition: transform 180ms ease-out; }
+html.design-mult [data-card-id].mt-hop > .relative { transform: translate3d(0,-6px,0); }
+/* Placeholder titles on the paper-coloured placeholders stay light-on-colour: fine as is. */
+
+/* ---- buttons, badges, chips on light paper. */
+html.design-mult .k-primary { background: rgb(184,72,40); color: rgb(255,248,236); box-shadow: 0 4px 0 rgba(96,40,20,.28); }
+html.design-mult .k-primary.is-focused { box-shadow: 0 0 0 4px rgb(243,233,214), 0 0 0 10px rgb(150,52,28), 0 6px 14px rgba(96,64,40,.3); }
+html.design-mult .k-icon-btn { background: rgb(255,250,240); box-shadow: inset 0 0 0 2px rgba(96,64,40,.25), 0 3px 0 rgba(96,64,40,.12); }
+html.design-mult .k-icon-btn.is-focused { box-shadow: 0 0 0 4px rgb(243,233,214), 0 0 0 10px rgb(150,52,28); }
+html.design-mult .k-badge { background: rgb(58,42,32); color: rgb(255,248,236); }
+html.design-mult .k-track { background: rgba(58,42,32,.18); }
+html.design-mult .tv-key-hint { background: rgba(255,250,240,.94); box-shadow: inset 0 0 0 2px rgba(96,64,40,.2); }
+html.design-mult .tv-chip.is-focused { background: rgb(150,52,28); color: rgb(255,248,236); }
+html.design-mult .tv-panel, html.design-mult .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 2px rgba(96,64,40,.16); }
+html.design-mult .tv-progress-fill, html.design-mult .tv-check { background: rgb(184,72,40); color: rgb(255,248,236); }
+/* The backdrop melts into the paper a little sooner (umber text over a light picture needs it). */
+html.design-mult .k-fade-left { background: linear-gradient(90deg, rgb(243,233,214) 0%, rgba(243,233,214,.96) 24%, rgba(243,233,214,.7) 44%, rgba(243,233,214,.18) 72%, rgba(243,233,214,0) 100%); }
+html.design-mult .k-fade-bottom { background: linear-gradient(0deg, rgb(243,233,214) 0%, rgba(243,233,214,.92) 22%, rgba(243,233,214,0) 64%); }
+
+/* Row titles and hero/Details titles: hand lettering (Neucha has one weight). */
+html.design-mult h3 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .01em; }
+html.design-mult h3.text-\[31px\] { font-size: 36px; }
+html.design-mult h3.text-\[34px\] { font-size: 39px; }
+html.design-mult [data-testid="hero"] h2, html.design-mult [data-media-id] h1 { font-weight: 400; letter-spacing: 0; line-height: 1.12; }
+html.design-mult [data-testid="hero"] p.uppercase { color: rgb(150,52,28); }
+
+/* ---- Details: an old title card (double frame, corner curls, the kind lettered above). */
+.mu-card {
+  display: inline-block; max-width: 1060px; background: rgba(255,250,240,.94); border-radius: 18px; color: rgb(150,52,28);
+  box-shadow: inset 0 0 0 3px rgb(150,52,28), inset 0 0 0 9px rgba(255,250,240,.94), inset 0 0 0 11px rgba(150,52,28,.55), 0 10px 24px rgba(96,64,40,.22);
+}
+.mu-card h1 { color: rgb(58,42,32); }
+.mu-card-kind { margin: 0; font-family: var(--mt-font-display); font-size: 32px; line-height: 1; letter-spacing: .06em; }
+.mu-curl { position: absolute; width: 42px; height: 42px; }
+.mu-curl-tl { left: 16px; top: 16px; }
+.mu-curl-tr { right: 16px; top: 16px; transform: scaleX(-1); }
+.mu-curl-bl { left: 16px; bottom: 16px; transform: scaleY(-1); }
+.mu-curl-br { right: 16px; bottom: 16px; transform: scale(-1,-1); }
+
+/* ---- «Конец фильма»: an oval end card with a double terracotta frame. */
+.mu-end-wrap { display: flex; align-items: center; justify-content: center; }
+.mu-end {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 170px;
+  border-radius: 50%; background: rgb(255,250,240); color: rgb(184,72,40);
+  box-shadow: inset 0 0 0 3px rgb(184,72,40), inset 0 0 0 9px rgb(255,250,240), inset 0 0 0 11px rgba(184,72,40,.5), 0 6px 0 rgba(96,64,40,.12), 0 10px 18px rgba(96,64,40,.18);
+}
+.mu-end-text { margin: 6px 0 4px; font-family: var(--mt-font-display); font-size: 38px; line-height: 1; text-align: center; color: rgb(58,42,32); white-space: nowrap; }
+.mu-flourish { display: block; width: 96px; height: 13px; }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FocusContext, getCurrentFocusKey, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { lineResolver, useFocusRecorder } from "../focus";
 import { clamp, rowWindow, trackedIndex, trackOffset } from "../catalog/virtual";
+import { SkinEnd, useHasSkinEnd } from "../design/skins";
 
 /** Room around the cards for the focus ring and scale-up (rows clip overflow). */
 export const ROW_PAD = 24;
@@ -28,7 +29,7 @@ export function HRow<T>({
   onSelect,
   onLongPress,
   renderItem,
-  tail,
+  tail: ownTail,
 }: {
   focusKey: string;
   items: readonly T[];
@@ -51,6 +52,9 @@ export function HRow<T>({
   /** Not focusable, after the last item (e.g. «loading more» / a load error), one item wide. */
   tail?: ReactNode;
 }) {
+  // Without a tail of its own the row ends with the skin's end card, if it has one («Конец фильма»).
+  const hasEnd = useHasSkinEnd();
+  const tail = ownTail ?? (hasEnd && items.length > 0 ? <SkinEnd kind="row" width={itemWidth} height={itemHeight} /> : null);
   /** The focused item (index and key): when the list changes around it (a refresh, a video moving to another row, items added in front), the row/grid follows its key. */
   const [focus, setFocused] = useState<{ index: number; key: string | null }>(() => ({ index: clamp(initialIndex, 0, Math.max(0, items.length - 1)), key: null }));
   const keys = items.map(itemKey);

@@ -113,8 +113,13 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
   },
   // A ship's console: a pure sine blip; OK answers with two rising panel tones.
   odyssey: {
-    tick: { tones: [tone("sine", 2093, 2093, 0.02, 0.22)], noise: [] },
-    click: { tones: [tone("sine", 1319, 1319, 0.04, 0.35), tone("sine", 1976, 1976, 0.05, 0.3, 0.045)], noise: [] },
+    tick: { tones: [tone("sine", 2093, 2093, 0.02, 0.22)], noise: [, 0.04, 0.22), tone("sine", 6279, 6279, 0.015, 0.04, 1300, 700, 0.035, 0.16)])]] },
+    click: { tones: [tone("sine", 1319, 1319, 0.04, 0.35), tone("sine", 1976, 1976, 0.05, 0.3, 0.045)], noise: [, 1568, 1568, 0.3, 900, 380, 0.09, 0.3)], noise: [noise("lowpass", 900, 0.08, 0.7, 0.02), 2349, 2349, 0.06, 0.05)]] },
+  // A toy glockenspiel: one soft bar, two on OK (a cartoon «plink-plonk»).
+  mult: {
+  },
+  // A water drop: a falling sine, low and quiet; OK is a deeper drop with a faint splash.
+  tarkovsky: {
   },
 };
 
