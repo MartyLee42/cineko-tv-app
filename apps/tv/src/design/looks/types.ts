@@ -8,4 +8,6 @@ export interface Look {
   HeroEdges?: ComponentType<{ height: number }>;
   /** Details title framed in a plate (labelled with the kind). */
   TitlePlate?: ComponentType<{ kind: string; children: ReactNode }>;
+  /** Drawn over the catalog (under the menu and overlays), e.g. Тамагочи's pixel pet. `onHome`: Home with nothing over it. */
+  Companion?: ComponentType<{ onHome: boolean }>;
 }

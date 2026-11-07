@@ -2454,6 +2454,16 @@ subscribe, uploads with continuation paging. Settings → profile:
   `applyDesign` also sets the favicon — one Cineko icon for every design
   since 2026-10-31 (see [Cineko](#marty-mascot-and-branding)); «Конструктивизм»
   uses the emblem.
+  `pocketpet` = «Тамагочи» (terminal skeleton): the app is a toy's grey-green
+  LCD (ink-only, `accent` = the ink, Press Start 2P headings/menu/ticker),
+  framed by a pastel plastic shell drawn over the content's edges
+  (`design/looks/pocketpet.tsx`, z 19, under the menu) with the ticker as a
+  small LCD strip on its bottom band. On Home a pixel Cineko (`Look.Companion`)
+  shows 0–4 hearts from the profile's first history page: finished titles /
+  episodes of the last 7 days count 1, unfinished ones by minutes
+  (`pocketpetMood.ts`); it eats a popcorn when the score rose since last seen
+  (`martytv.pocketpet.score.<profile>`) and dozes (Zz) after a minute without
+  keys.
 - **Startup intro** (`apps/tv/src/intro/`): a ~3 s animation in the
   design's style (kinozal = the wave terrain) on every launch; any key skips.
   «Анимация при запуске» (per TV, `martytv.startup_intro`) turns it off;

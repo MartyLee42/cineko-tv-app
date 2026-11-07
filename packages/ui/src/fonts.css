@@ -21,6 +21,9 @@
 @import "@fontsource/russo-one/latin-400.css";
 @import "@fontsource/pixelify-sans/cyrillic-600.css";
 @import "@fontsource/pixelify-sans/latin-600.css";
+/* «Тамагочи» (8×8 pixel type with clear Cyrillic; one weight). */
+@import "@fontsource/press-start-2p/cyrillic-400.css";
+@import "@fontsource/press-start-2p/latin-400.css";
 /* «Поп-арт» headings (heavy comic lettering) and «Конструктивизм» (condensed poster grotesque). */
 @import "@fontsource/rubik-mono-one/cyrillic-400.css";
 @import "@fontsource/rubik-mono-one/latin-400.css";
