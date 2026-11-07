@@ -24,8 +24,10 @@ import { Sheet } from "../remote/SendToTv";
 import { useCatalogLang } from "./queries";
 import { useFacts, useQuotes } from "./trivia";
 
-const BTN =
-  "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-3.5 text-sm font-semibold backdrop-blur transition hover:border-accent";
+/** A chip of the title page's «Дополнительно» row (facts, quotes, recap, after credits, soundtrack). */
+export const EXTRA_CHIP =
+  "inline-flex min-h-[40px] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-border bg-surface px-3.5 text-sm font-semibold text-text transition hover:border-accent";
+const BTN = EXTRA_CHIP;
 
 export function TriviaButtons({ m }: { m: Pick<MediaDetail, "id" | "title"> }) {
   const { t } = useI18n();

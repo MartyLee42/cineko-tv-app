@@ -251,6 +251,7 @@ test.describe("desktop", () => {
     const m = await mockAll(page, movie);
 
     await page.goto(`/title/${movie.id}`);
+    await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
     await page.getByTestId("choose-release").click();
     const sheet = page.getByTestId("release-sheet");
     const row = sheet.locator('[data-release-id="rel-slow"]');
@@ -302,6 +303,7 @@ test.describe("phone", () => {
 
     // Release sheet → «Скачать на сервер».
     await page.goto(`/title/${movie.id}`);
+    await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
     await page.getByTestId("choose-release").click();
     const row = page.getByTestId("release-sheet").locator('[data-release-id="rel-slow"]');
     await expect(row.getByTestId("release-download")).toContainText("Скачать на сервер");

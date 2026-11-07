@@ -191,6 +191,7 @@ test("choose a release on the phone and play it on the TV", async ({ browser }) 
     const mediaId = phone.url().split("/title/")[1]!.split(/[?#]/)[0]!;
 
     // The release list: rows with normalized badges, best match first.
+    await phone.getByTestId("play-more").click(); // «Где и как смотреть» menu
     await phone.getByTestId("choose-release").click();
     const sheet = phone.getByTestId("release-sheet");
     await expect(sheet.getByTestId("release-row")).toHaveCount(3, { timeout: 20_000 });

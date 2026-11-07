@@ -1,4 +1,4 @@
-import { expect, test, type BrowserContext, type Page, type Route } from "@playwright/test";
+import { expect, test, type BrowserContext, type Locator, type Page, type Route } from "@playwright/test";
 import { quietHome } from "./quietHome";
 
 const USER = process.env.E2E_USER ?? "e2e-admin";
@@ -93,7 +93,11 @@ async function mockPlayback(ctx: BrowserContext, log: Log, shared: { mediaId: st
 }
 
 /** Opens the release sheet (the title's «Releases», or the toast's «Try another release») and sends `rel`. */
-async function pickRelease(phone: Page, rel: Rel, deviceName: string, open = phone.getByTestId("choose-release")) {
+async function pickRelease(phone: Page, rel: Rel, deviceName: string, open?: Locator) {
+  if (!open) {
+    await phone.getByTestId("play-more").click(); // «Выбрать раздачу» is in the play button's menu
+    open = phone.getByTestId("choose-release");
+  }
   await open.click();
   const sheet = phone.getByTestId("release-sheet");
   await expect(sheet.getByTestId("release-row")).toHaveCount(2, { timeout: 20_000 });

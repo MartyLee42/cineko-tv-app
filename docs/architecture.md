@@ -2855,6 +2855,21 @@ up to 2 h, then it is skipped for the night. The restart is a
 - **«Вкладки меню»**: `hidden_tabs` in the profile settings (ids shared
   with the TV menu ids; the TV app doesn't apply them yet).
 - The web title page no longer has «Где смотреть» (streaming providers).
+- **Web title page actions** (three levels, `play/PlayChooser.tsx`): one
+  split play button («S02E11 · Продолжить с 32:36» + ▾). Pressing it asks
+  where — «На этом устройстве» or «На ТВ: <name>» per own TV (the one
+  showing the title first, offline ones disabled; super_admins also get
+  «Другой телевизор…» = the full picker) with the last choice
+  (`martytv.watch_where` + `martytv.last_tv`) focused, so Enter repeats it;
+  «С 32:36 / С начала» on top when resuming. No TV at all → it plays here
+  at once. ▾ opens the same menu, which also holds «Смотреть онлайн»,
+  «Выбрать раздачу» and «Скачать на устройство» (movies) and «Открыть на ТВ»
+  (open the page only). Under it a status line «● Сейчас на Almaty · Пульт»
+  and a server download chip; then a small toolbar of personal marks
+  (watchlist, ♥, ★ score, «Просмотрено», «Посоветовать»: icon-only on
+  phones). AI/fun extras (recap, after credits, quotes, facts, soundtrack)
+  are a chip row «Дополнительно» under the hero (scrolls sideways on
+  phones), with their own visibility rules.
 
 ## Cineko (mascot) and branding
 

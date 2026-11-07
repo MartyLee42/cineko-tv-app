@@ -26,10 +26,10 @@ import { Button } from "../components";
 import { Sheet } from "../remote/SendToTv";
 import { useActiveProfile } from "../watch/ActiveProfile";
 import { useMediaProgress } from "../watch/queries";
+import { EXTRA_CHIP } from "./Trivia";
 import { useAfterChat, useAfterCredits, useCompanion, useRecap, useSendChat } from "./companion";
 
-const BTN =
-  "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-3.5 text-sm font-semibold backdrop-blur transition hover:border-accent";
+const BTN = EXTRA_CHIP;
 
 export function CompanionButtons({ m }: { m: Pick<MediaDetail, "id" | "title"> }) {
   const { t } = useI18n();
