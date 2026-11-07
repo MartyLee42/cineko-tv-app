@@ -24,7 +24,7 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.6 0 0 0 -.62'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 220px 220px;
 }
-.sli-flick { opacity: 0; animation: sli-flick .8s steps(1, end) infinite; }
+.sli-flick { display: none; } /* no flicker */
 .sli-iris {
   background: radial-gradient(circle closest-side, rgba(10,10,10,0) 0%, rgba(10,10,10,0) 14%, #0a0a0a 17%, #0a0a0a 100%);
   transform: scale(13.5);

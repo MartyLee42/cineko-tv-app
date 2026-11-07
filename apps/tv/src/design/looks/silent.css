@@ -18,12 +18,6 @@
 }
 /* The projector gate: darker corners, a slightly brighter centre. */
 .sl-vignette { background: radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 52%, rgba(0,0,0,.55) 88%, rgba(0,0,0,.85) 100%); }
-/* Projector flicker: a white veil stepping between a few faint levels (opacity only). */
-@keyframes sl-flicker {
-  0% { opacity: 0; } 9% { opacity: .05; } 13% { opacity: 0; } 31% { opacity: .03; } 36% { opacity: .07; }
-  41% { opacity: 0; } 63% { opacity: .04; } 67% { opacity: 0; } 82% { opacity: .06; } 86% { opacity: .02; } 100% { opacity: 0; }
-}
-.sl-flicker { background: #fff; opacity: 0; animation: sl-flicker 1.7s steps(1, end) infinite; }
 
 /* Photos and placeholders in black and white. */
 html.design-silent img {
@@ -110,7 +104,6 @@ html.design-silent .mt-card.is-focused::after {
 html.design-silent.sl-calm .mt-card.is-focused::after, html.design-silent.mt-fast .mt-card.is-focused::after { animation: none; content: none; }
 @media (prefers-reduced-motion: reduce) {
   html.design-silent .mt-card.is-focused::after { animation: none; content: none; }
-  .sl-flicker { animation: none; }
 }
 
 /* Buttons: the lit one is a white card, the others black cards with a white rule. Serif labels. */
