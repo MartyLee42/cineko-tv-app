@@ -1,5 +1,8 @@
-@import "@martytv/ui/fonts.css";
-@import "@martytv/ui/theme.css";
+/* The startup CSS keeps only what every design needs: the base fonts, the base tokens (Кинозал)
+   and the shared rules. Each other design's tokens and fonts come with its chunk (design/looks/<id>.css). */
+@import "@martytv/ui/fonts/base.css";
+@import "@martytv/ui/theme-base.css";
+@import "@martytv/ui/theme-common.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -226,90 +229,6 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 
 /* Veil over a skin background behind long text (Settings, guide). */
 .skin-veil { background: linear-gradient(90deg, rgba(var(--mt-bg), .9) 0%, rgba(var(--mt-bg), .78) 60%, rgba(var(--mt-bg), .6) 100%); }
-
-/* ---------------------------------------------------------------- design preview tiles */
-.dt-tile { border-radius: 10px; box-shadow: inset 0 0 0 2px rgba(var(--mt-text), .14); }
-.dt-tile.dt-on { box-shadow: 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
-.dt-tile > span { position: absolute; display: block; }
-.dt-nav-kinozal { left: 0; top: 0; width: 9%; height: 100%; }
-.dt-nav-terminal { left: 0; top: 0; width: 100%; height: 12%; }
-.dt-nav-projector { left: 28%; top: 6%; width: 44%; height: 10%; border-radius: 99px; }
-.dt-title { left: 16%; top: 28%; width: 46%; height: 9%; border-radius: 2px; }
-.dt-accent { left: 16%; top: 43%; width: 20%; height: 6%; border-radius: 2px; }
-.dt-poster { top: 60%; width: 15%; height: 32%; border: 2px solid; border-radius: 3px; }
-.dt-wireframe { background-image: linear-gradient(180deg, #0d0420 0%, #4c0f63 55%, #ff4fd8 56%, #0d0420 58%, #0d0420 100%) !important; }
-.dt-cyberpunk { background-image: radial-gradient(ellipse at 90% 0%, rgba(255,46,136,.45), rgba(255,46,136,0) 60%), linear-gradient(rgba(0,240,255,.12) 1px, rgba(0,0,0,0) 1px), linear-gradient(90deg, rgba(0,240,255,.12) 1px, rgba(0,0,0,0) 1px); background-size: 100% 100%, 12px 12px, 12px 12px; }
-.dt-deco { background-image: radial-gradient(circle at 100% 0%, rgba(201,165,76,.0) 0px, rgba(201,165,76,.0) 18px, rgba(201,165,76,.6) 19px, rgba(201,165,76,0) 21px, rgba(201,165,76,0) 30px, rgba(201,165,76,.5) 31px, rgba(201,165,76,0) 33px); }
-.dt-deco .dt-poster { border-radius: 0; }
-.dt-retro80 { background-image: radial-gradient(circle at 80% 105%, #ffd23a 0, #ff7a1a 22%, #ff3b8c 34%, rgba(255,59,140,0) 36%), linear-gradient(160deg, rgba(0,0,0,0) 72%, #ff3b5c 72%, #ff3b5c 76%, #ff7a1a 76%, #ff7a1a 80%, #ffd23a 80%, #ffd23a 84%, #16e0d0 84%, #16e0d0 88%, rgba(0,0,0,0) 88%); }
-.dt-retro90 .dt-nav { background: #c0c0c0 !important; }
-.dt-retro90 .dt-poster { border-radius: 0; box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #404040; }
-.dt-popart { background-image: radial-gradient(circle, rgba(255,255,255,.2) 0px, rgba(255,255,255,.2) 1.6px, rgba(255,255,255,0) 2px) !important; background-size: 8px 8px !important; }
-.dt-popart .dt-nav { background: #fff !important; box-shadow: 0 0 0 2px #000; }
-.dt-popart .dt-poster { border-color: #000 !important; box-shadow: 3px 3px 0 #000; }
-.dt-popart .dt-title { background: #ffd600 !important; box-shadow: 2px 2px 0 #000; }
-.dt-constructivism { background-image: radial-gradient(circle at 88% 30%, #d7261e 0, #d7261e 22%, rgba(215,38,30,0) 22.5%), linear-gradient(160deg, rgba(0,0,0,0) 70%, #efe4cc 70%, #efe4cc 73%, rgba(0,0,0,0) 73%) !important; }
-.dt-constructivism .dt-nav { background: #efe4cc !important; }
-.dt-constructivism .dt-poster { border-radius: 0; }
-.dt-constructivism .dt-title { transform: rotate(-4deg); }
-.dt-matrix { background-image: repeating-linear-gradient(90deg, rgba(0,255,65,.0) 0px, rgba(0,255,65,.0) 7px, rgba(0,255,65,.35) 7px, rgba(0,255,65,.35) 9px, rgba(0,255,65,0) 9px, rgba(0,255,65,0) 16px), linear-gradient(180deg, rgba(0,6,2,0) 0%, rgba(0,6,2,.9) 100%) !important; background-size: 16px 22px, 100% 100% !important; }
-.dt-matrix .dt-title { box-shadow: 0 0 8px rgb(0,255,65); }
-.dt-matrix .dt-poster { border-radius: 0; }
-.dt-stickerbook { background-image: radial-gradient(circle, rgba(255,248,239,.14) 0px, rgba(255,248,239,.14) 1.2px, rgba(255,248,239,0) 1.8px) !important; background-size: 10px 10px !important; }
-.dt-stickerbook .dt-poster { border: 3px solid #fffaf0 !important; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,.45); transform: rotate(-8deg); }
-.dt-stickerbook .dt-poster + .dt-poster { transform: rotate(6deg); }
-.dt-stickerbook .dt-poster + .dt-poster + .dt-poster { transform: rotate(-4deg); }
-.dt-stickerbook .dt-title { border-radius: 3px; transform: rotate(-1.5deg); }
-.dt-stickerbook .dt-accent { opacity: .85; transform: rotate(3deg); }
-/* «Тамагочи»: a pink shell around a small LCD (light, ink-dark marks). */
-.dt-pocketpet { background: #c4d0aa !important; box-shadow: inset 0 0 0 6px #f3c6dc, inset 0 0 0 8px #c7a6d6; }
-.dt-pocketpet.dt-on { box-shadow: inset 0 0 0 6px #f3c6dc, inset 0 0 0 8px #c7a6d6, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
-.dt-pocketpet .dt-nav { left: 6px; top: 6px; width: calc(100% - 12px); background: rgba(24,32,18,.12) !important; }
-.dt-pocketpet .dt-poster { border-radius: 0; border-color: #182012 !important; background: #b5c399 !important; }
-/* «Одиссея»: a white corridor in perspective (converging ribs), a black door at the end, a red-lit tile. */
-.dt-odyssey { background-image: linear-gradient(90deg, rgba(0,0,0,0) 47%, #101318 47%, #101318 53%, rgba(0,0,0,0) 53%), linear-gradient(26deg, rgba(0,0,0,0) 49%, rgba(150,160,172,.7) 49.5%, rgba(0,0,0,0) 50.5%), linear-gradient(-26deg, rgba(0,0,0,0) 49%, rgba(150,160,172,.7) 49.5%, rgba(0,0,0,0) 50.5%), linear-gradient(180deg, #f6f8fa 0%, #e6eaee 50%, #cfd5dc 100%) !important; background-size: 100% 30%, 100% 100%, 100% 100%, 100% 100% !important; background-position: 0 50%, 0 0, 0 0, 0 0 !important; background-repeat: no-repeat !important; }
-.dt-odyssey .dt-nav, .dt-odyssey .dt-title, .dt-odyssey .dt-accent, .dt-odyssey .dt-poster { border-radius: 1px; }
-.dt-odyssey .dt-nav { background: #fff !important; box-shadow: inset 0 0 0 1px rgba(16,19,24,.25); }
-.dt-odyssey .dt-title { height: 5%; }
-.dt-odyssey .dt-poster { border-width: 1px; border-color: rgba(16,19,24,.3) !important; background: #fff !important; }
-.dt-odyssey .dt-accent + .dt-poster { border-color: #e21e16 !important; box-shadow: 0 0 6px 2px rgba(255,40,28,.55); }
-/* «Мультфильм»: paper hills and a sun on warm paper (light); cut-out posters. «Созерцание»: rain over dim water, sepia posters. */
-.dt-mult { background-image: radial-gradient(ellipse 60% 26% at 28% 100%, #afbd8b 0, #afbd8b 97%, rgba(175,189,139,0) 100%), radial-gradient(ellipse 75% 32% at 88% 100%, #c3cea5 0, #c3cea5 97%, rgba(195,206,165,0) 100%), radial-gradient(circle at 84% 20%, #f4c586 0, #f4c586 9%, rgba(244,197,134,0) 10%) !important; }
-.dt-mult .dt-nav { background: #e9d6b4 !important; }
-.dt-mult .dt-poster { border: 3px solid #fffaf0 !important; box-shadow: 0 2px 3px rgba(96,64,40,.3); }
-.dt-tarkovsky { background-image: repeating-linear-gradient(98deg, rgba(216,210,191,0) 0px, rgba(216,210,191,0) 9px, rgba(216,210,191,.13) 9px, rgba(216,210,191,.13) 10px), linear-gradient(180deg, rgba(0,0,0,0) 66%, rgba(216,210,191,.14) 66%, rgba(216,210,191,0) 68%, rgba(8,10,8,.5) 100%) !important; }
-.dt-tarkovsky .dt-poster { background: #6e5c43 !important; border-color: rgba(226,220,203,.25) !important; }
-.dt-tarkovsky .dt-accent + .dt-poster { background: #4f6a5c !important; }
-/* «Немое кино»: black and white, an intertitle frame on the title bar, grain dots. */
-.dt-silent { background-image: radial-gradient(circle, rgba(255,255,255,.1) 0px, rgba(255,255,255,.1) 1px, rgba(255,255,255,0) 1.4px), radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 50%, rgba(0,0,0,.7) 100%) !important; background-size: 5px 7px, 100% 100% !important; }
-.dt-silent .dt-nav { background: #0a0a0a !important; box-shadow: 0 0 0 1px #f2f2f2; }
-.dt-silent .dt-title { background: #0a0a0a !important; box-shadow: 0 0 0 2px #f2f2f2, 0 0 0 4px #0a0a0a, 0 0 0 5px #f2f2f2; }
-.dt-silent .dt-poster { border-color: #f2f2f2 !important; background: #3a3a3a !important; }
-/* «Симметрия»: pink with a mint/cream awning, centred title card in a mustard rule, framed posters. */
-.dt-anderson { background-image: repeating-linear-gradient(90deg, #8fcfb8 0px, #8fcfb8 8px, #fbeee6 8px, #fbeee6 16px) !important; background-size: 100% 6px !important; background-repeat: no-repeat !important; }
-.dt-anderson .dt-nav { border-radius: 0; box-shadow: 0 0 0 1px #d9a520; }
-.dt-anderson .dt-title { left: 27%; width: 46%; background: #3a222c !important; box-shadow: 0 0 0 4px #fbeee6, 0 0 0 5px #d9a520; }
-.dt-anderson .dt-accent { left: 40%; }
-.dt-anderson .dt-poster { border-radius: 0; border: 3px solid #fbeee6 !important; box-shadow: 0 0 0 1px #d9a520; }
-/* «Нуар»: light through blinds; grey posters. «Новая волна»: red and blue cards at the edges. */
-.dt-noir { background-image: repeating-linear-gradient(-32deg, rgba(242,239,230,0) 0px, rgba(242,239,230,0) 8px, rgba(242,239,230,.16) 8px, rgba(242,239,230,.16) 15px) !important; }
-.dt-noir .dt-poster { border-radius: 0; }
-.dt-vague { background-image: linear-gradient(90deg, #e6281e 0, #e6281e 5%, rgba(0,0,0,0) 5%) !important; }
-.dt-vague .dt-poster { border-radius: 0; }
-.dt-vague .dt-title { background: #345cde !important; }
-/* «Вестерн»: a bleached sky over ochre ground, letterbox bars, paper-framed bills. */
-.dt-western { background-image: linear-gradient(180deg, #f6eedb 0%, #ecd6aa 58%, #d29d5f 58%, #c88f52 100%) !important; box-shadow: inset 0 9px 0 #0b0806, inset 0 -9px 0 #0b0806; }
-.dt-western.dt-on { box-shadow: inset 0 9px 0 #0b0806, inset 0 -9px 0 #0b0806, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
-.dt-western .dt-poster { border-radius: 0; border-width: 2px; border-top-width: 6px; border-color: #f1dfb8 !important; background: #7a4a26 !important; }
-/* «Красная комната»: red curtains at the sides, a zigzag floor. */
-.dt-redroom {
-  background-color: #170607 !important;
-  background-image: repeating-linear-gradient(135deg, #ece7dd 0px, #ece7dd 4px, #0d0b0b 4px, #0d0b0b 8px), repeating-linear-gradient(90deg, #5a0509 0px, #a8121c 6px, #5a0509 12px) !important;
-  background-size: 100% 16%, 100% 100% !important; background-position: 0 100%, 0 0 !important; background-repeat: no-repeat !important;
-  box-shadow: inset 12px 0 0 #b3121c, inset -12px 0 0 #b3121c;
-}
-.dt-redroom.dt-on { box-shadow: inset 12px 0 0 #b3121c, inset -12px 0 0 #b3121c, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
-.dt-redroom .dt-poster { border-color: #f0ece4 !important; background: #2a0a0c !important; }
 
 /* Проектор-skeleton flat elements never scale on focus (any skin). The doubled
    class outweighs the skins' focus rules, which load later (design/looks/*.css). */

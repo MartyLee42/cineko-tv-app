@@ -1,3 +1,5 @@
+@import "@martytv/ui/fonts/cormorant-garamond.css"; /* not in the startup CSS */
+@import "@martytv/ui/fonts/playfair-display.css"; /* not in the startup CSS */
 /* ---- tarkovsky: dusk over still water, rain fades in, the logo surfaces slowly with its reflection */
 .tki-ground {
   background-image:

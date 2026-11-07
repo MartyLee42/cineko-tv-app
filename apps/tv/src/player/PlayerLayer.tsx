@@ -4,7 +4,8 @@ import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-sp
 import type { PlaybackSource, Release } from "@martytv/contracts";
 import { chapterIndexAt, chapterTicks, fileChapters, imageUrl, nextChapterStart, prevChapterStart, releaseBitrate, skipMode, type Chapter } from "@martytv/media-types";
 import { CvIcon, loaderPick, loadStatsLines, matchInfoOf, useAppliedDesign, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
-import { FINALE_MS, hasFinale, loaderKind } from "./loaderChunks";
+import { loaderKind } from "./loaderChunks";
+import { FINALE_MS, hasFinale } from "./loaderStyles";
 import { loaderKey } from "./loaderKeys";
 import { FocusButton, FocusLine } from "../focus";
 import { useCatalogConfig } from "../catalog/queries";

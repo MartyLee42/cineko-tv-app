@@ -2,13 +2,86 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import legacy from "@vitejs/plugin-legacy";
 import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 
 const MAIN = fileURLToPath(new URL("./src/main.tsx", import.meta.url));
 const BOOT = fileURLToPath(new URL("./src/boot.tsx", import.meta.url));
 
-type Ctx = { getModuleInfo(id: string): { importedIds: readonly string[] } | null };
+type Info = { importedIds: readonly string[]; code?: string | null; exports?: readonly string[] };
+type Ctx = { getModuleInfo(id: string): Info | null };
 
-/** Every module `from` loads statically (dynamic imports not followed). */
+/** A workspace package's barrel (packages/<name>/src/index.ts, imported as "@martytv/<name>"). */
+const BARREL = /[\\/]packages[\\/]([a-z-]+)[\\/]src[\\/]index\.ts$/;
+
+/** The names `code` imports from "@martytv/<pkg>" (types left out), or "all" (a namespace import). */
+function namesFrom(code: string, pkg: string): Set<string> | "all" {
+  const names = new Set<string>();
+  const re = new RegExp(`(?:import|export)\\s+(type\\s+)?([^;]*?)\\s*from\\s*["']@martytv/${pkg}["']`, "g");
+  for (const m of code.matchAll(re)) {
+    if (m[1]) continue;
+    if (/\*/.test(m[2]!)) return "all";
+    for (const part of /\{([^}]*)\}/.exec(m[2]!)?.[1]?.split(",") ?? []) {
+      const p = part.trim();
+      if (p && !p.startsWith("type ")) names.add(p.split(/\s+as\s+/)[0]!.trim());
+    }
+  }
+  return names;
+}
+
+const STAR = /export\s*\*\s*from\s*["']([^"']+)["']/g;
+
+/** The resolved id of a relative specifier among a module's imports. */
+function importedPath(ids: readonly string[], from: string, spec: string): string | undefined {
+  const base = resolve(dirname(from), spec);
+  return ids.find((m) => m === base || m.startsWith(base + "."));
+}
+
+/** Does `id` export `name`, itself or through its own `export * from` (designs.ts via components.tsx)? */
+function provides(ctx: Ctx, id: string, name: string, depth = 0): boolean {
+  const info = ctx.getModuleInfo(id);
+  if (info?.exports?.includes(name)) return true;
+  const code = info?.code;
+  if (depth > 3 || !code) return false;
+  const ids = [...(info?.importedIds ?? [])];
+  return [...code.matchAll(STAR)].some((m) => {
+    const sub = importedPath(ids, id, m[1]!);
+    return !!sub && provides(ctx, sub, name, depth + 1);
+  });
+}
+
+/** Which of a barrel's modules provide `names` (all of them when unsure). */
+function barrelModules(ctx: Ctx, barrel: string, names: Set<string> | "all"): readonly string[] {
+  const info = ctx.getModuleInfo(barrel);
+  const mods = [...(info?.importedIds ?? [])];
+  const code = info?.code;
+  if (names === "all" || !code) return mods;
+  // export { a, b as c } from "./x": exact names; export * from "./x": what the module provides.
+  const named = new Map<string, string>();
+  for (const m of code.matchAll(/export\s*\{([^}]*)\}\s*from\s*["']([^"']+)["']/g)) {
+    const mod = importedPath(mods, barrel, m[2]!);
+    for (const part of m[1]!.split(",")) {
+      const p = part.trim().replace(/^type\s+/, "");
+      if (p && mod) named.set((p.split(/\s+as\s+/)[1] ?? p.split(/\s+as\s+/)[0]!).trim(), mod);
+    }
+  }
+  const stars = [...code.matchAll(STAR)].map((m) => importedPath(mods, barrel, m[1]!));
+  const out = new Set<string>();
+  for (const n of names) {
+    // Defined in the barrel itself (media-types' helpers): nothing more to follow.
+    if (new RegExp(`export\\s+(?:async\\s+)?(?:function\\*?|const|let|var|class)\\s+${n}\\b`).test(code)) continue;
+    const mod = named.get(n) ?? stars.find((s) => !!s && provides(ctx, s, n));
+    if (!mod) return mods;
+    out.add(mod);
+  }
+  return [...out];
+}
+
+/**
+ * Every module `from` loads statically (dynamic imports not followed). Through
+ * a package barrel only the modules whose exports are actually imported: the
+ * barrels re-export everything, and following all of it would put every
+ * shared helper (the loader picker, the film-theme classifier…) into `core`.
+ */
 function staticReach(ctx: Ctx, from: string): Set<string> {
   const seen = new Set<string>();
   const todo = [from];
@@ -16,7 +89,18 @@ function staticReach(ctx: Ctx, from: string): Set<string> {
     const id = todo.pop()!;
     if (seen.has(id)) continue;
     seen.add(id);
-    for (const d of ctx.getModuleInfo(id)?.importedIds ?? []) todo.push(d);
+    const info = ctx.getModuleInfo(id);
+    const ids = [...(info?.importedIds ?? [])];
+    const code = info?.code;
+    for (const d of ids) {
+      const pkg = BARREL.exec(d)?.[1];
+      if (!pkg || !code) todo.push(d);
+      else {
+        // The barrel itself (its own helpers), not everything it re-exports.
+        seen.add(d);
+        todo.push(...barrelModules(ctx, d, namesFrom(code, pkg)));
+      }
+    }
   }
   return seen;
 }

@@ -1,3 +1,6 @@
+@import "@martytv/ui/themes/constructivism.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/oswald.css";
+@import "@martytv/ui/fonts/russo-one.css";
 /* «constructivism»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
 /* ---------------------------------------------------------------- Конструктивизм (terminal skeleton)
    A 1920s–30s avant-garde film poster (graphic style only): black-brown ground, signal red and

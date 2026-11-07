@@ -1,0 +1,66 @@
+/* Design tokens shared by the web and TV apps. Import before the @tailwind
+   directives. Colours are "r, g, b" triplets (see tailwind.preset.cjs).
+
+   Designs (html class, from ProfileSettings.design):
+     (default) design-kinozal  — А «Кинозал»: near-black + lime «Сигнал», Lampa density
+     design-terminal           — B «Терминал»: HUD, signal orange, mono labels, square
+     design-projector          — C «Проектор»: immersive artwork, teal, soft & round
+     design-wireframe          — «Каркас»: synthwave neon grid (projector skeleton)
+     design-cyberpunk          — «Киберпанк»: neon HUD, clipped corners (terminal skeleton)
+     design-deco               — «Ар-деко»: gold on black lacquer, display serif (kinozal skeleton)
+     design-retro80            — «Ретро 80-е»: VHS/arcade sunset chrome on navy (kinozal skeleton)
+     design-retro90            — «Ретро 90-е»: Windows 95 teal desktop, navy windows, grey bevels (terminal skeleton)
+     design-popart             — «Поп-арт»: comic blue, Ben-Day dots, yellow/red, black ink outlines (projector skeleton)
+     design-constructivism     — «Конструктивизм»: 20s–30s poster graphics: red/black/cream, diagonals (terminal skeleton)
+     design-matrix             — «Матрица»: green phosphor digital rain, glowing mono type (terminal skeleton)
+     design-stickerbook        — «Стикербук»: die-cut sticker posters, washi tape, cream/pink/mint on ink (kinozal skeleton)
+     design-pocketpet          — «Тамагочи»: pastel toy shell around a grey-green LCD, pixel ink and type (terminal skeleton)
+     design-odyssey            — «Одиссея»: late-60s space age: white ship corridors, symmetry, dark ink, one red light as focus (projector skeleton)
+     design-mult               — «Мультфильм»: LIGHT warm gouache paper, cut-out hills, soft fog, terracotta (kinozal skeleton)
+     design-tarkovsky          — «Созерцание»: dim rain and water, sepia posters, candle amber, book serif (kinozal skeleton)
+     design-silent             — «Немое кино»: black and white, film grain, art-nouveau intertitle cards (projector skeleton)
+     design-anderson           — «Симметрия»: pastel pink, mustard and mint, centred and symmetric, chapter cards (projector skeleton)
+     design-noir               — «Нуар»: 1940s film noir: monochrome, window-blind light, rain, typewriter type (terminal skeleton)
+     design-vague              — «Новая волна»: French New Wave: red/blue/white word cards, handwritten notes (terminal skeleton)
+     design-western            — «Вестерн»: sun-bleached desert, wanted posters, letterboxing, slab type (kinozal skeleton)
+     design-redroom            — «Красная комната»: red curtains, zigzag floor, ivory serif capitals (projector skeleton)
+   html.skel-* names the layout skeleton (see designs.ts).
+   Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
+:root {
+  --mt-bg: 8, 9, 12;
+  --mt-surface: 29, 31, 32;
+  --mt-surface-2: 38, 40, 41;
+  --mt-border: 62, 62, 62;
+  --mt-text: 242, 244, 248;
+  --mt-muted: 154, 160, 170;
+  --mt-accent: 200, 255, 61;
+  --mt-accent-strong: 222, 255, 130;
+  --mt-on-accent: 10, 12, 6;
+  --mt-focus: 255, 255, 255;
+  --mt-danger: 239, 68, 68;
+  --mt-ok: 74, 222, 128;
+  --mt-warn: 251, 191, 36;
+  --mt-font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 14px;
+  --mt-radius-control: 14px;
+  color-scheme: dark;
+}
+
+html.design-kinozal.theme-light {
+  --mt-bg: 244, 245, 240;
+  --mt-surface: 255, 255, 255;
+  --mt-surface-2: 232, 235, 226;
+  --mt-border: 210, 214, 204;
+  --mt-text: 14, 16, 12;
+  --mt-muted: 86, 92, 80;
+  --mt-accent: 120, 170, 0;
+  --mt-accent-strong: 200, 255, 61;
+  --mt-on-accent: 10, 12, 6;
+  --mt-focus: 14, 16, 12;
+  --mt-danger: 220, 38, 38;
+  --mt-ok: 22, 163, 74;
+  --mt-warn: 180, 83, 9;
+  color-scheme: light;
+}

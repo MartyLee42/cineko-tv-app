@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/caveat.css"; /* not in the startup CSS */
 /* «Тема под фильм» — soviet_toon: Советская мультипликация: мягкие акварельные краски на бумаге. Its own chunk (filmtheme/load.ts). */
 :root [data-film-theme="soviet_toon"] > .tv-fade img,
 :root .tv-loader[data-film-theme="soviet_toon"] img { -webkit-filter: saturate(.72) sepia(.18) brightness(1.06) contrast(.94); filter: saturate(.72) sepia(.18) brightness(1.06) contrast(.94); }

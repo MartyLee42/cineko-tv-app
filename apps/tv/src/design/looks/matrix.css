@@ -1,3 +1,4 @@
+@import "@martytv/ui/themes/matrix.css"; /* the design's tokens (not in the startup CSS) */
 /* «matrix»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
 /* ---------------------------------------------------------------- «Матрица» (terminal skeleton) */
 .mx-rain { background-color: rgb(0,6,2); overflow: hidden; }

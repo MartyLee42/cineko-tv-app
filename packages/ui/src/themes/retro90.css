@@ -1,0 +1,24 @@
+/* «retro90» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Ретро 90-е»: a Windows 95 desktop: teal, navy windows, grey bevels, white text. Headings in a
+   plain bold sans like MS Sans Serif; the pixel face (Pixelify Sans) only for the logo and intro:
+   its Cyrillic reads poorly at TV distance. */
+html.design-retro90 {
+  --mt-bg: 0, 110, 110;
+  --mt-surface: 16, 24, 112;
+  --mt-surface-2: 32, 48, 160;
+  --mt-border: 192, 192, 192;
+  --mt-text: 255, 255, 255;
+  --mt-muted: 204, 228, 228;
+  --mt-accent: 255, 232, 92;
+  --mt-accent-strong: 255, 255, 255;
+  --mt-on-accent: 0, 0, 0;
+  --mt-focus: 255, 255, 255;
+  --mt-font-display: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-retro90 h1, html.design-retro90 h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: 0; }
