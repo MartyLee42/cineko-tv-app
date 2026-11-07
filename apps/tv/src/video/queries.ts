@@ -100,6 +100,12 @@ export function useVideoDetail(id: string) {
   return useQuery({ queryKey: detailKey(id, profile), queryFn: () => fetchVideoDetail(id, profile), staleTime: 5 * 60_000, retry });
 }
 
+/** A channel's latest uploads (first page): where a series' next part may be when related videos miss it. */
+export async function fetchChannelVideos(channelId: string, profile: string | null): Promise<VideoItem[]> {
+  const ch = await unwrap(api.GET("/video/channels/{channel_id}", { params: { path: { channel_id: channelId }, query: withProfile(profile) } }));
+  return ch.videos;
+}
+
 /** A channel page: its header and uploads, then more uploads page by page (continuation). */
 export function useVideoChannel(id: string) {
   const profile = useActiveProfileId();

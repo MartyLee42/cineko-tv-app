@@ -13,6 +13,8 @@ export const settingsRu: Record<keyof typeof settingsEn, string> = {
   "settings.hide_watched": "Скрывать просмотренное",
   "settings.hide_watched_hint": "Досмотренные фильмы и сериалы скрываются из списков и каталога.",
   "settings.autoplay_next": "Автоматически включать следующую серию",
+  "settings.autoplay_countdown": "Отсчёт перед следующим",
+  "settings.autoplay_countdown_hint": "Следующая серия или видео сначала показывается на карточке с отсчётом. Выключите — начнётся сразу.",
   "settings.spoiler_free": "Без спойлеров",
   "settings.spoiler_free_hint": "Размывать кадры и описания непросмотренных серий.",
   "settings.loading_style": "Анимация загрузки",

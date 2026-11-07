@@ -34,6 +34,7 @@ export function VideoPlayer({
   qualities,
   startAt,
   onReady,
+  onEnded,
 }: {
   videoId: string;
   poster?: string;
@@ -41,6 +42,8 @@ export function VideoPlayer({
   /** Resume position from the detail (the source's position wins). */
   startAt?: number | null;
   onReady?: (h: PlayerHandle) => void;
+  /** The video played to its end (autoplay picks the next one). */
+  onEnded?: () => void;
 }) {
   const { t } = useI18n();
   const qc = useQueryClient();
@@ -198,7 +201,10 @@ export function VideoPlayer({
           onLoadedMetadata={onLoaded}
           onTimeUpdate={() => report(false)}
           onPause={() => report(true)}
-          onEnded={() => report(true)}
+          onEnded={() => {
+            report(true);
+            onEnded?.();
+          }}
         >
           {src?.subtitles?.map((s, i) => <track key={s.url} kind="subtitles" src={s.url} srcLang={s.lang ?? undefined} label={s.label ?? `CC ${i + 1}`} />)}
         </video>

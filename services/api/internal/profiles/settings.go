@@ -23,6 +23,9 @@ type Settings struct {
 	HideAnime           *bool   `json:"hide_anime,omitempty"`
 	HideWatched         *bool   `json:"hide_watched,omitempty"`
 	AutoplayNextEpisode *bool   `json:"autoplay_next_episode,omitempty"`
+	// AutoplayCountdown («Отсчёт перед следующим»): the next episode / video
+	// waits a few seconds on a card (default true); false starts it at once.
+	AutoplayCountdown *bool `json:"autoplay_countdown,omitempty"`
 	// SkipSegments («Заставки и титры»): "button" (default) offers to skip
 	// intros / recaps and the next episode at the credits, "auto" skips by
 	// itself, "off" never (playback markers, internal/segments).
@@ -47,6 +50,9 @@ type Settings struct {
 	// VideoHideShorts hides Shorts from video lists (default true).
 	VideoQuality    *int  `json:"video_quality,omitempty"`
 	VideoHideShorts *bool `json:"video_hide_shorts,omitempty"`
+	// VideoAutoplay: when a video ends, play the next part of its series
+	// (else a random related video). Default true.
+	VideoAutoplay *bool `json:"video_autoplay,omitempty"`
 	// SeasonalEffects: holiday animations — "on", "calm" (still
 	// decorations) or "off" (default; users turn them on in Settings). The
 	// admin's global switch (appsettings) wins.
@@ -184,10 +190,10 @@ var (
 func DefaultSettings() Settings {
 	t, l, ds := "system", "popcorn", "kinozal"
 	f, tr := false, true
-	return Settings{Theme: &t, HideAnime: &f, HideWatched: ptr(f), AutoplayNextEpisode: &tr, SkipSegments: ptr("button"),
+	return Settings{Theme: &t, HideAnime: &f, HideWatched: ptr(f), AutoplayNextEpisode: &tr, AutoplayCountdown: &tr, SkipSegments: ptr("button"),
 		SpoilerFreeEpisodes: ptr(f), LoadingStyle: &l, OnboardingCompleted: ptr(f), Design: &ds, PosterRating: ptr("kp"),
 		Sources: &SourcesSetting{All: true}, TasteNote: ptr(""), MinVotes: ptr(DefaultMinVotes),
-		IPTVPlaylists: &IPTVPlaylistsSetting{All: true}, VideoQuality: ptr(720), VideoHideShorts: ptr(true),
+		IPTVPlaylists: &IPTVPlaylistsSetting{All: true}, VideoQuality: ptr(720), VideoHideShorts: ptr(true), VideoAutoplay: ptr(true),
 		SeasonalEffects: ptr("off"), HiddenTabs: &[]string{},
 		CozyMode: ptr(false), CozyAmbience: ptr("fireplace"), CozySound: ptr(false), PosterWobble: ptr(true),
 		ShareWithFamily: ptr(false), ShowFamily: ptr(true), ShowCurated: ptr(true)}
@@ -209,6 +215,9 @@ func (s Settings) withDefaults() Settings {
 	}
 	if s.AutoplayNextEpisode != nil {
 		d.AutoplayNextEpisode = s.AutoplayNextEpisode
+	}
+	if s.AutoplayCountdown != nil {
+		d.AutoplayCountdown = s.AutoplayCountdown
 	}
 	if s.SkipSegments != nil && slices.Contains(SkipModes, *s.SkipSegments) {
 		d.SkipSegments = s.SkipSegments
@@ -245,6 +254,9 @@ func (s Settings) withDefaults() Settings {
 	}
 	if s.VideoHideShorts != nil {
 		d.VideoHideShorts = s.VideoHideShorts
+	}
+	if s.VideoAutoplay != nil {
+		d.VideoAutoplay = s.VideoAutoplay
 	}
 	if s.SeasonalEffects != nil && slices.Contains(SeasonalModes, *s.SeasonalEffects) {
 		d.SeasonalEffects = s.SeasonalEffects
