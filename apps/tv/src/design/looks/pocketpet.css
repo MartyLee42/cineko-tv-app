@@ -1,1 +1,130 @@
-/* «Тамагочи»: this design's own rules (loaded with the design's chunk). */
+/* «pocketpet»: this design's own rules (loaded with the design's chunk, design/looks). */
+/* ---------------------------------------------------------------- «Тамагочи» (terminal skeleton)
+   A pastel toy: the app is its grey-green LCD (near-black pixel ink, faint unlit cells, a soft
+   reflection), the pink plastic shell frames it (pocketpet.tsx). Headings, the menu, section labels
+   and the ticker in Press Start 2P (8×8 pixels: sizes in multiples of 8 stay crisp; small table
+   labels keep the mono face, Press Start is too wide), mixed case. Focus = inverted pixels: an ink block
+   with LCD-coloured text inside a chunky notched pixel border. No filters on the LCD itself. */
+.pp-lcd {
+  background-color: rgb(196,208,170);
+  /* Unlit pixel cells: a faint 6 px matrix. */
+  background-image: linear-gradient(rgba(24,32,18,.045) 1px, rgba(0,0,0,0) 1px), linear-gradient(90deg, rgba(24,32,18,.045) 1px, rgba(0,0,0,0) 1px);
+  background-size: 6px 6px;
+}
+/* The reflection: a broad pale diagonal sheen from the top-left. */
+.pp-glare { background: linear-gradient(118deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.08) 26%, rgba(255,255,255,0) 27%, rgba(255,255,255,0) 100%); }
+.pp-shell { z-index: 19; }
+
+html.design-pocketpet .t-grid { background: rgb(var(--mt-bg)); }
+html.design-pocketpet .t-label, html.design-pocketpet .uppercase { text-transform: none; letter-spacing: 0; }
+html.design-pocketpet .t-label { font-weight: 400; }
+
+/* The menu: LCD icons in a row. Each tab is a faint unlit cell; the active one has a pixel arrow
+   under it, the focused one is lit (inverted). */
+html.design-pocketpet nav[data-design-nav="terminal"] > span:first-child { font-family: var(--mt-font-display); font-weight: 400; font-size: 16px; letter-spacing: -1px; margin-right: 12px; }
+html.design-pocketpet nav[data-design-nav="terminal"] .t-label { font-family: var(--mt-font-display); font-size: 16px; letter-spacing: -1px; }
+/* Section labels («01 / Популярное…») and the Details «← Назад» line: pixel type too. */
+html.design-pocketpet h3.t-label, html.design-pocketpet [data-media-id] p.t-label.absolute { font-family: var(--mt-font-display); font-size: 24px; letter-spacing: -1px; }
+/* Titles: Press Start is twice as wide as the skeleton's display face (and wraps only between words). */
+html.design-pocketpet [data-testid="hero"] h2 { font-size: 64px !important; line-height: 1.2; letter-spacing: -4px; text-transform: none; }
+html.design-pocketpet [data-media-id] h1 { font-size: 56px !important; line-height: 1.2; letter-spacing: -4px; text-transform: none; }
+html.design-pocketpet nav[data-design-nav="terminal"] .t-tab { margin-right: 3px; padding: 0 6px; height: 44px; background: rgba(24,32,18,.06); }
+html.design-pocketpet nav[data-design-nav="terminal"] .t-tab.text-muted { color: rgb(52,64,40); }
+html.design-pocketpet nav[data-design-nav="terminal"] .t-tab.bg-text { background: rgb(24,32,18); color: rgb(206,218,180); box-shadow: 0 -4px 0 0 rgb(24,32,18), 0 4px 0 0 rgb(24,32,18), -4px 0 0 0 rgb(24,32,18), 4px 0 0 0 rgb(24,32,18); }
+/* Active tab: a pixel ▲ under it instead of the bar. */
+html.design-pocketpet nav[data-design-nav="terminal"] .t-tab .bg-accent { left: 50%; right: auto; bottom: -14px; width: 4px; height: 4px; margin-left: -2px; background: rgb(24,32,18); box-shadow: -4px 4px 0 rgb(24,32,18), 0 4px 0 rgb(24,32,18), 4px 4px 0 rgb(24,32,18); }
+html.design-pocketpet nav[data-design-nav="terminal"] .ml-auto > span:last-child { font-family: var(--mt-font-display); font-weight: 400; font-size: 16px; line-height: 44px; padding: 0 12px; background: rgb(24,32,18); color: rgb(206,218,180); }
+
+/* The ticker: a small recessed LCD strip on the shell's bottom band, between the brand and the buttons. */
+html.design-pocketpet [data-testid="status-ticker"] {
+  left: 270px; width: 1060px; bottom: 6px; height: 32px; border-radius: 6px;
+  background-color: rgb(186,200,158); color: rgb(24,32,18);
+  background-image: linear-gradient(90deg, rgba(24,32,18,.06) 1px, rgba(0,0,0,0) 1px);
+  background-size: 5px 100%;
+  box-shadow: inset 0 3px 0 rgba(24,32,18,.22), 0 0 0 3px #c7a6d6, 0 2px 0 3px #ffffff;
+}
+html.design-pocketpet [data-testid="status-ticker"] .t-ticker-track { font-family: var(--mt-font-display); font-weight: 400; font-size: 16px; letter-spacing: 0; }
+html.design-pocketpet [data-testid="status-ticker"] .t-ticker-track > span { padding-left: 40px; }
+
+/* Cards: square with a 3 px ink edge; focus = the chunky notched pixel frame (bars per side, so the corners stay open). */
+html.design-pocketpet .mt-card::after { content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; box-shadow: inset 0 0 0 3px rgb(24,32,18); }
+html.design-pocketpet .tv-focus.is-focused { box-shadow: 0 0 0 5px rgb(196,208,170), 0 -9px 0 5px rgb(24,32,18), 0 9px 0 5px rgb(24,32,18), -9px 0 0 5px rgb(24,32,18), 9px 0 0 5px rgb(24,32,18); }
+html.design-pocketpet .t-bracket { display: none; }
+html.design-pocketpet .t-hair { border-color: rgba(24,32,18,.3); }
+html.design-pocketpet .t-tag { background: rgb(196,208,170); color: rgb(24,32,18); }
+html.design-pocketpet .t-tag.text-accent, html.design-pocketpet .mt-card.is-focused .t-tag { background: rgb(24,32,18); color: rgb(206,218,180); }
+html.design-pocketpet .tv-rate-t-good, html.design-pocketpet .tv-rate-t-mid { color: rgb(24,32,18); }
+html.design-pocketpet .tv-rate-t-bad { color: rgb(150,40,90); }
+html.design-pocketpet .t-row-best { background: rgba(24,32,18,.1); }
+html.design-pocketpet .t-row.is-focused { background: rgb(24,32,18); color: rgb(206,218,180); }
+html.design-pocketpet .t-seg { background: rgba(24,32,18,.12); }
+html.design-pocketpet .t-seg-on { background: rgb(24,32,18); }
+/* Backdrops on the LCD: ink-only photos (grey, multiplied onto the panel) under a pixel matrix. */
+html.design-pocketpet .t-mono-img { -webkit-filter: grayscale(1) contrast(1.15) brightness(1.1); filter: grayscale(1) contrast(1.15) brightness(1.1); mix-blend-mode: multiply; opacity: .8; }
+html.design-pocketpet .t-scanlines { background-image: linear-gradient(rgba(196,208,170,.35) 1px, rgba(0,0,0,0) 1px), linear-gradient(90deg, rgba(196,208,170,.35) 1px, rgba(0,0,0,0) 1px); background-size: 4px 4px; }
+html.design-pocketpet .t-band-fade { background: linear-gradient(0deg, rgb(196,208,170) 0%, rgba(196,208,170,.6) 35%, rgba(196,208,170,.15) 70%, rgba(196,208,170,.4) 100%); }
+html.design-pocketpet .tv-scrim-left { background: linear-gradient(90deg, rgb(196,208,170) 0%, rgba(196,208,170,.94) 30%, rgba(196,208,170,.6) 60%, rgba(196,208,170,.1) 100%); }
+html.design-pocketpet .tv-scrim-bottom { background: linear-gradient(0deg, rgb(196,208,170) 0%, rgba(196,208,170,.88) 25%, rgba(196,208,170,0) 60%); }
+
+/* ---- Buttons, chips, rows: outlined pixel blocks; focused = lit (ink block, LCD text). (No :is()/:has(): old TV engines.) */
+html.design-pocketpet .tv-focus.bg-accent:not(.mt-card),
+html.design-pocketpet .tv-chip.bg-accent,
+html.design-pocketpet .k-primary { background: rgb(181,195,153); color: rgb(24,32,18); box-shadow: inset 0 0 0 4px rgb(24,32,18); }
+html.design-pocketpet .tv-focus[role=button].bg-surface-2:not(.mt-card),
+html.design-pocketpet .tv-focus[role=button].bg-surface:not(.mt-card),
+html.design-pocketpet .tv-chip.bg-surface-2,
+html.design-pocketpet .tv-chip.bg-surface,
+html.design-pocketpet .k-icon-btn { background: rgb(181,195,153); color: rgb(24,32,18); box-shadow: inset 0 0 0 2px rgba(24,32,18,.55); }
+html.design-pocketpet .tv-focus[role=button],
+html.design-pocketpet .tv-focus[data-action],
+html.design-pocketpet .tv-chip,
+html.design-pocketpet .tv-release,
+html.design-pocketpet .tv-panel,
+html.design-pocketpet .k-primary,
+html.design-pocketpet .k-icon-btn,
+html.design-pocketpet .tv-focus.rounded-full,
+html.design-pocketpet .tv-focus .rounded-full { border-radius: 0 !important; }
+html.design-pocketpet .tv-focus[role=button].is-focused:not(.mt-card),
+html.design-pocketpet .tv-focus[data-action].is-focused,
+html.design-pocketpet .tv-focus.bg-accent.is-focused:not(.mt-card),
+html.design-pocketpet .tv-chip.is-focused,
+html.design-pocketpet .k-primary.is-focused,
+html.design-pocketpet .k-icon-btn.is-focused,
+html.design-pocketpet .tv-release.is-focused,
+html.design-pocketpet .tv-panel.is-focused { background: rgb(24,32,18); color: rgb(206,218,180); }
+html.design-pocketpet .tv-focus[role=button].is-focused .text-text,
+html.design-pocketpet .tv-focus[role=button].is-focused .text-muted,
+html.design-pocketpet .tv-focus[role=button].is-focused .text-accent,
+html.design-pocketpet .tv-chip.is-focused .text-text,
+html.design-pocketpet .tv-chip.is-focused .text-muted,
+html.design-pocketpet .tv-chip.is-focused .text-accent,
+html.design-pocketpet .tv-release.is-focused .text-text,
+html.design-pocketpet .tv-release.is-focused .text-muted,
+html.design-pocketpet .tv-release.is-focused .text-accent,
+html.design-pocketpet .tv-panel.is-focused .text-text,
+html.design-pocketpet .tv-panel.is-focused .text-muted,
+html.design-pocketpet .tv-panel.is-focused .text-accent { color: rgb(206,218,180); }
+html.design-pocketpet .tv-release:not(.is-focused), html.design-pocketpet .tv-panel:not(.is-focused) { box-shadow: inset 0 0 0 2px rgba(24,32,18,.45); }
+html.design-pocketpet .tv-release.is-focused { box-shadow: 0 0 0 5px rgb(196,208,170), 0 -9px 0 5px rgb(24,32,18), 0 9px 0 5px rgb(24,32,18), -9px 0 0 5px rgb(24,32,18), 9px 0 0 5px rgb(24,32,18); }
+html.design-pocketpet .tv-progress { background: rgba(24,32,18,.18); }
+html.design-pocketpet .tv-progress-fill, html.design-pocketpet .tv-check { background: rgb(24,32,18); color: rgb(206,218,180); }
+html.design-pocketpet .tv-key-hint { background: rgb(24,32,18); color: rgb(206,218,180); }
+html.design-pocketpet .skin-veil { background: rgba(196,208,170,.55); }
+
+/* ---- The pixel pet (Home, bottom-right, above the ticker). */
+.pp-pet { left: 1712px; top: 800px; width: 176px; padding: 12px 0 8px; text-align: center; background: rgb(196,208,170); box-shadow: 0 -5px 0 0 rgb(24,32,18), 0 5px 0 0 rgb(24,32,18), -5px 0 0 0 rgb(24,32,18), 5px 0 0 0 rgb(24,32,18); }
+.pp-hearts { display: inline-block; }
+.pp-sprite { position: relative; width: 168px; height: 126px; margin: 6px auto 0; }
+.pp-caption { margin: 0; font-family: var(--mt-font-display); font-weight: 400; font-size: 16px; line-height: 24px; color: rgb(24,32,18); }
+/* Idle bob: two frames, a pixel up and back. Sparkles blink; the popcorn hops into the mouth. */
+.pp-bob { animation: pp-bob 1.2s steps(1, end) infinite; }
+@keyframes pp-bob { 0% { transform: translate(0, 0); } 50% { transform: translate(0, -1px); } }
+.pp-blink { animation: pp-blink .9s steps(1, end) infinite; }
+.pp-blink-2 { animation-delay: -.45s; }
+@keyframes pp-blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+.pp-feed { animation: pp-feed .9s steps(1, end) infinite; }
+@keyframes pp-feed { 0% { transform: translate(0, 0); opacity: 1; } 33% { transform: translate(-2px, 0); } 66% { transform: translate(-4px, 0); opacity: 0; } }
+.pp-zz { position: absolute; right: -4px; top: -6px; font-family: var(--mt-font-display); font-weight: 400; font-size: 32px; line-height: 1; color: rgb(24,32,18); }
+.pp-zz small { font-size: 16px; margin-left: 2px; }
+.pp-zz-on { animation: pp-zz 2s steps(4, end) infinite; }
+@keyframes pp-zz { 0% { transform: translate(0, 8px); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(6px, -14px); opacity: 0; } }

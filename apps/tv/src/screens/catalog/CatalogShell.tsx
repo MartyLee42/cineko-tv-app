@@ -8,7 +8,7 @@ import { playerKey } from "../../player/keys";
 import { openSection, push, type Route, type StackEntry } from "../../catalog/nav";
 import { useCatalogConfig } from "../../catalog/queries";
 import { FRAMES, useDesign, useSkin } from "../../design/context";
-import { SkinBackground, useCalmMotion, useLook } from "../../design/skins";
+import { SkinBackground, SkinCompanion, useCalmMotion, useLook } from "../../design/skins";
 import { openWithPick } from "../../design/pick";
 import { useInbox, useWatchlist } from "../../design/data";
 import { KinozalRail, ProjectorBar, TerminalBar, TerminalTicker, type MenuId, type NavProps } from "../../design/shell";
@@ -451,6 +451,8 @@ export function CatalogShell({
       {chrome && !settings && !guide && <TvSeasonLayer />}
       {/* «Конструктивизм»: «очередь за дефицитом» over a popular title opened in the catalog (not from the phone). */}
       {route.name === "details" && skin === "constructivism" && route.preview && <CvQueue key={top.key} entryKey={String(top.key)} media={route.preview} />}
+      {/* The skin's companion (Тамагочи's pixel pet), over the content, under the menu. */}
+      {chrome && <SkinCompanion onHome={route.name === "home" && !settings && !guide && !quiz} />}
       {/* Details is full-screen in every design (the PDF's p5/p8/p11): Back returns. */}
       {chrome && design === "kinozal" && <KinozalRail {...nav} />}
       {chrome && design === "terminal" && (
