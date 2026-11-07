@@ -19,7 +19,8 @@ import { useFilmTheme } from "../filmtheme/useFilmTheme";
 import { RecommendButton } from "../reco/RecommendButton";
 import { FamilyRatings } from "../family/Family";
 import { OnlineWatchButton } from "../play/OnlineWatch";
-import { DownloadChip } from "../downloads/ui";
+import { DownloadChip, useNow } from "../downloads/ui";
+import { SaveEpisodeButton, SaveSeasonButton, SaveToDeviceButton } from "../offline/ui";
 import { initials } from "../catalog/person";
 import { CvQueue } from "../catalog/CvExtras";
 import { Awards } from "../catalog/Awards";
@@ -161,6 +162,7 @@ function Hero({ m }: { m: MediaDetail }) {
 
 function MovieActions({ m }: { m: MediaDetail }) {
   const { t, locale } = useI18n();
+  const { data: cfg } = useCatalogConfig();
   const { profileId } = useActiveProfile();
   const progress = useMediaProgress(m.id).data;
   const setWatched = useSetWatched(m.id);
@@ -195,6 +197,10 @@ function MovieActions({ m }: { m: MediaDetail }) {
         <OnlineWatchButton m={m} className="col-span-2 sm:col-span-1" />
         {rs.kind === "resume" && <StartOverButton target={{ ...target, position_seconds: 0 }} className="text-sm sm:text-base" />}
         <ChooseReleaseButton target={target} className="text-sm sm:text-base" />
+        <SaveToDeviceButton
+          target={{ media_id: m.id, title: m.title, poster: imageUrl(cfg, m.poster_path, "w342") }}
+          className="col-span-2 text-sm sm:col-span-1 sm:text-base"
+        />
         <SendToTvButton secondary target={{ media_id: m.id }} className="text-sm sm:text-base" />
         {profileId && (
           <WatchedButton
@@ -456,6 +462,9 @@ function Seasons({ m }: { m: MediaDetail }) {
   const episodes = season.data?.episodes;
   const byEpisode = episodeProgressMap(progress);
   const sp = selected != null ? seasonProgress(progress, selected) : null;
+  const { data: cfg } = useCatalogConfig();
+  const poster = imageUrl(cfg, m.poster_path, "w342");
+  const now = useNow();
 
   // Arriving from "Continue watching": bring the episode into view once.
   const focused = useRef(false);
@@ -521,6 +530,16 @@ function Seasons({ m }: { m: MediaDetail }) {
         </div>
       )}
 
+      {!!episodes?.length && !season.isPlaceholderData && (
+        <SaveSeasonButton
+          mediaId={m.id}
+          title={m.title}
+          poster={poster}
+          // Not aired yet: nothing to download.
+          episodes={episodes.filter((e) => !e.air_date || Date.parse(e.air_date) <= now).map((e) => ({ ...epRef(e), name: e.name, code: episodeCode(e.season_number, e.episode_number) }))}
+        />
+      )}
+
       {season.isPending ? (
         <ul className="space-y-3">
           {Array.from({ length: 4 }, (_, i) => (
@@ -539,6 +558,7 @@ function Seasons({ m }: { m: MediaDetail }) {
                 e={e}
                 mediaId={m.id}
                 title={m.title}
+                poster={poster}
                 locale={locale}
                 fallbackTitle={t("catalog.detail.episode", { n: e.episode_number })}
                 progress={ep}
@@ -574,10 +594,12 @@ function EpisodeRow({
   focused,
   spoiler,
   onWatched,
+  poster,
 }: {
   e: Episode;
   mediaId: string;
   title: string;
+  poster: string | null;
   locale: string;
   fallbackTitle: string;
   progress: WatchProgress | undefined;
@@ -645,6 +667,18 @@ function EpisodeRow({
         <h3 className="mt-0.5 line-clamp-2 font-semibold leading-snug" data-testid="episode-name">{name}</h3>
         {meta && <p className="mt-0.5 text-xs text-muted">{meta}</p>}
         <DownloadChip mediaId={mediaId} episode={{ episode_id: e.id, season_number: e.season_number, episode_number: e.episode_number }} className="mt-1.5" />
+        <SaveEpisodeButton
+          code={code}
+          target={{
+            media_id: mediaId,
+            episode_id: e.id,
+            season_number: e.season_number,
+            episode_number: e.episode_number,
+            title,
+            subtitle: [code, e.name].filter(Boolean).join(" · "),
+            poster,
+          }}
+        />
         {e.overview &&
           (hide ? (
             <button

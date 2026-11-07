@@ -17,6 +17,7 @@ import { capFromConstraints, clientId, heavyMbps, looseT, readSampleList } from 
 import { usePlaybackBusy } from "../devprefs/speedtest";
 import { isTorrentRelease } from "../downloads/format";
 import { ServerDownloadIcon } from "../downloads/ui";
+import { PhoneIcon } from "../offline/ui";
 import {
   applyFilters,
   audioCodecsLabel,
@@ -115,6 +116,8 @@ export function ReleaseList(props: {
   onWatchHere?: (r: Release) => void;
   /** «Скачать на сервер» (torrent releases). */
   onDownload?: (r: Release) => void;
+  /** «На устройство»: save this release in the browser (torrent releases). */
+  onSaveDevice?: (r: Release) => void;
   /** Lighter-release mode: browser ranking, releases under this rate first. */
   budget?: { bps: number; duration_seconds: number };
   /** The TV the list is for (its playback profile ranks the TV mode). */
@@ -150,6 +153,7 @@ function ReleaseListBody({
   onPlayHere,
   onWatchHere,
   onDownload,
+  onSaveDevice,
   budget,
   deviceId,
   refine,
@@ -420,6 +424,7 @@ function ReleaseListBody({
                 onPlayHere={onPlayHere && (() => onPlayHere(r))}
                 onWatchHere={!here && onWatchHere ? () => onWatchHere(r) : undefined}
                 onDownload={onDownload && isTorrentRelease(r) ? () => onDownload(r) : undefined}
+                onSaveDevice={onSaveDevice && isTorrentRelease(r) ? () => onSaveDevice(r) : undefined}
               />
             </li>
           ))}
@@ -530,6 +535,7 @@ export function ReleaseRow({
   onPlayHere,
   onWatchHere,
   onDownload,
+  onSaveDevice,
 }: {
   r: Release;
   best?: boolean;
@@ -549,6 +555,8 @@ export function ReleaseRow({
   onWatchHere?: () => void;
   /** «Скачать на сервер (для медленных раздач)». */
   onDownload?: () => void;
+  /** «На устройство» (offline in this browser). */
+  onSaveDevice?: () => void;
 }) {
   const { t, locale } = useI18n();
   const res = resolutionLabel(r.resolution);
@@ -727,21 +735,36 @@ export function ReleaseRow({
         )}
       </div>
     )}
-    {onDownload && !current && (
-      <button
-        type="button"
-        onClick={onDownload}
-        data-testid="release-download"
-        className={`flex min-h-[40px] w-full items-center gap-1.5 border-t border-border/70 px-3 text-left text-xs font-semibold hover:bg-surface-2 ${
-          slow ? "text-accent" : "text-text/75 hover:text-text"
-        }`}
-      >
-        <ServerDownloadIcon className="shrink-0 text-base" />
-        <span className="min-w-0">
-          {t("downloads.download_to_server")}
-          <span className="font-normal text-muted"> · {t("downloads.for_slow")}</span>
-        </span>
-      </button>
+    {(onDownload || onSaveDevice) && !current && (
+      <div className="flex border-t border-border/70">
+        {onSaveDevice && (
+          <button
+            type="button"
+            onClick={onSaveDevice}
+            data-testid="release-save-device"
+            className="flex min-h-[40px] shrink-0 items-center gap-1.5 border-r border-border/70 px-3 text-left text-xs font-semibold text-text/75 hover:bg-surface-2 hover:text-text"
+          >
+            <PhoneIcon className="shrink-0 text-base text-accent" />
+            {t("devicedl.release_save")}
+          </button>
+        )}
+        {onDownload && (
+          <button
+            type="button"
+            onClick={onDownload}
+            data-testid="release-download"
+            className={`flex min-h-[40px] min-w-0 flex-1 items-center gap-1.5 px-3 text-left text-xs font-semibold hover:bg-surface-2 ${
+              slow ? "text-accent" : "text-text/75 hover:text-text"
+            }`}
+          >
+            <ServerDownloadIcon className="shrink-0 text-base" />
+            <span className="min-w-0">
+              {t("downloads.download_to_server")}
+              <span className="font-normal text-muted"> · {t("downloads.for_slow")}</span>
+            </span>
+          </button>
+        )}
+      </div>
     )}
     </div>
   );
