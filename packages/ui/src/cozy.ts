@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 // «Уютный режим» (cozy mode), the pure part: when the warm palette and the
 // Home ambience (rain on the glass / fireplace glow) are drawn, the
 // precomputed particles, and the parameters of the synthesised sound.
@@ -218,4 +219,14 @@ export function scheduleBursts(b: Bursts, next: number, until: number, rand: () 
     t += -Math.log(1 - rand() * 0.999) / b.rate;
   }
   return { events, next: t };
+}
+
+/** Toggles the warm, dimmed palette (html.mt-cozy) while mounted with `on`. */
+export function useCozyPalette(on: boolean): void {
+  useEffect(() => {
+    if (!on || typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.classList.add("mt-cozy");
+    return () => root.classList.remove("mt-cozy");
+  }, [on]);
 }

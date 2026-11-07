@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import {
   ApiError,
   unwrap,
@@ -12,7 +12,7 @@ import {
   type IptvChannel,
 } from "@martytv/contracts";
 import { catalogLang } from "@martytv/media-types";
-import { applyDesign, applyTheme, Centered, CV_OFFLINE, Logo, Spinner, useI18n } from "@martytv/ui";
+import { applyDesign, applyTheme, Centered, CV_OFFLINE, DESIGN_SWATCH, Logo, Spinner, useI18n } from "@martytv/ui";
 import { api, onUnauthorized, realtime } from "./api";
 import { credentialStore, exitApp, isBackKey, profileStore } from "./platform";
 import { FocusButton, rememberFocus } from "./focus";
@@ -52,9 +52,11 @@ import { programmeTitle } from "./iptv/logic";
 import { useVideoSession, videoSession } from "./video/session";
 import { videoPlaybackState, type VideoItem } from "./video/logic";
 import { qualityInPlace, videoControl } from "./video/remote";
-import { StartupIntro } from "./intro/StartupIntro";
 import { PillLayer } from "./design/PillDialog";
 import { introEnv, shouldShowIntro } from "./intro/logic";
+
+// The startup animation is its own chunk: TVs with it switched off never fetch it.
+const StartupIntro = lazy(() => import("./intro/StartupIntro").then((m) => ({ default: m.StartupIntro })));
 
 type Screen =
   | { kind: "boot" }
@@ -752,7 +754,11 @@ export function App() {
         />
       )}
       <PillLayer onRed={() => setIntro("matrix")} />
-      {intro && <StartupIntro design={intro} onDone={endIntro} />}
+      {intro && (
+        <Suspense fallback={<div data-testid="startup-intro-wait" className="absolute left-0 top-0 h-[1080px] w-[1920px]" style={{ background: DESIGN_SWATCH[intro].bg, zIndex: 80 }} />}>
+          <StartupIntro design={intro} onDone={endIntro} />
+        </Suspense>
+      )}
     </div>
     </DeviceProvider>
     </DesignProvider>

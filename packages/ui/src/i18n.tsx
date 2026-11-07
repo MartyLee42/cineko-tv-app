@@ -1,86 +1,43 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAppliedDesign } from "./designs";
-import { en as coreEn } from "./locales/en";
-import { ru as coreRu } from "./locales/ru";
-import { catalogEn } from "./locales/catalog.en";
-import { catalogRu } from "./locales/catalog.ru";
-import { remoteEn } from "./locales/remote.en";
-import { remoteRu } from "./locales/remote.ru";
-import { playerEn } from "./locales/player.en";
-import { playerRu } from "./locales/player.ru";
-import { settingsEn } from "./locales/settings.en";
-import { settingsRu } from "./locales/settings.ru";
-import { tvdesignEn } from "./locales/tvdesign.en";
-import { tvdesignRu } from "./locales/tvdesign.ru";
-import { errorsEn } from "./locales/errors.en";
-import { errorsRu } from "./locales/errors.ru";
-import { adminEn } from "./locales/admin.en";
-import { adminRu } from "./locales/admin.ru";
-import { sourcesEn } from "./locales/sources.en";
-import { sourcesRu } from "./locales/sources.ru";
-import { importsEn } from "./locales/imports.en";
-import { importsRu } from "./locales/imports.ru";
-import { onlineEn } from "./locales/online.en";
-import { onlineRu } from "./locales/online.ru";
-import { foryouEn } from "./locales/foryou.en";
-import { foryouRu } from "./locales/foryou.ru";
-import { askEn } from "./locales/ask.en";
-import { askRu } from "./locales/ask.ru";
-import { tasteEn } from "./locales/taste.en";
-import { tasteRu } from "./locales/taste.ru";
-import { downloadsEn } from "./locales/downloads.en";
-import { downloadsRu } from "./locales/downloads.ru";
-import { iptvEn } from "./locales/iptv.en";
-import { iptvRu } from "./locales/iptv.ru";
-import { videoEn } from "./locales/video.en";
-import { videoRu } from "./locales/video.ru";
-import { newEpisodesEn } from "./locales/newepisodes.en";
-import { newEpisodesRu } from "./locales/newepisodes.ru";
-import { seasonsEn } from "./locales/seasons.en";
-import { seasonsRu } from "./locales/seasons.ru";
-import { designsEn } from "./locales/designs.en";
-import { designsRu } from "./locales/designs.ru";
-import { tvplayEn } from "./locales/tvplay.en";
-import { tvplayRu } from "./locales/tvplay.ru";
-import { playerStatsEn } from "./locales/playerstats.en";
-import { playerStatsRu } from "./locales/playerstats.ru";
-import { martyEn } from "./locales/marty.en";
-import { martyRu } from "./locales/marty.ru";
-import { devprefsEn } from "./locales/devprefs.en";
-import { devprefsRu } from "./locales/devprefs.ru";
-import { superplayEn } from "./locales/superplay.en";
-import { superplayRu } from "./locales/superplay.ru";
-import { tasteQuizEn } from "./locales/tastequiz.en";
-import { tasteQuizRu } from "./locales/tastequiz.ru";
-import { cozyEn } from "./locales/cozy.en";
-import { cozyRu } from "./locales/cozy.ru";
-import { curatedEn } from "./locales/curated.en";
-import { curatedRu } from "./locales/curated.ru";
-import { awardsEn } from "./locales/awards.en";
-import { awardsRu } from "./locales/awards.ru";
-import { idleEn } from "./locales/idle.en";
-import { idleRu } from "./locales/idle.ru";
-import { healthEn } from "./locales/health.en";
-import { healthRu } from "./locales/health.ru";
-import { mascotEn } from "./locales/mascot.en";
-import { mascotRu } from "./locales/mascot.ru";
-import { soundsEn } from "./locales/sounds.en";
-import { soundsRu } from "./locales/sounds.ru";
-import { sleepEn } from "./locales/sleep.en";
-import { sleepRu } from "./locales/sleep.ru";
-import { skipEn } from "./locales/skip.en";
-import { skipRu } from "./locales/skip.ru";
-import { triviaEn } from "./locales/trivia.en";
-import { triviaRu } from "./locales/trivia.ru";
+import { detectLocale, LOCALE_KEY as STORAGE_KEY, readStoredLocale as readStored, type Locale } from "./localeDetect";
 
-const en = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn };
-const ru = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu, ...skipRu };
-export type MessageKey = keyof typeof en;
+export { detectLocale, type Locale };
 
-export type Locale = "en" | "ru";
+export type MessageKey = keyof typeof import("./locales/all.en").messagesEn;
+
 export const LOCALES: Locale[] = ["en", "ru"];
 
-const dictionaries: Record<Locale, Record<MessageKey, string>> = { en, ru };
+type Dict = Record<MessageKey, string>;
+
+// The strings of one language are a separate chunk (~150 KB of JS each):
+// only the active one is downloaded. Apps call loadLocale() before the first
+// render (in parallel with their own code); translate() is synchronous.
+const dictionaries: Partial<Record<Locale, Dict>> = {};
+const loaders: Record<Locale, () => Promise<Dict>> = {
+  en: () => import("./locales/all.en").then((m) => m.messagesEn),
+  ru: () => import("./locales/all.ru").then((m) => m.messagesRu),
+};
+const loading: Partial<Record<Locale, Promise<void>>> = {};
+
+/** Downloads a language's strings (once; a failed load is retried on the next call). */
+export function loadLocale(l: Locale): Promise<void> {
+  if (dictionaries[l]) return Promise.resolve();
+  return (loading[l] ??= loaders[l]().then(
+    (d) => {
+      dictionaries[l] = d;
+    },
+    (e: unknown) => {
+      delete loading[l];
+      throw e;
+    },
+  ));
+}
+
+/** The language's strings are here (translate() can use them). */
+export function localeLoaded(l: Locale): boolean {
+  return !!dictionaries[l];
+}
 
 /** Replaces {name} placeholders. Unknown placeholders are left visible. */
 export function format(template: string, vars?: Record<string, string | number>): string {
@@ -89,7 +46,8 @@ export function format(template: string, vars?: Record<string, string | number>)
 }
 
 export function translate(locale: Locale, key: MessageKey, vars?: Record<string, string | number>): string {
-  return format(dictionaries[locale][key] ?? en[key] ?? key, vars);
+  // A key missing in one language (or a language not loaded yet) falls back to the other.
+  return format(dictionaries[locale]?.[key] ?? dictionaries.ru?.[key] ?? dictionaries.en?.[key] ?? key, vars);
 }
 
 /** Strings «Конструктивизм» says differently: the AI is «Товарищ ЭВМ» («Comrade Computer»). */
@@ -130,11 +88,6 @@ export function translateCv(locale: Locale, key: MessageKey, vars?: Record<strin
   return cv === undefined ? translate(locale, key, vars) : format(cv, vars);
 }
 
-export function detectLocale(stored?: string | null): Locale {
-  if (stored === "en" || stored === "ru") return stored;
-  const nav = typeof navigator !== "undefined" ? navigator.language : "en";
-  return nav.toLowerCase().startsWith("ru") ? "ru" : "en";
-}
 
 type TFn = (key: MessageKey, vars?: Record<string, string | number>) => string;
 
@@ -146,32 +99,47 @@ interface I18nValue {
 
 const I18nContext = createContext<I18nValue | null>(null);
 
-const STORAGE_KEY = "martytv.locale";
 
-function readStored(): string | null {
-  try {
-    return localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return null;
-  }
+/** The language this browser starts in (stored choice, else the browser's). Entry points preload it. */
+export function initialLocale(): Locale {
+  return detectLocale(readStored());
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => detectLocale(readStored()));
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  // Bumped when a language's strings arrive (normally they're loaded before the first render).
+  const [loaded, setLoaded] = useState(0);
+  useEffect(() => {
+    if (localeLoaded(locale)) return;
+    let live = true;
+    loadLocale(locale).then(
+      () => live && setLoaded((n) => n + 1),
+      () => undefined,
+    );
+    return () => {
+      live = false;
+    };
+  }, [locale]);
   const setLocale = useCallback((l: Locale) => {
-    setLocaleState(l);
-    try {
-      localStorage.setItem(STORAGE_KEY, l);
-    } catch {
-      // storage unavailable (private mode); keep in memory only
-    }
-    document.documentElement.lang = l;
+    const apply = () => {
+      setLocaleState(l);
+      try {
+        localStorage.setItem(STORAGE_KEY, l);
+      } catch {
+        // storage unavailable (private mode); keep in memory only
+      }
+      document.documentElement.lang = l;
+    };
+    // Switch once the other language's strings are here (no flash of keys).
+    if (localeLoaded(l)) apply();
+    else loadLocale(l).then(apply, () => undefined);
   }, []);
   // «Конструктивизм» renames a few strings (the AI is «Товарищ ЭВМ»).
   const cv = useAppliedDesign() === "constructivism";
   const value = useMemo<I18nValue>(
     () => ({ locale, setLocale, t: cv ? (key, vars) => translateCv(locale, key, vars) : (key, vars) => translate(locale, key, vars) }),
-    [locale, setLocale, cv],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `loaded`: new strings arrived
+    [locale, setLocale, cv, loaded],
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
