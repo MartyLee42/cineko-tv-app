@@ -46,6 +46,7 @@ func (h *Handlers) Routes(r fiber.Router) {
 	g.Get("/", auth.RequireUser(), h.list)
 	g.Get("/me", auth.RequireDevice(), h.me)
 	g.Post("/register", h.register)
+	g.Post("/demo", auth.RequireSession(), h.demo)
 	g.Get("/:id", auth.RequireUser(), h.get)
 	g.Patch("/:id", auth.RequireUser(), h.update)
 	g.Delete("/:id", auth.RequireUser(), h.revoke)
