@@ -13,4 +13,6 @@ export const loadersRu = {
   "settings.loading.catch": "Лови!",
   "settings.loading.catch_hint": "Мини-игра на время загрузки: Cineko ловит кусочки фильма корзинкой. Стрелки пульта двигают корзинку, большое число — сколько загрузилось. Фильм начнётся сам, как только будет готов.",
   "loaders.catch.caught": "Поймано: {n}",
+  "settings.loading.surprise": "Сюрприз",
+  "settings.loading.surprise_hint": "Каждый раз — другая анимация загрузки, наугад (две одинаковые подряд не бывает).",
 };

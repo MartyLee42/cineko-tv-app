@@ -5065,7 +5065,7 @@ components:
           description: 'Which sources this profile searches (GET /sources lists them). Default {"enabled": "all"}. Unknown ids → 422. Replaced as a whole on PUT.' 
         loading_style:
           type: string
-          enum: [popcorn, fill_title, poster_reveal, film_reel, minimal, marty, marty_popcorn, matrix, paws, aquarium, speed88, odyssey, balloons, catch]
+          enum: [popcorn, fill_title, poster_reveal, film_reel, minimal, marty, marty_popcorn, matrix, paws, aquarium, speed88, odyssey, balloons, catch, surprise]
           default: popcorn
           description: |
             Animation shown while a stream is first preparing/preloading (later
@@ -5083,7 +5083,8 @@ components:
             speed88 = «Назад в будущее»: a speedometer needle / digital readout climbs to 88 mph; at 88 fire trails shoot off as the film starts;
             odyssey = «Космическая одиссея»: a dark monolith rises as a moon and a sun line up; at 100 % one quiet note (only with the device's interface sounds on);
             balloons = «Вверх»: balloons get tied to a little house one by one; at 100 % it floats off;
-            catch = «Лови!»: a waiting game in an LCD-handheld look — Cineko catches pieces rolling down four chutes, the TV remote's arrows move the basket, a miss cracks (a soft sound only with interface sounds on); the big number is the load's percentage, playback never waits for it.
+            catch = «Лови!»: a waiting game in an LCD-handheld look — Cineko catches pieces rolling down four chutes, the TV remote's arrows move the basket, a miss cracks (a soft sound only with interface sounds on); the big number is the load's percentage, playback never waits for it;
+            surprise = «Сюрприз»: a different one of the styles above for each load (random, never the same twice in a row; remembered per device), fixed for the whole load. A design with its own loader (matrix, constructivism) still shows that one.
         taste_note:
           type: string
           maxLength: 600

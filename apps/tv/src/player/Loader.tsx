@@ -8,7 +8,7 @@
 // loaderChunks.ts); until it's there, Minimal stands in.
 import { Suspense, useEffect, useRef, useState } from "react";
 import type { PlaybackSource } from "@martytv/contracts";
-import { Spinner, useAppliedDesign } from "@martytv/ui";
+import { isLoaderPicker, Spinner, useAppliedDesign, useI18n, type LoaderPicker } from "@martytv/ui";
 import { loadTracker, SHOW_EVERY_MS, type LoadStage } from "./loading";
 import type { LoadingStyle } from "../profile/settings";
 import { Backdrop, pct, Status, type LoaderModel } from "./loaderParts";
@@ -50,6 +50,8 @@ export function useLoadProgress(loadKey: string, stage: LoadStage, source: LoadI
 export function Loader({ style, m, preview = false }: { style: LoadingStyle; m: LoaderModel; preview?: boolean }) {
   // «Конструктивизм» and «Матрица»: their own loader whatever the style.
   const applied = useAppliedDesign();
+  // «Сюрприз»: only Settings shows the setting itself (a load gets the picked style).
+  if (isLoaderPicker(style)) return <PickTile picker={style} />;
   const kind = loaderKind(style, applied ?? "kinozal", preview);
   return (
     <div
@@ -100,6 +102,24 @@ function LazyStyle({ kind, m, mood, preview }: { kind: Exclude<LoaderKind, "mini
     case "catch":
       return <LOADERS.catch m={m} preview={preview} />;
   }
+}
+
+/** Settings' preview of a picker («Сюрприз»): a big «?» over shuffled cards. */
+function PickTile({ picker }: { picker: LoaderPicker }) {
+  const { t } = useI18n();
+  return (
+    <div data-testid="loader-preview" data-loader={picker} className="absolute left-0 top-0 h-full w-full overflow-hidden bg-bg">
+      {[-14, 4, 18].map((r, i) => (
+        <div
+          key={r}
+          className="absolute left-1/2 top-[170px] h-[520px] w-[360px] rounded-[40px] border-4 border-accent/40 bg-surface"
+          style={{ transform: `translate3d(${-180 + (i - 1) * 200}px,0,0) rotate(${r}deg)`, opacity: 0.35 + i * 0.2 }}
+        />
+      ))}
+      <p className="absolute left-0 right-0 top-[260px] text-center text-[300px] font-black leading-none text-accent">?</p>
+      <p className="absolute left-0 right-0 top-[760px] text-center text-7xl font-bold">{t(`settings.loading.${picker}`)}</p>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------- minimal

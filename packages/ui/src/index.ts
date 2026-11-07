@@ -32,5 +32,6 @@ export { GenreReaction } from "./GenreReaction";
 export * from "./aiCreativity";
 export * from "./trivia";
 export * from "./surprise";
+export * from "./loaderPick";
 export * from "./companion";
 export * from "./soundtrack";

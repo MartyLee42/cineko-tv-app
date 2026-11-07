@@ -2,7 +2,7 @@
 // app's core imports it to fetch the profile's style together with the
 // player's code, so the loader is ready the moment playback starts.
 import { lazy, type ComponentType } from "react";
-import type { DesignSetting } from "@martytv/ui";
+import { upcomingSurprise, type DesignSetting, type LoaderAnimation } from "@martytv/ui";
 import type { LoadingStyle } from "../profile/settings";
 import type { LoaderModel } from "./loaderParts";
 
@@ -28,11 +28,16 @@ const imports: Record<Exclude<LoaderKind, "minimal">, () => Promise<StyleModule>
 };
 
 /** Which loader draws: «Конструктивизм» / «Матрица» have their own whatever the style (not in Settings' previews). */
-export function loaderKind(style: LoadingStyle, design: DesignSetting, preview = false): LoaderKind {
+export function loaderKind(style: LoaderAnimation, design: DesignSetting, preview = false): LoaderKind {
   if (!preview && design === "constructivism") return "poster";
   if (!preview && design === "matrix") return "matrix";
   if (style === "marty_popcorn") return "marty";
   return style;
+}
+
+/** The animation the next load will show for a setting (for fetching its chunk ahead): «Сюрприз» has one waiting. */
+export function upcomingAnimation(setting: LoadingStyle): LoaderAnimation {
+  return setting === "surprise" ? upcomingSurprise() : setting;
 }
 
 /** Styles with an end flourish: kept up this long over the starting film (fading out), see PlayerLayer. */

@@ -13,4 +13,6 @@ export const loadersEn = {
   "settings.loading.catch": "Catch!",
   "settings.loading.catch_hint": "A little game while it loads: Cineko catches pieces of the film in a basket. The remote's arrows move the basket; the big number is how much has loaded. The film starts by itself when it's ready.",
   "loaders.catch.caught": "Caught: {n}",
+  "settings.loading.surprise": "Surprise",
+  "settings.loading.surprise_hint": "A different loading animation every time, at random (never the same one twice in a row).",
 };

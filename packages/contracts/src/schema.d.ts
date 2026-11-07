@@ -4940,11 +4940,12 @@ export interface components {
              *     speed88 = «Назад в будущее»: a speedometer needle / digital readout climbs to 88 mph; at 88 fire trails shoot off as the film starts;
              *     odyssey = «Космическая одиссея»: a dark monolith rises as a moon and a sun line up; at 100 % one quiet note (only with the device's interface sounds on);
              *     balloons = «Вверх»: balloons get tied to a little house one by one; at 100 % it floats off;
-             *     catch = «Лови!»: a waiting game in an LCD-handheld look — Cineko catches pieces rolling down four chutes, the TV remote's arrows move the basket, a miss cracks (a soft sound only with interface sounds on); the big number is the load's percentage, playback never waits for it.
+             *     catch = «Лови!»: a waiting game in an LCD-handheld look — Cineko catches pieces rolling down four chutes, the TV remote's arrows move the basket, a miss cracks (a soft sound only with interface sounds on); the big number is the load's percentage, playback never waits for it;
+             *     surprise = «Сюрприз»: a different one of the styles above for each load (random, never the same twice in a row; remembered per device), fixed for the whole load. A design with its own loader (matrix, constructivism) still shows that one.
              * @default popcorn
              * @enum {string}
              */
-            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix" | "paws" | "aquarium" | "speed88" | "odyssey" | "balloons" | "catch";
+            loading_style: "popcorn" | "fill_title" | "poster_reveal" | "film_reel" | "minimal" | "marty" | "marty_popcorn" | "matrix" | "paws" | "aquarium" | "speed88" | "odyssey" | "balloons" | "catch" | "surprise";
             /**
              * @description «О моих вкусах»: the viewer's own description of their tastes (trimmed, at most 600 characters; "" clears it).
              *     Sent to DeepSeek only as delimited data (`viewer_note`) in the AI collections and Ask AI prompts. A change
