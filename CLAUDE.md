@@ -64,5 +64,5 @@ docker run --rm -v $PWD:/w -w /w/services/music golang:1.27-bookworm go test ./.
   `kk.test.ts` checks Kazakh has every key and placeholder). Kazakh UI shows catalog metadata in Russian (`catalogLang`).
 - The API contract is `packages/contracts/openapi.yaml`; regenerate the TS client with `make gen`.
 - Docs: `docs/architecture.md` (how things work), `docs/api.md`, `docs/deployment.md`.
-- CI (`.github/workflows/ci.yml`) runs the same Go/JS tests, compose validation and shellcheck;
-  `images.yml` publishes the images, `pages.yml` deploys Cineko Lite.
+- CI (`.github/workflows/ci.yml`, manual trigger only) runs the same Go/JS tests, compose validation and shellcheck;
+  `images.yml` publishes the images, `pages.yml` deploys Cineko Lite — all three run only when started by hand.

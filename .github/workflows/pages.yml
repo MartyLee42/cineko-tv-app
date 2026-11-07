@@ -5,12 +5,8 @@
 # Settings → Pages → Source: "GitHub Actions".
 name: Pages (Cineko Lite)
 
+# Run by hand only (Actions → this workflow → «Run workflow», or `gh workflow run`).
 on:
-  push:
-    branches: [main]
-    paths:
-      - "apps/lite/**"
-      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:

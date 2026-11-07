@@ -5,10 +5,8 @@
 # QEMU), pushed by digest, then joined into one multi-arch manifest per image.
 name: images
 
+# Run by hand only (Actions → this workflow → «Run workflow», or `gh workflow run`).
 on:
-  push:
-    branches: [main]
-    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
