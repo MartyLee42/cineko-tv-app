@@ -148,6 +148,7 @@ const WARNINGS: Record<string, MessageKey> = {
   audio_needs_conversion: "tvplay.warn.audio_needs_conversion",
   audio_unsupported: "tvplay.warn.audio_unsupported",
   hdr_avoided: "tvplay.warn.hdr_avoided",
+  may_stutter: "smooth.warn.may_stutter",
 };
 
 /** Localized warning chips; unknown codes are shown humanized rather than dropped. */
