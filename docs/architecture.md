@@ -1474,6 +1474,48 @@ and PWA) open `GET /media/{id}/quotes` and `/facts`.
   cached. Concurrent requests share one fetch, which runs detached from the
   request (≤ 90 s), so a client's prefetch that gives up still fills the cache.
 
+## Watch companion («Ранее в сериале», «После титров»)
+
+`internal/companion` (eligibility, cache, limits, handlers; migration `00032`)
+with the DeepSeek side in `internal/foryou/companion.go` (prompts, parsing,
+the shared client and token budget, admin temperature `companion`, default
+0.3, and switch `ai_feature_companion`, Admin → «Рекомендации»). Both are asked only
+when the viewer presses the chip/button on Details (TV and PWA); `GET
+/media/{id}/companion` says which ones to show, and nothing is shown while AI
+is off.
+
+- **«Ранее в сериале»** — a series with completed episodes that this profile
+  last touched (`max(watch_progress.updated_at)`) ≥ 7 days ago. The model gets
+  the title and the TMDB synopses (catalog language, else English, else any)
+  of the furthest 12 completed episodes in story order, specials skipped, each
+  ≤ 700 characters, ≤ 6000 in all (oldest dropped first). Nothing past the
+  last completed episode is ever sent, and the prompt forbids anything not in
+  the synopses, so it can't spoil. Missing synopses → those seasons are
+  loaded from TMDB once. ≤ 5 one-sentence lines; markdown, bullets and
+  duplicates are stripped. Cached in `companion_answers` (180 days) keyed by
+  a hash of the episode ids used, so a repeat press — or another profile at
+  the same point — is free.
+- **«После титров»** — for what the profile finished: a completed movie
+  (watched to the end or marked watched), or a series whose **season
+  finale** (the season's last known episode) is completed. The scope is the
+  highest such season; it is the whole series when that is the final season
+  of an ended/cancelled show. The ending explanation and «Почему это важно»
+  are told to stay within the scope; the latter to stay general, leave out
+  awards, numbers, quotes and influence claims unless widely documented,
+  hedge, and answer `known: false` rather than guess (clients then say the AI
+  doesn't know it well enough). Cached 60 days per title, topic, scope and
+  language. The chat (`companion_chats`, one per profile and title, reset
+  when the scope moves on) allows 6 messages; each answer is 1–4 sentences
+  about this title only, with up to 3 suggested follow-ups. The last 10 turns
+  go with each question, all as JSON data fields; obvious injection attempts
+  are refused locally, and replies quoting a system prompt are dropped. On
+  the TV the question is typed on the on-screen keyboard (or picked from the
+  suggestions); the same chat continues on the phone.
+- **Limits**: uncached answers and chat messages count per profile per Moscow
+  day (`companion_usage`, `FORYOU_COMPANION_DAILY_PER_PROFILE`, 20) → 429
+  `companion_limit`; a model failure is refunded. Every call also passes the
+  daily token budget (`ai_budget`).
+
 ## Awards and nominations (Wikidata)
 
 `internal/awards` answers «which competitions was this film nominated for or
@@ -2071,7 +2113,7 @@ everything else works.
 «Рекомендации» tab (`PUT /admin/foryou/ai`, app_settings `ai_temperature`,
 cached in memory; shown in `GET /admin/foryou/runs` → `ai.temperature`):
 collections, Ask AI, Cineko Music playlists (each 0–1.5, default 1.0) and
-the AI-written «Факты» (default 0.7).
+the AI-written «Факты» (default 0.7) and the watch companion (default 0.3).
 Viewers nudge the Ask/music value per request with `creativity`
 («Точнее / Обычно / Смелее»: −0.4 / 0 / +0.4, clamped to 0–1.5), remembered
 per device under `martytv.ai_creativity` (`packages/ui/src/aiCreativity.ts`;

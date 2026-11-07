@@ -19,7 +19,7 @@ import { RatingRow } from "./hero";
 import { plateTitleSize, TitlePlate, useTitlePlate, useTitleScale } from "./skins";
 import { BackIcon, BookmarkIcon, ListIcon, MoreIcon, PlusIcon, CheckIcon, PlayGlyph, TrailerIcon } from "./icons";
 import { WaveCheckIcon, WaveMoreIcon, WavePlusIcon } from "./waveIcons";
-import { ExtrasLine } from "./trivia";
+import { ExtrasLine, type ExtraChip } from "./trivia";
 
 export interface SourceState {
   status: "idle" | "loading" | "ok" | "none" | "error";
@@ -48,6 +48,8 @@ export interface DetailActions {
   onQuotes?: (() => void) | null;
   /** «Факты» panel. */
   onFacts?: (() => void) | null;
+  /** «Ранее в сериале» / «После титров» chips (shown only when available). */
+  extras?: ExtraChip[];
 }
 
 export interface HeaderProps {
@@ -157,7 +159,7 @@ export function KinozalHeader({ item, detail, from, progress, sources, actions, 
             </span>
           ))}
         </div>
-        <ExtrasLine awards={detail?.awards} onAwards={actions.onAwards ?? null} onQuotes={actions.onQuotes ?? null} onFacts={actions.onFacts ?? null} className="-ml-4 mt-3" />
+        <ExtrasLine awards={detail?.awards} onAwards={actions.onAwards ?? null} onQuotes={actions.onQuotes ?? null} onFacts={actions.onFacts ?? null} extra={actions.extras} className="-ml-4 mt-3" />
         <p className="mt-5 line-clamp-3 w-[880px] text-[25px] leading-[1.45] text-text/75">{item.overview || t("catalog.detail.no_overview")}</p>
         <MovieProgress progress={progress} className="mt-5" />
         <div className="mt-8 flex items-center">
@@ -273,7 +275,7 @@ export function TerminalHeader({ item, detail, from, profileName, progress, sour
         </div>
         {/* Extras line → buttons in one group: Up from the buttons reaches «Цитаты»/«Факты», not the sources table. */}
         <FocusBlock focusKey="d-left">
-          <ExtrasLine awards={detail?.awards} onAwards={actions.onAwards ?? null} onQuotes={actions.onQuotes ?? null} onFacts={actions.onFacts ?? null} square className="-ml-4 mt-4" />
+          <ExtrasLine awards={detail?.awards} onAwards={actions.onAwards ?? null} onQuotes={actions.onQuotes ?? null} onFacts={actions.onFacts ?? null} extra={actions.extras} square className="-ml-4 mt-4" />
           <p className="mt-7 line-clamp-3 text-[25px] leading-[1.45] text-text/80">{item.overview || t("catalog.detail.no_overview")}</p>
           <MovieProgress progress={progress} className="mt-5" />
           {/* Own focus group: Down from the buttons goes to the seasons below, not into the sources table on the right. */}
@@ -430,7 +432,7 @@ export function ProjectorHeader({ item, detail, progress, sources, actions, asid
           {sub && <span className="mt-1 block truncate text-[40px] font-medium uppercase leading-tight tracking-[.24em] text-white/90">{sub}</span>}
         </h1>
         <p className="mt-6 truncate text-[25px] text-white/90">{meta.join("  ·  ")}</p>
-        <ExtrasLine awards={detail?.awards} onAwards={actions.onAwards ?? null} onQuotes={actions.onQuotes ?? null} onFacts={actions.onFacts ?? null} className="-ml-4 mt-3 text-white/90" />
+        <ExtrasLine awards={detail?.awards} onAwards={actions.onAwards ?? null} onQuotes={actions.onQuotes ?? null} onFacts={actions.onFacts ?? null} extra={actions.extras} className="-ml-4 mt-3 text-white/90" />
         {badges.length > 0 && (
           <div data-testid="release-badges" className="mt-5 flex">
             {badges.map((b) => (

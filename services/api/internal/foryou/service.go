@@ -169,6 +169,11 @@ func (s *Service) factsAI(ctx context.Context) bool {
 	return s.settings == nil || s.settings.FactsAIEnabled(ctx)
 }
 
+// companionAI: the admin allows the watch companion (default on).
+func (s *Service) companionAI(ctx context.Context) bool {
+	return s.settings == nil || s.settings.AIFeatureEnabled(ctx, AIFeatureCompanion)
+}
+
 // base is the service lifetime context (cancelled on shutdown).
 func (s *Service) base() context.Context {
 	s.runMu.Lock()

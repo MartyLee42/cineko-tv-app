@@ -89,6 +89,8 @@ func (s *Service) picksAI(ctx context.Context) bool {
 const (
 	AIFeatureThemes = "themes"
 	AIFeaturePicks  = "picks"
+	// AIFeatureCompanion: «Ранее в сериале» / «После титров» (internal/companion).
+	AIFeatureCompanion = "companion"
 )
 
 // ---- candidates as the model sees them ----
