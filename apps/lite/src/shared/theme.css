@@ -16,6 +16,7 @@
      design-constructivism     — «Конструктивизм»: 20s–30s poster graphics: red/black/cream, diagonals (terminal skeleton)
      design-matrix             — «Матрица»: green phosphor digital rain, glowing mono type (terminal skeleton)
      design-stickerbook        — «Стикербук»: die-cut sticker posters, washi tape, cream/pink/mint on ink (kinozal skeleton)
+     design-pocketpet          — «Тамагочи»: pastel toy shell around a grey-green LCD, pixel ink and type (terminal skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {
@@ -259,6 +260,27 @@ html.design-stickerbook {
   --mt-radius-card: 14px;
   --mt-radius-control: 16px;
   color-scheme: dark;
+/* «Тамагочи»: a pastel toy with an LCD. The app content is the LCD (light grey-green, near-black pixel
+   ink, almost monochrome: «accent» is the ink too, so accent buttons read as lit pixel blocks); the
+   pastel shell (pink, lilac, mint) is drawn around it by the TV look / PWA chrome. Headings and labels
+   in Press Start 2P (chunky 8×8 pixels; its Cyrillic reads at TV distance, unlike Pixelify's), mixed
+   case; small labels in JetBrains Mono (Press Start is too wide for tables), body text Onest. */
+html.design-pocketpet {
+  --mt-bg: 196, 208, 170;
+  --mt-surface: 181, 195, 153;
+  --mt-surface-2: 166, 182, 138;
+  --mt-border: 72, 86, 56;
+  --mt-text: 24, 32, 18;
+  --mt-muted: 52, 64, 40;
+  --mt-accent: 24, 32, 18;
+  --mt-accent-strong: 196, 58, 122;
+  --mt-on-accent: 206, 218, 180;
+  --mt-focus: 24, 32, 18;
+  --mt-font-display: "Press Start 2P", "JetBrains Mono", ui-monospace, monospace;
+  --mt-font-label: "JetBrains Mono", ui-monospace, monospace;
+  --mt-radius-card: 0px;
+  --mt-radius-control: 0px;
+  color-scheme: light;
 }
 
 /* Headings in the later designs use their display face (web and TV). */
@@ -271,6 +293,7 @@ html.design-popart h1, html.design-popart h2 { font-family: var(--mt-font-displa
 html.design-constructivism h1, html.design-constructivism h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
 html.design-matrix h1, html.design-matrix h2 { font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; text-shadow: 0 0 10px rgba(0, 255, 65, .55); }
 html.design-stickerbook h1, html.design-stickerbook h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
+html.design-pocketpet h1, html.design-pocketpet h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: 0; line-height: 1.25; }
 
 html, body, #root { height: 100%; }
 body {
@@ -298,5 +321,5 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--mt-muted), 0.7); }
 ::-webkit-scrollbar-corner { background: transparent; }
-html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb, html.design-matrix ::-webkit-scrollbar-thumb { border-radius: 0; }
+html.design-terminal ::-webkit-scrollbar-thumb, html.design-cyberpunk ::-webkit-scrollbar-thumb, html.design-retro90 ::-webkit-scrollbar-thumb, html.design-constructivism ::-webkit-scrollbar-thumb, html.design-matrix ::-webkit-scrollbar-thumb, html.design-pocketpet ::-webkit-scrollbar-thumb { border-radius: 0; }
 
