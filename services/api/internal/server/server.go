@@ -128,6 +128,11 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	authSvc.SetDisconnector(hub)
 	clientLog.SetNotifier(hub)
 	pairSvc := pairing.NewService(pool, hasher, cfg.PairingTTL)
+	if d := cfg.NewTVDesign; d != "" && !profiles.IsDesign(d) {
+		log.Warn("NEW_TV_DESIGN is not a known design; new TVs show the profile's design", "design", d)
+	} else {
+		pairSvc.NewTVDesign = d
+	}
 	tmdbClient := tmdb.New(cfg.TMDB)
 	ratingsSvc := ratings.NewFromConfig(cfg.Kinopoisk, pool, tmdbClient, log)
 	// Awards & nominations (internal/awards): Wikidata through the ratings
