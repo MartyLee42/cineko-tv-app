@@ -7,13 +7,14 @@ import { Button, ErrorText } from "../components";
 import { CheckIcon, CloseIcon } from "../icons";
 import { Sheet } from "../remote/SendToTv";
 import { RecoIcon } from "./icons";
+import { TOOL_BTN, TOOL_LABEL, TOOL_OFF } from "../watch/components";
 import { joinNames, personName, toggleId } from "./logic";
 import { useDirectory, useRecommend } from "./queries";
 
 const MAX_NOTE = 500;
 
 /** «Посоветовать» on the title page: pick people, add a note, send. */
-export function RecommendButton({ m, className = "" }: { m: Pick<MediaSummary, "id" | "title">; className?: string }) {
+export function RecommendButton({ m, className = "", compact = false }: { m: Pick<MediaSummary, "id" | "title">; className?: string; compact?: boolean }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -23,10 +24,11 @@ export function RecommendButton({ m, className = "" }: { m: Pick<MediaSummary, "
         type="button"
         data-testid="recommend-button"
         onClick={() => setOpen(true)}
-        className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-3.5 text-sm font-semibold backdrop-blur transition hover:border-accent ${className}`}
+        title={compact ? t("reco.recommend") : undefined}
+        className={`${compact ? `${TOOL_BTN} ${TOOL_OFF}` : "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-border bg-surface/70 px-3.5 text-sm font-semibold backdrop-blur transition hover:border-accent"} ${className}`}
       >
         <RecoIcon className="text-lg" />
-        {t("reco.recommend")}
+        <span className={compact ? TOOL_LABEL : ""}>{t("reco.recommend")}</span>
       </button>
       {open &&
         createPortal(

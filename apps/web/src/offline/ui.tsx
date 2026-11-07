@@ -115,7 +115,16 @@ function ToneIcon({ tone, className = "" }: { tone: Tone; className?: string }) 
 }
 
 /** Title page: «Скачать на устройство» with live state (queued / N% / on device / failed + retry). */
-export function SaveToDeviceButton({ target, className = "" }: { target: SaveTarget; className?: string }) {
+export function SaveToDeviceButton({
+  target,
+  className = "",
+  item = false,
+}: {
+  target: SaveTarget;
+  className?: string;
+  /** A row of the play button's «Где смотреть» menu (title page). */
+  item?: boolean;
+}) {
   const { t, locale } = useI18n();
   const now = useNow(1000);
   const save = useSaveToDevice();
@@ -132,14 +141,18 @@ export function SaveToDeviceButton({ target, className = "" }: { target: SaveTar
         type="button"
         onClick={() => (unsupported ? setWhy(t(`devicedl.unsupported.${unsupported}`)) : act(v, id, () => save(target)))}
         data-testid="save-device-button"
-        className={`relative inline-flex min-h-[48px] w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-xl border px-4 font-semibold backdrop-blur transition sm:w-auto sm:px-5 ${TONE[v.tone]} ${unsupported ? "opacity-70" : ""}`}
+        className={
+          item
+            ? `relative flex min-h-[48px] w-full items-center gap-3 overflow-hidden rounded-xl px-3 text-left font-semibold transition hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${v.tone === "idle" ? "text-text" : TONE[v.tone].split(" ").filter((c) => c.startsWith("text-")).join(" ")} ${unsupported ? "opacity-70" : ""}`
+            : `relative inline-flex min-h-[48px] w-full items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-xl border px-4 font-semibold backdrop-blur transition sm:w-auto sm:px-5 ${TONE[v.tone]} ${unsupported ? "opacity-70" : ""}`
+        }
       >
         {v.percent != null && v.tone === "progress" && <span aria-hidden className="absolute inset-y-0 left-0 bg-accent/20 transition-[width]" style={{ width: `${v.percent}%` }} />}
-        <ToneIcon tone={v.tone} className={`relative text-xl ${v.tone === "idle" ? "text-accent" : ""}`} />
+        <ToneIcon tone={v.tone} className={`relative text-xl ${item ? "mx-0.5 w-5 shrink-0" : ""} ${v.tone === "idle" ? "text-accent" : ""}`} />
         <span className="relative tabular-nums">{v.label}</span>
       </button>
       {note && (
-        <p role={v.tone === "error" || why ? "alert" : undefined} className={`mt-1.5 max-w-sm text-xs leading-snug ${v.tone === "error" ? "text-danger" : "text-muted"}`} data-testid="save-device-note">
+        <p role={v.tone === "error" || why ? "alert" : undefined} className={`mt-1.5 max-w-sm text-xs leading-snug ${item ? "px-3 pb-1" : ""} ${v.tone === "error" ? "text-danger" : "text-muted"}`} data-testid="save-device-note">
           {note}
         </p>
       )}

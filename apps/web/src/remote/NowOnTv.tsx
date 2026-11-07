@@ -19,7 +19,7 @@ export function useFocusTv() {
   return device ? { device, state: states[device.id]?.state ?? null } : null;
 }
 
-/** "Now on Living room" chip on a title page when the TV shows that title. */
+/** «● Сейчас на Almaty · Пульт»: a small status line under the title page's play button (opens the remote). */
 export function NowOnTvChip({ mediaId }: { mediaId: string }) {
   const { t } = useI18n();
   const tv = useFocusTv();
@@ -29,10 +29,15 @@ export function NowOnTvChip({ mediaId }: { mediaId: string }) {
     <Link
       to={`/remote/${tv.device.id}`}
       data-testid="now-on-tv-chip"
-      className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-border bg-surface/70 px-4 text-sm font-semibold backdrop-blur hover:border-accent"
+      className="group inline-flex min-h-[32px] items-center gap-2 rounded-lg text-sm font-medium text-text/90 hover:text-text"
     >
       <StatusDot online />
       {t("remote.now_on_tv", { tv: tv.device.name })}
+      <span aria-hidden className="text-text/50">·</span>
+      <span className="inline-flex items-center gap-1 font-semibold text-accent-strong group-hover:underline">
+        <RemoteIcon />
+        {t("titleactions.remote")}
+      </span>
     </Link>
   );
 }

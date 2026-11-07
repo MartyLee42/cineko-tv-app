@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import type { PlaybackSource, Release } from "@martytv/contracts";
+import type { Device, PlaybackSource, Release } from "@martytv/contracts";
 import { loadStatus, Spinner, useI18n, type LoadStatusStage } from "@martytv/ui";
 import { usePickerDevices } from "../remote/AllDevicesToggle";
 import { AlertIcon, CheckIcon, CloseIcon, DeviceIcon, ListIcon, PlayIcon, RemoteIcon } from "../icons";
@@ -44,7 +44,13 @@ export interface PlayTarget extends ReleaseTarget {
 interface PlayCtx {
   flow: PlayFlow;
   play: (req: PlayRequest) => void;
+  /** Play on this TV (no picker). */
+  playOn: (req: PlayRequest, deviceId: string) => void;
   chooseRelease: (target: PlayTarget) => void;
+  /** The picker's TVs with live online flags (undefined while loading) and their states. */
+  tvs: Device[] | undefined;
+  states: Record<string, LiveState>;
+  lastUsed: string | null;
 }
 
 const Ctx = createContext<PlayCtx | null>(null);
@@ -104,7 +110,18 @@ export function PlayOnTvProvider({ children }: { children: ReactNode }) {
     },
     [dispatch, live, lastUsed, decide],
   );
-  const ctx = useMemo<PlayCtx>(() => ({ flow, play, chooseRelease: setSheet }), [flow, play]);
+  const playOn = useCallback(
+    (req: PlayRequest, deviceId: string) => {
+      writeWatchWhere("tv");
+      dispatch({ type: "request", req, choice: { kind: "auto", deviceId }, player: decide(deviceId, req) });
+    },
+    [dispatch, decide],
+  );
+  const tvs = devices ? live : undefined;
+  const ctx = useMemo<PlayCtx>(
+    () => ({ flow, play, playOn, chooseRelease: setSheet, tvs, states, lastUsed }),
+    [flow, play, playOn, tvs, states, lastUsed],
+  );
 
   // Rank the list for whoever watches on the TV this will most likely go to.
   const rankTv = focusDevice(live, lastUsed);

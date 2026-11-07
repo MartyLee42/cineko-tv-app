@@ -240,6 +240,7 @@ for (const vp of [
         markers: [{ kind: "recap", start_seconds: 0, end_seconds: 9, source: "theintrodb" }],
       });
       await page.goto(`/title/${movie.id}`);
+      await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
       await page.getByTestId("choose-release").click();
       await page.getByTestId("release-sheet").getByTestId("online-row").nth(0).getByTestId("online-watch-here").click();
       await expect(page).toHaveURL(new RegExp(`/watch/${SOURCE_ID}`), { timeout: 15_000 });
@@ -272,6 +273,7 @@ for (const vp of [
       const log = await mockSources(page, movie.id);
 
       await page.goto(`/title/${movie.id}`);
+      await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
       await page.getByTestId("choose-release").click();
       const sheet = page.getByTestId("release-sheet");
       const group = sheet.getByTestId("online-group");
@@ -349,6 +351,7 @@ for (const vp of [
 
       // The release list now only has Prowlarr's results.
       await page.goto(`/title/${movie.id}`);
+      await page.getByTestId("play-more").click(); // «Где и как смотреть» menu
       await page.getByTestId("choose-release").click();
       const sheet = page.getByTestId("release-sheet");
       await expect(sheet.getByTestId("release-row")).toHaveCount(1);
