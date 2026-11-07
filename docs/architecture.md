@@ -1527,7 +1527,12 @@ martytv-hostmon ──reads── /proc, statfs("/")
   core); memory from `/proc/meminfo` (used = total − available); load and
   uptime; interface rates from `/proc/net/dev` deltas (lo, veth\*, docker\*,
   br-\* skipped); disks by `statfs` only. Processes are grouped by a friendly
-  name from `comm` (torrserver, postgres ×9, chrome…), top 12 by RSS. Command
+  name from `comm` (torrserver, postgres ×9, chrome…) per container (the id
+  from `/proc/[pid]/cgroup`, named from Docker's list), top 12 by memory.
+  A group's memory counts shared pages once: the members' private resident
+  memory plus the largest member's shared part (`/proc/[pid]/statm`), so
+  postgres' shared_buffers isn't added once per backend. `smaps` (exact PSS)
+  would need CAP_SYS_PTRACE, which would also expose environments. Command
   lines and environments are never read. Container CPU/memory use Docker's
   formulas (memory minus inactive file cache).
 - **Fallback:** without the socket (dev) the API reads its own `/proc`,

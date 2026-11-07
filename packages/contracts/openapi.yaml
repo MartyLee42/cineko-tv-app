@@ -5178,15 +5178,16 @@ components:
               tx_total: { type: integer, format: int64 }
         processes:
           type: array
-          description: Top 12 by resident memory, grouped by friendly name (e.g. all postgres backends). Names only, never command lines.
+          description: Top 12 by memory, grouped by friendly name per container (e.g. one container's postgres backends). Names only, never command lines.
           items:
             type: object
             required: [name, pid, count, rss_bytes, cpu_percent]
             properties:
               name: { type: string }
+              container: { type: string, description: "Docker container name (hostmon only; absent for host processes)." }
               pid: { type: integer, description: "The group's biggest process." }
               count: { type: integer }
-              rss_bytes: { type: integer, format: int64 }
+              rss_bytes: { type: integer, format: int64, description: "Resident memory with shared pages counted once per group: the members' private memory plus the largest member's shared part." }
               cpu_percent: { type: number, description: "100 = one full core." }
         containers:
           type: array
