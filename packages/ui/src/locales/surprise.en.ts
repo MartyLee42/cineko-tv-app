@@ -1,0 +1,20 @@
+// "Surprise": a different design from your favourites each day or week. Keys match surprise.ru.ts.
+export const surpriseEn = {
+  "surprise.setting": "Surprise",
+  "surprise.setting_hint": "A different design from your favourites every day or every week, at random. The design chosen above stays your “home” one: it comes back when the surprise is off.",
+  "surprise.mode.off": "Off",
+  "surprise.mode.day": "Every day",
+  "surprise.mode.week": "Every week",
+  "surprise.today": "Today: {design}",
+  "surprise.this_week": "This week: {design}",
+  "surprise.favorites": "Favourite designs",
+  "surprise.favorites_hint": "The surprise only picks starred designs. None starred — any design.",
+  "surprise.favorites_all": "All designs",
+  "surprise.favorites_count": "{count} of {total}",
+  "surprise.favorite_on": "★ Favourite",
+  "surprise.favorite_off": "—",
+  "surprise.favorite_toggle": "Favourite: {design}",
+  "surprise.picker_hint": "OK stars or unstars a design. Back when done.",
+  "surprise.picker_none": "Nothing starred — the surprise picks from every design.",
+  "surprise.picker_one": "Only one starred — star at least two; until then your chosen design stays.",
+};

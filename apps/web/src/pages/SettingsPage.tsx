@@ -22,10 +22,13 @@ import {
   type Locale,
   type MessageKey,
   type ThemeSetting,
+  SURPRISE_MODES,
+  useEffectiveDesign,
+  type SurpriseMode,
 } from "@martytv/ui";
 import { useSession } from "../session";
 import { Card, ErrorText, Field, PageTitle, Select } from "../components";
-import { BookmarkIcon, CheckIcon, ChevronRight, HeartIcon, HistoryIcon, ShieldIcon, TvIcon, UserIcon } from "../icons";
+import { BookmarkIcon, CheckIcon, ChevronRight, HeartIcon, HistoryIcon, ShieldIcon, StarIcon, TvIcon, UserIcon } from "../icons";
 import { LocalPlayerField, PasswordCard, SessionsCard, TokensCard } from "./AccountPage";
 import { useActiveProfile } from "../watch/ActiveProfile";
 import { useProfileSettings, useUpdateSettings } from "../watch/queries";
@@ -217,6 +220,7 @@ function ProfileSettingsCard() {
           <LookPicker
             design={s.design}
             theme={s.theme}
+            surprise={{ profileId: profile.id, mode: s.design_surprise, favorites: s.design_favorites, onChange: set }}
             onChange={(p) => {
               set(p);
               // «Матрица», the first time in this browser: the red / blue pill.
@@ -362,18 +366,35 @@ function ProfileSettingsCard() {
 
 // Swatches show each design's own colours (DESIGN_SWATCH), independent of the current one.
 
-/** Design cards + colour mode (light only for Кинозал). */
+/** «Сюрприз» controls of the design picker (Settings only; onboarding leaves them out). */
+interface SurpriseProps {
+  profileId: string;
+  mode: SurpriseMode;
+  favorites: DesignSetting[];
+  onChange: (p: { design_surprise?: SurpriseMode; design_favorites?: DesignSetting[] }) => void;
+}
+
+/** Design cards + colour mode (light only for Кинозал), and the «Сюрприз» period + favourite stars. */
 export function LookPicker({
   design,
   theme,
   onChange,
+  surprise,
 }: {
   design: DesignSetting;
   theme: ThemeSetting;
   onChange: (p: { design?: DesignSetting; theme?: ThemeSetting }) => void;
+  surprise?: SurpriseProps;
 }) {
   const { t } = useI18n();
   const lightOk = supportsLight(design);
+  const surpriseOn = !!surprise && surprise.mode !== "off";
+  const shown = useEffectiveDesign(surprise ? { design, design_surprise: surprise.mode, design_favorites: surprise.favorites } : null, surprise?.profileId) ?? design;
+  const toggleFav = (d: DesignSetting) => {
+    if (!surprise) return;
+    const on = !surprise.favorites.includes(d);
+    surprise.onChange({ design_favorites: DESIGNS.filter((x) => (x === d ? on : surprise.favorites.includes(x))) });
+  };
   return (
     <div className="space-y-4">
       <div>
@@ -382,42 +403,89 @@ export function LookPicker({
           {DESIGNS.map((d) => {
             const on = d === design;
             const sw = DESIGN_SWATCH[d];
+            const fav = !!surprise?.favorites.includes(d);
             return (
-              <button
-                key={d}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                data-value={d}
-                onClick={() => onChange({ design: d })}
-                className={`flex items-center gap-3 rounded-xl border p-2.5 text-left transition sm:flex-col sm:items-stretch ${
-                  on ? "border-accent bg-accent/10 ring-1 ring-accent" : "border-border hover:border-muted"
-                }`}
-              >
-                <span
-                  aria-hidden
-                  className={`design-swatch design-swatch-${d} relative block h-12 w-16 shrink-0 overflow-hidden rounded-lg ring-1 ring-border sm:h-14 sm:w-full`}
-                  style={{ background: sw.bg }}
+              <div key={d} className="relative">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  data-value={d}
+                  onClick={() => onChange({ design: d })}
+                  className={`flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition sm:flex-col sm:items-stretch ${surpriseOn ? "pr-12 sm:pr-2.5" : ""} ${
+                    on ? "border-accent bg-accent/10 ring-1 ring-accent" : "border-border hover:border-muted"
+                  }`}
                 >
-                  <span className="absolute left-1.5 top-1.5 h-2 w-8 rounded-sm" style={{ background: sw.accent }} />
-                  <span className="absolute bottom-1.5 left-1.5 flex gap-1">
-                    {[0, 1, 2].map((i) => (
-                      <span key={i} className="block h-4 w-3 rounded-[3px]" style={{ background: sw.surface, boxShadow: i === 0 ? `inset 0 0 0 1px ${sw.accent2}` : undefined }} />
-                    ))}
+                  <span
+                    aria-hidden
+                    className={`design-swatch design-swatch-${d} relative block h-12 w-16 shrink-0 overflow-hidden rounded-lg ring-1 ring-border sm:h-14 sm:w-full`}
+                    style={{ background: sw.bg }}
+                  >
+                    <span className="absolute left-1.5 top-1.5 h-2 w-8 rounded-sm" style={{ background: sw.accent }} />
+                    <span className="absolute bottom-1.5 left-1.5 flex gap-1">
+                      {[0, 1, 2].map((i) => (
+                        <span key={i} className="block h-4 w-3 rounded-[3px]" style={{ background: sw.surface, boxShadow: i === 0 ? `inset 0 0 0 1px ${sw.accent2}` : undefined }} />
+                      ))}
+                    </span>
                   </span>
-                </span>
-                <span className="min-w-0">
-                  <span className="flex items-center gap-1.5 text-sm font-semibold">
-                    {on && <CheckIcon className="text-accent" />}
-                    {t(`settings.design.${d}` as MessageKey)}
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-1.5 text-sm font-semibold">
+                      {on && <CheckIcon className="text-accent" />}
+                      {t(`settings.design.${d}` as MessageKey)}
+                    </span>
+                    <span className="mt-0.5 block text-xs leading-snug text-muted">{t(`settings.design.${d}_hint` as MessageKey)}</span>
                   </span>
-                  <span className="mt-0.5 block text-xs leading-snug text-muted">{t(`settings.design.${d}_hint` as MessageKey)}</span>
-                </span>
-              </button>
+                </button>
+                {surpriseOn && (
+                  <button
+                    type="button"
+                    aria-pressed={fav}
+                    aria-label={t("surprise.favorite_toggle", { design: t(`settings.design.${d}` as MessageKey) })}
+                    title={t("surprise.favorite_toggle", { design: t(`settings.design.${d}` as MessageKey) })}
+                    data-testid="design-favorite"
+                    data-fav={d}
+                    onClick={() => toggleFav(d)}
+                    className={`absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full bg-bg/70 transition ${fav ? "text-accent" : "text-muted/50 hover:text-text"}`}
+                  >
+                    <StarIcon />
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
       </div>
+      {surprise && (
+        <div data-testid="surprise-setting">
+          <p className="mb-2 text-sm text-muted">{t("surprise.setting")}</p>
+          <div role="radiogroup" aria-label={t("surprise.setting")} className="grid grid-cols-3 gap-2" data-testid="surprise-picker">
+            {SURPRISE_MODES.map((m) => (
+              <button
+                key={m}
+                type="button"
+                role="radio"
+                aria-checked={surprise.mode === m}
+                data-value={m}
+                onClick={() => surprise.onChange({ design_surprise: m })}
+                className={`flex min-h-[48px] items-center justify-center rounded-xl border px-2.5 text-sm font-semibold transition ${
+                  surprise.mode === m ? "border-accent bg-accent/10 text-text" : "border-border text-text/80 hover:border-muted"
+                }`}
+              >
+                <span className="text-center leading-tight">{t(`surprise.mode.${m}`)}</span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted">
+            {t("surprise.setting_hint")}
+            {surpriseOn && <> {surprise.favorites.length === 0 ? t("surprise.picker_none") : surprise.favorites.length === 1 ? t("surprise.picker_one") : t("surprise.favorites_hint")}</>}
+          </p>
+          {shown !== design && (
+            <p className="mt-1 text-sm font-semibold text-accent" data-testid="surprise-today">
+              {t(surprise.mode === "week" ? "surprise.this_week" : "surprise.today", { design: t(`settings.design.${shown}` as MessageKey) })}
+            </p>
+          )}
+        </div>
+      )}
       <div>
         <p className="mb-2 text-sm text-muted">
           {t("settings.theme")}

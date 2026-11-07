@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PlayerKind } from "@martytv/contracts";
 import { imageUrl } from "@martytv/media-types";
-import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, uiSoundsPref, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
+import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, SURPRISE_MODES, uiSoundsPref, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
 import { useCatalogConfig, useHome } from "../catalog/queries";
 import { Loader } from "../player/Loader";
 import type { LoadStage } from "../player/loading";
@@ -78,6 +78,16 @@ export function useSettingRows() {
         // «Матрица», the first time on this TV: the red / blue pill.
         if (shouldAskPill(next, prev, matrixPillSeen())) requestPill({ previous: prev, revert: () => set({ design: prev }) });
       },
+    } as Row,
+    // «Сюрприз»: a design from the favourites per day / week (packages/ui surprise.ts).
+    surprise: {
+      kind: "choice",
+      key: "design_surprise",
+      label: t("surprise.setting"),
+      hint: t("surprise.setting_hint"),
+      choices: SURPRISE_MODES.map((v) => ({ value: v, label: t(`surprise.mode.${v}`) })),
+      value: settings.design_surprise,
+      onChange: (v) => set({ design_surprise: v as Settings["design_surprise"] }),
     } as Row,
     // «Каркас»: this TV's background motion (device-local, see design/skins.tsx).
     motion: {
@@ -223,7 +233,20 @@ export function useSettingRows() {
     empty: t("taste.tv.note_empty"),
     onOpen,
   });
-  return { rows, settings, saveError: save.isError, set, tasteNote };
+  // «Избранные оформления» (OK opens the checklist, DesignFavorites.tsx).
+  const favorites = (onOpen: () => void): Row => ({
+    kind: "text",
+    key: "design_favorites",
+    label: t("surprise.favorites"),
+    hint: t("surprise.favorites_hint"),
+    value:
+      settings.design_favorites.length === 0
+        ? t("surprise.favorites_all")
+        : settings.design_favorites.map((d) => t(`settings.design.${d}`)).join(", "),
+    empty: t("surprise.favorites_all"),
+    onOpen,
+  });
+  return { rows, settings, saveError: save.isError, set, tasteNote, favorites };
 }
 
 const STAGES: [number, LoadStage][] = [
