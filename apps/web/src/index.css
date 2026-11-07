@@ -292,6 +292,31 @@ html.design-pocketpet :focus-visible { outline: none; box-shadow: 0 0 0 3px rgb(
 .design-swatch-pocketpet { background: #c4d0aa !important; box-shadow: inset 0 0 0 4px #f3c6dc, inset 0 0 0 5px #c7a6d6; }
 
 .design-swatch-stickerbook { background-image: radial-gradient(circle, rgba(255, 248, 239, 0.16) 0px, rgba(255, 248, 239, 0.16) 1px, rgba(255, 248, 239, 0) 1.6px), linear-gradient(-6deg, rgba(0, 0, 0, 0) 40%, rgba(255, 111, 165, 0.75) 40%, rgba(255, 111, 165, 0.75) 52%, rgba(0, 0, 0, 0) 52%); background-size: 7px 7px, 100% 100%; box-shadow: inset 0 0 0 3px #fffaf0; }
+/* «Одиссея»: station white with a faint symmetric corridor (two converging ribs and a soft ceiling
+   glow, fixed behind everything); square panels with hairlines, wide light capitals in dark ink,
+   focus = a single red glowing ring. */
+html.design-odyssey body {
+  background-color: rgb(var(--mt-bg));
+}
+html.design-odyssey body::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0)),
+    linear-gradient(118deg, rgba(0, 0, 0, 0) 49.8%, rgba(150, 160, 172, 0.35) 50%, rgba(0, 0, 0, 0) 50.2%),
+    linear-gradient(-118deg, rgba(0, 0, 0, 0) 49.8%, rgba(150, 160, 172, 0.35) 50%, rgba(0, 0, 0, 0) 50.2%),
+    linear-gradient(180deg, rgba(238, 241, 244, 0) 60%, rgba(207, 213, 220, 0.6) 100%);
+}
+html.design-odyssey section.rounded-2xl.border { border-radius: 2px; border-color: rgba(16, 19, 24, 0.14); background-color: rgba(255, 255, 255, 0.9); box-shadow: 0 6px 18px rgba(16, 19, 24, 0.06); }
+html.design-odyssey .aspect-\[2\/3\] { border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(16, 19, 24, 0.14), 0 4px 12px rgba(16, 19, 24, 0.14); }
+html.design-odyssey header.sticky { background-color: rgba(255, 255, 255, 0.94); box-shadow: 0 1px 0 rgba(16, 19, 24, 0.14); }
+html.design-odyssey :focus-visible { outline: 2px solid rgb(226, 30, 22); outline-offset: 3px; box-shadow: 0 0 14px 4px rgba(255, 40, 28, 0.45); }
+.design-swatch-odyssey { background-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 46%, #101318 46%, #101318 54%, rgba(0, 0, 0, 0) 54%), linear-gradient(26deg, rgba(0, 0, 0, 0) 49%, rgba(150, 160, 172, 0.7) 49.5%, rgba(0, 0, 0, 0) 50.5%), linear-gradient(-26deg, rgba(0, 0, 0, 0) 49%, rgba(150, 160, 172, 0.7) 49.5%, rgba(0, 0, 0, 0) 50.5%), linear-gradient(180deg, #f6f8fa 0%, #e6eaee 50%, #cfd5dc 100%) !important; background-size: 100% 30%, 100% 100%, 100% 100%, 100% 100% !important; background-position: 0 50%, 0 0, 0 0, 0 0 !important; background-repeat: no-repeat !important; box-shadow: inset 0 0 0 1px rgba(16, 19, 24, 0.25); }
 
 /* Page changes: a short fade-in of the new page (transform + opacity only). */
 .mt-page { -webkit-animation: mt-page-in .18s ease-out both; animation: mt-page-in .18s ease-out both; }

@@ -1,0 +1,65 @@
+/* «Одиссея»: this design's own rules (loaded with the design's chunk, design/looks).
+   ---------------------------------------------------------------- Одиссея (projector skeleton)
+   A white spaceship corridor: station-white panels, grey ribs, symmetry, square corners, dark
+   ink text, wide letter-spaced capitals; buttons are black slabs. Colour is one thing only:
+   the focus ring is a single red glowing light (layered box-shadows, no filters, no bounce). */
+.od-corridor { background-color: rgb(238,241,244); overflow: hidden; }
+.od-veil { background: linear-gradient(90deg, rgba(238,241,244,.86) 0%, rgba(238,241,244,.62) 40%, rgba(238,241,244,0) 72%); }
+
+html.design-odyssey body, html.design-odyssey .bg-bg { background-color: rgb(var(--mt-bg)); }
+/* Scrims fade the artwork into station white (the projector layout's text sits on them). */
+html.design-odyssey .p-scrim-left { background: linear-gradient(90deg, rgba(238,241,244,.97) 0%, rgba(238,241,244,.86) 32%, rgba(238,241,244,.3) 62%, rgba(238,241,244,0) 82%); }
+html.design-odyssey .p-scrim-bottom { background: linear-gradient(0deg, rgba(238,241,244,1) 0%, rgba(238,241,244,.86) 24%, rgba(238,241,244,0) 52%); }
+html.design-odyssey .p-scrim-top { background: linear-gradient(180deg, rgba(238,241,244,.8) 0%, rgba(238,241,244,0) 100%); }
+
+/* The red light: the one focus ring everywhere. */
+html.design-odyssey .tv-focus.is-focused { box-shadow: 0 0 0 3px rgb(238,241,244), 0 0 0 6px rgb(226,30,22), 0 0 16px 7px rgba(255,40,28,.55), 0 0 44px 14px rgba(255,40,28,.22); transition-timing-function: cubic-bezier(.25,.1,.25,1); }
+
+/* The menu: a white panel with a hairline; dark ink; the open tab underlined; capitals a size
+   smaller with tighter padding, so the bar still clears the clock. */
+html.design-odyssey .p-bar { border-radius: 2px; background: rgba(255,255,255,.94); box-shadow: inset 0 0 0 1px rgba(16,19,24,.16), 0 6px 18px rgba(16,19,24,.08); }
+html.design-odyssey .p-tab { border-radius: 2px; padding-left: 16px; padding-right: 16px; font-size: 22px; text-transform: uppercase; letter-spacing: .07em; color: rgba(16,19,24,.78); }
+html.design-odyssey .p-tab-on { background: rgba(0,0,0,0); color: #101318; box-shadow: inset 0 -3px 0 #101318; }
+html.design-odyssey nav .p-tab.is-focused { background: #fff; color: #101318; }
+html.design-odyssey nav[data-design-nav="projector"] span.text-white { color: #101318; }
+
+/* Buttons: the play button a black slab; the others white panels with a hairline. */
+html.design-odyssey .p-primary, html.design-odyssey .p-glass { border-radius: 2px; text-transform: uppercase; letter-spacing: .1em; }
+html.design-odyssey .p-primary { background: #101318; color: #fff; }
+html.design-odyssey .p-glass { background: rgba(255,255,255,.92); color: #101318; box-shadow: inset 0 0 0 1px rgba(16,19,24,.3); }
+html.design-odyssey .p-outline { border-radius: 2px; border-width: 1px; border-color: rgba(16,19,24,.5); font-family: var(--mt-font-label); }
+
+/* Cards: square, a hairline and a soft shadow (white panels on white). Titles over posters stay white. */
+html.design-odyssey .mt-card { border-radius: 2px; }
+html.design-odyssey .mt-card:not(.is-focused) { box-shadow: 0 6px 16px rgba(16,19,24,.16); }
+html.design-odyssey .mt-card::after { content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid rgba(16,19,24,.14); border-radius: inherit; pointer-events: none; }
+html.design-odyssey .p-card-shade { background: linear-gradient(0deg, rgba(10,12,16,.86) 0%, rgba(10,12,16,.32) 36%, rgba(10,12,16,0) 62%); }
+
+/* Home hero and Details header sit on the white scrims: dark ink. */
+html.design-odyssey [data-testid="hero"] [class*="text-white"], html.design-odyssey [data-media-id] [class*="text-white"] { color: rgba(16,19,24,.86); }
+html.design-odyssey [data-testid="hero"] h2, html.design-odyssey [data-media-id] h1, html.design-odyssey [data-media-id] h1 .p-wide {
+  font-family: var(--mt-font-display); font-weight: 300; letter-spacing: .16em; line-height: 1.12; color: #101318;
+}
+html.design-odyssey h1.p-wide { font-family: var(--mt-font-display); font-weight: 300; letter-spacing: .18em; }
+html.design-odyssey .mt-card [class*="text-white"], html.design-odyssey [data-media-id] .mt-card [class*="text-white"] { color: #fff; }
+html.design-odyssey [data-media-id] .p-primary[class*="text-white"], html.design-odyssey [data-testid="hero"] .p-primary { color: #fff; }
+/* Eyebrows as instrument labels (mono, spaced, steel grey) after a short rule. */
+html.design-odyssey [data-testid="hero"] > p:first-child, html.design-odyssey [data-media-id] .tracking-\[\.18em\].text-accent {
+  font-family: var(--mt-font-label); font-weight: 500; letter-spacing: .22em; color: #4a5563;
+}
+html.design-odyssey [data-testid="hero"] > p:first-child::before { content: ""; display: inline-block; width: 44px; height: 1px; margin-right: 16px; vertical-align: middle; background: #4a5563; }
+
+/* Chips, ratings, progress, hints, panels. */
+html.design-odyssey .tv-rate-chip { border-radius: 2px; border: 1px solid rgba(16,19,24,.3); background: rgba(255,255,255,.94); color: #101318; font-family: var(--mt-font-label); }
+html.design-odyssey .tv-chip { border-radius: 2px; }
+html.design-odyssey .tv-chip.is-focused { background: #fff; color: #101318; }
+html.design-odyssey .tv-progress { background: rgba(16,19,24,.16); }
+html.design-odyssey .tv-progress-fill { background: #101318; }
+html.design-odyssey .tv-check { background: #101318; color: #fff; }
+html.design-odyssey .tv-key-hint { border-radius: 2px; background: rgba(255,255,255,.95); color: #101318; box-shadow: inset 0 0 0 1px rgba(16,19,24,.25); font-family: var(--mt-font-label); }
+html.design-odyssey .tv-panel, html.design-odyssey .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 1px rgba(16,19,24,.14); }
+
+/* «Я не могу это сделать, Дейв.» under failures (components/States.tsx FailHint): a calm voice
+   line with a small red lamp. Unscoped (the hint only renders in this design). */
+.od-fail-hint { font-family: var(--mt-font-label); letter-spacing: .04em; color: rgb(var(--mt-muted)); }
+.od-fail-hint::before { content: ""; display: inline-block; width: 14px; height: 14px; margin-right: 18px; border-radius: 50%; vertical-align: 0; background: radial-gradient(circle, #fff3dc 0px, #ffb08a 2px, #ff3b2f 5px, #b3120a 7px); box-shadow: 0 0 10px 3px rgba(255,59,47,.6); }

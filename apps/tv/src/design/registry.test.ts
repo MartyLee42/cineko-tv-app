@@ -27,6 +27,7 @@ describe("design registry (design → skeleton + skin)", () => {
     expect(SKINS.deco.skeleton).toBe("kinozal");
     expect(SKINS.popart.skeleton).toBe("projector");
     expect(SKINS.constructivism.skeleton).toBe("terminal");
+    expect(SKINS.odyssey.skeleton).toBe("projector");
     // Every later design draws its own background layer.
     expect(new Set(DESIGNS.slice(3).map((d) => SKINS[d].background)).size).toBe(DESIGNS.length - 3);
   });
