@@ -293,7 +293,12 @@ function Layout() {
         </div>
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 md:pb-10">
-        <Outlet />
+        {/* A new page fades in (opacity + a few px: cheap, compositor-only) and
+            keeps a screen's height while its data loads, so the footer and
+            the bottom bar's surroundings don't jump. */}
+        <div key={pathname} className="mt-page min-h-[calc(100dvh-10rem)]">
+          <Outlet />
+        </div>
         <NowOnTvBar />
       </main>
       <MessageToast />
