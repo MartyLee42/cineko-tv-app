@@ -70,7 +70,30 @@ func (h *Hostmon) Status() HostStatus {
 	h.mu.Lock()
 	st.Containers = append([]Container{}, h.containers...)
 	h.mu.Unlock()
+	st.Processes = NameContainers(st.Processes, st.Containers)
 	return st
+}
+
+// NameContainers returns a copy of procs with each process's container
+// named (the short id when the container isn't listed).
+func NameContainers(procs []Process, cs []Container) []Process {
+	names := make(map[string]string, len(cs))
+	for _, c := range cs {
+		names[c.ID] = c.Name
+	}
+	out := append([]Process{}, procs...) // the collector caches its slice
+	for i := range out {
+		id := out[i].containerID
+		if id == "" {
+			continue
+		}
+		if n, ok := names[id]; ok {
+			out[i].Container = n
+		} else {
+			out[i].Container = id[:12]
+		}
+	}
+	return out
 }
 
 func (h *Hostmon) History(minutes int) History {

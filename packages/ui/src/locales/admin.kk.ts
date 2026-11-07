@@ -36,7 +36,7 @@ export const adminKk: Record<keyof typeof adminEn, string> = {
   "admin.server.download": "Кіріс",
   "admin.server.upload": "Шығыс",
   "admin.server.processes": "Процестер",
-  "admin.server.processes_hint": "Атауы бойынша топтастырылған, жад кемуі бойынша. CPU 100% — бір толық ядро.",
+  "admin.server.processes_hint": "Аты және контейнері бойынша топталған, жады бойынша кему ретімен (ортақ жады бір рет есептеледі). CPU 100% — бір толық ядро.",
   "admin.server.containers": "Контейнерлер",
   "admin.server.col.name": "Атауы",
   "admin.server.col.memory": "Жад",

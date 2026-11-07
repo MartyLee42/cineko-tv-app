@@ -26,7 +26,8 @@ type Collector struct {
 	prevNet  map[string]NetCounters
 	// per-process CPU baseline
 	prevTicks   map[int]uint64
-	prevProcCPU uint64 // /proc/stat total jiffies when prevTicks was taken
+	prevProcCPU uint64         // /proc/stat total jiffies when prevTicks was taken
+	prevCgroups map[int]string // pid → container id ("" = none), last scan
 	pageSize    uint64
 	now         func() time.Time
 }
@@ -140,8 +141,10 @@ func (c *Collector) scanProcs(cpu *ProcStat) []Process {
 		perCore = float64(total-c.prevProcCPU) / float64(cores)
 	}
 	ticks := make(map[int]uint64, len(entries))
+	cgroups := make(map[int]string, len(entries))
 	groups := map[string]*Process{}
 	biggest := map[string]uint64{}
+	shared := map[string]uint64{} // the group's largest shared part, added once
 	for _, e := range entries {
 		pid, err := strconv.Atoi(e.Name())
 		if err != nil || pid <= 0 {
@@ -164,20 +167,43 @@ func (c *Collector) scanProcs(cpu *ProcStat) []Process {
 		if rss == 0 && pct == 0 {
 			continue // idle kernel threads
 		}
+		// Shared pages (shared memory, libraries) are mapped by many members
+		// of a group; summing RSS counts them once per process.
+		private, shr := rss, uint64(0)
+		if b, err := os.ReadFile(filepath.Join(c.Proc, e.Name(), "statm")); err == nil {
+			if res, s, err := ParseStatm(b); err == nil && s <= res {
+				private, shr = (res-s)*c.pageSize, s*c.pageSize
+			}
+		}
+		// The container never changes for a pid: read its cgroup once.
+		cid, ok := c.prevCgroups[pid]
+		if !ok {
+			if b, err := os.ReadFile(filepath.Join(c.Proc, e.Name(), "cgroup")); err == nil {
+				cid = ContainerIDFromCgroup(b)
+			}
+		}
+		cgroups[pid] = cid
 		name := FriendlyName(ps.Comm)
-		g := groups[name]
+		key := cid + "/" + name
+		g := groups[key]
 		if g == nil {
-			g = &Process{Name: name}
-			groups[name] = g
+			g = &Process{Name: name, containerID: cid}
+			groups[key] = g
 		}
 		g.Count++
-		g.RSSBytes += rss
+		g.RSSBytes += private
 		g.CPUPercent += pct
-		if rss >= biggest[name] {
-			biggest[name], g.PID = rss, pid
+		if shr > shared[key] {
+			shared[key] = shr
+		}
+		if rss >= biggest[key] {
+			biggest[key], g.PID = rss, pid
 		}
 	}
-	c.prevTicks, c.prevProcCPU = ticks, total
+	for key, s := range shared {
+		groups[key].RSSBytes += s
+	}
+	c.prevTicks, c.prevProcCPU, c.prevCgroups = ticks, total, cgroups
 	return TopGroups(groups, TopProcesses)
 }
 
@@ -195,7 +221,10 @@ func TopGroups(groups map[string]*Process, n int) []Process {
 		if out[i].CPUPercent != out[j].CPUPercent {
 			return out[i].CPUPercent > out[j].CPUPercent
 		}
-		return out[i].Name < out[j].Name
+		if out[i].Name != out[j].Name {
+			return out[i].Name < out[j].Name
+		}
+		return out[i].containerID < out[j].containerID
 	})
 	if len(out) > n {
 		out = out[:n]
