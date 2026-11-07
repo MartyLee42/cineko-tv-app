@@ -64,7 +64,7 @@ func (s *Store) ListAll(ctx context.Context) ([]AdminDevice, error) {
 			SELECT s.device_model, s.release FROM client_error_samples s
 			WHERE s.device_id = d.id ORDER BY s.id DESC LIMIT 1
 		) cs ON true
-		WHERE d.revoked_at IS NULL
+		WHERE d.revoked_at IS NULL AND NOT d.demo
 		ORDER BY lower(u.username), d.created_at`)
 	if err != nil {
 		return nil, err

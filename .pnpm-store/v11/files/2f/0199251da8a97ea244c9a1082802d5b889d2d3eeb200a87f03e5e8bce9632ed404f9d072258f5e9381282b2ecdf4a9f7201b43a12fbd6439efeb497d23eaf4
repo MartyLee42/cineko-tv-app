@@ -1,0 +1,23 @@
+import { type FocusableComponent, type SpatialNavigationService } from '../SpatialNavigation';
+import { type AddEventListenersOptions, type LayoutAdapter } from './types';
+export default class BaseWebAdapter implements LayoutAdapter {
+    private service;
+    constructor(service: SpatialNavigationService);
+    private keyDownEventListener;
+    private keyUpEventListener;
+    addEventListeners({ keyDown, keyUp }: AddEventListenersOptions): void;
+    removeEventListeners(): void;
+    measureLayout: (component: FocusableComponent) => Promise<{
+        node: HTMLElement;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        left: number;
+        top: number;
+        right: any;
+        bottom: any;
+    }>;
+    blurNode: (component: FocusableComponent) => void;
+    focusNode: (component: FocusableComponent) => void;
+}

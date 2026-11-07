@@ -1,0 +1,128 @@
+'use strict';
+
+var react = require('react');
+var lodashEs = require('lodash-es');
+var noriginSpatialNavigationCore = require('@noriginmedia/norigin-spatial-navigation-core');
+
+var FocusContext = react.createContext(noriginSpatialNavigationCore.ROOT_FOCUS_KEY);
+FocusContext.displayName = 'FocusContext';
+/** @internal */
+var useFocusContext = function () { return react.useContext(FocusContext); };
+
+var useFocusableHook = function (_a) {
+    var _b = _a === void 0 ? {} : _a, _c = _b.focusable, focusable = _c === void 0 ? true : _c, _d = _b.saveLastFocusedChild, saveLastFocusedChild = _d === void 0 ? true : _d, _e = _b.trackChildren, trackChildren = _e === void 0 ? false : _e, _f = _b.autoRestoreFocus, autoRestoreFocus = _f === void 0 ? true : _f, _g = _b.forceFocus, forceFocus = _g === void 0 ? false : _g, _h = _b.isFocusBoundary, isFocusBoundary = _h === void 0 ? false : _h, focusBoundaryDirections = _b.focusBoundaryDirections, propFocusKey = _b.focusKey, preferredChildFocusKey = _b.preferredChildFocusKey, nextFocusResolver = _b.nextFocusResolver, _j = _b.measureChildrenLayout, measureChildrenLayout = _j === void 0 ? true : _j, _k = _b.onEnterPress, onEnterPress = _k === void 0 ? lodashEs.noop : _k, _l = _b.onEnterRelease, onEnterRelease = _l === void 0 ? lodashEs.noop : _l, _m = _b.onArrowPress, onArrowPress = _m === void 0 ? function () { return true; } : _m, _o = _b.onArrowRelease, onArrowRelease = _o === void 0 ? lodashEs.noop : _o, _p = _b.onFocus, onFocus = _p === void 0 ? lodashEs.noop : _p, _q = _b.onBlur, onBlur = _q === void 0 ? lodashEs.noop : _q, extraProps = _b.extraProps, accessibilityLabel = _b.accessibilityLabel;
+    var onEnterPressHandler = react.useCallback(function (details) {
+        onEnterPress(extraProps, details);
+    }, [onEnterPress, extraProps]);
+    var onEnterReleaseHandler = react.useCallback(function () {
+        onEnterRelease(extraProps);
+    }, [onEnterRelease, extraProps]);
+    var onArrowPressHandler = react.useCallback(function (direction, details) {
+        return onArrowPress(direction, extraProps, details);
+    }, [extraProps, onArrowPress]);
+    var onArrowReleaseHandler = react.useCallback(function (direction) {
+        onArrowRelease(direction, extraProps);
+    }, [onArrowRelease, extraProps]);
+    var onFocusHandler = react.useCallback(function (layout, details) {
+        onFocus(layout, extraProps, details);
+    }, [extraProps, onFocus]);
+    var onBlurHandler = react.useCallback(function (layout, details) {
+        onBlur(layout, extraProps, details);
+    }, [extraProps, onBlur]);
+    var ref = react.useRef(null);
+    var _r = react.useState(false), focused = _r[0], setFocused = _r[1];
+    var _s = react.useState(false), hasFocusedChild = _s[0], setHasFocusedChild = _s[1];
+    var parentFocusKey = useFocusContext();
+    /**
+     * Either using the propFocusKey passed in, or generating a random one
+     */
+    var focusKey = react.useMemo(function () { return propFocusKey || lodashEs.uniqueId('sn:focusable-item-'); }, [propFocusKey]);
+    var focusSelf = react.useCallback(function (focusDetails) {
+        if (focusDetails === void 0) { focusDetails = {}; }
+        noriginSpatialNavigationCore.SpatialNavigation.setFocus(focusKey, focusDetails);
+    }, [focusKey]);
+    react.useEffect(function () {
+        var node = ref.current;
+        noriginSpatialNavigationCore.SpatialNavigation.addFocusable({
+            focusKey: focusKey,
+            node: node,
+            parentFocusKey: parentFocusKey,
+            preferredChildFocusKey: preferredChildFocusKey,
+            nextFocusResolver: nextFocusResolver,
+            measureChildrenLayout: measureChildrenLayout,
+            onEnterPress: onEnterPressHandler,
+            onEnterRelease: onEnterReleaseHandler,
+            onArrowPress: onArrowPressHandler,
+            onArrowRelease: onArrowReleaseHandler,
+            onFocus: onFocusHandler,
+            onBlur: onBlurHandler,
+            onUpdateFocus: function (isFocused) {
+                if (isFocused === void 0) { isFocused = false; }
+                return setFocused(isFocused);
+            },
+            onUpdateHasFocusedChild: function (isFocused) {
+                if (isFocused === void 0) { isFocused = false; }
+                return setHasFocusedChild(isFocused);
+            },
+            saveLastFocusedChild: saveLastFocusedChild,
+            trackChildren: trackChildren,
+            isFocusBoundary: isFocusBoundary,
+            focusBoundaryDirections: focusBoundaryDirections,
+            autoRestoreFocus: autoRestoreFocus,
+            forceFocus: forceFocus,
+            focusable: focusable,
+            accessibilityLabel: accessibilityLabel
+        });
+        return function () {
+            noriginSpatialNavigationCore.SpatialNavigation.removeFocusable({
+                focusKey: focusKey
+            });
+        };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    react.useEffect(function () {
+        var node = ref.current;
+        noriginSpatialNavigationCore.SpatialNavigation.updateFocusable(focusKey, {
+            node: node,
+            preferredChildFocusKey: preferredChildFocusKey,
+            focusable: focusable,
+            isFocusBoundary: isFocusBoundary,
+            focusBoundaryDirections: focusBoundaryDirections,
+            nextFocusResolver: nextFocusResolver,
+            measureChildrenLayout: measureChildrenLayout,
+            onEnterPress: onEnterPressHandler,
+            onEnterRelease: onEnterReleaseHandler,
+            onArrowPress: onArrowPressHandler,
+            onArrowRelease: onArrowReleaseHandler,
+            onFocus: onFocusHandler,
+            onBlur: onBlurHandler,
+            accessibilityLabel: accessibilityLabel
+        });
+    }, [
+        focusKey,
+        preferredChildFocusKey,
+        focusable,
+        isFocusBoundary,
+        focusBoundaryDirections,
+        nextFocusResolver,
+        measureChildrenLayout,
+        onEnterPressHandler,
+        onEnterReleaseHandler,
+        onArrowPressHandler,
+        onArrowReleaseHandler,
+        onFocusHandler,
+        onBlurHandler,
+        accessibilityLabel
+    ]);
+    return {
+        ref: ref,
+        focusSelf: focusSelf,
+        focused: focused,
+        hasFocusedChild: hasFocusedChild,
+        focusKey: focusKey // returns either the same focusKey as passed in, or generated one
+    };
+};
+var useFocusable = useFocusableHook;
+
+exports.FocusContext = FocusContext;
+exports.useFocusContext = useFocusContext;
+exports.useFocusable = useFocusable;
