@@ -63,6 +63,18 @@ jobs:
       - run: go vet ./...
       - run: go test -count=1 ./...
 
+  music-web:
+    name: Music web — build
+    runs-on: ubuntu-24.04
+    container: node:22-bookworm-slim
+    defaults:
+      run:
+        working-directory: services/music/web
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+
   transcoder:
     name: Go — services/transcoder (real ffmpeg)
     runs-on: ubuntu-24.04
