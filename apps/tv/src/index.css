@@ -297,6 +297,19 @@ html.theme-light .k-badge { background: #0e100c; color: #fff; }
 .dt-vague { background-image: linear-gradient(90deg, #e6281e 0, #e6281e 5%, rgba(0,0,0,0) 5%) !important; }
 .dt-vague .dt-poster { border-radius: 0; }
 .dt-vague .dt-title { background: #345cde !important; }
+/* «Вестерн»: a bleached sky over ochre ground, letterbox bars, paper-framed bills. */
+.dt-western { background-image: linear-gradient(180deg, #f6eedb 0%, #ecd6aa 58%, #d29d5f 58%, #c88f52 100%) !important; box-shadow: inset 0 9px 0 #0b0806, inset 0 -9px 0 #0b0806; }
+.dt-western.dt-on { box-shadow: inset 0 9px 0 #0b0806, inset 0 -9px 0 #0b0806, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
+.dt-western .dt-poster { border-radius: 0; border-width: 2px; border-top-width: 6px; border-color: #f1dfb8 !important; background: #7a4a26 !important; }
+/* «Красная комната»: red curtains at the sides, a zigzag floor. */
+.dt-redroom {
+  background-color: #170607 !important;
+  background-image: repeating-linear-gradient(135deg, #ece7dd 0px, #ece7dd 4px, #0d0b0b 4px, #0d0b0b 8px), repeating-linear-gradient(90deg, #5a0509 0px, #a8121c 6px, #5a0509 12px) !important;
+  background-size: 100% 16%, 100% 100% !important; background-position: 0 100%, 0 0 !important; background-repeat: no-repeat !important;
+  box-shadow: inset 12px 0 0 #b3121c, inset -12px 0 0 #b3121c;
+}
+.dt-redroom.dt-on { box-shadow: inset 12px 0 0 #b3121c, inset -12px 0 0 #b3121c, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
+.dt-redroom .dt-poster { border-color: #f0ece4 !important; background: #2a0a0c !important; }
 
 /* Проектор-skeleton flat elements never scale on focus (any skin). The doubled
    class outweighs the skins' focus rules, which load later (design/looks/*.css). */
