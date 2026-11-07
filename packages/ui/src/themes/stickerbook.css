@@ -1,0 +1,22 @@
+/* «stickerbook» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Стикербук»: a sticker album on a dark ink board: cream paper, bubblegum pink, mint, sunny focus;
+   handwritten Caveat headings (has Cyrillic), the body stays Onest for legibility. */
+html.design-stickerbook {
+  --mt-bg: 42, 36, 56;
+  --mt-surface: 58, 50, 80;
+  --mt-surface-2: 76, 66, 104;
+  --mt-border: 112, 100, 146;
+  --mt-text: 255, 248, 239;
+  --mt-muted: 204, 194, 222;
+  --mt-accent: 255, 111, 165;
+  --mt-accent-strong: 95, 211, 196;
+  --mt-on-accent: 42, 12, 26;
+  --mt-focus: 255, 209, 102;
+  --mt-font-display: "Caveat", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 14px;
+  --mt-radius-control: 16px;
+  color-scheme: dark;
+}
+
+/* Headings use the display face (web and TV). */
+html.design-stickerbook h1, html.design-stickerbook h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }

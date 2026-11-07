@@ -68,10 +68,6 @@ function fit() {
 window.addEventListener("resize", fit);
 fit();
 
-// index.html paints the cached theme's background before the bundle loads; the app's own CSS takes over now.
-document.documentElement.style.removeProperty("background");
-document.documentElement.style.removeProperty("color");
-
 // Every applied design fetches its own chunk (CSS + drawings, design/looks).
 onDesignApplied((d) => void loadLook(d).catch(() => undefined));
 
@@ -80,6 +76,12 @@ onDesignApplied((d) => void loadLook(d).catch(() => undefined));
 // renders (keys / a plainer look; both are retried later).
 void Promise.all([loadLocale(initialLocale()).catch(() => undefined), loadLook(themeCache.design()).catch(() => undefined)])
   .then(() => {
+    // index.html paints the cached design's background before the bundle loads; with the
+    // design's chunk here (its tokens), the app's own CSS takes over.
+    const html = document.documentElement.style;
+    html.removeProperty("background");
+    html.removeProperty("color");
+    html.removeProperty("--mt-bg");
     createRoot(document.getElementById("root")!).render(
       <QueryClientProvider client={queryClient}>
         <I18nProvider>

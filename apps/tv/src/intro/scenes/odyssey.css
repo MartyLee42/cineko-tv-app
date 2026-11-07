@@ -1,3 +1,4 @@
+@import "@martytv/ui/fonts/unbounded-light.css"; /* not in the startup CSS */
 /* ---- odyssey: the moon slides onto the axis, the limb rises, the sun breaks over it with a flare,
    a black slab rises on the left, «CINEKO» fades in spaced out, a red status light comes on. */
 @keyframes odi-moon { from { opacity: 0; transform: translateY(-90px); } to { opacity: 1; transform: translateY(0); } }

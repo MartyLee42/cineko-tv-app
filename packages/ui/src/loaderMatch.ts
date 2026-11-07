@@ -1,7 +1,7 @@
 // «Под фильм»: the loading animation that suits the title, from what the
 // player already knows when a load starts (TMDB genres, kind, language and
 // the title / overview text — no extra requests). Pure; loaderMatch.test.ts.
-import type { LoaderAnimation } from "./loaderPick";
+import type { LoaderAnimation } from "./loaderSurprise";
 
 export interface MatchInfo {
   /** The media id: titles nothing matches get a stable pick from it. */

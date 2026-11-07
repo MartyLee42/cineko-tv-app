@@ -15,7 +15,8 @@ import { useFilmTheme } from "../filmtheme/load";
 import { loadTracker, SHOW_EVERY_MS, type LoadStage } from "./loading";
 import type { LoadingStyle } from "../profile/settings";
 import { Backdrop, pct, Status, type LoaderModel } from "./loaderParts";
-import { LOADERS, loaderKind, type LoaderKind } from "./loaderChunks";
+import { loaderKind, type LoaderKind } from "./loaderChunks";
+import { LOADERS } from "./loaderStyles";
 
 export type { LoaderModel };
 

@@ -1,3 +1,5 @@
+@import "@martytv/ui/themes/retro80.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/russo-one.css";
 /* «retro80»: this design's own rules (moved out of index.css; loaded with the design's chunk, design/looks). */
 /* ---------------------------------------------------------------- Ретро 80-е (kinozal skeleton)
    A VHS night: navy, sunset orange, tape teal, rainbow tape stripes; chrome

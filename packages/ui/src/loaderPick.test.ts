@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { LOADER_ANIMATIONS, LoaderPick, pickSurprise, takeSurprise, upcomingSurprise, type LoaderAnimation, type SurpriseStore } from "./loaderPick";
+import { LoaderPick } from "./loaderPick";
+import { LOADER_ANIMATIONS, pickSurprise, takeSurprise, upcomingSurprise, type LoaderAnimation, type SurpriseStore } from "./loaderSurprise";
 
 const memStore = (): SurpriseStore & { v: { last: LoaderAnimation | null; next: LoaderAnimation | null } } => {
   const s = {

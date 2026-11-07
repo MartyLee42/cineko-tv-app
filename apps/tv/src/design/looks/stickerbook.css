@@ -1,3 +1,5 @@
+@import "@martytv/ui/themes/stickerbook.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/caveat.css";
 /* «stickerbook»: this design's own rules (loaded with the design's chunk, design/looks).
    ---------------------------------------------------------------- Стикербук (kinozal skeleton)
    A sticker album on a dark ink board (dot grid, faint chalk doodles). Posters are die-cut

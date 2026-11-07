@@ -1,3 +1,5 @@
+@import "@martytv/ui/themes/odyssey.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/unbounded-light.css";
 /* «Одиссея»: this design's own rules (loaded with the design's chunk, design/looks).
    ---------------------------------------------------------------- Одиссея (projector skeleton)
    A white spaceship corridor: station-white panels, grey ribs, symmetry, square corners, dark
