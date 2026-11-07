@@ -236,3 +236,12 @@ html.design-matrix :focus-visible { outline: 2px solid rgb(0, 255, 65); outline-
 .design-swatch-popart { background-image: radial-gradient(circle, rgba(255, 255, 255, 0.22) 0px, rgba(255, 255, 255, 0.22) 1.6px, rgba(255, 255, 255, 0) 2px); background-size: 7px 7px; box-shadow: inset 0 0 0 2px #000; }
 .design-swatch-constructivism { background-image: radial-gradient(circle at 85% 25%, #d7261e 0, #d7261e 34%, rgba(215, 38, 30, 0) 35%), linear-gradient(155deg, rgba(0, 0, 0, 0) 62%, #efe4cc 62%, #efe4cc 68%, rgba(0, 0, 0, 0) 68%) !important; }
 .design-swatch-matrix { background-image: linear-gradient(180deg, rgba(0, 6, 2, 0) 0%, rgba(0, 6, 2, 0.85) 100%), repeating-linear-gradient(90deg, rgba(0, 255, 65, 0) 0px, rgba(0, 255, 65, 0) 6px, rgba(0, 255, 65, 0.45) 6px, rgba(0, 255, 65, 0.45) 8px, rgba(0, 255, 65, 0) 8px, rgba(0, 255, 65, 0) 14px) !important; box-shadow: inset 0 0 0 1px rgba(0, 255, 65, 0.5); }
+
+/* Page changes: a short fade-in of the new page (transform + opacity only). */
+.mt-page { -webkit-animation: mt-page-in .18s ease-out both; animation: mt-page-in .18s ease-out both; }
+@-webkit-keyframes mt-page-in { from { opacity: 0; -webkit-transform: translate3d(0, 6px, 0); } to { opacity: 1; -webkit-transform: none; } }
+@keyframes mt-page-in { from { opacity: 0; transform: translate3d(0, 6px, 0); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .mt-page { -webkit-animation: none; animation: none; }
+}
+

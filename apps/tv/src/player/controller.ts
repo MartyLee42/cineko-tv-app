@@ -6,7 +6,7 @@ import { isAndroid, skipTarget } from "@martytv/media-types";
 import { setMediaContext } from "@martytv/ui";
 import { hasAudio } from "./audio";
 import { tvVolume } from "./volume";
-import { isRealEnd, isUnexplainedJump, seekMissed } from "./glitch";
+import { isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed } from "./glitch";
 import { attachHlsJs, reloadUrl, streamMode, type HlsHandle } from "./stream";
 
 type Track = Schemas["Track"];
@@ -1532,8 +1532,10 @@ export class PlayerController {
     if (!v || f.phase !== "playing" || this.compatPending !== null) return;
     // Absolute time (compat streams count from their offset).
     const t = this.abs(v);
-    if (!v.seeking && isUnexplainedJump(t, this.lastGood, Date.now() <= this.seekAllowedUntil)) {
-      // Nobody asked for this jump: a broken stream made the engine skip ahead.
+    const allowed = Date.now() <= this.seekAllowedUntil;
+    if (!v.seeking && (isUnexplainedJump(t, this.lastGood, allowed) || (!v.ended && isUnexplainedDrop(t, this.lastGood, allowed)))) {
+      // Nobody asked for this jump: a broken stream made the engine skip
+      // ahead, or restart from the beginning — continue at the trusted spot.
       this.recoverPrematureEnd();
       return;
     }
@@ -2038,7 +2040,8 @@ export class PlayerController {
     if (this.resumeAt !== null) return this.resumeAt;
     const v = this.video;
     const p = this.position();
-    if (v && isUnexplainedJump(p, this.lastGood, Date.now() <= this.seekAllowedUntil)) return this.lastGood;
+    const allowed = Date.now() <= this.seekAllowedUntil;
+    if (v && (isUnexplainedJump(p, this.lastGood, allowed) || isUnexplainedDrop(p, this.lastGood, allowed))) return this.lastGood;
     return p;
   }
 

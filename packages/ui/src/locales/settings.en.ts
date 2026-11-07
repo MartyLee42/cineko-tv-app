@@ -23,6 +23,7 @@ export const settingsEn = {
   "settings.loading.film_reel": "Film reel",
   "settings.loading.marty": "Cineko",
   "settings.loading.marty_popcorn": "Cineko with popcorn",
+  "settings.loading.matrix": "The Matrix",
   "settings.loading.minimal": "Minimal",
   "settings.default_player": "Default player",
   "settings.language": "Language",

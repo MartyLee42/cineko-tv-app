@@ -23,6 +23,15 @@ export function isUnexplainedJump(position: number, lastGood: number, seekAllowe
 }
 
 /**
+ * True when the position fell far back although nobody seeked: the engine
+ * restarted the stream from the start after a stall (seen on TVs). Without
+ * this the next progress report would save ~0 and lose the resume point.
+ */
+export function isUnexplainedDrop(position: number, lastGood: number, seekAllowed: boolean): boolean {
+  return !seekAllowed && position < lastGood - JUMP_LIMIT;
+}
+
+/**
  * A seek made before the engine could play (the start position, a seek
  * while loading) that it silently dropped: once it plays, it is far from
  * the target (Android's native player, some TV engines, start at 0).
