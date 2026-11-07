@@ -5,7 +5,7 @@ import { useProfiles } from "../queries";
 import { useAdminUsers } from "../pages/AdminPage";
 import { ProgressBar } from "../watch/components";
 import { anyRunning, runProgress } from "../foryou/logic";
-import { useForYouRuns, useRerun, useSetAITemperature, useSetCompanionAI, useSetFactsAI, type AITemperature, type ForYouRun, type RerunBody } from "../foryou/queries";
+import { useForYouRuns, useRerun, useSetAIFeature, useSetAITemperature, useSetFactsAI, type AITemperature, type ForYouRun, type RerunBody } from "../foryou/queries";
 import { balanceLow, formatBalance, type AIBalance } from "../foryou/taste";
 
 type Scope = RerunBody["scope"];
@@ -135,7 +135,9 @@ export function ForYouTab() {
         </form>
       </Card>
 
-      {ai$?.enabled && ai$.temperature && <TemperatureCard current={ai$.temperature} factsAI={ai$.facts_ai} companionAI={ai$.companion_ai} />}
+      {ai$?.enabled && ai$.temperature && (
+        <TemperatureCard current={ai$.temperature} factsAI={ai$.facts_ai} themesAI={ai$.themes_ai ?? true} picksAI={ai$.picks_ai ?? true} companionAI={ai$.companion_ai ?? true} />
+      )}
 
       <Card className="space-y-3">
         <h2 className="font-semibold">{t("fy.admin.runs")}</h2>
@@ -235,11 +237,23 @@ function BalanceLine({ balance }: { balance: AIBalance | null | undefined }) {
 const TEMP_KEYS: (keyof AITemperature)[] = ["collections", "ask", "music", "facts", "companion"];
 
 /** DeepSeek temperature per feature (0–1.5); viewers nudge it with «Точнее / Смелее». */
-function TemperatureCard({ current, factsAI, companionAI }: { current: AITemperature; factsAI: boolean; companionAI: boolean }) {
+function TemperatureCard({
+  current,
+  factsAI,
+  themesAI,
+  picksAI,
+  companionAI,
+}: {
+  current: AITemperature;
+  factsAI: boolean;
+  themesAI: boolean;
+  picksAI: boolean;
+  companionAI: boolean;
+}) {
   const { t, locale } = useI18n();
   const save = useSetAITemperature();
   const setFactsAI = useSetFactsAI();
-  const setCompanionAI = useSetCompanionAI();
+  const setFeature = useSetAIFeature();
   const [draft, setDraft] = useState<AITemperature>(current);
   const [saved, setSaved] = useState(false);
   const changed = TEMP_KEYS.some((k) => draft[k] !== current[k]);
@@ -310,21 +324,29 @@ function TemperatureCard({ current, factsAI, companionAI }: { current: AITempera
         <p className="text-xs text-muted">{t("fy.admin.facts_ai_hint")}</p>
         <ErrorText error={setFactsAI.error} />
       </div>
-      <div className="space-y-1 border-t border-border pt-3">
-        <label className="flex items-center gap-2 text-sm font-medium">
-          <input
-            type="checkbox"
-            checked={companionAI}
-            disabled={setCompanionAI.isPending}
-            onChange={(e) => setCompanionAI.mutate(e.target.checked)}
-            className="accent-[rgb(var(--mt-accent))]"
-            data-testid="foryou-companion-ai"
-          />
-          {t("companion.admin.switch")}
-        </label>
-        <p className="text-xs text-muted">{t("companion.admin.switch_hint")}</p>
-        <ErrorText error={setCompanionAI.error} />
-      </div>
+      {(
+        [
+          ["themes_ai", themesAI, "themes.admin_themes_ai", "themes.admin_themes_ai_hint"],
+          ["picks_ai", picksAI, "themes.admin_picks_ai", "themes.admin_picks_ai_hint"],
+          ["companion_ai", companionAI, "companion.admin.switch", "companion.admin.switch_hint"],
+        ] as const
+      ).map(([key, on, label, hint]) => (
+        <div key={key} className="space-y-1 border-t border-border pt-3">
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={on}
+              disabled={setFeature.isPending}
+              onChange={(e) => setFeature.mutate({ [key]: e.target.checked })}
+              className="accent-[rgb(var(--mt-accent))]"
+              data-testid={`foryou-${key.replace("_", "-")}`}
+            />
+            {t(label)}
+          </label>
+          <p className="text-xs text-muted">{t(hint)}</p>
+        </div>
+      ))}
+      <ErrorText error={setFeature.error} />
     </Card>
   );
 }

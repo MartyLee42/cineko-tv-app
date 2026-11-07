@@ -35,7 +35,7 @@ export const adminEn = {
   "admin.server.download": "Download",
   "admin.server.upload": "Upload",
   "admin.server.processes": "Top processes",
-  "admin.server.processes_hint": "Grouped by name, sorted by memory. CPU 100% = one full core.",
+  "admin.server.processes_hint": "Grouped by name and container, sorted by memory (shared memory counted once). CPU 100% = one full core.",
   "admin.server.containers": "Containers",
   "admin.server.col.name": "Name",
   "admin.server.col.memory": "Memory",

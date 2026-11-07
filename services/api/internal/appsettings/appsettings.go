@@ -29,7 +29,6 @@ const (
 	keySeasonal      = "seasonal_effects"
 	keyAITemperature = "ai_temperature"
 	keyFactsAI       = "ai_facts"
-	keyCompanionAI   = "ai_companion"
 )
 
 // AI temperature range and default (DeepSeek accepts 0–2; above 1.5 the
@@ -91,8 +90,8 @@ type Store struct {
 	factsAILoaded bool
 	factsAI       bool
 
-	companionAILoaded bool
-	companionAI       bool
+	// features: cached AI feature switches (AIFeatureEnabled).
+	features map[string]bool
 }
 
 func NewStore(q db.Querier, auditLog *audit.Logger, log *slog.Logger) *Store {
@@ -226,40 +225,45 @@ func (s *Store) SetFactsAIEnabled(ctx context.Context, enabled bool, by string) 
 	return nil
 }
 
-// CompanionAIEnabled reports whether the watch companion may ask DeepSeek
-// («Ранее в сериале», «После титров»; default true, a database error also
-// answers true and is retried on the next call).
-func (s *Store) CompanionAIEnabled(ctx context.Context) bool {
+// AIFeatureEnabled reports an AI feature switch stored under
+// "ai_feature_<name>" (internal/foryou: "themes", "picks"). Default true;
+// a database error also answers true and is retried on the next call.
+func (s *Store) AIFeatureEnabled(ctx context.Context, feature string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.companionAILoaded {
-		return s.companionAI
+	if v, ok := s.features[feature]; ok {
+		return v
 	}
 	var raw []byte
-	err := s.q.QueryRow(ctx, `SELECT value FROM app_settings WHERE key = $1`, keyCompanionAI).Scan(&raw)
+	err := s.q.QueryRow(ctx, `SELECT value FROM app_settings WHERE key = $1`, "ai_feature_"+feature).Scan(&raw)
+	v := seasonalValue{Enabled: true}
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
-		s.companionAI, s.companionAILoaded = true, true
 	case err != nil:
 		if s.log != nil {
 			s.log.Warn("app settings: read failed", "err", err)
 		}
 		return true
 	default:
-		v := seasonalValue{Enabled: true}
 		_ = json.Unmarshal(raw, &v)
-		s.companionAI, s.companionAILoaded = v.Enabled, true
 	}
-	return s.companionAI
+	if s.features == nil {
+		s.features = map[string]bool{}
+	}
+	s.features[feature] = v.Enabled
+	return v.Enabled
 }
 
-// SetCompanionAIEnabled stores the watch companion switch.
-func (s *Store) SetCompanionAIEnabled(ctx context.Context, enabled bool, by string) error {
-	if err := s.put(ctx, keyCompanionAI, seasonalValue{Enabled: enabled}, by); err != nil {
+// SetAIFeatureEnabled stores an AI feature switch.
+func (s *Store) SetAIFeatureEnabled(ctx context.Context, feature string, enabled bool, by string) error {
+	if err := s.put(ctx, "ai_feature_"+feature, seasonalValue{Enabled: enabled}, by); err != nil {
 		return err
 	}
 	s.mu.Lock()
-	s.companionAI, s.companionAILoaded = enabled, true
+	if s.features == nil {
+		s.features = map[string]bool{}
+	}
+	s.features[feature] = enabled
 	s.mu.Unlock()
 	return nil
 }

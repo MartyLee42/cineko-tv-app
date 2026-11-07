@@ -42,6 +42,10 @@ services:
       INTERNAL_API_URL: http://api:8080
       # YouTube «Видео» tab: the Invidious service below (internal network).
       INVIDIOUS_URL: http://invidious:3000
+      # Nightly Invidious restart (INVIDIOUS_RESTART_AT, default 03:00 in TZ /
+      # NEW_EPISODES_TZ; postponed while a video plays) via restart-proxy.
+      INVIDIOUS_RESTART_DOCKER_URL: http://restart-proxy:2375
+      INVIDIOUS_RESTART_CONTAINERS: ${COMPOSE_PROJECT_NAME}-companion-1,${COMPOSE_PROJECT_NAME}-invidious-1
     extra_hosts:
       # TorrServer runs with host networking.
       - "host.docker.internal:host-gateway"
@@ -66,6 +70,7 @@ services:
       # Existing network with Prowlarr and the AmneziaWG SOCKS proxy (used to
       # reach TMDB, which is blocked from this server). Joining doesn't change it.
       media: {}
+      restart: {}   # restart-proxy (nightly Invidious restart)
 
   # Browser compatibility streams: ffmpeg remux, audio → AAC (video copied;
   # XviD / MPEG-2 ≤ 1080p re-encoded to H.264 on request, 2 threads each).
@@ -192,6 +197,26 @@ services:
       invidious: {}
       media: {}
 
+  # Nightly Invidious restart: a Docker socket proxy that allows only the API
+  # and only POST /containers/martytv-{companion,invidious}-1/restart.
+  # Root inside only to open the socket; no capabilities, read-only.
+  restart-proxy:
+    image: wollomatic/socket-proxy:1.12.0
+    restart: unless-stopped
+    user: "0:0"
+    command:
+      - -listenip=0.0.0.0
+      - -allowfrom=api
+      - -allowPOST=(/v1\.[0-9]+)?/containers/${COMPOSE_PROJECT_NAME}-(companion|invidious)-1/restart
+      - -loglevel=WARN
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 32m
+    networks: [restart]
+
   # --- Cineko Music (/music): services/music --------------------------------
   # Separate app and container. Catalog from Deezer's public API, audio from
   # YouTube via the Invidious above (cached on disk in music-data), lossless
@@ -247,6 +272,8 @@ networks:
   internal: {}
   # Invidious, its database and companion (not reachable from the API).
   invidious: {}
+  # The API and restart-proxy only.
+  restart: {}
   media:
     external: true
     name: root_jackett_net

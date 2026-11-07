@@ -45,6 +45,15 @@ type Weights struct {
 	// Actors count with this factor (directors 1); only the top ActorBilling billed.
 	ActorFactor  float64
 	ActorBilling int
+	// Keywords (themes): need KeywordMinTitles titles. IDF-like damping by
+	// how common a keyword is across the stored catalog (corpus ≥
+	// KeywordIDFMinCorpus titles with keywords): full weight up to
+	// KeywordCommonShare of titles, down to KeywordIDFFloor at
+	// KeywordStopShare and above (log scale).
+	KeywordMinTitles                     int
+	KeywordIDFMinCorpus                  int
+	KeywordCommonShare, KeywordStopShare float64
+	KeywordIDFFloor                      float64
 	// Seeds: the titles "because you liked X" rows are built from.
 	Seeds       int
 	RecentSeeds int
@@ -59,6 +68,14 @@ type Weights struct {
 	Country    float64
 	Source     float64 // how strongly the candidate sources vouch for it
 	Popularity float64
+	// Keyword: match of the candidate's keywords (0.7·best + 0.3·worst).
+	Keyword float64
+	// People: the candidate's director / writer / cinematographer /
+	// composer / actor affinities (strongest liked + half the most
+	// disliked), each × its factor below.
+	People                                   float64
+	PeopleDirector, PeopleWriter, PeopleCrew float64
+	PeopleActor                              float64
 	// Novelty: bonus for titles never shown to the profile.
 	Novelty float64
 	// Fatigue: penalty per impression without an open (last 14 days), up to 5.
@@ -71,6 +88,10 @@ type Weights struct {
 
 	// Source strengths (0..1) per candidate source type.
 	SrcGenre, SrcTrending, SrcHiddenGem, SrcDifferent, SrcAI float64
+	// SrcTheme: discover by a liked keyword (× affinity × rank).
+	SrcTheme float64
+	// A theme reason replaces a weak (genre/trending) one from this keyword affinity.
+	ThemeReasonMin float64
 
 	// Diversity (MMR): score·λ − (1−λ)·max similarity to already picked.
 	MMRLambda float64
@@ -81,6 +102,10 @@ type Weights struct {
 	MinRowItems             int
 	BecauseRows             int
 	DirectorRows, ActorRows int
+	ThemeRows               int
+	// AI: the top-picks candidates sent for re-ranking, how many the model
+	// keeps, and the candidates sent for grouping into theme rubrics.
+	RerankCandidates, RerankPicks, ThemeCandidates int
 	// Cold start below this many positive signals.
 	MinSignals int
 	// Pool kept for Surprise Me.
@@ -105,17 +130,20 @@ func DefaultWeights() Weights {
 		RecencyFloor: 0.4, RecencyHalfLife: 2 * 365 * 24 * time.Hour,
 
 		AffinityPrior: 3, MinPersonTitles: 2, ActorFactor: 0.6, ActorBilling: 5,
+		KeywordMinTitles: 2, KeywordIDFMinCorpus: 200, KeywordCommonShare: 0.02, KeywordStopShare: 0.25, KeywordIDFFloor: 0.25,
 		Seeds: 10, RecentSeeds: 4, RecentDays: 45,
 
 		Quality: 1, Genre: 1.2, Decade: 0.3, Language: 0.3, Country: 0.2, Source: 1.5,
-		Popularity: 0.2, Novelty: 0.1, Fatigue: 0.15, WatchlistBoost: 0.3,
+		Popularity: 0.2, Keyword: 0.6, People: 0.35, PeopleDirector: 1, PeopleWriter: 0.8, PeopleCrew: 0.5, PeopleActor: 0.6,
+		Novelty: 0.1, Fatigue: 0.15, WatchlistBoost: 0.3,
 		QualityPriorVotes: 300, QualityPriorMean: 6.3,
 
-		SrcGenre: 0.25, SrcTrending: 0.35, SrcHiddenGem: 0.45, SrcDifferent: 0.4, SrcAI: 0.6,
+		SrcGenre: 0.25, SrcTrending: 0.35, SrcHiddenGem: 0.45, SrcDifferent: 0.4, SrcAI: 0.6, SrcTheme: 0.5, ThemeReasonMin: 0.4,
 
 		MMRLambda: 0.75,
 
-		TopPicks: 15, RowSize: 15, MinRowItems: 5, BecauseRows: 3, DirectorRows: 2, ActorRows: 1,
+		TopPicks: 15, RowSize: 15, MinRowItems: 5, BecauseRows: 3, DirectorRows: 2, ActorRows: 1, ThemeRows: 1,
+		RerankCandidates: 40, RerankPicks: 15, ThemeCandidates: 80,
 		MinSignals: 3, PoolSize: 400,
 
 		ReasonMinTitles: 2, ReasonFullTitles: 4, ReasonGenrePenalty: 0.4, ReasonRuntimePenalty: 0.3, ReasonLongRuntime: 130,

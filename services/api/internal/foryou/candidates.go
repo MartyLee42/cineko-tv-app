@@ -32,7 +32,7 @@ func (cs *candidateSet) add(id string, src Source) {
 	// One source per (type, seed/person/collection): keep the strongest.
 	for i := range c.Sources {
 		x := &c.Sources[i]
-		if x.Type == src.Type && x.MediaID == src.MediaID && x.PersonID == src.PersonID && x.CollectionID == src.CollectionID {
+		if x.Type == src.Type && x.MediaID == src.MediaID && x.PersonID == src.PersonID && x.CollectionID == src.CollectionID && x.KeywordID == src.KeywordID {
 			if src.Strength > x.Strength {
 				*x = src
 			}
@@ -200,6 +200,20 @@ func (s *Service) generate(ctx context.Context, t *Taste, lang string, cold, pac
 	}
 	people(ReasonDirector, t.Directors, 4)
 	people(ReasonActor, t.Actors, 3)
+
+	// Themes: acclaimed titles with the most liked TMDB keywords.
+	for _, a := range limit(t.Keywords, s.w.ThemeRows+1) {
+		if cold || a.Score < s.w.ThemeReasonMin {
+			break
+		}
+		kid, _ := strconv.Atoi(a.Key)
+		strength := a.Score
+		jobs = append(jobs, page("theme", func(i, n int, _ catalog.MediaSummary) (Source, bool) {
+			return Source{Type: ReasonTheme, KeywordID: kid, Strength: s.w.SrcTheme * strength * rankFactor(i, n)}, true
+		}, func(ctx context.Context) (*catalog.MediaPage, error) {
+			return s.cat.Discover(ctx, catalog.DiscoverParams{Kind: "movie", WithKeywords: []int{kid}, Sort: "rating", Page: 1, Lang: lang, VoteCountMin: vr(300)})
+		}))
+	}
 
 	// Hidden gems: highly rated, few votes, in liked genres.
 	if len(gIDs) > 0 {

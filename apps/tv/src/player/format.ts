@@ -76,6 +76,7 @@ export const WARNING_KEYS = {
   codec_unknown: "tvplay.warn.codec_unknown",
   audio_needs_conversion: "tvplay.warn.audio_needs_conversion",
   audio_unsupported: "tvplay.warn.audio_unsupported",
+  may_stutter: "smooth.warn.may_stutter",
 } as const;
 export type WarningKey = (typeof WARNING_KEYS)[keyof typeof WARNING_KEYS];
 

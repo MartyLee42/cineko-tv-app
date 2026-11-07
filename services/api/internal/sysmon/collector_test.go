@@ -3,6 +3,7 @@ package sysmon
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -65,10 +66,14 @@ func TestCollectorDeltas(t *testing.T) {
 	if len(first.Network) != 2 || first.Network[0].RxBps != 0 || first.Network[0].RxTotal != 1000000 {
 		t.Fatalf("net %+v", first.Network)
 	}
-	// postgres groups two processes; torrserver is biggest.
+	// postgres groups two processes; torrserver is biggest (no statm: plain RSS).
 	if len(first.Processes) != 3 || first.Processes[0].Name != "torrserver" || first.Processes[0].RSSBytes != 100000*4096 ||
 		first.Processes[1].Name != "postgres" || first.Processes[1].Count != 2 || first.Processes[1].PID != 77 {
 		t.Fatalf("procs %+v", first.Processes)
+	}
+	// Shared pages once: private 200 + 2100, plus the largest shared part 900.
+	if first.Processes[1].RSSBytes != (200+2100+900)*4096 {
+		t.Fatalf("postgres mem %d pages", first.Processes[1].RSSBytes/4096)
 	}
 
 	// Within minGap: cached.
@@ -101,7 +106,7 @@ func TestCollectorDeltas(t *testing.T) {
 	for _, p := range st.Processes {
 		byName[p.Name] = p
 	}
-	if byName["torrserver"].CPUPercent != 20 || byName["postgres"].Count != 1 || byName["caddy"].CPUPercent != 0 {
+	if byName["torrserver"].CPUPercent != 20 || byName["postgres"].Count != 1 || byName["postgres"].RSSBytes != 3000*4096 || byName["caddy"].CPUPercent != 0 {
 		t.Fatalf("procs %+v", st.Processes)
 	}
 	s := SampleFrom(st)
@@ -115,5 +120,38 @@ func TestCollectorMissingProc(t *testing.T) {
 	st := c.Collect(true)
 	if st.CPU.Cores != 0 || len(st.Processes) != 0 || st.Disks == nil || st.Network == nil {
 		t.Fatalf("%+v", st)
+	}
+}
+
+// Two postgres containers are two rows; each counts its shared memory once.
+func TestScanProcsPerContainer(t *testing.T) {
+	proc := copyProc(t)
+	idA, idB := strings.Repeat("a", 64), strings.Repeat("b", 64)
+	write(t, proc, "43/cgroup", "0::/system.slice/docker-"+idA+".scope\n")
+	write(t, proc, "77/cgroup", "0::/system.slice/docker-"+idA+".scope\n")
+	write(t, proc, "88/stat", "88 (postgres) S 1 88 88 0 -1 4194560 100 0 0 0 5 5 0 0 20 0 1 0 100 9000000 500 18446744073709551615 0 0 0")
+	write(t, proc, "88/statm", "9000 500 300 10 0 200 0\n")
+	write(t, proc, "88/cgroup", "12:memory:/docker/"+idB+"\n")
+	c := NewCollector(proc, "host")
+	c.pageSize = 4096
+
+	procs := NameContainers(c.Collect(true).Processes, []Container{{ID: idA, Name: "martytv-postgres-1"}})
+	var a, b *Process
+	for i := range procs {
+		switch procs[i].Container {
+		case "martytv-postgres-1":
+			a = &procs[i]
+		case idB[:12]: // not listed by Docker: the short id
+			b = &procs[i]
+		}
+	}
+	if a == nil || b == nil || a.Name != "postgres" || a.Count != 2 || a.RSSBytes != 3200*4096 || b.Count != 1 || b.RSSBytes != 500*4096 {
+		t.Fatalf("procs %+v", procs)
+	}
+	// The collector's cached slice is not modified.
+	for _, p := range c.Collect(true).Processes {
+		if p.Container != "" {
+			t.Fatalf("cached slice named: %+v", p)
+		}
 	}
 }

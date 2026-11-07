@@ -52,6 +52,8 @@ type Catalog interface {
 	PersonMovies(ctx context.Context, personTMDBID int, job, lang string, minVotes int) ([]catalog.MediaSummary, error)
 	SummariesByID(ctx context.Context, ids []string, lang string) (map[string]catalog.MediaSummary, error)
 	Detail(ctx context.Context, id, lang string) (*catalog.MediaDetail, error)
+	// FetchKeywords stores a title's TMDB keywords (backfill).
+	FetchKeywords(ctx context.Context, id string) error
 }
 
 // FamilySource builds the «Семья советует» block (internal/family).
@@ -87,8 +89,10 @@ type AISettings interface {
 	SetAITemperature(ctx context.Context, t appsettings.AITemperature, by string) error
 	FactsAIEnabled(ctx context.Context) bool
 	SetFactsAIEnabled(ctx context.Context, enabled bool, by string) error
-	CompanionAIEnabled(ctx context.Context) bool
-	SetCompanionAIEnabled(ctx context.Context, enabled bool, by string) error
+	// AIFeatureEnabled / SetAIFeatureEnabled: the themes and picks
+	// switches (AIFeatureThemes, AIFeaturePicks; default on).
+	AIFeatureEnabled(ctx context.Context, feature string) bool
+	SetAIFeatureEnabled(ctx context.Context, feature string, enabled bool, by string) error
 }
 
 type Service struct {
@@ -123,6 +127,7 @@ type Service struct {
 	noteTimers sync.Map       // profile id → struct{}: a delayed taste-note regeneration is pending
 	regenRuns  sync.Map       // profile id → run id: a per-profile AI regeneration is running (regen.go)
 	balance    balanceCache   // DeepSeek balance (admin)
+	idf        idfCache       // keyword damping factors (themes.go)
 	curatedDay sync.Map       // profile id → curatedChoice: the day's curated list (curated.go)
 
 	runMu   sync.Mutex
@@ -166,7 +171,7 @@ func (s *Service) factsAI(ctx context.Context) bool {
 
 // companionAI: the admin allows the watch companion (default on).
 func (s *Service) companionAI(ctx context.Context) bool {
-	return s.settings == nil || s.settings.CompanionAIEnabled(ctx)
+	return s.settings == nil || s.settings.AIFeatureEnabled(ctx, AIFeatureCompanion)
 }
 
 // base is the service lifetime context (cancelled on shutdown).
@@ -253,7 +258,7 @@ func (s *Service) computeProfile(ctx context.Context, profileID, lang string, pa
 	}
 	var refs []CollectionRef
 	for _, c := range cols {
-		refs = append(refs, CollectionRef{ID: c.id})
+		refs = append(refs, CollectionRef{ID: c.id, Theme: c.theme})
 		for i, mid := range c.items {
 			cs.add(mid, Source{Type: ReasonAI, CollectionID: c.id, Strength: s.w.SrcAI * (1 - float64(i)*0.02)})
 		}
@@ -318,12 +323,18 @@ func (s *Service) computeProfile(ctx context.Context, profileID, lang string, pa
 		c.Sources = srcs
 		scored = append(scored, Score(c, t, s.w))
 	}
+	picks, err := s.loadAIPicks(ctx, profileID)
+	if err != nil {
+		return nil, err
+	}
+	rows, cands := BuildRowsAI(scored, t, s.w, refs, cold, picks.ids())
 	cache := &cacheRow{
-		Rows:      BuildRows(scored, t, s.w, refs, cold),
-		Pool:      BuildPool(scored, s.w),
-		ColdStart: cold,
-		Lang:      lang,
-		SignalsAt: latest,
+		Rows:          rows,
+		Pool:          BuildPool(scored, s.w),
+		TopCandidates: cands,
+		ColdStart:     cold,
+		Lang:          lang,
+		SignalsAt:     latest,
 	}
 	if err := s.saveCache(ctx, profileID, cache); err != nil {
 		return nil, err
@@ -351,7 +362,7 @@ func (s *Service) computeTaste(ctx context.Context, profileID string) (*Taste, [
 	for id, f := range facts {
 		feats[id] = f.Features
 	}
-	t := ComputeTaste(signals, feats, s.now(), s.w)
+	t := ComputeTasteIDF(signals, feats, s.keywordIDF(ctx), s.now(), s.w)
 	// The taste quiz's answers nudge the affinities (quiz.go).
 	if qa, err := s.quizAnswers(ctx, profileID); err == nil {
 		applyQuiz(t, qa)
@@ -479,14 +490,20 @@ type renderCtx struct {
 	persons map[int]personName
 	genres  map[int]string
 	cols    map[string]string // collection id → title
+	kws     map[int]keywordName
+	// whys: the AI re-ranking's reasons by media id (response language).
+	whys map[string]string
 }
 
 func (s *Service) newRender(ctx context.Context, lang string, mediaIDs []string, reasons []Reason) (*renderCtx, error) {
-	rc := &renderCtx{lang: lang, genres: s.genreNamesFor(ctx, lang), cols: map[string]string{}}
+	rc := &renderCtx{lang: lang, genres: s.genreNamesFor(ctx, lang), cols: map[string]string{}, whys: map[string]string{}}
 	ids := slicesUniq(mediaIDs)
-	var people []int
+	var people, kws []int
 	var colIDs []string
 	for _, r := range reasons {
+		if r.KeywordID != 0 {
+			kws = append(kws, r.KeywordID)
+		}
 		if r.MediaID != "" {
 			ids = append(ids, r.MediaID)
 		}
@@ -502,6 +519,9 @@ func (s *Service) newRender(ctx context.Context, lang string, mediaIDs []string,
 		return nil, err
 	}
 	if rc.persons, err = s.personNames(ctx, people, lang); err != nil {
+		return nil, err
+	}
+	if rc.kws, err = s.keywordNames(ctx, uniqInts(kws)); err != nil {
 		return nil, err
 	}
 	if len(colIDs) > 0 {
@@ -562,7 +582,25 @@ func (rc *renderCtx) reason(r Reason) ReasonOut {
 		m := r.Mood
 		out.Mood = &m
 	}
+	if r.KeywordID != 0 {
+		kid := r.KeywordID
+		out.KeywordID = &kid
+		if k, ok := rc.kws[kid]; ok {
+			n := k.in(rc.lang)
+			out.KeywordName = &n
+			out.KeywordLocalized = rc.lang != "ru" || k.RU != ""
+		}
+	}
 	out.Text = reasonText(rc.lang, out)
+	return out
+}
+
+// itemReason is an item's reason plus the AI's personal line, if any.
+func (rc *renderCtx) itemReason(mediaID string, r Reason) ReasonOut {
+	out := rc.reason(r)
+	if w := rc.whys[mediaID]; w != "" {
+		out.AIText = &w
+	}
 	return out
 }
 
@@ -596,6 +634,9 @@ func (s *Service) hydrateRows(ctx context.Context, profileID, lang string, cache
 		return nil, err
 	}
 	s.annotateRatings(ctx, rc.sums)
+	if picks, err := s.loadAIPicks(ctx, profileID); err == nil {
+		rc.whys = picks.whys(lang)
+	}
 	out := make([]Row, 0, len(cached))
 	for _, r := range cached {
 		row := Row{ID: r.ID, Kind: r.Kind, Reason: rc.reason(r.Reason), Items: []Item{}}
@@ -610,7 +651,10 @@ func (s *Service) hydrateRows(ctx context.Context, profileID, lang string, cache
 				continue
 			}
 			m.Me = &st
-			row.Items = append(row.Items, Item{Media: m, Reason: rc.reason(it.Reason), Score: it.Score})
+			row.Items = append(row.Items, Item{Media: m, Reason: rc.itemReason(it.MediaID, it.Reason), Score: it.Score})
+		}
+		if r.Kind == RowTheme && row.Reason.KeywordName == nil {
+			continue // keyword unknown: no title to show
 		}
 		if len(row.Items) >= minRenderItems {
 			out = append(out, row)

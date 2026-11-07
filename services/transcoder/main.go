@@ -8,6 +8,7 @@
 //
 //	martytv-transcoder              serve (LISTEN_ADDR, default :8090)
 //	martytv-transcoder healthcheck  exit 0 if /healthz answers (Docker HEALTHCHECK)
+//	martytv-transcoder probe        print the video encoder auto-detection would pick
 package main
 
 import (
@@ -30,12 +31,22 @@ func main() {
 	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
 		os.Exit(healthcheck())
 	}
+	if len(os.Args) > 1 && os.Args[1] == "probe" {
+		os.Exit(runProbe())
+	}
 	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})).With("service", "transcoder")
 	cfg, addr, err := loadConfig(os.Getenv)
 	if err != nil {
 		log.Error("config", "err", err)
 		os.Exit(2)
 	}
+	// Hardware encoding for re-encoded video (hwaccel.go): probed once.
+	dctx, dcancel := context.WithTimeout(context.Background(), 90*time.Second)
+	t0 := time.Now()
+	cfg.Encoder = DetectEncoder(dctx, cfg.HWMode, scanDevices(), cfg.HWDevice, ffmpegProber{bin: cfg.FFmpeg}, log)
+	dcancel()
+	log.Info("video encoder", "encoder", cfg.Encoder.String(), "name", encoderName[cfg.Encoder.Backend], "mode", cfg.HWMode,
+		"probe_seconds", time.Since(t0).Round(time.Millisecond).Seconds())
 	srv := NewServer(cfg, log)
 	defer srv.Close()
 	hs := &http.Server{
@@ -121,6 +132,12 @@ func loadConfig(getenv func(string) string) (Config, string, error) {
 		HLSKeepBehind:  dur("TRANSCODER_HLS_KEEP_BEHIND", 10*time.Minute),
 		HLSMaxBytes:    int64(num("TRANSCODER_HLS_MAX_SESSION_MB", 3072)) << 20,
 		VideoThreads:   num("TRANSCODER_VIDEO_THREADS", DefaultVideoThreads),
+		HWDevice:       get("TRANSCODER_HWACCEL_DEVICE", ""),
+	}
+	if m, err := parseHWMode(getenv("TRANSCODER_HWACCEL")); err != nil {
+		errs = append(errs, err)
+	} else {
+		cfg.HWMode = m
 	}
 	if v := get("TRANSCODER_SUBTITLE_READRATE", "4"); v != "" {
 		f, err := strconv.ParseFloat(v, 64)
@@ -158,5 +175,26 @@ func healthcheck() int {
 	if resp.StatusCode != http.StatusOK {
 		return 1
 	}
+	return 0
+}
+
+// runProbe runs the encoder detection with the current environment and prints
+// the choice (every attempt is logged to stderr).
+func runProbe() int {
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	mode, err := parseHWMode(os.Getenv("TRANSCODER_HWACCEL"))
+	if err != nil {
+		log.Error("config", "err", err)
+		return 2
+	}
+	bin := strings.TrimSpace(os.Getenv("FFMPEG_PATH"))
+	if bin == "" {
+		bin = "ffmpeg"
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	dev := scanDevices()
+	log.Info("devices", "nvidia", dev.Nvidia, "render", strings.Join(dev.Render, ","))
+	fmt.Println(DetectEncoder(ctx, mode, dev, strings.TrimSpace(os.Getenv("TRANSCODER_HWACCEL_DEVICE")), ffmpegProber{bin: bin}, log))
 	return 0
 }

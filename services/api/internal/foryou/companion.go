@@ -13,7 +13,7 @@ import (
 // synopses of episodes the viewer has watched — and «После титров» — the
 // ending explained, why the title matters, and a short spoiler chat. Same
 // client and daily token budget as the other AI features; the admin's
-// `companion` temperature (low by default) and `ai_companion` switch.
+// `companion` temperature (low by default) and `ai_feature_companion` switch (AIFeatureCompanion).
 // Every user message is JSON: catalog data and the viewer's words travel
 // as data fields only.
 

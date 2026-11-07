@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-spatial-navigation";
 import type { PlaybackSource, Release } from "@martytv/contracts";
-import { imageUrl, releaseBitrate, skipMode } from "@martytv/media-types";
+import { chapterIndexAt, chapterTicks, fileChapters, imageUrl, nextChapterStart, prevChapterStart, releaseBitrate, skipMode, type Chapter } from "@martytv/media-types";
 import { CvIcon, loadStatsLines, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
 import { FocusButton, FocusLine } from "../focus";
 import { useCatalogConfig } from "../catalog/queries";
@@ -22,7 +22,7 @@ import { SLEEP_CHOICES, sleepChoiceOf, type SleepChoice, type SleepState } from 
 import { SleepOverlay, useSleepTimer } from "./SleepTimer";
 import { useSettings } from "../profile/settings";
 import { useSkip } from "./skip";
-import { accumulateSeek, playerKey, registerMediaKeys, type SeekPreview } from "./keys";
+import { chapterSeek, playerKey, registerMediaKeys, type SeekPreview } from "./keys";
 import { ReleasePicker } from "./ReleasePicker";
 import { errorKey, type Flow, type PlayContext } from "./session";
 import { PlayerChooser } from "../players/PlayerChooser";
@@ -218,6 +218,7 @@ function NetStatsPanel({ source }: { source: PlaybackSource }) {
       cpu: status.data?.cpu_percent,
       streams: status.data?.active_streams,
       device: player.deviceRate(),
+      frames: player.droppedFrames(),
     },
     (b) => formatSpeed(b, locale),
     mbit,
@@ -383,6 +384,12 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   const slowFocusRef = useRef(slowFocus);
   useEffect(() => {
     slowFocusRef.current = slowFocus;
+  });
+  /** «Картинка подтормаживает…»: the same two buttons, «Не сейчас» first. */
+  const [smoothFocus, setSmoothFocus] = useState<"lighter" | "not_now">("not_now");
+  const smoothFocusRef = useRef(smoothFocus);
+  useEffect(() => {
+    smoothFocusRef.current = smoothFocus;
   });
   const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const seekTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -598,6 +605,12 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   useEffect(() => {
     itemsRef.current = items;
   });
+  // The file's chapters (ffprobe, media_info): ticks, the title by the time, ◀▶ stop at their starts.
+  const chapters = playing ? fileChapters(flow.source.media_info?.chapters, player.duration()) : null;
+  const chaptersRef = useRef<Chapter[] | null>(chapters);
+  useEffect(() => {
+    chaptersRef.current = chapters;
+  });
 
   const commitSeek = useCallback(() => {
     const s = seekRef.current;
@@ -692,6 +705,15 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         }
         if (k === "ok") return slowFocusRef.current === "lighter" ? player.lighter() : player.dismissSlow();
       }
+      // «Картинка подтормаживает…»: the same keys (≤ 20 s, Back dismisses).
+      if (player.stutterHint() && !seekRef.current) {
+        if (k === "back") return player.dismissStutter();
+        if (k === "left" || k === "right") {
+          player.touchStutter();
+          return setSmoothFocus(k === "left" ? "lighter" : "not_now");
+        }
+        if (k === "ok") return smoothFocusRef.current === "lighter" ? void player.smoother() : player.dismissStutter();
+      }
       switch (k) {
         case "ok":
         case "playpause":
@@ -715,7 +737,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         case "rew":
         case "ff": {
           const dir = k === "left" || k === "rew" ? -1 : 1;
-          const next = accumulateSeek(seekRef.current, player.position(), dir, player.duration());
+          const next = chapterSeek(seekRef.current, player.position(), dir, player.duration(), chaptersRef.current);
           seekRef.current = next;
           setSeek(next);
           showControls();
@@ -747,11 +769,18 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
           return;
         }
         case "next":
-          if (ctx.kind === "series") player.nextEpisode();
-          return;
-        case "prev":
-          if (ctx.kind === "series") player.prevEpisode();
-          return;
+        case "prev": {
+          if (ctx.kind === "series") return k === "next" ? player.nextEpisode() : player.prevEpisode();
+          // A film: ⏭ / ⏮ jump to the next / previous chapter (the current one's start first, like a CD player).
+          const cs = chaptersRef.current;
+          const to = k === "next" ? nextChapterStart(cs, player.position()) : prevChapterStart(cs, player.position());
+          if (to === null) return;
+          clearTimeout(seekTimer.current);
+          seekRef.current = null;
+          setSeek(null);
+          player.seekTo(to);
+          return showControls();
+        }
         case "back":
           // Still loading (no picture yet): Back cancels at once.
           if (player.loading()) return player.close();
@@ -795,6 +824,20 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
     setSlowWasShown(slowShown);
     if (slowShown && slowFocus !== "not_now") setSlowFocus("not_now");
   }
+  const stutter = playing && !slow && player.stutterHint();
+  const [stutterWasShown, setStutterWasShown] = useState(stutter);
+  if (stutterWasShown !== stutter) {
+    setStutterWasShown(stutter);
+    if (stutter && smoothFocus !== "not_now") setSmoothFocus("not_now");
+  }
+  const ticks = chapterTicks(chapters, dur);
+  const chapterAt = chapterIndexAt(chapters, pos);
+  const chapterText =
+    chapters && chapterAt >= 0
+      ? chapters[chapterAt]!.title
+        ? t("chapters.titled", { n: chapterAt + 1, title: chapters[chapterAt]!.title! })
+        : t("chapters.n", { n: chapterAt + 1 })
+      : null;
   const bufferingNow = playing && (player.recovering() || !!rebuf || player.compatRestarting() || ((!v || v.seeking || v.readyState < 3) && !paused && !player.quietStall()));
   // After a seek (esp. backwards) seeking / readyState flap several times a
   // second: show the spinner / «Буферизация» only once it lasts, hide it once
@@ -878,6 +921,24 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
           </div>
         </div>
       )}
+      {stutter && panel === null && countdown === null && (
+        <div data-testid="player-stutter" className="absolute bottom-[300px] left-1/2 z-10 w-[1300px] -translate-x-1/2 rounded-3xl bg-surface-2/95 px-10 py-7 shadow-2xl">
+          <p className="text-3xl leading-snug">{t("smooth.hint")}</p>
+          <div className="mt-5 flex items-center text-2xl">
+            {(["lighter", "not_now"] as const).map((id) => (
+              <span
+                key={id}
+                data-testid={id === "lighter" ? "player-stutter-lighter" : "player-stutter-dismiss"}
+                data-focused={smoothFocus === id ? "true" : "false"}
+                className={`mr-6 rounded-xl px-6 py-3 font-semibold ${smoothFocus === id ? "bg-accent text-on-accent" : "bg-surface text-text"}`}
+              >
+                {t(id === "lighter" ? "smooth.lighter" : "smooth.not_now")}
+              </span>
+            ))}
+            <span className="text-muted">Back · {t("smooth.dismiss")}</span>
+          </div>
+        </div>
+      )}
       {compat?.active && player.started && (controlsShown || panel !== null) && countdown === null && (
         <div data-testid="player-compat" className="absolute right-24 top-16 z-10 rounded-full bg-surface-2/90 px-6 py-2 text-2xl text-text">
           {compat.video ? `▶ ${t("tvplay.compat.osd_video")}` : `♪ ${t("tvplay.compat.osd")}`}
@@ -930,6 +991,11 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
                 <span data-testid="player-time" className={seek ? "font-semibold text-accent" : ""}>
                   {formatClock(pos)}
                 </span>
+                {chapterText && (
+                  <span data-testid="player-chapter" className={`ml-6 max-w-[900px] truncate text-2xl ${seek ? "text-accent" : "text-muted"}`}>
+                    {chapterText}
+                  </span>
+                )}
               </span>
               <span className="text-muted">{dur ? `-${formatClock(Math.max(0, dur - pos))}` : ""}</span>
             </div>
@@ -937,6 +1003,9 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
               {stripe !== null && <div data-testid="player-buffer-stripe" className="absolute left-0 top-0 h-full rounded-full bg-text/35" style={{ width: `${stripe}%` }} />}
               <div className="absolute left-0 top-0 h-full rounded-full bg-text/50" style={{ width: `${playedPct}%` }} />
               <div className="absolute left-0 top-0 h-full rounded-full bg-accent" style={{ width: `${seek ? Math.min(pct, playedPct) : playedPct}%` }} />
+              {ticks.map((p) => (
+                <div key={p} data-testid="player-chapter-tick" className="absolute top-0 h-full bg-black/70" style={{ left: `${p}%`, width: 4, marginLeft: -2 }} />
+              ))}
               <div
                 className={`absolute top-1/2 rounded-full ${seek ? "bg-accent" : "bg-text"}`}
                 style={{ left: `${pct}%`, width: seek ? 34 : 26, height: seek ? 34 : 26, marginLeft: seek ? -17 : -13, marginTop: seek ? -17 : -13 }}
@@ -951,6 +1020,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
             <p className="mt-6 flex justify-between text-2xl text-muted">
               <span>
                 {t("player.tv.controls_hint")}
+                {ticks.length > 0 && ` · ${t("chapters.hint")}`}
                 {sleep.label && (
                   <span data-testid="player-sleep-left" className="ml-6 rounded-full bg-text/10 px-4 py-1 tabular-nums">
                     ☾ {sleep.label}

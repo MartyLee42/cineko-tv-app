@@ -171,6 +171,32 @@ func ids(s string, sep string) []int {
 	return out
 }
 
+// fyKeywords are TMDB keywords beyond fyTitle.keywords (which Explore's
+// tiles use): "slow burn" on Space Saga 1–10, "heist" on Love Story
+// 21–28 and the stoplisted "based on novel or book" on every movie.
+var fyKeywordNames = map[int]string{4379: "time travel", 70001: "slow burn", 70002: "heist", 818: "based on novel or book"}
+
+func fyKeywords(t fyTitle) []int {
+	out := slices.Clone(t.keywords)
+	switch {
+	case t.kind != "movie":
+		return out
+	case t.id >= 1 && t.id <= 10:
+		out = append(out, 70001)
+	case t.id >= 21 && t.id <= 28:
+		out = append(out, 70002)
+	}
+	return append(out, 818)
+}
+
+func fyKeywordList(t fyTitle) []map[string]any {
+	out := []map[string]any{}
+	for _, k := range fyKeywords(t) {
+		out = append(out, map[string]any{"id": k, "name": fyKeywordNames[k]})
+	}
+	return out
+}
+
 func (f *fyTMDB) discover(kind string, q url.Values) []fyTitle {
 	var out []fyTitle
 	for _, t := range f.titles {
@@ -195,7 +221,7 @@ func (f *fyTMDB) discover(kind string, q url.Values) []fyTitle {
 		if c := q.Get("with_cast"); c != "" && !slices.ContainsFunc(ids(c, "|"), func(x int) bool { return slices.Contains(t.cast, x) }) {
 			continue
 		}
-		if k := q.Get("with_keywords"); k != "" && !slices.ContainsFunc(ids(k, "|"), func(x int) bool { return slices.Contains(t.keywords, x) }) {
+		if k := q.Get("with_keywords"); k != "" && !slices.ContainsFunc(ids(k, "|"), func(x int) bool { return slices.Contains(fyKeywords(t), x) }) {
 			continue
 		}
 		if l := q.Get("with_original_language"); l != "" && l != t.lang {
@@ -351,6 +377,14 @@ func (f *fyTMDB) serve(w http.ResponseWriter, r *http.Request) {
 			crew = append(crew, m)
 		}
 		body = map[string]any{"id": pid, "cast": cast, "crew": crew}
+	case len(parts) == 3 && parts[0] == "movie" && parts[2] == "keywords":
+		id, _ := strconv.Atoi(parts[1])
+		i := slices.IndexFunc(f.titles, func(t fyTitle) bool { return t.id == id && t.kind == "movie" })
+		if i < 0 {
+			w.WriteHeader(404)
+			return
+		}
+		body = map[string]any{"id": id, "keywords": fyKeywordList(f.titles[i])}
 	case len(parts) == 2 && parts[0] == "movie":
 		id, _ := strconv.Atoi(parts[1])
 		var t *fyTitle
@@ -378,6 +412,9 @@ func (f *fyTMDB) serve(w http.ResponseWriter, r *http.Request) {
 			{"id": t.director, "name": fmt.Sprintf("Director %d", t.director), "original_name": fmt.Sprintf("Director %d", t.director), "job": "Director", "department": "Directing"}}}
 		d["external_ids"] = map[string]any{"imdb_id": nil}
 		d["videos"] = map[string]any{"results": []any{}}
+		if strings.Contains(q.Get("append_to_response"), "keywords") {
+			d["keywords"] = map[string]any{"keywords": fyKeywordList(*t)}
+		}
 		body = d
 	default:
 		w.WriteHeader(404)
@@ -399,6 +436,12 @@ type fakeAI struct {
 	prompts []string
 	// balance: the /user/balance reply ("" → 500).
 	balance string
+	// The themes / picks calls (aiextra.go) are answered with extra
+	// (default: valid but empty) and counted apart from calls/prompts.
+	extra        string
+	extraFn      func(system, user string) string
+	extraCalls   atomic.Int32
+	extraPrompts []string
 }
 
 func newFakeAI(t *testing.T) *fakeAI {
@@ -424,11 +467,23 @@ func newFakeAI(t *testing.T) *fakeAI {
 			Messages []struct{ Content string } `json:"messages"`
 		}
 		_ = json.NewDecoder(r.Body).Decode(&req)
-		f.calls.Add(1)
 		f.mu.Lock()
 		content, block := f.content, f.block
-		if len(req.Messages) == 2 {
-			f.prompts = append(f.prompts, req.Messages[1].Content)
+		if len(req.Messages) == 2 && isExtraPrompt(req.Messages[0].Content) {
+			f.extraCalls.Add(1)
+			f.extraPrompts = append(f.extraPrompts, req.Messages[1].Content)
+			content, block = f.extra, nil
+			if f.extraFn != nil {
+				content = f.extraFn(req.Messages[0].Content, req.Messages[1].Content)
+			}
+			if content == "" {
+				content = `{"rubrics":[],"picks":[]}`
+			}
+		} else {
+			f.calls.Add(1)
+			if len(req.Messages) == 2 {
+				f.prompts = append(f.prompts, req.Messages[1].Content)
+			}
 		}
 		f.mu.Unlock()
 		if block != nil {
@@ -443,6 +498,17 @@ func newFakeAI(t *testing.T) *fakeAI {
 	}))
 	t.Cleanup(f.srv.Close)
 	return f
+}
+
+// isExtraPrompt: the system prompt of the themes or picks call.
+func isExtraPrompt(system string) bool {
+	return strings.Contains(system, "Group some of the candidates") || strings.Contains(system, "Pick the 15")
+}
+
+func (f *fakeAI) setExtra(content string) {
+	f.mu.Lock()
+	f.extra = content
+	f.mu.Unlock()
 }
 
 func (f *fakeAI) set(content string) {
@@ -928,7 +994,8 @@ func TestForYouAICollectionsAndAdminRerun(t *testing.T) {
 	run := f.admin.Do("POST", "/api/v1/admin/foryou/rerun", map[string]any{"scope": "profile", "id": a, "ai": true}).Expect(202).JSON()
 	done := waitRun(t, f.admin, run["run_id"].(string))
 	if done["status"] != "completed" || num(done["profiles_done"]) != 1 || num(done["profiles_total"]) != 1 ||
-		num(done["ai_calls"]) != 1 || num(done["ai_tokens"]) != 1200 || num(done["collections_created"]) != 1 || done["duration_ms"] == nil {
+		num(done["ai_calls"]) != 3 || num(done["ai_tokens"]) != 3600 || num(done["collections_created"]) != 1 || done["duration_ms"] == nil ||
+		len(done["errors"].([]any)) != 0 || f.ai.extraCalls.Load() != 2 {
 		t.Fatalf("run %v", done)
 	}
 	if done["requested_by"].(map[string]any)["username"] != "root" {

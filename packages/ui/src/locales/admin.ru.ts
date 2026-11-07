@@ -36,7 +36,7 @@ export const adminRu: Record<keyof typeof adminEn, string> = {
   "admin.server.download": "Входящий",
   "admin.server.upload": "Исходящий",
   "admin.server.processes": "Процессы",
-  "admin.server.processes_hint": "Сгруппированы по имени, по убыванию памяти. CPU 100% — одно ядро целиком.",
+  "admin.server.processes_hint": "Сгруппированы по имени и контейнеру, по убыванию памяти (общая память учтена один раз). CPU 100% — одно ядро целиком.",
   "admin.server.containers": "Контейнеры",
   "admin.server.col.name": "Имя",
   "admin.server.col.memory": "Память",
