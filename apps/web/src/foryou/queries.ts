@@ -256,6 +256,15 @@ export function useSetFactsAI() {
   });
 }
 
+/** The AI themes / picks switches (admin «Рекомендации»). */
+export function useSetAIFeature() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { themes_ai?: boolean; picks_ai?: boolean }) => unwrap(api.PUT("/admin/foryou/ai", { body })),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["admin", "foryou-runs"] }),
+  });
+}
+
 export type RerunBody = { scope: "all" | "user" | "profile"; id?: string; ai: boolean };
 
 /** Starts a run; a 409 resolves with `{ running: run_id }` instead of throwing. */

@@ -515,7 +515,7 @@ func TestCatalogDetails(t *testing.T) {
 	if tr := d["trailer"].(map[string]any); tr["key"] != "trailer-en" || tr["site"] != "YouTube" {
 		t.Fatalf("trailer %v", tr)
 	}
-	if q := m.query("/movie/100"); q.Get("append_to_response") != "credits,external_ids,videos" {
+	if q := m.query("/movie/100"); q.Get("append_to_response") != "credits,external_ids,videos,keywords" {
 		t.Fatalf("append %v", q)
 	}
 

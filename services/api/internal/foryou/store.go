@@ -124,8 +124,16 @@ func (s *Service) loadFeatures(ctx context.Context, ids []string) (map[string]me
 		                 WHERE c.media_id = m.id AND c.credit_type = 'crew' AND c.job IN ('Director', 'Creator')), '{}'),
 		       COALESCE((SELECT array_agg(p.tmdb_id ORDER BY c.ord) FROM media_cast c JOIN media_people p ON p.id = c.person_id
 		                 WHERE c.media_id = m.id AND c.credit_type = 'cast' AND c.ord < $2), '{}'),
-		       m.details_fetched_at <> '{}'::jsonb
-		FROM media m WHERE m.id = ANY($1::uuid[])`, ids, s.w.ActorBilling)
+		       m.details_fetched_at <> '{}'::jsonb,
+		       COALESCE((SELECT array_agg(DISTINCT p.tmdb_id) FROM media_cast c JOIN media_people p ON p.id = c.person_id
+		                 WHERE c.media_id = m.id AND c.credit_type = 'crew' AND c.job IN ('Screenplay', 'Writer')), '{}'),
+		       COALESCE((SELECT array_agg(DISTINCT p.tmdb_id) FROM media_cast c JOIN media_people p ON p.id = c.person_id
+		                 WHERE c.media_id = m.id AND c.credit_type = 'crew' AND c.job = 'Director of Photography'), '{}'),
+		       COALESCE((SELECT array_agg(DISTINCT p.tmdb_id) FROM media_cast c JOIN media_people p ON p.id = c.person_id
+		                 WHERE c.media_id = m.id AND c.credit_type = 'crew' AND c.job = 'Original Music Composer'), '{}'),
+		       COALESCE((SELECT array_agg(k.id ORDER BY mk.position, k.id) FROM media_keywords mk JOIN keywords k ON k.id = mk.keyword_id
+		                 WHERE mk.media_id = m.id AND NOT (lower(k.name) = ANY($3::text[]))), '{}')
+		FROM media m WHERE m.id = ANY($1::uuid[])`, ids, s.w.ActorBilling, keywordStoplist)
 	if err != nil {
 		return nil, err
 	}
@@ -135,12 +143,15 @@ func (s *Service) loadFeatures(ctx context.Context, ids []string) (map[string]me
 			id                   string
 			f                    mediaFacts
 			genres, dirs, actors []int32
+			writers, dops, comps []int32
+			kws                  []int32
 		)
 		if err := rows.Scan(&id, &f.Kind, &f.Year, &f.Lang, &f.Countries, &f.VoteAverage, &f.VoteCount, &f.Popularity,
-			&f.KPRating, &f.Runtime, &genres, &dirs, &actors, &f.HasCredits); err != nil {
+			&f.KPRating, &f.Runtime, &genres, &dirs, &actors, &f.HasCredits, &writers, &dops, &comps, &kws); err != nil {
 			return nil, err
 		}
 		f.Genres, f.Directors, f.Actors = ints(genres), ints(dirs), ints(actors)
+		f.Writers, f.Cinematographers, f.Composers, f.Keywords = ints(writers), ints(dops), ints(comps), ints(kws)
 		out[id] = f
 	}
 	return out, rows.Err()
@@ -189,21 +200,23 @@ func (s *Service) loadTaste(ctx context.Context, profileID string) (*Taste, time
 // ---- cache ----
 
 type cacheRow struct {
-	Rows       []cachedRow
-	Pool       []cachedItem
-	ColdStart  bool
-	Lang       string
-	SignalsAt  *time.Time
-	ComputedAt time.Time
-	ExpiresAt  time.Time
+	Rows []cachedRow
+	Pool []cachedItem
+	// TopCandidates: what «Подобрано для вас» was chosen from (AI re-ranking).
+	TopCandidates []string
+	ColdStart     bool
+	Lang          string
+	SignalsAt     *time.Time
+	ComputedAt    time.Time
+	ExpiresAt     time.Time
 }
 
 func (s *Service) loadCache(ctx context.Context, profileID string) (*cacheRow, error) {
 	var c cacheRow
-	var rowsRaw, poolRaw []byte
+	var rowsRaw, poolRaw, candRaw []byte
 	err := s.pool.QueryRow(ctx, `
-		SELECT rows, pool, cold_start, lang, signals_at, computed_at, expires_at FROM recs_cache WHERE profile_id = $1`, profileID).
-		Scan(&rowsRaw, &poolRaw, &c.ColdStart, &c.Lang, &c.SignalsAt, &c.ComputedAt, &c.ExpiresAt)
+		SELECT rows, pool, top_candidates, cold_start, lang, signals_at, computed_at, expires_at FROM recs_cache WHERE profile_id = $1`, profileID).
+		Scan(&rowsRaw, &poolRaw, &candRaw, &c.ColdStart, &c.Lang, &c.SignalsAt, &c.ComputedAt, &c.ExpiresAt)
 	if db.IsNoRows(err) {
 		return nil, nil
 	}
@@ -213,18 +226,21 @@ func (s *Service) loadCache(ctx context.Context, profileID string) (*cacheRow, e
 	if json.Unmarshal(rowsRaw, &c.Rows) != nil || json.Unmarshal(poolRaw, &c.Pool) != nil {
 		return nil, nil
 	}
+	_ = json.Unmarshal(candRaw, &c.TopCandidates)
 	return &c, nil
 }
 
 func (s *Service) saveCache(ctx context.Context, profileID string, c *cacheRow) error {
 	rows, _ := json.Marshal(nonNilSlice(c.Rows))
 	pool, _ := json.Marshal(nonNilSlice(c.Pool))
+	cands, _ := json.Marshal(nonNilSlice(c.TopCandidates))
 	_, err := s.pool.Exec(ctx, `
-		INSERT INTO recs_cache (profile_id, rows, pool, cold_start, lang, signals_at, computed_at, expires_at)
-		VALUES ($1, $2, $3, $4, $5, $6, now(), now() + $7::interval)
-		ON CONFLICT (profile_id) DO UPDATE SET rows = EXCLUDED.rows, pool = EXCLUDED.pool, cold_start = EXCLUDED.cold_start,
+		INSERT INTO recs_cache (profile_id, rows, pool, top_candidates, cold_start, lang, signals_at, computed_at, expires_at)
+		VALUES ($1, $2, $3, $8, $4, $5, $6, now(), now() + $7::interval)
+		ON CONFLICT (profile_id) DO UPDATE SET rows = EXCLUDED.rows, pool = EXCLUDED.pool, top_candidates = EXCLUDED.top_candidates,
+			cold_start = EXCLUDED.cold_start,
 			lang = EXCLUDED.lang, signals_at = EXCLUDED.signals_at, computed_at = now(), expires_at = EXCLUDED.expires_at`,
-		profileID, rows, pool, c.ColdStart, c.Lang, c.SignalsAt, cacheTTL)
+		profileID, rows, pool, c.ColdStart, c.Lang, c.SignalsAt, cacheTTL, cands)
 	return err
 }
 
