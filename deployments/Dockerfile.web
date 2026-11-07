@@ -23,7 +23,11 @@ RUN pnpm --filter @martytv/web --filter @martytv/tv build
 # Optional PDF guides (Settings → Инструкции): docs/private/*.pdf, git-ignored.
 # Settings hides the card when they're absent.
 COPY docs docs
-RUN mkdir -p /repo/guides && (cp docs/private/*.pdf /repo/guides/ 2>/dev/null || true)
+# Served as /docs/martytv-guide.pdf and /docs/install-tv.pdf; *.old.pdf (kept
+# copies of previous versions) are not shipped.
+RUN mkdir -p /repo/guides && for f in docs/private/*.pdf; do \
+      case "$f" in *.old.pdf|"docs/private/*.pdf") ;; *) cp "$f" /repo/guides/ ;; esac; \
+    done
 
 FROM caddy:2.10-alpine
 COPY deployments/Caddyfile /etc/caddy/Caddyfile
