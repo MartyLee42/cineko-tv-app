@@ -179,6 +179,19 @@ func (st *store) episode(ctx context.Context, mediaID, episodeID string) (season
 	return
 }
 
+// runtime is the episode's TMDB runtime (falling back to the show's typical
+// one), or the film's, in minutes; 0 = unknown.
+func (st *store) runtime(ctx context.Context, mediaID string, episodeID *string) (int, error) {
+	var m *int
+	err := st.q.QueryRow(ctx, `
+		SELECT COALESCE((SELECT e.runtime FROM episodes e WHERE e.id = $2 AND e.media_id = $1), m.runtime)
+		FROM media m WHERE m.id = $1`, mediaID, episodeID).Scan(&m)
+	if db.IsNoRows(err) || m == nil {
+		return 0, nil
+	}
+	return *m, err
+}
+
 func (st *store) profileAccessible(ctx context.Context, profileID, userID, deviceID string) (bool, error) {
 	var ok bool
 	var err error

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -463,6 +464,21 @@ func TestPlaybackMovieLifecycleAndStream(t *testing.T) {
 	}
 	if mi["bit_depth"] == nil || mi["bit_depth"].(float64) != 10 || len(mi["audio"].([]any)) != 2 {
 		t.Fatalf("re-probed media info: %v", mi)
+	}
+
+	// Before ffprobe knows the length, the release carries a bitrate
+	// estimate from the TMDB runtime (the slow-torrent hint needs it).
+	ctx := context.Background()
+	if _, err := pe.Pool.Exec(ctx, `UPDATE playback_sources SET media_info = NULL, release = release - 'est_bitrate_bps' WHERE id = $1`, id); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pe.Pool.Exec(ctx, `UPDATE media SET runtime = 90 WHERE id = $1`, pe.movieID); err != nil {
+		t.Fatal(err)
+	}
+	est := alice.Do("GET", "/api/v1/playback/sources/"+id, nil).Expect(200).JSON()
+	fsize := est["file"].(map[string]any)["size_bytes"].(float64)
+	if got, _ := est["release"].(map[string]any)["est_bitrate_bps"].(float64); fsize <= 0 || got != math.Round(fsize*8/5400) {
+		t.Fatalf("est bitrate %v for size %v", est["release"].(map[string]any)["est_bitrate_bps"], fsize)
 	}
 
 	// Files.
