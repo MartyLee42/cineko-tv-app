@@ -104,6 +104,9 @@ func serve() error {
 	go srv.Video.Run(ctx)            // Invidious health 1 min, subscription feeds 30 min
 	// Server downloads: queue, resume after restarts, hourly eviction janitor.
 	go srv.Downloads.Run(ctx)
+	if srv.Metrics != nil {
+		go srv.Metrics.Run(ctx) // /metrics snapshot every 20 s while scraped (METRICS_TOKEN set)
+	}
 
 	n, _ := users.NewStore(pool).Count(ctx)
 	if n == 0 {

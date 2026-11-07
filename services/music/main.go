@@ -50,6 +50,7 @@ type config struct {
 	AIDayTokens  int   // DeepSeek tokens per Moscow day, all accounts (0 = unlimited)
 	CacheBytes   int64 // YouTube audio disk cache
 	Region       string
+	MetricsToken string // GET /metrics bearer token; empty = 404
 }
 
 func env(k, def string) string {
@@ -103,6 +104,7 @@ func loadConfig() config {
 		AIDayTokens:  aiTokens,
 		CacheBytes:   int64(gb * (1 << 30)),
 		Region:       env("MUSIC_REGION", "RU"),
+		MetricsToken: secret("METRICS_TOKEN"),
 	}
 }
 
