@@ -13,10 +13,12 @@ export interface NetStatsInput {
   streams: number | null | undefined;
   /** Server → this TV: this session's estimate (measured) or the TV's usual rate. */
   device: { bps: number; measured: boolean } | null;
+  /** Dropped frames of steady playback so far (smooth.ts), null when the engine doesn't count. */
+  frames?: { pct: number } | null;
 }
 
 export interface StatItem {
-  id: "peers" | "from_peers" | "local" | "server" | "device";
+  id: "peers" | "from_peers" | "local" | "server" | "device" | "frames";
   key: MessageKey;
   vars: Record<string, string | number>;
 }
@@ -33,6 +35,8 @@ export function netStats(i: NetStatsInput, speed: (bps: number) => string, mbit:
   if (i.cpu != null) out.push({ id: "server", key: "pstats.server", vars: { cpu: Math.round(i.cpu), streams: i.streams ?? 0 } });
   else if (i.streams != null) out.push({ id: "server", key: "pstats.server_streams", vars: { streams: i.streams } });
   if (i.device && i.device.bps > 0) out.push({ id: "device", key: i.device.measured ? "pstats.device" : "pstats.device_usual", vars: { rate: mbit(i.device.bps) } });
+  // Only once something drops (a clean 0 % chip is noise).
+  if (i.frames && i.frames.pct >= 0.5) out.push({ id: "frames", key: "smooth.frames", vars: { pct: i.frames.pct < 10 ? i.frames.pct.toFixed(1) : Math.round(i.frames.pct) } });
   return out;
 }
 

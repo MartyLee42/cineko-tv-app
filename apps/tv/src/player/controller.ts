@@ -20,6 +20,9 @@ import {
   lighterInstead,
   nextRelease,
   RATE_HEADROOM,
+  smootherInstead,
+  sourceDecodeCost,
+  sourceSmoothToken,
   tooHeavyHere,
   videoUndecodable,
   type Probe,
@@ -68,6 +71,7 @@ import {
   type SlowHintLog,
 } from "./rebuffer";
 import { devicePrefs } from "../settings/devicePrefs";
+import { clearStutter, noteStutter, provenSmooth, readFrames, STUTTER0, stutterStep, thisSmoothView, type FrameCounters, type StutterState } from "./smooth";
 import {
   apiErrorCode,
   cachedMedia,
@@ -132,6 +136,12 @@ const MAX_RECOVERIES = 4;
 export const FIRST_LOAD_STUCK_MS = 30_000;
 /** After a played-out rebuffer, a native stall this long brings «Буферизация» back. */
 export const QUIET_STALL_MS = 15_000;
+/** Frame counters are sampled every this many ticks (500 ms each). */
+const FRAME_EVERY = 4;
+/** No frame judgement this long after a start / seek / new stream (decoders warm up, drop a few). */
+const FRAME_GRACE_MS = 10_000;
+/** «Картинка подтормаживает…» hides by itself after this long. */
+const STUTTER_HINT_MS = 20_000;
 
 export type ChangeKind = "flow" | "playback" | "progress";
 type Listener = (kind: ChangeKind) => void;
@@ -286,6 +296,13 @@ export class PlayerController {
   /** The visible slow-link hint (`at`: shown / last touched). */
   private slow: { rate: number; bitrate: number; at: number } | null = null;
   private slowLog: SlowHintLog = SLOW_LOG0;
+  /** Dropped-frame watch of this source (smooth.ts). */
+  private frames: StutterState = STUTTER0;
+  private frameTicks = 0;
+  private lastFrames: FrameCounters | null = null;
+  /** «Картинка подтормаживает — включить более лёгкую раздачу?» (`at`: shown / last touched). Once per source. */
+  private stutter: { at: number } | null = null;
+  private stutterSeen = false;
   private tickTimer: ReturnType<typeof setInterval> | undefined;
   /** «Выбрать раздачу полегче»: the picker ranks releases under this rate first. */
   lighterRate: number | null = null;
@@ -682,7 +699,7 @@ export class PlayerController {
   rankEnv(ctx: PlayContext | null = this.ctx()): RankEnv {
     const media = ctx ? cachedMedia(ctx.media_id, ctx.lang) : undefined;
     const runtime = ctx && ctx.kind !== "series" && media?.runtime ? media.runtime * 60 : null;
-    return { probe: this.probe(), rateBps: this.lighterRate ?? rateStore.get() ?? deviceCapRate(), compat: compatServer.get(), runtime };
+    return { probe: this.probe(), rateBps: this.lighterRate ?? rateStore.get() ?? deviceCapRate(), compat: compatServer.get(), runtime, smooth: thisSmoothView() };
   }
 
   /** A lighter release when the source's release is too heavy for this TV (codecs.ts lighterInstead), else null. */
@@ -1268,6 +1285,12 @@ export class PlayerController {
   /** Final report of the current session; Home / Details refresh their progress. */
   private endSession() {
     this.recordRate();
+    // A long clean session of a variant noted as rough: it plays fine here after all.
+    const fs = this.flow;
+    if (fs.phase === "playing" && provenSmooth(this.frames) && !this.stutterSeen) {
+      const token = sourceSmoothToken(fs.source);
+      if (token) clearStutter(token);
+    }
     if (!this.reporter.active) return;
     const snap = this.snapshot() ?? this.lastSnap;
     this.reporter.end(snap);
@@ -1777,6 +1800,91 @@ export class PlayerController {
     this.lowSince = null;
     this.slow = null;
     this.slowLog = SLOW_LOG0;
+    this.frames = STUTTER0;
+    this.frameTicks = 0;
+    this.lastFrames = null;
+    this.stutter = null;
+    this.stutterSeen = false;
+  }
+
+  /**
+   * Every ~2 s while playing: dropped frames over a steady stretch (not
+   * paused / seeking / buffering, past the start-up grace). A sustained high
+   * ratio notes the variant as rough on this TV (ranking, auto.rough) and
+   * offers a lighter release once. Torrent / downloaded files only (online
+   * HLS has its own qualities; a re-encoded compat video isn't the file's).
+   */
+  private watchFrames(v: HTMLVideoElement, now: number, src: PlaybackSource) {
+    if (this.stutter && now - this.stutter.at > STUTTER_HINT_MS) {
+      this.stutter = null;
+      this.emit("playback");
+    }
+    if (++this.frameTicks % FRAME_EVERY !== 0) return;
+    const c = readFrames(v);
+    this.lastFrames = c;
+    if (!c) return;
+    const judged = (!src.kind || src.kind === "torrent") && !src.live && !this.compat?.video;
+    const hidden = typeof document !== "undefined" && document.hidden;
+    const steady =
+      judged && !hidden && !v.paused && !v.seeking && !v.ended && v.readyState >= 3 && !this.rebuf && this.stallAt === null && v.playbackRate === 1 && now - this.seekedAt > FRAME_GRACE_MS;
+    const r = stutterStep(this.frames, { at: now, total: c.total, dropped: c.dropped, steady });
+    this.frames = r.state;
+    if (!r.stutter || this.stutterSeen) return;
+    this.stutterSeen = true;
+    const token = sourceSmoothToken(src);
+    console.info("[martytv] frames dropping", { ratio: r.ratio, token, release: src.release.id });
+    if (token) {
+      noteStutter(token);
+      void devicePrefs.sync(true);
+    }
+    this.stutter = { at: now };
+    this.emit("playback");
+  }
+
+  /** «Картинка подтормаживает…» while shown. */
+  stutterHint(): boolean {
+    return !!this.stutter;
+  }
+
+  /** A key on the hint: keep it up a while longer. */
+  touchStutter() {
+    if (this.stutter) this.stutter = { at: Date.now() };
+  }
+
+  dismissStutter() {
+    this.stutter = null;
+    this.emit("playback");
+  }
+
+  /** Dropped frames of this source's steady playback (the stats panel), or null when the engine doesn't count. */
+  droppedFrames(): { pct: number; dropped: number } | null {
+    const s = this.frames;
+    if (!this.lastFrames || s.okFrames < 100) return null;
+    return { pct: (s.okDropped / s.okFrames) * 100, dropped: s.okDropped };
+  }
+
+  /**
+   * «Включить более лёгкую раздачу»: a release cheaper to decode (lower
+   * resolution, H.264, SDR) at the same spot, via the normal start path;
+   * none known → the picker at the same spot.
+   */
+  async smoother() {
+    const f = this.flow;
+    if (f.phase !== "playing") return;
+    this.stutter = null;
+    this.emit("playback");
+    const gen = this.gen;
+    const q = releaseQuery(f.ctx);
+    let list = cachedReleases(q) ?? null;
+    if (!list) list = await fetchReleases(q).catch(() => null);
+    const now = this.flow;
+    if (gen !== this.gen || now.phase !== "playing" || now.source.id !== f.source.id) return;
+    const at = Math.floor(this.trustedPosition());
+    const next = list ? smootherInstead(sourceDecodeCost(now.source), list.items, [...now.tried, now.source.release.id], this.rankEnv(now.ctx)) : null;
+    if (next) return this.playRelease({ ...now.ctx, start_at: at }, next, at);
+    this.gen++;
+    this.dispatch({ type: "ctx", patch: { start_at: at } });
+    this.dispatch({ type: "another" });
   }
 
   /** "waiting" after the first frame: pause ourselves until enough is buffered. */
@@ -1867,6 +1975,7 @@ export class PlayerController {
       if (!this.compat && !f.source.live && f.source.kind !== "online") this.watchFirstLoad(v, now);
       return;
     }
+    this.watchFrames(v, now, f.source);
     const ahead = bufferedAhead(rangesOf(v), v.currentTime);
     const bitrate = this.bitrate();
     // Buffer growth measures the link only while the engine is still

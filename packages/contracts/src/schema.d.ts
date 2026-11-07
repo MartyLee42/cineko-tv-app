@@ -1048,8 +1048,9 @@ export interface paths {
          *     only re-rank per request (penalties, never hiding): warnings
          *     too_heavy_for_device, over_device_resolution, codec_unsupported,
          *     codec_unknown (likely XviD: an old-style rip naming no codec or resolution),
-         *     audio_needs_conversion, audio_unsupported, hdr_avoided; reason
-         *     device_fit when a release fits every constraint.
+         *     audio_needs_conversion, audio_unsupported, hdr_avoided, may_stutter
+         *     (the variant is in the device's auto.rough); reason device_fit when a
+         *     release fits every constraint.
          */
         get: operations["listReleases"];
         put?: never;
@@ -3648,6 +3649,8 @@ export interface components {
             /** @description Decodable audio codecs. */
             audio?: ("aac" | "ac3" | "eac3" | "dts" | "truehd" | "mp3" | "opus" | "flac")[];
             containers?: ("mkv" | "mp4" | "ts")[];
+            /** @description Video variants (codec, 10-bit, 1080p / 2160p) the device decodes but not smoothly: mediaCapabilities.decodingInfo says smooth = false, or playback dropped many frames there. Ranking demotes matching releases (warning may_stutter). */
+            rough?: ("h264_1080p" | "h264_2160p" | "hevc_1080p" | "hevc_2160p" | "hevc_10bit_1080p" | "hevc_10bit_2160p" | "av1_1080p" | "av1_2160p" | "av1_10bit_1080p" | "av1_10bit_2160p")[];
             hls?: boolean | null;
             /** @description Compat streams (AAC transcode) are usable. */
             compat?: boolean | null;
@@ -3695,6 +3698,8 @@ export interface components {
             video: string[] | null;
             /** @description Decodable audio (null = unknown). */
             audio_codecs: string[] | null;
+            /** @description auto.rough: variants that don't play smoothly (null = none known). */
+            rough: string[] | null;
             compat: boolean;
             /** @enum {string|null} */
             default_player: "builtin" | "msx" | "external" | null;
@@ -4405,7 +4410,7 @@ export interface components {
             score: number;
             /** @description Machine-readable match reasons, e.g. title_exact, year_match, imdb_match, episode_match. */
             reasons: string[];
-            /** @description e.g. low_seeders, cam_quality, over_size_limit, no_preferred_language, likely_unplayable_codec, disc_image, 3d, uncertain_match; with a device profile also too_heavy_for_device, over_device_resolution, codec_unsupported, codec_unknown (an old-style rip naming neither codec nor resolution: likely XviD), audio_needs_conversion, audio_unsupported, hdr_avoided. */
+            /** @description e.g. low_seeders, cam_quality, over_size_limit, no_preferred_language, likely_unplayable_codec, disc_image, 3d, uncertain_match; with a device profile also too_heavy_for_device, over_device_resolution, codec_unsupported, codec_unknown (an old-style rip naming neither codec nor resolution: likely XviD), audio_needs_conversion, audio_unsupported, hdr_avoided, may_stutter (decodes here but not smoothly). */
             warnings: string[];
             /** @description Estimated average bitrate (size × 8 / runtime; per episode for packs), bits/s. null when the runtime is unknown. */
             est_bitrate_bps?: number | null;
