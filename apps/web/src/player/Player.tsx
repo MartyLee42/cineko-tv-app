@@ -18,6 +18,7 @@ import {
   AudioTrackIcon,
   CheckIcon,
   ChevronLeft,
+  DownloadIcon,
   ExitFullscreenIcon,
   FullscreenIcon,
   MuteIcon,
@@ -85,7 +86,6 @@ import { sessionTransport } from "./session";
 import { attachHls, type HlsHandle } from "./hls";
 import { setSourceQuality } from "../play/sourcesApi";
 import { downloadBadge, PlayerDownloadMenu } from "../downloads/PlayerDownloadMenu";
-import { ServerDownloadIcon } from "../downloads/ui";
 import {
   compatFormat,
   compatSeek,
@@ -1350,11 +1350,11 @@ export function Player(props: PlayerProps) {
                 <MenuBtn
                   open={controls.menu === "download"}
                   onToggle={() => dispatch({ type: "menu", menu: "download", now: Date.now() })}
-                  label={t("downloads.download_to_server")}
+                  label={t("devicedl.menu")}
                   testId="player-download"
                   badge={downloadBadge(source)}
                 >
-                  <ServerDownloadIcon className="text-[22px]" />
+                  <DownloadIcon className="text-[22px]" />
                 </MenuBtn>
               )}
               {canFullscreen(el) && (
@@ -1374,8 +1374,8 @@ export function Player(props: PlayerProps) {
               title: props.title,
               subtitle: props.subtitle,
               poster: props.poster ?? null,
-              // Save what plays here: the compat stream (from the start, with the chosen audio) when on.
-              compatUrl: () => (compatOn && source.compat_url ? compatSrc(source.compat_url, { audio: cmpRef.current?.audio ?? null, start: 0 }) : null),
+              // Save what plays here: the compat stream (with the chosen audio) when on.
+              playing: () => (compatOn && source.compat_url ? { mode: "compat", audio: cmpRef.current?.audio ?? null } : { mode: "original", audio: null }),
             }}
           />
         )}
