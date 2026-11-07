@@ -28,6 +28,33 @@ export interface LoaderModel {
   compat?: "audio" | "video" | null;
   /** Online source: no torrent numbers. */
   online?: boolean;
+  /** The first frame is there: the style's end flourish (shown briefly over the starting film). */
+  done?: boolean;
+}
+
+/**
+ * The drawn styles' layout (paws, aquarium, speed88, odyssey, balloons):
+ * the art (1200 × 560) centred at the top, the title, the big percentage
+ * and the status under it.
+ */
+export function ArtLayout({ m, children }: { m: LoaderModel; children: ReactNode }) {
+  return (
+    <>
+      <Backdrop m={m} opacity={0.14} />
+      <div className="tv-scrim-bottom absolute left-0 top-0 h-full w-full" />
+      <div className="absolute left-[360px] top-[80px]">{children}</div>
+      <div className="absolute left-[160px] right-[160px] top-[690px] text-center">
+        <h1 className="truncate text-6xl font-bold leading-tight">{m.title || "…"}</h1>
+        {m.episode && <p className="mt-2 truncate text-3xl text-muted">{m.episode}</p>}
+        <div className="mt-8 flex items-start justify-center">
+          <span data-testid="loader-pct" className="mr-8 text-6xl font-bold tabular-nums text-accent">
+            {pct(m.done ? 1 : m.p)}
+          </span>
+          <Status m={m} className="min-w-0 pt-1 text-left" />
+        </div>
+      </div>
+    </>
+  );
 }
 
 export function useStatus(m: LoaderModel): { status: string; stats: string[] } {

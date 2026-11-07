@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-spatial-navigation";
 import type { PlaybackSource, Release } from "@martytv/contracts";
 import { chapterIndexAt, chapterTicks, fileChapters, imageUrl, nextChapterStart, prevChapterStart, releaseBitrate, skipMode, type Chapter } from "@martytv/media-types";
-import { CvIcon, loadStatsLines, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
+import { CvIcon, loadStatsLines, useAppliedDesign, useConstructivism, useI18n, useSlowTorrent, type MessageKey, type SlowTorrent } from "@martytv/ui";
+import { FINALE_MS, hasFinale, loaderKind } from "./loaderChunks";
 import { FocusButton, FocusLine } from "../focus";
 import { useCatalogConfig } from "../catalog/queries";
 import { Backdrop } from "../components/Img";
@@ -246,13 +247,41 @@ function bufferLabel(t: ReturnType<typeof useI18n>["t"], locale: string, ahead: 
 /** One for the app, like the progress tracker (a remount keeps the numbers). */
 const torrentHold = new TorrentHold();
 
-/** The first-load screen: preparing the source, then until the first frame. */
-function PreparingOverlay({ flow }: { flow: Extract<Flow, { phase: "preparing" | "playing" }> }) {
+/**
+ * The end flourish of the drawn styles: true for FINALE_MS once a loading
+ * screen that was up for a while (not a quick internal restart) gives way
+ * to the first frame. Derived during render (no frame without the overlay).
+ */
+function useFinale(shown: boolean, playing: boolean): boolean {
+  const [long, setLong] = useState(false);
+  const [prev, setPrev] = useState(shown);
+  const [finale, setFinale] = useState(false);
+  if (prev !== shown) {
+    setPrev(shown);
+    setFinale(!shown && long && playing);
+    setLong(false);
+  }
+  useEffect(() => {
+    if (!shown) return;
+    const id = setTimeout(() => setLong(true), 2000);
+    return () => clearTimeout(id);
+  }, [shown]);
+  useEffect(() => {
+    if (!finale) return;
+    const id = setTimeout(() => setFinale(false), FINALE_MS);
+    return () => clearTimeout(id);
+  }, [finale]);
+  return finale;
+}
+
+/** The first-load screen: preparing the source, then until the first frame (`done`: the style's end flourish). */
+function PreparingOverlay({ flow, done = false }: { flow: Extract<Flow, { phase: "preparing" | "playing" }>; done?: boolean }) {
   const { locale } = useI18n();
   const cfg = useCatalogConfig();
   const settings = useSettings();
+  const applied = useAppliedDesign();
   const ctx = flow.ctx;
-  const stage: LoadStage = flow.phase === "preparing" ? stageOf(flow.step, flow.source) : "starting";
+  const stage: LoadStage = done ? "done" : flow.phase === "preparing" ? stageOf(flow.step, flow.source) : "starting";
   const source = flow.source;
   // While the first seconds buffer (source ready), keep the numbers live —
   // held so «загружено N МБ из M» never goes back.
@@ -266,10 +295,12 @@ function PreparingOverlay({ flow }: { flow: Extract<Flow, { phase: "preparing" |
   // Tell phones following this load (device state) what the screen shows.
   const loadKey = player.loadKey();
   useEffect(() => player.reportLoad(loadKey, p, torrent), [loadKey, p, torrent]);
+  if (done && !hasFinale(loaderKind(settings.loading_style, applied ?? "kinozal"))) return null;
   return (
     <Loader
       style={settings.loading_style}
       m={{
+        done,
         p,
         stage,
         title: ctx.title,
@@ -408,6 +439,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   // the controller only acts on «Другая раздача»).
   const loadingNow = flow.phase === "preparing" || !player.started;
   const rebufNow = playing && player.started && player.rebuffering() !== null;
+  const finale = useFinale(loadingNow, playing);
   const liveTorrent = useLiveTorrent(flow.source, loadingNow || rebufNow);
   const [waitKey, setWaitKey] = useState<string | null>(null);
   const slowKey = `${player.loadKey()}:${loadingNow ? "load" : "rebuf"}`;
@@ -880,7 +912,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         style={{ objectFit: "contain", display: player.frameShown() ? "block" : "none" }}
       />
 
-      {(flow.phase === "preparing" || !player.started) && <PreparingOverlay flow={flow} />}
+      {loadingNow ? <PreparingOverlay flow={flow} /> : finale && <PreparingOverlay flow={flow} done />}
       {slowT && (flow.phase === "preparing" || !player.started) && (
         <div className="absolute bottom-[90px] left-1/2 z-20 w-[1400px] -translate-x-1/2">
           <SlowTorrentHint slow={slowT} focus={slowTFocus} />

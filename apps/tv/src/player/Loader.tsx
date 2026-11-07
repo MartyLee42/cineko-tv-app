@@ -53,11 +53,11 @@ export function Loader({ style, m, preview = false }: { style: LoadingStyle; m: 
   const kind = loaderKind(style, applied ?? "kinozal", preview);
   return (
     <div
-      data-testid={preview ? "loader-preview" : "player-preparing"}
+      data-testid={preview ? "loader-preview" : m.done ? "loader-finale" : "player-preparing"}
       data-loader={style}
       data-cv={kind === "poster" ? "1" : undefined}
       data-progress={Math.round(m.p * 100)}
-      className="tv-loader absolute left-0 top-0 h-full w-full overflow-hidden bg-bg"
+      className={`tv-loader absolute left-0 top-0 h-full w-full overflow-hidden bg-bg${m.done && !preview ? " tv-loader-finale" : ""}`}
     >
       {kind === "minimal" ? (
         <Minimal m={m} />
@@ -87,6 +87,16 @@ function LazyStyle({ kind, m, mood }: { kind: Exclude<LoaderKind, "minimal">; m:
       return <LOADERS.matrix m={m} />;
     case "poster":
       return <LOADERS.poster m={m} />;
+    case "paws":
+      return <LOADERS.paws m={m} />;
+    case "aquarium":
+      return <LOADERS.aquarium m={m} />;
+    case "speed88":
+      return <LOADERS.speed88 m={m} />;
+    case "odyssey":
+      return <LOADERS.odyssey m={m} />;
+    case "balloons":
+      return <LOADERS.balloons m={m} />;
   }
 }
 
