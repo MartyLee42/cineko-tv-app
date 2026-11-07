@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -p . && vite build && vite build --base / --outDir dist-root",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p .",
+    "test": "node --test 'test/*.test.ts'"
   },
   "dependencies": {
     "@fontsource/caveat": "5.3.0",
