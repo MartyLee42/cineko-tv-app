@@ -359,3 +359,86 @@ func TestClientErrorsAPIHook(t *testing.T) {
 		t.Fatalf("api sample %v", s)
 	}
 }
+
+// Filter by user: the groups a user hit, with their own counts and times;
+// a TV's errors count for its owner.
+func TestClientErrorsUserFilter(t *testing.T) {
+	env := testutil.New(t)
+	admin, _ := env.NewUserClient("root", "admin")
+	alice, aliceUser := env.NewUserClient("alice", "user")
+	bob, bobUser := env.NewUserClient("bob", "user")
+
+	alice.Do("POST", "/api/v1/client-errors", batch(
+		clientEvent("web", "error", "shared boom", map[string]any{"count": 3}),
+		clientEvent("web", "error", "alice only"),
+	)).Expect(202)
+	bob.Do("POST", "/api/v1/client-errors", batch(clientEvent("web", "error", "shared boom"), clientEvent("web", "error", "shared boom"))).Expect(202)
+	devID, cred := env.Pair(bob, "Bob TV")
+	tv := env.Client()
+	tv.Bearer = cred
+	tv.Do("POST", "/api/v1/client-errors", batch(clientEvent("tv", "player", "tv boom", map[string]any{"count": 4}))).Expect(202)
+
+	all := listErrors(t, admin, "?q=shared")
+	if len(all) != 1 || all[0]["count"] != float64(5) || all[0]["users_affected"] != float64(2) {
+		t.Fatalf("unfiltered %v", all)
+	}
+	gid := all[0]["id"].(string)
+
+	bobs := listErrors(t, admin, "?user_id="+bobUser.ID+"&sort=count")
+	if len(bobs) != 2 || bobs[0]["message"] != "tv boom" || bobs[0]["count"] != float64(4) || bobs[0]["devices_affected"] != float64(1) ||
+		bobs[1]["count"] != float64(2) || bobs[1]["users_affected"] != float64(1) || bobs[1]["devices_affected"] != float64(0) {
+		t.Fatalf("bob groups %v", bobs)
+	}
+	alices := listErrors(t, admin, "?user_id="+aliceUser.ID+"&sort=count")
+	if len(alices) != 2 || alices[0]["message"] != "shared boom" || alices[0]["count"] != float64(3) {
+		t.Fatalf("alice groups %v", alices)
+	}
+	page := admin.Do("GET", "/api/v1/admin/client-errors?user_id="+aliceUser.ID+"&limit=1", nil).Expect(200).JSON()
+	if page["total"] != float64(2) || len(page["items"].([]any)) != 1 {
+		t.Fatalf("page %v", page)
+	}
+	if n := len(listErrors(t, admin, "?user_id="+bobUser.ID+"&device_id="+devID)); n != 1 {
+		t.Fatalf("user+device %d", n)
+	}
+	// Last seen is the user's own: move Bob's back and filter by since.
+	if _, err := env.Pool.Exec(context.Background(),
+		`UPDATE client_error_affected SET last_seen = now() - interval '3 days' WHERE kind = 'u' AND subject_id = $1`, bobUser.ID); err != nil {
+		t.Fatal(err)
+	}
+	since := time.Now().Add(-24 * time.Hour).UTC().Format(time.RFC3339)
+	if n := len(listErrors(t, admin, "?user_id="+bobUser.ID+"&since="+since)); n != 0 {
+		t.Fatalf("bob since %d", n)
+	}
+	if n := len(listErrors(t, admin, "?q=shared&since="+since)); n != 1 {
+		t.Fatalf("group since %d", n)
+	}
+
+	// The detail: that user's view and samples only.
+	d := admin.Do("GET", "/api/v1/admin/client-errors/"+gid+"?user_id="+bobUser.ID, nil).Expect(200).JSON()
+	samples := d["samples"].([]any)
+	if g := d["group"].(map[string]any); g["count"] != float64(2) || len(samples) != 2 {
+		t.Fatalf("bob detail %v", d)
+	}
+	for _, s := range samples {
+		if s.(map[string]any)["user"].(map[string]any)["id"] != bobUser.ID {
+			t.Fatalf("foreign sample %v", s)
+		}
+	}
+	if n := len(admin.Do("GET", "/api/v1/admin/client-errors/"+gid, nil).Expect(200).JSON()["samples"].([]any)); n != 3 {
+		t.Fatalf("all samples %d", n)
+	}
+	aliceOnly := listErrors(t, admin, "?q=alice")[0]["id"].(string)
+	admin.Do("GET", "/api/v1/admin/client-errors/"+aliceOnly+"?user_id="+bobUser.ID, nil).Expect(404)
+	admin.Do("GET", "/api/v1/admin/client-errors/"+gid+"?user_id=nope", nil).Expect(422)
+	admin.Do("GET", "/api/v1/admin/client-errors?user_id=nope", nil).Expect(422)
+
+	// Users who have errors, for the filter.
+	users := admin.Do("GET", "/api/v1/admin/client-errors/users", nil).Expect(200).Items()
+	if len(users) != 2 || users[0]["id"] != aliceUser.ID || users[0]["groups"] != float64(2) ||
+		users[1]["id"] != bobUser.ID || users[1]["groups"] != float64(2) || users[1]["username"] != "bob" {
+		t.Fatalf("users %v", users)
+	}
+	alice.Do("GET", "/api/v1/admin/client-errors/users", nil).Expect(403)
+	tv.Do("GET", "/api/v1/admin/client-errors/users", nil).Expect(403)
+	env.Client().Do("GET", "/api/v1/admin/client-errors/users", nil).Expect(401)
+}

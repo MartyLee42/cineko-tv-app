@@ -2415,7 +2415,14 @@ paths:
         - { name: kind, in: query, schema: { $ref: "#/components/schemas/ClientErrorKind" } }
         - { name: status, in: query, schema: { type: string, enum: [unresolved, resolved, all], default: unresolved } }
         - { name: since, in: query, description: Only groups seen at or after this time., schema: { type: string, format: date-time } }
-        - { name: user_id, in: query, schema: { type: string, format: uuid } }
+        - name: user_id
+          in: query
+          description: |
+            Only groups this user hit (a paired TV's errors count for its owner).
+            `count`, `first_seen`, `last_seen` (also for `since` and `sort`) are
+            then the user's own; `users_affected` is 1 and `devices_affected`
+            counts the user's TVs.
+          schema: { type: string, format: uuid }
         - { name: device_id, in: query, schema: { type: string, format: uuid } }
         - { name: q, in: query, description: Substring of the message, component or top frame., schema: { type: string, maxLength: 200 } }
         - { name: sort, in: query, schema: { type: string, enum: [last_seen, count], default: last_seen } }
@@ -2432,15 +2439,33 @@ paths:
                 properties:
                   items: { type: array, items: { $ref: "#/components/schemas/ClientErrorGroup" } }
                   total: { type: integer }
+  /admin/client-errors/users:
+    get:
+      tags: [client-errors]
+      operationId: adminListClientErrorUsers
+      description: Accounts that hit at least one stored group (the user filter), by name. Admin only.
+      responses:
+        "200":
+          description: Users.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/ClientErrorUser" } }
   /admin/client-errors/{id}:
     parameters: [{ $ref: "#/components/parameters/Id" }]
     get:
       tags: [client-errors]
       operationId: adminGetClientError
       description: One group with its most recent samples (up to 20, newest first). Admin only.
+      parameters:
+        - { name: user_id, in: query, description: "The group as this user saw it (see the list's `user_id`) and only their samples; 404 if they never hit it.", schema: { type: string, format: uuid } }
       responses:
         "200": { description: The group., content: { application/json: { schema: { $ref: "#/components/schemas/ClientErrorDetail" } } } }
         "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
     patch:
       tags: [client-errors]
       operationId: adminUpdateClientError
@@ -5769,6 +5794,15 @@ components:
       properties:
         group: { $ref: "#/components/schemas/ClientErrorGroup" }
         samples: { type: array, items: { $ref: "#/components/schemas/ClientErrorSample" } }
+    ClientErrorUser:
+      type: object
+      required: [id, username, display_name, groups, last_seen]
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        display_name: { type: string }
+        groups: { type: integer, description: Stored groups the user hit. }
+        last_seen: { type: string, format: date-time }
     ClientErrorNewEvent:
       type: object
       description: "Realtime `client_error.new` payload, sent to admins' browser sockets when a group is created or regresses."
