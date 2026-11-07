@@ -1,11 +1,9 @@
 // «Немое кино»: a silent-comedy print. Pure black and white (photos turn grey in
 // silent.css), static film grain, a soft vignette and a couple of scratches;
 // headings sit on intertitle cards in an art-nouveau frame (CSS border-image).
-// The only motion: a faint projector flicker over Home's artwork and the
-// iris-in on the focused card, both off in the calm mode (html.sl-calm).
+// No projector flicker. The only motion: the iris-in on the focused card, off in the calm mode (html.sl-calm).
 import "./silent.css";
 import { useEffect } from "react";
-import { useCalmMotion } from "../skins";
 import type { Look } from "./types";
 import { layer, rand } from "./common";
 
@@ -42,14 +40,12 @@ function FilmBackground({ calm, dim }: { calm: boolean; dim: boolean }) {
   );
 }
 
-/** Over Home's artwork: dust, the gate's vignette and the projector flicker (the grain rides on the scrim). */
+/** Over Home's artwork: dust and the gate's vignette (the grain rides on the scrim). */
 function FilmHeroEdges({ height }: { height: number }) {
-  const calm = useCalmMotion();
   return (
     <div className="pointer-events-none absolute left-0 top-0 w-full" style={{ height }}>
       <Dust w={1920} h={height} seed={5} />
       <div className="sl-vignette absolute left-0 top-0 h-full w-full" />
-      {!calm && <div data-testid="sl-flicker" className="sl-flicker absolute left-0 top-0 h-full w-full" />}
     </div>
   );
 }
