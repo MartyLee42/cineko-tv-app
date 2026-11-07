@@ -105,7 +105,7 @@ export const PLAYBACK_COMMANDS = [
 ] as const;
 
 /** Server → TV messages that aren't commands (never acked). */
-const EVENTS = new Set(["hello", "pong", "ping", "error", "ack", "device.state", "device.presence", "device.changed", "message"]);
+const EVENTS = new Set(["hello", "pong", "ping", "error", "ack", "device.state", "device.presence", "device.changed", "message", "settings.changed"]);
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

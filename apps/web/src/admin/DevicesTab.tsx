@@ -4,6 +4,7 @@
 // created/approved/rejected/expired) and every 30 s as a fallback. Device
 // metadata only; every action is audited server-side.
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { unwrap, type Schemas } from "@martytv/contracts";
 import { Spinner, StatusDot, useI18n, type MessageKey } from "@martytv/ui";
@@ -131,6 +132,9 @@ function DevicesCard() {
                     >
                       {t("admin.devices.rename")}
                     </Button>
+                    <Link to={`/devices/${d.id}/settings`} data-testid="admin-tv-settings" className="inline-flex items-center rounded-xl bg-surface-2 px-3 py-1 text-sm font-semibold hover:bg-border">
+                      {t("devset.tv.button")}
+                    </Link>
                     <DevicePrefsButton deviceId={d.id} name={d.name} className="min-h-0 py-1 text-sm" />
                     {d.credential_active && (
                       <Button

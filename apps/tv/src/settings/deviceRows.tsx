@@ -10,6 +10,7 @@ import { mbit, prebufferPref, slowHintPref } from "../player/rebuffer";
 import { devicePrefs, useDevicePrefs, type PlaybackAuto, type PlaybackManual } from "./devicePrefs";
 import type { Choice, Row } from "./OptionList";
 import { speedtest, speedtestLine, useSpeedtest } from "./speedtest";
+import { tvOwn, useTvOwnVersion } from "./tvOwn";
 
 const VIDEO_LABEL: Record<string, string> = { h264: "H.264", hevc: "HEVC", vp9: "VP9", av1: "AV1", hdr10: "HDR10", dv: "Dolby Vision" };
 const AUDIO_LABEL: Record<string, string> = { aac: "AAC", ac3: "AC3", eac3: "E-AC3", dts: "DTS", truehd: "TrueHD", mp3: "MP3", opus: "Opus", flac: "FLAC" };
@@ -35,8 +36,10 @@ export function useDevicePlaybackRows(): { rows: Row[]; note: string | null } {
   const prefs = useDevicePrefs();
   const [note, setNote] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(() => storage.get(SUGGEST_KEY) === "1");
-  const [slowHint, setSlowHint] = useState(() => slowHintPref.get());
-  const [prebuffer, setPrebuffer] = useState(() => prebufferPref.get());
+  // This TV's own options (tvOwn.ts): a phone may change them too.
+  useTvOwnVersion();
+  const slowHint = slowHintPref.get();
+  const prebuffer = prebufferPref.get();
   useSpeedtest();
   useEffect(() => {
     void devicePrefs.sync();
@@ -172,10 +175,7 @@ export function useDevicePlaybackRows(): { rows: Row[]; note: string | null } {
         { value: false, label: t("tvplay.off") },
       ],
       value: slowHint,
-      onChange: (v: unknown) => {
-        slowHintPref.set(v === true);
-        setSlowHint(v === true);
-      },
+      onChange: (v: unknown) => tvOwn.set("slow_hint", v === true),
     } as Row,
     {
       // This TV only; off by default.
@@ -188,10 +188,7 @@ export function useDevicePlaybackRows(): { rows: Row[]; note: string | null } {
         { value: false, label: t("tvplay.off") },
       ],
       value: prebuffer,
-      onChange: (v: unknown) => {
-        prebufferPref.set(v === true);
-        setPrebuffer(v === true);
-      },
+      onChange: (v: unknown) => tvOwn.set("show_prebuffer", v === true),
     } as Row,
     {
       // This TV only: background speed test (on by default).
@@ -204,7 +201,7 @@ export function useDevicePlaybackRows(): { rows: Row[]; note: string | null } {
         { value: false, label: t("tvplay.off") },
       ],
       value: speedtest.enabled(),
-      onChange: (v: unknown) => speedtest.setEnabled(v === true),
+      onChange: (v: unknown) => tvOwn.set("speedtest", v === true),
     } as Row,
     { kind: "note", key: "dp-speedtest-last", label: speedtestLine((k, v) => t(k as MessageKey, v)) },
     {

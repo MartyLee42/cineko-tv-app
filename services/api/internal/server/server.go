@@ -22,6 +22,7 @@ import (
 	"martytv/api/internal/config"
 	"martytv/api/internal/curated"
 	"martytv/api/internal/devices"
+	"martytv/api/internal/devicesettings"
 	"martytv/api/internal/downloads"
 	"martytv/api/internal/family"
 	"martytv/api/internal/foryou"
@@ -217,6 +218,11 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	companion.New(companion.Options{Pool: pool, Profiles: profileStore, AI: forYouSvc, Seasons: catalogSvc,
 		DailyLimit: cfg.ForYou.CompanionDailyPerProfile, Log: log}).Routes(api)
 	profileHandlers.OnSettingsChanged(forYouSvc.SettingsChanged)
+	// Per-TV settings (internal/devicesettings): a TV's own options and its
+	// layer of the profile settings, editable from phones / computers.
+	devSettings := devicesettings.New(pool, deviceStore, profileStore, hub)
+	devSettings.Routes(api)
+	profileHandlers.OnSettingsChanged(devSettings.ProfileBaseChanged)
 
 	catalogHandlers := catalog.NewHandlers(catalogSvc, catalog.NewImageProxy(cfg.TMDB, cfg.Catalog.ImageCacheDir, log))
 	catalogHandlers.SetPersonalizer(watchSvc)
