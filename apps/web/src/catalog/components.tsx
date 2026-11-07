@@ -9,6 +9,8 @@ import { CheckIcon, ChevronLeft, ChevronRight, HeartIcon, StarIcon } from "../ic
 import { isCatalogUnavailable, useCatalogConfig, type MediaPages } from "./queries";
 import { usePosterTilt } from "./wobble";
 import { AwardBadge } from "./Awards";
+import { QuickActions, QuickSheet, useQuickSheet } from "../watch/QuickActions";
+import { useLongPress } from "../watch/longPress";
 
 type PosterItem = Pick<MediaSummary, "id" | "title" | "poster_path">;
 
@@ -129,23 +131,30 @@ export function PosterCard({ item, sizes, className = "" }: { item: MediaSummary
   const { t } = useI18n();
   const tilt = usePosterTilt();
   const cv = useConstructivism();
+  // Quick actions (♥, «Буду смотреть», rating) without opening the title: hover buttons, «⋯», long press.
+  const quick = useQuickSheet();
+  const press = useLongPress(quick.show, quick.enabled);
   return (
-    <Link to={`/title/${item.id}`} className={`group block outline-none ${className}`} data-testid="poster-card">
-      <div {...tilt} className="relative transition duration-200 group-hover:-translate-y-0.5 group-focus-visible:ring-2 group-focus-visible:ring-accent rounded-xl">
-        <Poster item={item} sizes={sizes} className="shadow-lg shadow-black/30 ring-1 ring-black/5" />
-        {/* «Конструктивизм» ranks by КП when known («ударник ★8,4»). */}
-        <div className="absolute left-1.5 top-1.5 flex flex-col items-start gap-1">
-          <RatingBadge rating={cv ? (item.kp_rating ?? item.rating) : item.rating} />
-          <AwardBadge badge={item.award_badge} />
+    <div className={`group/card relative ${className}`} {...press}>
+      <Link to={`/title/${item.id}`} className="group block select-none outline-none [-webkit-touch-callout:none]" data-testid="poster-card">
+        <div {...tilt} className="relative transition duration-200 group-hover/card:-translate-y-0.5 group-focus-visible:ring-2 group-focus-visible:ring-accent rounded-xl">
+          <Poster item={item} sizes={sizes} className="shadow-lg shadow-black/30 ring-1 ring-black/5" />
+          {/* «Конструктивизм» ranks by КП when known («ударник ★8,4»). */}
+          <div className="absolute left-1.5 top-1.5 flex flex-col items-start gap-1">
+            <RatingBadge rating={cv ? (item.kp_rating ?? item.rating) : item.rating} />
+            <AwardBadge badge={item.award_badge} />
+          </div>
+          <QualityBadge item={item} />
+          <MeBadges me={item.me} />
         </div>
-        <QualityBadge item={item} />
-        <MeBadges me={item.me} />
-      </div>
-      <p className="mt-2 line-clamp-2 text-sm font-medium leading-snug group-hover:text-accent-strong">{item.title}</p>
-      <p className="mt-0.5 text-xs text-muted">
-        {[item.year, t(`catalog.kind.${item.kind}` as MessageKey)].filter(Boolean).join(" · ")}
-      </p>
-    </Link>
+        <p className="mt-2 line-clamp-2 text-sm font-medium leading-snug group-hover:text-accent-strong">{item.title}</p>
+        <p className="mt-0.5 text-xs text-muted">
+          {[item.year, t(`catalog.kind.${item.kind}` as MessageKey)].filter(Boolean).join(" · ")}
+        </p>
+      </Link>
+      {quick.enabled && <QuickActions item={item} onMenu={quick.show} />}
+      {quick.open && <QuickSheet item={item} anchor={quick.anchor} onClose={quick.close} />}
+    </div>
   );
 }
 
@@ -156,7 +165,7 @@ export function MeBadges({ me }: { me: MediaSummary["me"] }) {
   const pct = me.progress_percent ?? 0;
   return (
     <>
-      {(me.completed || me.favorite) && (
+      {(me.completed || me.favorite || me.rating != null) && (
         <div className="absolute right-1.5 top-1.5 flex flex-col items-center gap-1">
           {me.completed && (
             <span
@@ -175,6 +184,15 @@ export function MeBadges({ me }: { me: MediaSummary["me"] }) {
               className="flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-[13px] text-rose-400"
             >
               <HeartIcon filled />
+            </span>
+          )}
+          {me.rating != null && (
+            <span
+              title={t("quick.rating")}
+              data-testid="badge-my-rating"
+              className="flex h-6 min-w-6 items-center justify-center rounded-full bg-black/70 px-1.5 text-[11px] font-bold text-amber-300 shadow-md shadow-black/40"
+            >
+              ★{me.rating}
             </span>
           )}
         </div>

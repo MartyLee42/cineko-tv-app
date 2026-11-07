@@ -263,6 +263,7 @@ export function TitleGrid({
           if (onNearEnd && nearEnd(i, items.length, g.cols * 3)) onNearEnd();
         }}
         onSelect={(it) => onOpen(it, from)}
+        quick={(it) => ({ item: it, onOpen: () => onOpen(it, from) })}
         renderItem={(it, focused, i) => <GridCard item={it} cfg={cfg.data} g={g} focused={focused} index={i} />}
       />
     );
