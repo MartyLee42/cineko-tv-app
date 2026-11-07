@@ -55,6 +55,13 @@ function chunkGroups() {
       includeDependenciesRecursively: false,
     },
     {
+      // Each design is its own chunk (design/looks/<id>.tsx + its CSS), even
+      // the ones a second place uses (the «Матрица» loader draws the rain).
+      name: (id: string) => /[\\/]design[\\/]looks[\\/]([a-z0-9]+)\.(tsx|css)$/.exec(id)?.[1] ?? null,
+      priority: 3,
+      includeDependenciesRecursively: false,
+    },
+    {
       name: (id: string, ctx: Ctx) => (reach(ctx).main.has(id) ? null : "shared"),
       minShareCount: 2,
       priority: 1,

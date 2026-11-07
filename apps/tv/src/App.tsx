@@ -39,6 +39,7 @@ import { MessageLayer } from "./messages/MessageLayer";
 import { DesignProvider, DeviceProvider } from "./design/context";
 import { runBackFirst } from "./design/topJump";
 import { SkinBackground } from "./design/skins";
+import { getLook, loadLook } from "./design/looks/registry";
 import { parseMessageEvent } from "./messages/queue";
 import { RateLayer } from "./watch/RatePrompt";
 import { messageQueue } from "./watch/stores";
@@ -197,9 +198,21 @@ export function App() {
       themeCache.set(theme);
       themeCache.setDesign(design);
     }
-    applyDesign(design);
-    // Light colours exist for «Кинозал» only; the other designs are dark.
-    return applyTheme(design === "kinozal" ? theme : "dark");
+    // A design switch waits for the design's own chunk (CSS + drawings), so it never shows half-styled.
+    let live = true;
+    let undo: (() => void) | undefined;
+    const apply = () => {
+      if (!live) return;
+      applyDesign(design);
+      // Light colours exist for «Кинозал» only; the other designs are dark.
+      undo = applyTheme(design === "kinozal" ? theme : "dark");
+    };
+    if (getLook(design)) apply();
+    else void loadLook(design).catch(() => undefined).then(apply);
+    return () => {
+      live = false;
+      undo?.();
+    };
   }, [theme, design, known]);
 
   // Admin messages: unread ones once at start (and after pairing).
