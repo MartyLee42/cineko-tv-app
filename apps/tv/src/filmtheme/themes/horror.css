@@ -1,0 +1,7 @@
+/* «Тема под фильм» — horror: Ужасы: обесцвеченно и темно, кроваво-красный акцент. Its own chunk (filmtheme/load.ts). */
+:root [data-film-theme="horror"] > .tv-fade img,
+:root .tv-loader[data-film-theme="horror"] img { -webkit-filter: grayscale(.5) contrast(1.25) brightness(.78); filter: grayscale(.5) contrast(1.25) brightness(.78); }
+:root [data-film-theme="horror"] h1 { font-family: 'Oswald', 'Onest', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+:root [data-film-theme="horror"]::after { background-image: radial-gradient(ellipse at 50% 45%, rgba(40, 0, 0, 0) 45%, rgba(20, 0, 0, .8) 100%), var(--ft-grain); opacity: .8; }
+/* The loader takes the theme's palette too (Details keeps the design's). */
+:root .tv-loader[data-film-theme="horror"] { --mt-bg: 10, 4, 4; --mt-surface: 28, 12, 12; --mt-surface-2: 44, 18, 18; --mt-text: 240, 226, 226; --mt-muted: 168, 140, 140; --mt-accent: 204, 24, 32; --mt-accent-strong: 255, 70, 70; --mt-on-accent: 255, 240, 240; color: rgb(var(--mt-text)); }

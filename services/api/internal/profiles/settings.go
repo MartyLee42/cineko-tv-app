@@ -88,6 +88,9 @@ type Settings struct {
 	// ShowCurated («Подборки» on Home): one curated list per day as a
 	// «Для вас» row (internal/curated, foryou). Default on.
 	ShowCurated *bool `json:"show_curated,omitempty"`
+	// FilmTheme («Тема под фильм»): Details and the player's loader take the
+	// look of the film being opened (silent → black and white, …). Default off.
+	FilmTheme *bool `json:"film_theme,omitempty"`
 }
 
 // SkipModes are the allowed skip_segments values.
@@ -208,7 +211,7 @@ func DefaultSettings() Settings {
 		IPTVPlaylists: &IPTVPlaylistsSetting{All: true}, VideoQuality: ptr(720), VideoHideShorts: ptr(true), VideoAutoplay: ptr(true),
 		SeasonalEffects: ptr("off"), HiddenTabs: &[]string{},
 		CozyMode: ptr(false), CozyAmbience: ptr("fireplace"), CozySound: ptr(false), PosterWobble: ptr(true),
-		ShareWithFamily: ptr(false), ShowFamily: ptr(true), ShowCurated: ptr(true)}
+		ShareWithFamily: ptr(false), ShowFamily: ptr(true), ShowCurated: ptr(true), FilmTheme: ptr(false)}
 }
 
 func ptr[T any](v T) *T { return &v }
@@ -314,6 +317,9 @@ func (s Settings) withDefaults() Settings {
 	}
 	if s.ShowCurated != nil {
 		d.ShowCurated = s.ShowCurated
+	}
+	if s.FilmTheme != nil {
+		d.FilmTheme = s.FilmTheme
 	}
 	return d
 }

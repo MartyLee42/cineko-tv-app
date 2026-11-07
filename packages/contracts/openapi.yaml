@@ -5124,6 +5124,7 @@ components:
         share_with_family: { type: boolean, default: false, description: "«Делиться с семьёй» (opt-in): other profiles on this server see this profile's ratings, finished titles and favorites («Семья советует», family ratings on title pages). Never in-progress positions, the watchlist or notes." }
         show_family: { type: boolean, default: true, description: "«Показывать, что смотрят другие»: the «Семья советует» row on Home (GET /foryou/rows kind family) and family ratings on title pages." }
         show_curated: { type: boolean, default: true, description: "«Подборки» on Home: one curated list per day (GET /foryou/rows kind curated)." }
+        film_theme: { type: boolean, default: false, description: "«Тема под фильм»: Details and the player's loading screen take a look matching the film (silent → black and white, Soviet animation → a soft painted palette, noir, 80s neon, anime…), classified on the client from MediaDetail. The menu and catalog keep the profile's design." }
     AdminAppearance:
       type: object
       required: [seasonal_effects]

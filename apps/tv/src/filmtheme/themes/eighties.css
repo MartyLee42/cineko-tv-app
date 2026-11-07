@@ -1,0 +1,7 @@
+/* «Тема под фильм» — eighties: Восьмидесятые: неон, строки развёртки. Its own chunk (filmtheme/load.ts). */
+:root [data-film-theme="eighties"] > .tv-fade img,
+:root .tv-loader[data-film-theme="eighties"] img { -webkit-filter: saturate(1.3) contrast(1.1); filter: saturate(1.3) contrast(1.1); }
+:root [data-film-theme="eighties"] h1 { font-family: 'Unbounded', 'Onest', sans-serif; font-weight: 800; font-style: italic; text-shadow: 0 0 18px rgba(255, 60, 180, .75), 0 0 2px rgba(255, 255, 255, .9); }
+:root [data-film-theme="eighties"]::after { background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, .14) 0px, rgba(0, 0, 0, .14) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 5px), radial-gradient(ellipse at 50% 45%, rgba(40, 0, 80, 0) 55%, rgba(40, 0, 80, .55) 100%); opacity: 1; }
+/* The loader takes the theme's palette too (Details keeps the design's). */
+:root .tv-loader[data-film-theme="eighties"] { --mt-bg: 14, 8, 34; --mt-surface: 32, 18, 66; --mt-surface-2: 48, 28, 92; --mt-text: 255, 240, 252; --mt-muted: 200, 176, 230; --mt-accent: 255, 60, 180; --mt-accent-strong: 60, 240, 255; --mt-on-accent: 30, 0, 24; color: rgb(var(--mt-text)); }

@@ -36,6 +36,7 @@ export const DEFAULT_SETTINGS: Settings = {
   share_with_family: false,
   show_family: true,
   show_curated: true,
+  film_theme: false,
 };
 
 export const LOADING_STYLES: LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix",
