@@ -87,6 +87,8 @@ type AISettings interface {
 	SetAITemperature(ctx context.Context, t appsettings.AITemperature, by string) error
 	FactsAIEnabled(ctx context.Context) bool
 	SetFactsAIEnabled(ctx context.Context, enabled bool, by string) error
+	CompanionAIEnabled(ctx context.Context) bool
+	SetCompanionAIEnabled(ctx context.Context, enabled bool, by string) error
 }
 
 type Service struct {
@@ -160,6 +162,11 @@ func (s *Service) aiTemperature(ctx context.Context) appsettings.AITemperature {
 // factsAI: the admin allows AI-written «Факты» (default on).
 func (s *Service) factsAI(ctx context.Context) bool {
 	return s.settings == nil || s.settings.FactsAIEnabled(ctx)
+}
+
+// companionAI: the admin allows the watch companion (default on).
+func (s *Service) companionAI(ctx context.Context) bool {
+	return s.settings == nil || s.settings.CompanionAIEnabled(ctx)
 }
 
 // base is the service lifetime context (cancelled on shutdown).

@@ -23,6 +23,7 @@ import { initials } from "../catalog/person";
 import { CvQueue } from "../catalog/CvExtras";
 import { Awards } from "../catalog/Awards";
 import { TriviaButtons } from "../catalog/Trivia";
+import { CompanionButtons } from "../catalog/Companion";
 
 type Video = Schemas["Video"];
 type CastMember = Schemas["CastMember"];
@@ -146,7 +147,7 @@ function Hero({ m }: { m: MediaDetail }) {
             </div>
           )}
           {m.kind === "movie" ? <MovieActions m={m} /> : <SeriesActions m={m} />}
-          <div className="flex flex-wrap gap-2 pt-1"><ListToggles m={m} /><RecommendButton m={m} /><TriviaButtons m={m} /></div>
+          <div className="flex flex-wrap gap-2 pt-1"><ListToggles m={m} /><RecommendButton m={m} /><TriviaButtons m={m} /><CompanionButtons m={m} /></div>
           <FamilyRatings mediaId={m.id} />
         </div>
       </div>

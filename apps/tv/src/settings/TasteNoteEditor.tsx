@@ -19,6 +19,7 @@ export function TasteNoteEditor({
   onClose,
   title,
   hint,
+  placeholder,
   max = TASTE_NOTE_MAX,
   pausedNav = true,
   testId = "tv-taste-editor",
@@ -28,6 +29,8 @@ export function TasteNoteEditor({
   onClose: () => void;
   title?: string;
   hint?: string;
+  /** Shown while empty (default: the taste note's). */
+  placeholder?: string;
   max?: number;
   /** Opened over a list that paused spatial navigation (Settings): resume it while open. */
   pausedNav?: boolean;
@@ -82,7 +85,7 @@ export function TasteNoteEditor({
         <p className="mt-3 text-[26px] text-muted">{hint ?? t("taste.tv.note_hint")}</p>
         <div className="mt-8 flex min-h-[150px] items-start overflow-hidden rounded-card border-2 border-border bg-surface px-7 py-5" style={{ width: 1500 }}>
           <span data-testid="tv-taste-text" className="whitespace-pre-wrap break-words text-[34px] font-semibold leading-snug">
-            {shown || <span className="text-muted">{title ? t("taste.note.placeholder") : t("taste.placeholder")}</span>}
+            {shown || <span className="text-muted">{placeholder ?? (title ? t("taste.note.placeholder") : t("taste.placeholder"))}</span>}
           </span>
           {shown && <span className="tv-caret ml-1 mt-2 inline-block h-10 w-1 shrink-0 bg-accent" />}
         </div>
