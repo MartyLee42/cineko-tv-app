@@ -1,0 +1,98 @@
+/* «western»: this design's own rules (loaded with the design's chunk, design/looks).
+   ---------------------------------------------------------------- Вестерн (kinozal skeleton)
+   A spaghetti-western homage on a light, sun-bleached desert (tokens in theme.css). Posters are
+   «РАЗЫСКИВАЕТСЯ» bills: an aged paper frame with the word in wood type on its top margin, the
+   title and «НАГРАДА $<year>» printed under the picture on the same paper. Focus: the bill lifts
+   and gets a rust-red frame. Black letterbox bars over Home's hero and Details (z 19: over the
+   content, under the menu). OK on a card: a quick standoff push-in (.ww-standoff). The bills'
+   words come from --ww-wanted / --ww-reward (set by looks/western.tsx in the UI language).
+   Static except the push-in; transform/opacity only. */
+.ww-sky {
+  background-color: rgb(236,220,188);
+  background-image: linear-gradient(180deg, #f6eedb 0%, #f1e4c6 38%, #ecd6aa 70%, #e2bf86 100%);
+}
+
+/* ---- the bills (posters and wide cards). */
+html.design-western .mt-card {
+  border: 9px solid #f1dfb8; border-top-width: 44px; border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(96,60,30,.45), 0 8px 16px rgba(70,40,15,.3);
+}
+/* Aged paper over the picture's edges: a brown burn and a faint warm cast (static). */
+html.design-western .mt-card::after {
+  content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none;
+  background: rgba(170,104,40,.1); box-shadow: inset 0 0 0 2px rgba(60,32,12,.55), inset 0 0 26px rgba(90,48,16,.45);
+}
+html.design-western [data-card-id] > .relative::after {
+  content: var(--ww-wanted, "РАЗЫСКИВАЕТСЯ");
+  position: absolute; left: 0; right: 0; top: 0; z-index: 3; height: 44px; overflow: hidden; pointer-events: none;
+  font-family: var(--mt-font-display); font-size: 25px; line-height: 50px; text-align: center; white-space: nowrap; letter-spacing: .01em;
+  color: #4a1f0e;
+}
+/* The name and the reward, printed on the bill under the picture. */
+html.design-western [data-card-id] > .relative + p {
+  margin-top: 0; padding: 6px 10px 2px; background: #f1dfb8; border-radius: 0;
+  font-family: var(--mt-font-display); font-weight: 400; font-size: 23px; line-height: 30px; text-transform: uppercase; text-align: center;
+  color: #2b1a0e; box-shadow: 0 0 0 1px rgba(96,60,30,.45), 0 8px 16px rgba(70,40,15,.22);
+}
+html.design-western [data-card-id] > .relative + p + p {
+  position: relative; margin-top: 0; padding: 0 10px 6px; background: #f1dfb8;
+  font-family: var(--mt-font-display); font-size: 22px; line-height: 26px; text-align: center; color: #8a2e14;
+  box-shadow: 1px 0 0 rgba(96,60,30,.45), -1px 0 0 rgba(96,60,30,.45), 0 1px 0 rgba(96,60,30,.45), 0 8px 16px rgba(70,40,15,.22);
+}
+html.design-western [data-card-id] > .relative + p + p[data-year]::before { content: var(--ww-reward, "НАГРАДА $"); }
+/* Focus: the whole bill lifts, a rust frame around it (the card's own ring would cut the bill in two). */
+html.design-western [data-card-id] .mt-card.is-focused { box-shadow: 0 0 0 1px rgba(96,60,30,.45), 0 8px 16px rgba(70,40,15,.3); }
+html.design-western [data-card-id].mt-hop { transform: translate3d(0,-6px,0); box-shadow: 0 0 0 5px rgb(236,220,188), 0 0 0 11px rgb(163,58,28), 0 18px 30px rgba(70,40,15,.4); }
+html.design-western [data-card-id].mt-hop > .relative::after { color: #a33a1c; }
+html.design-western [data-card-id].mt-hop > .relative + p { font-weight: 400; color: #1b0f06; }
+
+/* ---- OK on a card: the standoff close-up (a fast push-in), then Details (skipped in calm motion). */
+@keyframes ww-push { from { transform: translate3d(0,-6px,0) scale(1); } to { transform: translate3d(0,-14px,0) scale(1.2); } }
+html.design-western .ww-standoff { position: relative; z-index: 6; animation: ww-push 230ms cubic-bezier(.55,0,.75,.45) both; }
+@media (prefers-reduced-motion: reduce) {
+  html.design-western .ww-standoff { animation: none; }
+}
+
+/* ---- letterbox bars: Home's hero (looks/western.tsx) and Details (on its backdrop, so they fade
+   with it when the page scrolls down to the rows). */
+.ww-bar { position: absolute; top: 0; z-index: 19; display: block; width: 1920px; height: 48px; background: #0b0806; pointer-events: none; }
+html.design-western [data-media-id] > .tv-fade:first-child::before,
+html.design-western [data-media-id] > .tv-fade:first-child::after {
+  content: ""; position: absolute; left: -560px; z-index: 19; width: 1920px; height: 48px; background: #0b0806; pointer-events: none;
+}
+html.design-western [data-media-id] > .tv-fade:first-child::before { top: 0; }
+html.design-western [data-media-id] > .tv-fade:first-child::after { top: 1032px; }
+/* A warm, overexposed cast on the hero artwork. */
+.ww-sunwash { background: linear-gradient(200deg, rgba(255,236,190,.34) 0%, rgba(255,226,170,.12) 40%, rgba(214,150,70,.1) 100%); }
+
+/* ---- the rest of the kinozal skeleton. */
+html.design-western nav[data-design-nav="kinozal"] > div:first-child { background-color: rgb(228,207,166); box-shadow: inset -3px 0 0 rgba(96,60,30,.55); }
+html.design-western .tv-menu-panel { background: linear-gradient(90deg, rgb(228,207,166) 0%, rgb(228,207,166) 72%, rgba(228,207,166,0) 100%); }
+html.design-western .k-rail-focus { background: rgb(163,58,28); color: #fff3de; }
+html.design-western .k-rail-active { background: rgba(163,58,28,.14); color: rgb(var(--mt-text)); box-shadow: inset 0 0 0 2px rgba(163,58,28,.5); }
+html.design-western .k-primary { background: rgb(163,58,28); color: #fff3de; }
+html.design-western .k-icon-btn { background: rgba(241,223,184,.95); box-shadow: inset 0 0 0 2px rgba(96,60,30,.55); }
+html.design-western .k-badge { background: rgb(43,26,14); color: #f1dfb8; }
+html.design-western .k-track { background: rgba(43,26,14,.22); }
+html.design-western .tv-rate-good, html.design-western .tv-rate-mid, html.design-western .tv-rate-bad { border-radius: 3px; background: rgba(43,26,14,.88); box-shadow: inset 0 0 0 2px rgba(241,223,184,.6); }
+html.design-western .tv-rate-good { color: #f7d27a; }
+html.design-western .tv-rate-mid { color: #f1dfb8; }
+html.design-western .tv-rate-bad { color: #ffab8c; }
+html.design-western .tv-key-hint { background: rgba(241,223,184,.92); box-shadow: inset 0 0 0 2px rgba(96,60,30,.45); }
+html.design-western .tv-chip.is-focused { background: rgb(163,58,28); color: #fff3de; }
+html.design-western .tv-progress-fill, html.design-western .tv-check { background: rgb(163,58,28); color: #fff3de; }
+/* Row titles in wood type. */
+html.design-western h3 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .02em; line-height: 1.3; position: relative; top: -8px; }
+html.design-western h3.text-\[31px\] { font-size: 36px; }
+html.design-western [data-testid="hero"] h2, html.design-western [data-media-id] h1 { font-weight: 400; letter-spacing: .01em; line-height: 1.08; text-shadow: 0 2px 0 rgba(255,246,224,.7); }
+html.design-western .tv-panel, html.design-western .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 2px rgba(96,60,30,.35); }
+
+/* ---- Details: the wanted bill (looks/western.tsx WantedPlate). */
+.ww-bill {
+  display: inline-block; max-width: 1060px; background: #f1dfb8; color: #2b1a0e; text-align: center;
+  box-shadow: 0 0 0 1px rgba(96,60,30,.5), inset 0 0 0 6px #f1dfb8, inset 0 0 0 8px rgba(96,60,30,.6), inset 0 0 40px rgba(120,70,24,.35), 0 14px 28px rgba(70,40,15,.35);
+}
+.ww-bill-head { font-family: var(--mt-font-display); font-size: 40px; line-height: 1; letter-spacing: .06em; text-transform: uppercase; color: #8a2e14; }
+.ww-bill-foot { margin-top: 8px; font-family: var(--mt-font-display); font-size: 24px; line-height: 1; letter-spacing: .08em; text-transform: uppercase; color: #6b4428; }
+.ww-bill h1 { text-transform: uppercase; text-shadow: none; }
+.ww-nail { position: absolute; display: block; width: 14px; height: 14px; border-radius: 50%; background: #4b3a2c; box-shadow: inset -2px -2px 0 rgba(0,0,0,.35), 0 2px 2px rgba(0,0,0,.3); }
