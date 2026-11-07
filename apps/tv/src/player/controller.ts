@@ -59,6 +59,7 @@ import {
   rateStore,
   rebufferDead,
   rebufferDone,
+  rebufferOutrun,
   rebufferPercent,
   rebufferTarget,
   sessionRate,
@@ -269,7 +270,7 @@ export class PlayerController {
 
   // Rebuffering to a threshold and the bandwidth estimate (rebuffer.ts).
   /** `shown`: the highest «Буферизация N%» shown in this rebuffer (the buffered end may shrink: never back). */
-  private rebuf: { since: number; target: number; canPlayThrough: boolean; shown: number; end: number; grewAt: number } | null = null;
+  private rebuf: { since: number; target: number; canPlayThrough: boolean; shown: number; end: number; grewAt: number; at: number } | null = null;
   /** Rebuffers ended on a plateau lately (each makes the next plateau wait longer). */
   private plateaus = 0;
   private plateauAt = 0;
@@ -1908,7 +1909,7 @@ export class PlayerController {
     const v = this.video;
     if (!v) return;
     this.stallAt = null;
-    this.rebuf = { since: now, target, canPlayThrough: false, shown: 0, end: -1, grewAt: now };
+    this.rebuf = { since: now, target, canPlayThrough: false, shown: 0, end: -1, grewAt: now, at: v.currentTime };
     try {
       v.pause();
     } catch {
@@ -2011,6 +2012,12 @@ export class PlayerController {
     }
     const r = this.rebuf;
     if (!r) return;
+    // Playing again without us (phone resume, play key, the engine after a long pause): the rebuffer is over.
+    if (rebufferOutrun({ paused: v.paused, readyState: v.readyState, time: v.currentTime, timeAtStart: r.at })) {
+      this.rebuf = null;
+      this.emit("playback");
+      return;
+    }
     // Watch the buffered end: a paused engine that stopped fetching below the
     // target (stuck at «99 %») plays what it has; a stream that delivers
     // nothing at all for long is reloaded here (bounded by MAX_RECOVERIES).

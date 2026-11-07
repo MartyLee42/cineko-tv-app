@@ -240,3 +240,12 @@ export function sessionRate(estimates: readonly number[]): number | null {
   if (estimates.length < 3) return null;
   return medianThroughput(estimates);
 }
+
+/**
+ * A rebuffer that something else already ended: the video plays again (the
+ * phone's «resume», the play key, the engine itself after a long pause) and
+ * its time moves on — «Буферизация» must go, not spin over a playing film.
+ */
+export function rebufferOutrun(o: { paused: boolean; readyState: number; time: number; timeAtStart: number }): boolean {
+  return !o.paused && o.readyState >= 3 && o.time > o.timeAtStart + 0.5;
+}
