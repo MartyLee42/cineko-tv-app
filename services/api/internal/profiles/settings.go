@@ -181,7 +181,7 @@ func SetKnownSources(f func() []string) { knownSources = f }
 
 var (
 	themes        = []string{"system", "dark", "light"}
-	loadingStyles = []string{"popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn"}
+	loadingStyles = []string{"popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix"}
 	designs       = []string{"kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix"}
 	posterRatings = []string{"kp", "tmdb", "imdb", "off"}
 )
@@ -303,7 +303,7 @@ func (s Settings) validate() map[string]string {
 		f["skip_segments"] = "must be one of " + strings.Join(SkipModes, ", ")
 	}
 	if s.LoadingStyle != nil && !slices.Contains(loadingStyles, *s.LoadingStyle) {
-		f["loading_style"] = "must be one of popcorn, fill_title, poster_reveal, film_reel, minimal, marty, marty_popcorn"
+		f["loading_style"] = "must be one of " + strings.Join(loadingStyles, ", ")
 	}
 	if s.Design != nil && !slices.Contains(designs, *s.Design) {
 		f["design"] = "must be one of " + strings.Join(designs, ", ")

@@ -235,6 +235,20 @@ func TestWatchKeepsResumeAndSource(t *testing.T) {
 	expectAccepted(t, report(t, tv, s2, 1, 0, 5593, "paused"), false, "too_early")
 	expectAccepted(t, report(t, tv, s2, 2, 0, 5593, "stopped"), false, "too_early")
 
+	// One session plays on, then the TV engine restarts the stream from 0
+	// after a stall and the viewer stops: the spot it reached stays.
+	s3 := startSession(t, tv, map[string]any{"profile_id": w.pid, "media_id": movie, "source_id": good})["id"].(string)
+	expectAccepted(t, report(t, tv, s3, 1, 1553, 5593, "playing"), true, "")
+	expectAccepted(t, report(t, tv, s3, 2, 1620, 5593, "playing"), true, "")
+	expectAccepted(t, report(t, tv, s3, 3, 4, 5593, "playing"), false, "position_reset")
+	expectAccepted(t, report(t, tv, s3, 4, 9, 5593, "stopped"), false, "position_reset")
+	if p := w.alice.Do("GET", "/api/v1/media/"+movie+"/progress?profile_id="+w.pid, nil).Expect(200).JSON()["movie"].(map[string]any); num(p["position_seconds"]) != 1620 {
+		t.Fatalf("after a reset: %v (want 1620)", p)
+	}
+	// A real seek back (reported as seeking) still moves it.
+	expectAccepted(t, report(t, tv, s3, 5, 0, 5593, "seeking"), true, "")
+	expectAccepted(t, report(t, tv, s3, 6, 1553, 5593, "playing"), true, "")
+
 	p := w.alice.Do("GET", "/api/v1/media/"+movie+"/progress?profile_id="+w.pid, nil).Expect(200).JSON()["movie"].(map[string]any)
 	if num(p["position_seconds"]) != 1553 || p["source_id"] != good {
 		t.Fatalf("progress %v (want 1553 with source %s)", p, good)
