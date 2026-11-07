@@ -440,6 +440,40 @@ export interface paths {
         patch: operations["updateDevicePlaybackPrefs"];
         trace?: never;
     };
+    "/devices/{id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Device id, or `me` for the calling TV. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /**
+         * @description A TV's settings: its own options (`device`, every profile) and, for
+         *     one profile, the TV's layer of the profile settings (`overrides`) and
+         *     the merged result (`effective`). Access like playback-prefs: the TV
+         *     itself, its owner, a `use` share (own profiles only) and any
+         *     super_admin; `control`-only and strangers get 404.
+         */
+        get: operations["getTvSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * @description Same access as GET. `device` keys replace the TV's own options,
+         *     `reset_device` unsets them; `profile` (layered keys only) is stored in
+         *     the TV's layer of `profile_id`, `reset` removes keys from it (back to
+         *     the profile). Edited by anyone but the TV itself, the TV gets the
+         *     realtime event `settings.changed` {profile_id?} and applies it at once.
+         *     Invalid → 422 validation_failed; body > 16 KB → 413.
+         */
+        patch: operations["updateTvSettings"];
+        trace?: never;
+    };
     "/devices/{id}/health": {
         parameters: {
             query?: never;
@@ -1502,7 +1536,17 @@ export interface paths {
     };
     "/profiles/{id}/settings": {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Browsers name their class (DeviceClass: desktop = «Компьютер», mobile
+                 *     = «Телефон»): GET answers base → that class's layer, PUT stores the
+                 *     layered keys (TvSettings.layered_keys: look, autoplay, skip…) in that
+                 *     layer and the rest in the profile base. A paired TV is always layered
+                 *     per its own device id (the parameter is ignored). Without it (API
+                 *     tokens, old clients) everything is the profile base. Other values → 422.
+                 */
+                device_class?: components["schemas"]["DeviceClass"];
+            };
             header?: never;
             path: {
                 id: components["parameters"]["Id"];
@@ -1510,7 +1554,7 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getProfileSettings"];
-        /** @description Partial updates allowed (omitted fields keep their value). TV devices may update settings of profiles they can use. */
+        /** @description Partial updates allowed (omitted fields keep their value). TV devices may update settings of profiles they can use (their layered keys go to that TV's layer). The answer is the caller's effective settings (see device_class). */
         put: operations["putProfileSettings"];
         post?: never;
         delete?: never;
@@ -4859,6 +4903,78 @@ export interface components {
             lang: string | null;
             label: string | null;
         };
+        /**
+         * @description A browser's settings class: desktop = «Компьютер», mobile = «Телефон» (decided once per browser, changeable in Settings).
+         * @enum {string}
+         */
+        DeviceClass: "desktop" | "mobile";
+        /** @description A TV's own options (every profile). Unset keys are absent: the TV seeds them once from its local values; clients show the defaults (screensaver sleep, ui_sounds false, startup_intro true, calm_motion false, language: the TV's, health_report true, slow_hint false, show_prebuffer false, speedtest true). */
+        TvDeviceSettings: {
+            /** @enum {string} */
+            screensaver?: "sleep" | "dvd" | "off";
+            ui_sounds?: boolean;
+            startup_intro?: boolean;
+            /** @description Calm background motion of «Каркас» / «Матрица». */
+            calm_motion?: boolean;
+            /** @enum {string} */
+            language?: "ru" | "en" | "kk";
+            /** @description «Отправлять состояние ТВ». */
+            health_report?: boolean;
+            slow_hint?: boolean;
+            show_prebuffer?: boolean;
+            /** @description Background speed test. */
+            speedtest?: boolean;
+        };
+        TvSettingsProfile: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            avatar: string;
+            color: string;
+            /** @description The caller's own profile. */
+            own: boolean;
+        };
+        TvSettings: {
+            /** Format: uuid */
+            device_id: string;
+            device: components["schemas"]["TvDeviceSettings"];
+            /**
+             * Format: date-time
+             * @description Last change of `device`.
+             */
+            updated_at: string | null;
+            /** @description The TV's profiles the caller may edit there. */
+            profiles: components["schemas"]["TvSettingsProfile"][];
+            /**
+             * Format: uuid
+             * @description The profile the TV shows now (live state; null offline).
+             */
+            active_profile_id: string | null;
+            /**
+             * Format: uuid
+             * @description The profile `effective` / `overrides` are for (null: no profiles).
+             */
+            profile_id: string | null;
+            /** @description The profile's settings on this TV (base → the TV's layer). */
+            effective: components["schemas"]["ProfileSettings"] | null;
+            /** @description Only the keys set on this TV (the rest follow the profile). A partial ProfileSettings. */
+            overrides: components["schemas"]["ProfileSettings"] | null;
+            /** @description Settings that live per device class / per TV (look & feel, autoplay, countdown, skip); all others are per profile. */
+            layered_keys: string[];
+        };
+        TvSettingsPatch: {
+            device?: components["schemas"]["TvDeviceSettings"];
+            reset_device?: ("screensaver" | "ui_sounds" | "startup_intro" | "calm_motion" | "language" | "health_report" | "slow_hint" | "show_prebuffer" | "speedtest")[];
+            /**
+             * Format: uuid
+             * @description Required with `profile` / `reset`.
+             */
+            profile_id?: string;
+            /** @description Layered keys only (others → 422). */
+            profile?: components["schemas"]["ProfileSettings"];
+            /** @description Layered keys to remove from the TV's layer. */
+            reset?: string[];
+        };
         ProfileSettings: {
             /**
              * @description Colour mode. Only the kinozal design has a light variant; every other design is always dark.
@@ -7638,6 +7754,64 @@ export interface operations {
             422: components["responses"]["Error"];
         };
     };
+    getTvSettings: {
+        parameters: {
+            query?: {
+                /** @description Default: the profile the TV shows now, else its default profile, else the first one. Not editable by the caller → 404. */
+                profile_id?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Device id, or `me` for the calling TV. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The TV's settings. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TvSettings"];
+                };
+            };
+            404: components["responses"]["Error"];
+        };
+    };
+    updateTvSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Device id, or `me` for the calling TV. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TvSettingsPatch"];
+            };
+        };
+        responses: {
+            /** @description The TV's settings after the change. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TvSettings"];
+                };
+            };
+            400: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+            413: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
     getDeviceHealth: {
         parameters: {
             query?: never;
@@ -9357,7 +9531,17 @@ export interface operations {
     };
     getProfileSettings: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Browsers name their class (DeviceClass: desktop = «Компьютер», mobile
+                 *     = «Телефон»): GET answers base → that class's layer, PUT stores the
+                 *     layered keys (TvSettings.layered_keys: look, autoplay, skip…) in that
+                 *     layer and the rest in the profile base. A paired TV is always layered
+                 *     per its own device id (the parameter is ignored). Without it (API
+                 *     tokens, old clients) everything is the profile base. Other values → 422.
+                 */
+                device_class?: components["schemas"]["DeviceClass"];
+            };
             header?: never;
             path: {
                 id: components["parameters"]["Id"];
@@ -9380,7 +9564,17 @@ export interface operations {
     };
     putProfileSettings: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Browsers name their class (DeviceClass: desktop = «Компьютер», mobile
+                 *     = «Телефон»): GET answers base → that class's layer, PUT stores the
+                 *     layered keys (TvSettings.layered_keys: look, autoplay, skip…) in that
+                 *     layer and the rest in the profile base. A paired TV is always layered
+                 *     per its own device id (the parameter is ignored). Without it (API
+                 *     tokens, old clients) everything is the profile base. Other values → 422.
+                 */
+                device_class?: components["schemas"]["DeviceClass"];
+            };
             header?: never;
             path: {
                 id: components["parameters"]["Id"];

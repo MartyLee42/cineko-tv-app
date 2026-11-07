@@ -11,6 +11,7 @@ import { PillLayer } from "./matrix/PillDialog";
 import { HomePage } from "./pages/HomePage";
 import { PairPage } from "./pages/PairPage";
 import { DevicesPage } from "./pages/DevicesPage";
+import { TvSettingsPage } from "./devsettings/TvSettingsPage";
 import { ProfilesPage } from "./pages/ProfilesPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ListPage } from "./pages/ListPage";
@@ -97,6 +98,7 @@ export function App() {
             <Route path="person/:tmdbId" element={<PersonPage />} />
             <Route path="pair" element={<PairPage />} />
             <Route path="devices" element={<DevicesPage />} />
+            <Route path="devices/:id/settings" element={<TvSettingsPage />} />
             <Route path="remote" element={<RemoteIndex />} />
             <Route path="remote/:deviceId" element={<RemotePage />} />
             <Route path="profiles" element={<ProfilesPage />} />

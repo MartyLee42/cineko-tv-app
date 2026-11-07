@@ -86,6 +86,26 @@ func (s *Store) PlaybackFor(ctx context.Context, p *auth.Principal, deviceID str
 	return &DevicePlayback{ID: deviceID, Name: name, Prefs: decodePrefs(rawA, rawM, at)}, nil
 }
 
+// UseAccess applies the playback-profile rule (canUsePlayback) to other
+// per-TV data (settings): the TV's owner id, or ErrNotFound.
+func (s *Store) UseAccess(ctx context.Context, p *auth.Principal, deviceID string) (ownerID string, err error) {
+	var perm *string
+	err = s.q.QueryRow(ctx, `
+		SELECT d.owner_user_id, dp.permission FROM devices d
+		LEFT JOIN device_permissions dp ON dp.device_id = d.id AND dp.user_id = $2
+		WHERE d.id = $1 AND d.revoked_at IS NULL`, deviceID, p.UserID).Scan(&ownerID, &perm)
+	if db.IsNoRows(err) {
+		return "", ErrNotFound
+	}
+	if err != nil {
+		return "", err
+	}
+	if !canUsePlayback(p, deviceID, ownerID, perm) {
+		return "", ErrNotFound
+	}
+	return ownerID, nil
+}
+
 func nullJSON(v any, ok bool) ([]byte, error) {
 	if !ok {
 		return nil, nil

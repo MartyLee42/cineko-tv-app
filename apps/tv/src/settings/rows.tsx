@@ -3,16 +3,17 @@
 import { useEffect, useMemo, useState } from "react";
 import type { PlayerKind } from "@martytv/contracts";
 import { imageUrl } from "@martytv/media-types";
-import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, SURPRISE_MODES, uiSoundsPref, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
+import { LOCALE_NAMES, LOCALES, matrixPillSeen, requestPill, shouldAskPill, SURPRISE_MODES, useI18n, useUiSoundsPref, type Locale } from "@martytv/ui";
 import { useCatalogConfig, useHome } from "../catalog/queries";
 import { Loader } from "../player/Loader";
 import type { LoadStage } from "../player/loading";
 import { currentEnv, currentPlayers, defaultPlayerStore, externalHiddenInMsx } from "../players/select";
 import { DESIGNS, LOADING_STYLES, POSTER_RATINGS, THEMES, useSaveSettings, useSettings, type LoadingStyle, type Settings } from "../profile/settings";
 import { useActiveProfileId } from "../profile/active";
-import { calmMotion, useCalmMotion } from "../design/skins";
+import { useCalmMotion } from "../design/skins";
 import { introPref } from "../intro/logic";
 import { SAVER_STYLES, saverPref, type SaverStyle } from "../idle/logic";
+import { tvOwn, useTvOwnVersion } from "./tvOwn";
 import type { Choice, Row } from "./OptionList";
 import { DEFAULT_MIN_VOTES, MIN_VOTES_CHOICES, truncateNote } from "./taste";
 
@@ -28,14 +29,16 @@ const LOADING_LABEL = {
 } as const;
 
 export function useSettingRows() {
-  const { t, locale, setLocale } = useI18n();
+  const { t, locale } = useI18n();
   const settings = useSettings();
   const profileId = useActiveProfileId();
   const save = useSaveSettings();
   const [player, setPlayer] = useState(() => defaultPlayerStore.get());
   const calm = useCalmMotion();
-  const [intro, setIntro] = useState(() => introPref.get());
-  const [saver, setSaver] = useState(() => saverPref.get());
+  // This TV's own options (tvOwn.ts): saved on the server too, a phone may change them.
+  useTvOwnVersion();
+  const intro = introPref.get();
+  const saver = saverPref.get();
   const sounds = useUiSoundsPref();
   const available = useMemo(() => currentPlayers(), []);
 
@@ -100,7 +103,7 @@ export function useSettingRows() {
         { value: true, label: t("designs.motion.calm") },
       ],
       value: calm,
-      onChange: (v) => calmMotion.set(v as boolean),
+      onChange: (v) => tvOwn.set("calm_motion", v as boolean),
     } as Row,
     // This TV's startup animation (device-local, intro/logic.ts).
     intro: {
@@ -110,10 +113,7 @@ export function useSettingRows() {
       hint: t("designs.intro_hint"),
       choices: onOff,
       value: intro,
-      onChange: (v) => {
-        introPref.set(v === true);
-        setIntro(v === true);
-      },
+      onChange: (v) => tvOwn.set("startup_intro", v === true),
     } as Row,
     // This TV's screensaver on idle Home (device-local, idle/logic.ts).
     saver: {
@@ -123,10 +123,7 @@ export function useSettingRows() {
       hint: t("idle.saver_hint"),
       choices: SAVER_STYLES.map((v) => ({ value: v, label: t(`idle.saver.${v}`) })),
       value: saver,
-      onChange: (v) => {
-        saverPref.set(v as SaverStyle);
-        setSaver(v as SaverStyle);
-      },
+      onChange: (v) => tvOwn.set("screensaver", v as SaverStyle),
     } as Row,
     // «Звуки интерфейса»: this TV's tick / click (device-local, @martytv/ui uiSounds).
     sounds: {
@@ -136,7 +133,7 @@ export function useSettingRows() {
       hint: t("sounds.setting_hint"),
       choices: onOff,
       value: sounds,
-      onChange: (v) => uiSoundsPref.set(v === true),
+      onChange: (v) => tvOwn.set("ui_sounds", v === true),
     } as Row,
     theme: {
       kind: "choice",
@@ -220,7 +217,7 @@ export function useSettingRows() {
       label: t("settings.language"),
       choices: LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] })),
       value: locale,
-      onChange: (v) => setLocale(v as Locale),
+      onChange: (v) => tvOwn.set("language", v as Locale),
     } as Row,
   };
   /** «О моих вкусах»: OK opens the keyboard editor (onOpen). */

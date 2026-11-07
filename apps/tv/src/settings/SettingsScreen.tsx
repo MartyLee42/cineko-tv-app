@@ -15,7 +15,8 @@ import { SEASON_PREVIEW_ROW, SeasonPreviewPanel, useSeasonRows } from "./seasonR
 import { useDevicePlaybackRows } from "./deviceRows";
 import { useCozyRows } from "./cozyRows";
 import { useFamilyRows } from "./familyRows";
-import { healthPref, useHealthPref } from "../health/agent";
+import { useHealthPref } from "../health/agent";
+import { tvOwn } from "./tvOwn";
 
 /**
  * Settings (side menu): the profile's settings (saved on the server, applied
@@ -42,7 +43,7 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
   // «Отправлять состояние ТВ» (this TV only, on by default).
   const healthOn = useHealthPref();
   const rows: Row[] = [
-    { kind: "header", key: "h-profile", label: t("settings.profile_section", { name: profile.name }), hint: t("tv.settings.profile_hint") },
+    { kind: "header", key: "h-profile", label: t("settings.profile_section", { name: profile.name }), hint: t("devset.tv.profile_hint") },
     r.design,
     r.surprise,
     ...(settings.design_surprise !== "off" ? [favorites(() => setPickingFavs(true))] : []),
@@ -89,7 +90,7 @@ export function SettingsScreen({ profile, onClose }: { profile: Profile; onClose
         { value: false, label: t("tvplay.off") },
       ],
       value: healthOn,
-      onChange: (v: unknown) => healthPref.set(v === true),
+      onChange: (v: unknown) => tvOwn.set("health_report", v === true),
     } as Row,
     { kind: "actions", key: "device-info", actions: [{ key: "about", label: t("tvd.info.title"), onPress: () => setInfo(true) }] },
     { kind: "note", key: "note", label: `${t("settings.coming_soon")} ${t("settings.privacy_note")}` },

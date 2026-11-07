@@ -23,6 +23,7 @@ import {
   type MessageKey,
   type ThemeSetting,
   SURPRISE_MODES,
+  DEVICE_CLASSES,
   useEffectiveDesign,
   type SurpriseMode,
 } from "@martytv/ui";
@@ -41,6 +42,7 @@ import { VideoQualityRow } from "../video/VideoSettings";
 import { LOADING_STYLES, supportsLight, THEMES, type LoadingStyle, type Settings } from "../watch/settings";
 import { SeasonalSetting } from "../seasons/SeasonalSetting";
 import { ThisDeviceCard } from "../devprefs/ui";
+import { deviceClass, useDeviceClass } from "../devsettings/deviceClass";
 
 export function SettingsPage() {
   const { t } = useI18n();
@@ -142,6 +144,7 @@ function GuideCard() {
 
 function ProfileSettingsCard() {
   const { t } = useI18n();
+  const cls = useDeviceClass();
   const { profile, profiles, switchTo } = useActiveProfile();
   const q = useProfileSettings();
   const save = useUpdateSettings();
@@ -172,7 +175,9 @@ function ProfileSettingsCard() {
         <ProfileAvatar name={profile.name} color={profile.color} avatar={profile.avatar} size={44} className="!rounded-full" />
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-lg font-bold">{t("settings.profile_section", { name: profile.name })}</h2>
-          <p className="text-xs text-muted">{t("settings.profile_hint")}</p>
+          <p className="text-xs text-muted" data-testid="settings-class-hint">
+            {t(cls === "mobile" ? "devset.web.profile_hint_mobile" : "devset.web.profile_hint_desktop")}
+          </p>
         </div>
         <span
           aria-live="polite"
@@ -637,7 +642,7 @@ function UiSoundsSetting() {
   );
 }
 
-function CozySetting({ settings, onChange }: { settings: Settings; onChange: (p: Partial<Settings>) => void }) {
+export function CozySetting({ settings, onChange }: { settings: Settings; onChange: (p: Partial<Settings>) => void }) {
   const { t } = useI18n();
   const on = settings.cozy_mode ?? false;
   const ambience = settings.cozy_ambience ?? "fireplace";
@@ -814,11 +819,37 @@ function LibraryCard({ isAdmin }: { isAdmin: boolean }) {
 
 function DeviceCard() {
   const { t, locale, setLocale } = useI18n();
+  const cls = useDeviceClass();
   return (
     <Card className="space-y-4">
       <div>
         <h2 className="text-lg font-bold">{t("settings.device_section")}</h2>
         <p className="text-xs text-muted">{t("settings.device_hint")}</p>
+      </div>
+      {/* «Компьютер» / «Телефон»: which layer of the profile's look this browser uses. */}
+      <div>
+        <p className="mb-2 text-sm text-muted">{t("devset.class.label")}</p>
+        <div role="radiogroup" aria-label={t("devset.class.label")} className="grid grid-cols-2 gap-2 sm:w-96" data-testid="device-class">
+          {DEVICE_CLASSES.map((c) => (
+            <button
+              key={c}
+              type="button"
+              role="radio"
+              aria-checked={cls === c}
+              data-value={c}
+              onClick={() => deviceClass.set(c)}
+              className={`flex min-h-[44px] items-center justify-center rounded-xl border px-3 text-sm font-semibold transition ${
+                cls === c ? "border-accent bg-accent/10 text-text" : "border-border text-text/80 hover:border-muted"
+              }`}
+            >
+              {t(`devset.class.${c}`)}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted">{t("devset.class.hint")}</p>
+        <Link to="/devices" data-testid="settings-tvs-link" className="mt-1 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-accent">
+          <TvIcon /> {t("devset.tvs_link")} <ChevronRight />
+        </Link>
       </div>
       <Field label={t("settings.language")}>
         <Select value={locale} onChange={(e) => setLocale(e.target.value as Locale)} className="sm:w-72" data-testid="language-select">

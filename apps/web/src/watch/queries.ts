@@ -21,20 +21,24 @@ import { api } from "../api";
 import { useCatalogLang } from "../catalog/queries";
 import { useActiveProfile } from "./ActiveProfile";
 import { affectsCatalog, affectsForYou, mergeSettings, setLook, type Settings, type SettingsPatch } from "./settings";
+import { deviceClass, useDeviceClass } from "../devsettings/deviceClass";
+import type { DeviceClass } from "@martytv/ui";
 import { applyWatchedLocally } from "./format";
 
 export type ListName = "watchlist" | "favorites";
 
-export const settingsKey = (profileId: string | undefined) => ["profile-settings", profileId] as const;
+/** Per profile and settings class (the look differs on a phone and a computer). */
+export const settingsKey = (profileId: string | undefined, cls: DeviceClass = deviceClass.get()) => ["profile-settings", profileId, cls] as const;
 export const progressKey = (mediaId: string, profileId: string | undefined) => ["progress", mediaId, profileId] as const;
 
 // ---------------------------------------------------------------- settings
 
 export function useProfileSettings() {
   const { profileId } = useActiveProfile();
+  const cls = useDeviceClass();
   return useQuery({
-    queryKey: settingsKey(profileId),
-    queryFn: async () => mergeSettings(await unwrap(api.GET("/profiles/{id}/settings", { params: { path: { id: profileId! } } }))),
+    queryKey: settingsKey(profileId, cls),
+    queryFn: async () => mergeSettings(await unwrap(api.GET("/profiles/{id}/settings", { params: { path: { id: profileId! }, query: { device_class: cls } } }))),
     enabled: !!profileId,
     staleTime: 60_000,
   });
@@ -65,11 +69,13 @@ export function useSettings(): Settings {
 export function useUpdateSettings() {
   const qc = useQueryClient();
   const { profileId } = useActiveProfile();
-  const key = settingsKey(profileId);
+  const cls = useDeviceClass();
+  const key = settingsKey(profileId, cls);
   return useMutation({
     mutationFn: (patch: SettingsPatch) =>
-      // Partial updates are allowed (omitted fields keep their value).
-      unwrap(api.PUT("/profiles/{id}/settings", { params: { path: { id: profileId! } }, body: patch as ProfileSettings })),
+      // Partial updates are allowed (omitted fields keep their value); the
+      // look / playback keys go to this class's layer.
+      unwrap(api.PUT("/profiles/{id}/settings", { params: { path: { id: profileId! }, query: { device_class: cls } }, body: patch as ProfileSettings })),
     onMutate: async (patch) => {
       await qc.cancelQueries({ queryKey: key });
       const prev = qc.getQueryData<Settings>(key);
