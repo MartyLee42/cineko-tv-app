@@ -1700,6 +1700,60 @@ a.menu-item {
   letter-spacing: 0.04em;
   opacity: 0.7;
 }
+/* Sources dialog: one tab per provider (counts, the current source dotted). */
+.src-tabs {
+  margin: 10px 0 6px;
+  position: sticky;
+  top: -20px;
+  z-index: 1;
+  padding: 6px 0;
+  background: inherit; /* the modal background, in every design */
+}
+.src-tabs {
+  gap: 6px;
+}
+/* Four tabs fit a phone (beats the designs' own chip padding). */
+.modal .src-tabs .chip {
+  gap: 5px;
+  padding: 6px 10px;
+}
+.src-tabs .spinner.inline {
+  margin-left: 0;
+}
+.src-count {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+}
+.src-err {
+  font-weight: 800;
+  color: var(--danger, #e5484d);
+}
+.src-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+.src-tabs .chip.on .src-dot {
+  background: currentColor;
+}
+.src-tabs .spinner.inline {
+  width: 11px;
+  height: 11px;
+}
+.src-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.src-head .link {
+  text-transform: none;
+  letter-spacing: 0;
+}
 .cand-list {
   display: flex;
   flex-direction: column;

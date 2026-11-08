@@ -37,6 +37,23 @@ lyrics; "wrong recording?" picker per track (shared by everyone); per-album
 "always play from this torrent"; lock-screen / headphone controls (Media
 Session); installable on phones (manifest).
 
+**Source picker** (track menu → «Не та запись? Выбрать источник», the same in
+every list): tabs Все / Zaycev / YouTube / Торренты. `GET
+/music/api/sources/{youtube|zaycev}?id=&artist=&title=&duration=&album=` →
+`{current, saved, torrent?, items}` (one request per tab, loaded in
+parallel; the trackers are searched when their tab opens). Works for catalog
+(`dz:`), imported / AI (`yq:`) and plain upload tracks; `PUT
+/music/api/sources/match {trackId, artist, title, value}` stores the choice
+for `dz:` / `yq:` tracks (and drops an "always from this torrent" choice);
+other tracks just play the chosen upload.
+
+**Screen off while a track is still resolving**: the player plays a looped
+near-silent clip on its audio element while it waits on `GET
+/music/api/resolve/{id}` (catalog) or `/music/api/resolveq?…` (`yq:`), then
+switches the same element to the stream — a hidden page that is already
+playing may keep playing, while mobile browsers don't start one. The next
+tracks are resolved ahead the same way (`src/playback.ts`).
+
 ## AI playlists (`/music/ai`)
 
 `POST /music/api/ai/playlist` `{prompt, avoid?, taste?, fresh?, creativity?}`

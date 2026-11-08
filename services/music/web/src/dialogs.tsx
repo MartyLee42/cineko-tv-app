@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { api, dzId, fmtSize, fmtTime, type Album, type Candidate, type Release, type ZvCandidate, type TorrentInfo, type TorrentTrack, type Track } from "./api";
+import { api, fmtSize, fmtTime, type Album, type Release, type TorrentInfo, type TorrentTrack, type Track } from "./api";
 import { CloseIcon, MagnetIcon, PlayIcon } from "./icons";
 import { useLibrary } from "./library";
 import { usePlayer } from "./player";
@@ -49,7 +49,7 @@ function ModalFrame({ close, render }: { close: () => void; render: Render }) {
   );
 }
 
-function ModalHead({ title, close }: { title: string; close: () => void }) {
+export function ModalHead({ title, close }: { title: string; close: () => void }) {
   return (
     <div className="modal-head">
       <h3>{title}</h3>
@@ -182,109 +182,6 @@ export function openConfirm(text: string, okLabel: string, onOk: () => void | Pr
   ));
 }
 
-// ---------------------------------------------------------------- YouTube match
-
-export function openMatchPicker(t: Track) {
-  openModal((close) => <MatchDialog track={t} close={close} />);
-}
-
-function MatchDialog({ track, close }: { track: Track; close: () => void }) {
-  const id = dzId(track)!;
-  const player = usePlayer();
-  const q = useQuery({
-    queryKey: ["candidates", id],
-    queryFn: () => api.get<{ current: string; candidates: Candidate[]; zaycev?: ZvCandidate[] }>(`/track/${id}/candidates`),
-  });
-  const [preview, setPreview] = useState<string | null>(null);
-  useEffect(() => {
-    if (!preview) return;
-    const a = new Audio(preview.startsWith("zv:") ? `/music/api/zv/${preview.slice(3)}` : `/music/api/yt/${preview}?preview=1`);
-    const wasPlaying = player.playing;
-    if (wasPlaying) player.pause();
-    a.play().catch(() => toast("Не удалось воспроизвести"));
-    return () => {
-      a.pause();
-      a.src = "";
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preview]);
-  const choose = async (vid: string) => {
-    try {
-      await api.put(`/track/${id}/match`, { videoId: vid });
-      toast("Запись заменена");
-      setPreview(null);
-      close();
-      if (player.current?.id === track.id) player.reloadCurrent();
-    } catch (e) {
-      toast((e as Error).message);
-    }
-  };
-  return (
-    <>
-      <ModalHead title="Выберите запись" close={close} />
-      <p className="muted small">
-        {track.artist} — {track.title} · {fmtTime(track.duration)}. Звук берётся с YouTube или Zaycev.net; если попалась не та версия (концерт, кавер), выберите другую.
-      </p>
-      {q.isLoading && <p className="muted">Ищем…</p>}
-      {q.error && <p className="error-text">{(q.error as Error).message}</p>}
-      {q.data && (q.data.zaycev?.length ?? 0) > 0 && (
-        <>
-          <h4 className="cand-head">Zaycev.net · студийные MP3</h4>
-          <div className="cand-list">
-            {q.data.zaycev!.map((c) => (
-              <CandRow key={c.id} id={c.id} title={c.title} sub={`${c.artist}${c.bitrate ? ` · ${c.bitrate} кбит/с` : ""}`}
-                duration={c.duration} track={track} current={q.data.current === c.id} previewing={preview === c.id}
-                onPreview={() => setPreview(preview === c.id ? null : c.id)} onChoose={() => void choose(c.id)} />
-            ))}
-          </div>
-        </>
-      )}
-      {q.data && q.data.candidates.length > 0 && <h4 className="cand-head">YouTube</h4>}
-      <div className="cand-list">
-        {q.data?.candidates.map((c) => (
-          <CandRow key={c.videoId} id={c.videoId} title={c.title} sub={c.author} duration={c.duration} track={track}
-            current={q.data.current === c.videoId} previewing={preview === c.videoId}
-            onPreview={() => setPreview(preview === c.videoId ? null : c.videoId)} onChoose={() => void choose(c.videoId)} />
-        ))}
-      </div>
-    </>
-  );
-}
-
-function CandRow(p: {
-  id: string;
-  title: string;
-  sub: string;
-  duration: number;
-  track: Track;
-  current: boolean;
-  previewing: boolean;
-  onPreview: () => void;
-  onChoose: () => void;
-}) {
-  return (
-    <div className={`cand ${p.current ? "current" : ""}`}>
-      <button className="icon-btn" title="Прослушать" onClick={p.onPreview}>
-        {p.previewing ? "■" : <PlayIcon size={16} />}
-      </button>
-      <div className="cand-text">
-        <div className="cand-title">{p.title}</div>
-        <div className="muted small">
-          {p.sub} · {fmtTime(p.duration)}
-          {Math.abs(p.duration - p.track.duration) > 10 && <span className="warn"> · длина отличается</span>}
-        </div>
-      </div>
-      {p.current ? (
-        <span className="chip">Сейчас</span>
-      ) : (
-        <button className="btn small" onClick={p.onChoose}>
-          Выбрать
-        </button>
-      )}
-    </div>
-  );
-}
-
 // ---------------------------------------------------------------- torrents
 
 const SRC_KEY = (albumId: number) => `mm.albumSrc.${albumId}`;
@@ -325,17 +222,22 @@ function TorrentDialog({ album, close }: { album: Album; close: () => void }) {
   );
 }
 
-export function ReleasePicker({ artist, album, text, onOpened }: { artist?: string; album?: string; text?: string; onOpened: (hash: string) => void }) {
+/** The tracker search (shared by the pickers and the sources dialog's tab count). */
+export function releaseSearch({ artist, album, text }: { artist?: string; album?: string; text?: string }) {
   const params = new URLSearchParams();
   if (text) params.set("q", text);
   if (artist) params.set("artist", artist);
   if (album) params.set("album", album);
-  const q = useQuery({
+  return {
     queryKey: ["releases", params.toString()],
     queryFn: () => api.get<Release[]>(`/torrents/search?${params}`),
     staleTime: 10 * 60_000,
     retry: false,
-  });
+  };
+}
+
+export function ReleasePicker({ artist, album, text, onOpened }: { artist?: string; album?: string; text?: string; onOpened: (hash: string) => void }) {
+  const q = useQuery(releaseSearch({ artist, album, text }));
   const [opening, setOpening] = useState<string | null>(null);
   const [fmt, setFmt] = useState<"all" | "lossless" | "mp3">("all");
   const open = async (r: Release) => {
@@ -606,11 +508,7 @@ function Swatch({ d }: { d: (typeof DESIGNS)[number] }) {
   );
 }
 
-// ---------------------------------------------------------------- one track from torrents
-
-export function openTrackTorrent(t: Track) {
-  openModal((close) => <TrackTorrentDialog track={t} close={close} />);
-}
+// ---------------------------------------------------------------- one track from torrents (sources dialog)
 
 const normT = (s: string) =>
   s
@@ -620,29 +518,9 @@ const normT = (s: string) =>
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
 
-function TrackTorrentDialog({ track, close }: { track: Track; close: () => void }) {
-  const [hash, setHash] = useState<string | null>(null);
-  const artist = track.artist.split(",")[0]!.trim();
-  return (
-    <>
-      <ModalHead title={`«${track.title}» из торрентов`} close={close} />
-      <p className="muted small">
-        {artist} — {track.title}
-        {track.album ? ` · альбом «${track.album}»` : ""}. Найдите раздачу (MP3 или FLAC) и выберите нужный файл — например, студийную версию вместо концертной.
-      </p>
-      {hash ? (
-        <TrackFilePicker track={track} hash={hash} onBack={() => setHash(null)} close={close} />
-      ) : track.album ? (
-        <ReleasePicker artist={artist} album={track.album} onOpened={setHash} />
-      ) : (
-        <ReleasePicker text={`${artist} ${track.title}`} onOpened={setHash} />
-      )}
-    </>
-  );
-}
-
-function TrackFilePicker({ track, hash, onBack, close }: { track: Track; hash: string; onBack: () => void; close: () => void }) {
+export function TrackFilePicker({ track, hash, onBack, close }: { track: Track; hash: string; onBack: () => void; close: () => void }) {
   const player = usePlayer();
+  const qc = useQueryClient();
   const [always, setAlways] = useState(true);
   const q = useQuery({
     queryKey: ["torrent", hash, 0],
@@ -667,6 +545,7 @@ function TrackFilePicker({ track, hash, onBack, close }: { track: Track; hash: s
       try {
         await api.put("/torrentchoice", { trackId: track.id, src: f.src });
         toast("Теперь этот трек играет из раздачи");
+        void qc.invalidateQueries({ queryKey: ["sources"] });
       } catch (e) {
         toast((e as Error).message);
         return;

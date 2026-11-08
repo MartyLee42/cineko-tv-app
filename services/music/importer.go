@@ -173,6 +173,17 @@ func (a *App) hYTQuery(w http.ResponseWriter, r *http.Request, u *User) error {
 		}
 		_ = a.st.SetMatch(r.Context(), id, v, false)
 	}
+	// A zaycev upload chosen in the sources dialog.
+	if zid, ok := zvMatch(v); ok {
+		if _, err := a.zv.PlayURL(r.Context(), zid, false); err != nil {
+			memo.markBad(id, v)
+			return a.playFallback(w, r, t, err)
+		}
+		memo.setServed(id, v)
+		w.Header().Set("Cache-Control", "no-store")
+		http.Redirect(w, r, "/music/api/zv/"+strconv.FormatInt(zid, 10), http.StatusFound)
+		return nil
+	}
 	memo.setServed(id, v)
 	if a.serveCached(w, r, v) {
 		return nil
