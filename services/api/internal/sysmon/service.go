@@ -219,6 +219,16 @@ func (s *Service) Status(ctx context.Context) SystemStatus {
 	return out
 }
 
+// Disks lists the filesystems only (hostmon, else the container's own):
+// cheap enough for the alerts monitor's once-a-minute check.
+func (s *Service) Disks(ctx context.Context) []Disk {
+	var st HostStatus
+	if err := s.hostmon(ctx, "/v1/status", &st); err != nil {
+		return s.local.Collect(false).Disks
+	}
+	return st.Disks
+}
+
 // sameDisk guesses whether d is a filesystem already listed (statfs ids
 // differ between the host and the container, sizes don't).
 func sameDisk(list []Disk, d Disk) bool {

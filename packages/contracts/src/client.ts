@@ -31,6 +31,10 @@ export type WatchProgress = Schemas["WatchProgress"];
 export type MediaProgress = Schemas["MediaProgress"];
 export type ContinueItem = Schemas["ContinueItem"];
 export type HistoryItem = Schemas["HistoryItem"];
+export type TicketStub = Schemas["TicketStub"];
+export type TicketPage = Schemas["TicketPage"];
+export type Achievement = Schemas["Achievement"];
+export type AchievementList = Schemas["AchievementList"];
 export type NextUp = Schemas["NextUp"];
 export type ActivityItem = Schemas["ActivityItem"];
 export type AdminHistoryItem = Schemas["AdminHistoryItem"];
@@ -99,7 +103,12 @@ export interface ApiOptions {
   getBearer?: () => string | undefined;
   /** Called on 401 so the app can return to login/pairing (with the rejected request). */
   onUnauthorized?: (request: Request) => void;
+  /** The language the app shows (en | ru | kk): sent as X-Cineko-Language so AI text matches it. */
+  getLanguage?: () => string | undefined;
 }
+
+/** Header with the app's interface language (the server writes AI text in it). */
+export const LANGUAGE_HEADER = "X-Cineko-Language";
 
 const UNSAFE = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
@@ -117,6 +126,10 @@ export function createApi(opts: ApiOptions = {}) {
       const csrf = opts.getCsrfToken?.();
       if (csrf && UNSAFE.has(request.method)) {
         request.headers.set("X-CSRF-Token", csrf);
+      }
+      const lang = opts.getLanguage?.();
+      if (lang && !request.headers.has(LANGUAGE_HEADER)) {
+        request.headers.set(LANGUAGE_HEADER, lang);
       }
       return request;
     },

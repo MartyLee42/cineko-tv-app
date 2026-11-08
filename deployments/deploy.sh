@@ -171,8 +171,12 @@ remote "set -e; cd /opt/martytv; umask 077
   [ -n \"\$ivh\" ] || ivh=\$(head -c 48 /dev/urandom | base64 | tr -d '\n/+=')
   ivc=\$(grep -m1 '^INVIDIOUS_COMPANION_KEY=' .env | cut -d= -f2- || true)
   printf '%s' \"\$ivc\" | grep -qE '^[A-Za-z0-9]{16}\$' || ivc=\$(head -c 96 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 16)
+  # Outage alerts: the watchdog / image updater authenticate with it.
+  alt=\$(grep -m1 '^ALERT_TOKEN=' .env | cut -d= -f2- || true)
+  [ -n \"\$alt\" ] || alt=\$(head -c 48 /dev/urandom | base64 | tr -d '\n/+=')
   { cat .env.settings; echo; echo APP_SESSION_SECRET=\$sess; echo POSTGRES_PASSWORD=\$pg; echo TRANSCODER_SECRET=\$tc;
-    echo INVIDIOUS_DB_PASSWORD=\$ivdb; echo INVIDIOUS_HMAC_KEY=\$ivh; echo INVIDIOUS_COMPANION_KEY=\$ivc; echo MARTYTV_VERSION=$VERSION; } > .env.new
+    echo INVIDIOUS_DB_PASSWORD=\$ivdb; echo INVIDIOUS_HMAC_KEY=\$ivh; echo INVIDIOUS_COMPANION_KEY=\$ivc; echo ALERT_TOKEN=\$alt;
+    echo MARTYTV_VERSION=$VERSION; } > .env.new
   mv .env.new .env; rm -f .env.settings; chmod 600 .env
   mv compose.yaml.new compose.yaml
   # Newer Invidious / companion the updater already moved to: never downgrade.

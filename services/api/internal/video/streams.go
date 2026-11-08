@@ -57,7 +57,10 @@ func (s *Service) VideoResume(ctx context.Context, profileID, videoID string) fl
 func (s *Service) VideoHTTP() *http.Client     { return s.client.HTTP() }
 func (s *Service) VideoOrigin(u *url.URL) bool { return s.client.SameOrigin(u) }
 
-var codecsRe = regexp.MustCompile(`codecs="([^"]+)"`)
+var (
+	codecsRe = regexp.MustCompile(`codecs="([^"]+)"`)
+	langTag  = regexp.MustCompile(`^[a-z]{2,3}(-[a-z0-9]{2,8})?$`)
+)
 
 func mimeAndCodecs(t string) (string, string) {
 	mime := strings.TrimSpace(strings.SplitN(t, ";", 2)[0])
@@ -124,6 +127,11 @@ func (s *Service) toStreams(v *ivVideo) *playback.VideoStreams {
 		case mime == "video/mp4" && strings.HasPrefix(codecs, "avc1") && h > 0:
 			out.Video = append(out.Video, t)
 		case mime == "audio/mp4" && strings.HasPrefix(codecs, "mp4a"):
+			lang, original, _ := audioTag(f.URL)
+			if !langTag.MatchString(lang) {
+				lang = "" // it names stream files (a140.ru.m3u8)
+			}
+			t.Lang, t.Original = lang, original
 			out.Audio = append(out.Audio, t)
 		}
 	}

@@ -97,6 +97,9 @@ export function HistoryPage() {
           {profile && <p className="mt-0.5 text-sm text-muted">{profile.name}</p>}
         </div>
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 text-sm font-semibold sm:mx-0 sm:px-0">
+          <Link to="/tickets" data-testid="history-tickets" className="flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-xl bg-accent/15 px-3.5 text-text hover:bg-accent/25">
+            🎟 {t("keepsakes.tickets")}
+          </Link>
           <Link to="/diary" data-testid="history-diary" className="flex min-h-[40px] shrink-0 items-center gap-1.5 rounded-xl bg-accent/15 px-3.5 text-text hover:bg-accent/25">
             📅 {t("nav.diary")}
           </Link>

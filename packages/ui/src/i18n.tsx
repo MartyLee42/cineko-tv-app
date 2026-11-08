@@ -1,9 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAppliedDesign } from "./designs";
-import { detectLocale, LOCALE_KEY as STORAGE_KEY, readStoredLocale as readStored, type Locale } from "./localeDetect";
+import { detectLocale, startLocale, type Locale } from "./localeDetect";
+import { browserStore, createLocaleChoice } from "./localeChoice";
 import { reportChunkFailure } from "./chunkReload";
 
 export { detectLocale, type Locale };
+export { asLocale, resolveLocale } from "./localeDetect";
 
 export type MessageKey = keyof typeof import("./locales/all.en").messagesEn;
 
@@ -109,23 +111,43 @@ type TFn = (key: MessageKey, vars?: Record<string, string | number>) => string;
 
 interface I18nValue {
   locale: Locale;
+  /** An explicit pick on this device (wins over the profile's language). */
   setLocale: (l: Locale) => void;
+  /** The active profile's ui_language arrived ("" / null: not chosen): applied unless this device chose. */
+  setProfileLocale: (l: string | null | undefined) => void;
+  /** Forget this device's pick: follow the profile's language (else the browser's). */
+  clearDeviceLocale: () => void;
+  /** This device's own pick, null when it follows the profile / browser. */
+  deviceLocale: Locale | null;
+  /** The profile's language as last seen here (null: not chosen). */
+  profileLocale: Locale | null;
   t: TFn;
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
 
-
-/** The language this browser starts in (stored choice, else the browser's). Entry points preload it. */
+/**
+ * The language this device starts in: its own pick, else the profile's
+ * (cached from the last session), else the browser's. Entry points preload it.
+ */
 export function initialLocale(): Locale {
-  return detectLocale(readStored());
+  return startLocale();
+}
+
+let shown: Locale | null = null;
+/** The language on screen now (for the API's X-Cineko-Language header). */
+export function currentLocale(): Locale {
+  return (shown ??= initialLocale());
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
+  const choice = useMemo(() => createLocaleChoice(browserStore()), []);
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  const [inputs, setInputs] = useState(() => ({ device: choice.device(), profile: choice.profile() }));
   // Bumped when a language's strings arrive (normally they're loaded before the first render).
   const [loaded, setLoaded] = useState(0);
   useEffect(() => {
+    shown = locale;
     if (localeLoaded(locale)) return;
     let live = true;
     loadLocale(locale).then(
@@ -136,26 +158,41 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       live = false;
     };
   }, [locale]);
-  const setLocale = useCallback((l: Locale) => {
-    const apply = () => {
-      setLocaleState(l);
-      try {
-        localStorage.setItem(STORAGE_KEY, l);
-      } catch {
-        // storage unavailable (private mode); keep in memory only
-      }
-      document.documentElement.lang = l;
-    };
-    // Switch once the other language's strings are here (no flash of keys).
-    if (localeLoaded(l)) apply();
-    else loadLocale(l).then(apply, () => undefined);
-  }, []);
+  // The latest requested language: a slower earlier load never overrides it.
+  const want = useRef<Locale>(locale);
+  const show = useCallback(
+    (l: Locale) => {
+      want.current = l;
+      setInputs({ device: choice.device(), profile: choice.profile() });
+      const apply = () => {
+        if (want.current !== l) return;
+        shown = l;
+        setLocaleState(l);
+        document.documentElement.lang = l;
+      };
+      // Switch once the other language's strings are here (no flash of keys).
+      if (localeLoaded(l)) apply();
+      else loadLocale(l).then(apply, () => undefined);
+    },
+    [choice],
+  );
+  const setLocale = useCallback((l: Locale) => show(choice.chooseHere(l)), [choice, show]);
+  const setProfileLocale = useCallback((l: string | null | undefined) => show(choice.setProfile(l)), [choice, show]);
+  const clearDeviceLocale = useCallback(() => show(choice.clearHere()), [choice, show]);
   // «Конструктивизм» renames a few strings (the AI is «Товарищ ЭВМ»).
   const cv = useAppliedDesign() === "constructivism";
   const value = useMemo<I18nValue>(
-    () => ({ locale, setLocale, t: cv ? (key, vars) => translateCv(locale, key, vars) : (key, vars) => translate(locale, key, vars) }),
+    () => ({
+      locale,
+      setLocale,
+      setProfileLocale,
+      clearDeviceLocale,
+      deviceLocale: inputs.device,
+      profileLocale: inputs.profile,
+      t: cv ? (key, vars) => translateCv(locale, key, vars) : (key, vars) => translate(locale, key, vars),
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `loaded`: new strings arrived
-    [locale, setLocale, cv, loaded],
+    [locale, setLocale, setProfileLocale, clearDeviceLocale, inputs, cv, loaded],
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

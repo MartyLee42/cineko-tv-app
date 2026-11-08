@@ -15,6 +15,9 @@
 # helps. It is restarted — `docker restart awg-socks`, nothing else, never its
 # config — when, 3 checks in a row (~6 min): YouTube AND TMDB both fail through
 # the proxy while the host's own internet works. At most once per hour.
+#
+# Alerts: what is still broken after a restart (or can't be restarted) is
+# reported to the API (report below), which tells the admins.
 set -u
 STATE=${STATE_DIRECTORY:-/var/lib/martytv-video-watchdog}
 PROXY=socks5h://127.0.0.1:10809
@@ -27,12 +30,31 @@ VPN_FAILS_TO_ACT=3
 now=$(date +%s)
 log() { echo "$*"; }
 
+# Outage alerts (docs/deployment.md "Outage alerts"): tell the API what we see
+# and do; admins get a Cineko message / Web Push. The API isn't published on
+# the host, so the request goes from the web container (busybox wget) to
+# api:8080; the token (ALERT_TOKEN in .env) travels on stdin, not in argv.
+# Never fails the script: no token, no web container or API down = no report.
+# report KIND STATE [CAUSE] [ACTION]
+ALERT_ENV=${MARTYTV_DIR:-/opt/martytv}/.env
+ALERT_WEB=${MARTYTV_WEB:-martytv-web-1}
+report() {
+  tok=$(grep -m1 '^ALERT_TOKEN=' "$ALERT_ENV" 2>/dev/null | cut -d= -f2-)
+  [ -n "$tok" ] || return 0
+  body=$(printf '{"kind":"%s","state":"%s","cause":"%s","action":"%s"}' "$1" "$2" "${3:-}" "${4:-}")
+  # shellcheck disable=SC2016 # $t / $1 expand inside the container's shell
+  printf '%s\n' "$tok" | timeout 20 docker exec -i "$ALERT_WEB" sh -c 'read -r t; wget -qO- -T 10 --header "Authorization: Bearer $t" --header "Content-Type: application/json" --post-data "$1" http://api:8080/internal/incident' sh "$body" >/dev/null 2>&1 || true
+}
+# alert_state KIND down|up [CAUSE]: reported every run (the API ignores
+# repeats; "up" also closes what the image updater reported).
+alert_state() { report "$1" "$2" "${3:-}"; }
+
 # 0. VPN self-heal (see header). Any HTTP answer counts (TMDB says 401 without a key).
 via_vpn() { c=$(curl -s -o /dev/null -w '%{http_code}' -m 12 -x "$PROXY" "$1" 2>/dev/null); [ -n "$c" ] && [ "$c" != 000 ]; }
 vpn_check() {
   docker inspect -f '{{.State.Running}}' "$VPN" 2>/dev/null | grep -q true || return 0 # not running: someone stopped it on purpose
   if via_vpn https://www.youtube.com/generate_204 || via_vpn https://api.themoviedb.org/3/configuration; then
-    echo 0 > "$STATE/vpn.fails"; return 0
+    echo 0 > "$STATE/vpn.fails"; alert_state vpn up; return 0
   fi
   # The host's own internet down? Restarting the VPN won't help.
   if ! curl -s -o /dev/null -m 10 https://1.1.1.1/ && ! curl -s -o /dev/null -m 10 https://www.google.com/generate_204; then
@@ -42,9 +64,14 @@ vpn_check() {
   echo "$vf" > "$STATE/vpn.fails"
   vlast=$(cat "$STATE/vpn.restarted" 2>/dev/null || echo 0)
   if [ "$vf" -lt "$VPN_FAILS_TO_ACT" ]; then log "vpn: YouTube and TMDB fail through the proxy ($vf/$VPN_FAILS_TO_ACT)"; return 1; fi
-  if [ $(( now - vlast )) -lt "$VPN_COOLDOWN" ]; then log "vpn: still failing; restarted $(( now - vlast ))s ago, waiting"; return 1; fi
+  if [ $(( now - vlast )) -lt "$VPN_COOLDOWN" ]; then
+    log "vpn: still failing; restarted $(( now - vlast ))s ago, waiting"
+    alert_state vpn down; return 1
+  fi
   log "vpn: down for $vf checks with the host online: restarting $VPN"
-  docker restart "$VPN" >/dev/null && echo "$now" > "$STATE/vpn.restarted" && echo 0 > "$STATE/vpn.fails"
+  # One more failed check after the restart is enough to alert (cooldown above).
+  docker restart "$VPN" >/dev/null && echo "$now" > "$STATE/vpn.restarted" && echo $(( VPN_FAILS_TO_ACT - 1 )) > "$STATE/vpn.fails" \
+    && report vpn event "" vpn_restarted
   return 1
 }
 vpn_check
@@ -61,7 +88,9 @@ fi
 
 inv_get() { docker exec "$INV" wget -qO- -T 25 "http://127.0.0.1:3000$1" 2>/dev/null; }
 
-# check NAME OK? CONTAINER — counts failures, restarts on the second, with a cooldown.
+# check NAME OK? CONTAINER CAUSE ACTION — counts failures, restarts on the
+# second, with a cooldown; still failing after a restart → yt_down=CAUSE.
+yt_down=""
 check() {
   name=$1 ok=$2 ctr=$3
   if [ "$ok" = 1 ]; then echo 0 > "$STATE/$name.fails"; return; fi
@@ -69,18 +98,28 @@ check() {
   echo "$fails" > "$STATE/$name.fails"
   last=$(cat "$STATE/$name.restarted" 2>/dev/null || echo 0)
   if [ "$fails" -lt 2 ]; then log "$name check failed ($fails), will retry"; return; fi
-  if [ $(( now - last )) -lt "$COOLDOWN" ]; then log "$name still failing; restarted $(( now - last ))s ago, waiting"; return; fi
+  if [ $(( now - last )) -lt "$COOLDOWN" ]; then
+    log "$name still failing; restarted $(( now - last ))s ago, waiting"
+    yt_down=$4; return
+  fi
   log "$name failing with the VPN up: restarting $ctr"
-  docker restart "$ctr" >/dev/null && echo "$now" > "$STATE/$name.restarted" && echo 0 > "$STATE/$name.fails"
+  docker restart "$ctr" >/dev/null && echo "$now" > "$STATE/$name.restarted" && echo 0 > "$STATE/$name.fails" \
+    && report youtube event "" "$5"
 }
 
 # 2. Invidious answers YouTube searches?
 if inv_get "/api/v1/search?q=music" | grep -q videoId; then search=1; else search=0; fi
-check inv "$search" "$INV"
+check inv "$search" "$INV" search invidious_restarted
 
 # 3. Search works but videos have no streams → the companion (PO token).
+video=0
 if [ "$search" = 1 ]; then
-  if inv_get "/api/v1/videos/dQw4w9WgXcQ" | grep -q adaptiveFormats; then video=1; else video=0; fi
-  check comp "$video" "$COMP"
+  if inv_get "/api/v1/videos/dQw4w9WgXcQ" | grep -q adaptiveFormats; then video=1; fi
+  check comp "$video" "$COMP" streams companion_restarted
+fi
+if [ -n "$yt_down" ]; then
+  alert_state youtube down "$yt_down"
+elif [ "$search" = 1 ] && [ "$video" = 1 ]; then
+  alert_state youtube up
 fi
 exit 0

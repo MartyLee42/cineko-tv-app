@@ -213,8 +213,8 @@ export function useRemoveHistory() {
 }
 
 /** A playback source for a video (a new stream token; `quality` caps the height). */
-export function createVideoSource(videoId: string, profileId: string | undefined, quality?: number) {
-  return unwrap(api.POST("/playback/sources", { body: { kind: "video", video_id: videoId, ...pid(profileId), ...(quality && { quality }) } }));
+export function createVideoSource(videoId: string, profileId: string | undefined, quality?: number, audio?: string | null) {
+  return unwrap(api.POST("/playback/sources", { body: { kind: "video", video_id: videoId, ...pid(profileId), ...(quality && { quality }), ...(audio ? { audio } : {}) } }));
 }
 
 /** POST /video/progress (keepalive: also survives the page going away). */

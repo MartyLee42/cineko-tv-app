@@ -1,0 +1,254 @@
+/* Ticket stubs and stickers (Keepsakes.tsx). Everything in em: the caller
+   sets font-size. Old TV engines (Chrome 53): no gap / inset / aspect-ratio,
+   transitions on transform only, few layers. --ks-wall is what shows through
+   the punched holes and the perforation notches (the page behind the stub). */
+
+.ks-ticket {
+  --ks-ink: 43, 33, 24;
+  --ks-paper: 244, 234, 210;
+  --ks-wall: var(--mt-bg);
+  position: relative;
+  display: -webkit-box;
+  display: flex;
+  height: 8.6em;
+  overflow: hidden;
+  border-radius: 0.35em;
+  color: rgb(var(--ks-ink));
+  background-color: rgb(var(--ks-paper));
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 40%),
+    repeating-linear-gradient(90deg, rgba(var(--ks-ink), 0.025) 0, rgba(var(--ks-ink), 0.025) 1px, transparent 1px, transparent 4px);
+  box-shadow: 0 0.12em 0.4em rgba(0, 0, 0, 0.35);
+  font-family: var(--mt-font-body);
+  line-height: 1.2;
+  text-align: left;
+  -webkit-transition: -webkit-transform 0.18s ease-out;
+  transition: transform 0.18s ease-out;
+}
+.ks-paper-cream { --ks-paper: 244, 234, 210; }
+.ks-paper-rose { --ks-paper: 246, 217, 211; }
+.ks-paper-mint { --ks-paper: 214, 237, 222; }
+.ks-paper-sky { --ks-paper: 214, 229, 243; }
+.ks-paper-butter { --ks-paper: 247, 234, 178; }
+
+.ks-ticket.ks-focused {
+  -webkit-transform: scale(1.05);
+  transform: scale(1.05);
+  box-shadow:
+    0 0 0 0.16em rgb(var(--mt-focus)),
+    0 0.3em 0.9em rgba(0, 0, 0, 0.45);
+}
+
+/* ---- main part ---- */
+.ks-main {
+  position: relative;
+  -webkit-box-flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: -webkit-box;
+  display: flex;
+  padding: 0.7em 0.6em 0.7em 0.7em;
+}
+.ks-poster {
+  position: relative;
+  flex: 0 0 auto;
+  width: 4.8em;
+  height: 7.2em;
+  margin-right: 0.75em;
+  overflow: hidden;
+  border-radius: 0.18em;
+  background: rgba(var(--ks-ink), 0.18);
+  box-shadow: 0 0 0 0.08em rgba(var(--ks-ink), 0.25);
+}
+.ks-poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ks-poster-blank {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(135deg, rgba(var(--ks-ink), 0.12) 0, rgba(var(--ks-ink), 0.12) 0.3em, transparent 0.3em, transparent 0.6em);
+}
+.ks-body {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  flex-direction: column;
+}
+.ks-cinema {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.62em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+.ks-title {
+  margin-top: 0.25em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-family: var(--mt-font-display);
+  font-size: 1.08em;
+  font-weight: 800;
+  line-height: 1.12;
+}
+.ks-when {
+  margin-top: auto;
+  font-size: 0.72em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+.ks-seat {
+  margin-top: 0.2em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.86em;
+  font-weight: 800;
+}
+.ks-stamp {
+  position: absolute;
+  right: 0.3em;
+  bottom: 0.15em;
+  width: 4.4em;
+  height: 4.4em;
+  color: rgb(178, 58, 42);
+  opacity: 0.16;
+  -webkit-transform: rotate(-16deg);
+  transform: rotate(-16deg);
+  pointer-events: none;
+}
+
+/* ---- perforation: a dashed tear line with notches at both ends ---- */
+.ks-perf {
+  position: relative;
+  flex: 0 0 auto;
+  width: 0;
+  border-left: 0.12em dashed rgba(var(--ks-ink), 0.4);
+  margin: 0.55em 0;
+}
+.ks-perf::before,
+.ks-perf::after {
+  content: "";
+  position: absolute;
+  left: -0.5em;
+  width: 0.88em;
+  height: 0.88em;
+  border-radius: 50%;
+  background: rgb(var(--ks-wall));
+}
+.ks-perf::before { top: -1em; }
+.ks-perf::after { bottom: -1em; }
+
+/* ---- stub: serial, the punch card, the label ---- */
+.ks-stub {
+  position: relative;
+  flex: 0 0 auto;
+  width: 5.3em;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  flex-direction: column;
+  -webkit-box-align: center;
+  align-items: center;
+  padding: 0.55em 0.35em 0.5em;
+  border-top: 0.32em solid rgb(var(--mt-accent));
+  background: rgba(var(--ks-ink), 0.035);
+}
+.ks-no {
+  font-family: var(--mt-font-label);
+  font-size: 0.62em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ks-holes {
+  width: 4.3em;
+  margin-top: 0.45em;
+  font-size: 1em;
+  line-height: 0;
+}
+.ks-hole {
+  display: inline-block;
+  width: 0.66em;
+  height: 0.66em;
+  margin: 0.09em 0.09em;
+  border-radius: 50%;
+  border: 0.07em dashed rgba(var(--ks-ink), 0.4);
+  box-sizing: border-box;
+  vertical-align: top;
+}
+/* A punched hole shows the wall behind the stub. */
+.ks-hole-on {
+  border: 0;
+  background: rgb(var(--ks-wall));
+  box-shadow: inset 0 0.07em 0.12em rgba(0, 0, 0, 0.45);
+}
+.ks-label {
+  margin-top: auto;
+  font-size: 0.56em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.75;
+}
+
+/* ---- stickers ---- */
+.ks-sticker {
+  display: inline-block;
+  width: 8.6em;
+  white-space: normal;
+  text-align: center;
+  vertical-align: top;
+  -webkit-transition: -webkit-transform 0.18s ease-out;
+  transition: transform 0.18s ease-out;
+}
+.ks-sticker.ks-focused {
+  -webkit-transform: scale(1.08);
+  transform: scale(1.08);
+}
+.ks-sticker-pic {
+  width: 5.6em;
+  height: 5.6em;
+  margin: 0 auto;
+}
+.ks-sticker-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ks-sticker-name {
+  margin-top: 0.35em;
+  font-family: var(--mt-font-display);
+  font-size: 0.8em;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.ks-sticker-desc {
+  margin-top: 0.2em;
+  font-size: 0.7em;
+  line-height: 1.25;
+  opacity: 0.75;
+}
+.ks-sticker-date {
+  margin-top: 0.25em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.66em;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}

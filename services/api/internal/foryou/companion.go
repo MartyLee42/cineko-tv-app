@@ -150,7 +150,7 @@ func (s *Service) companionCall(ctx context.Context, system, user string) (strin
 }
 
 func companionSystem(prompt string, sc CompanionScope, lang string) string {
-	return strings.NewReplacer("{SCOPE}", sc.describe(), "{LANGUAGE}", tr(lang, "Russian", "English")).Replace(prompt)
+	return strings.NewReplacer("{SCOPE}", sc.describe(), "{LANGUAGE}", langName(lang)).Replace(prompt)
 }
 
 // RecapUserMessage is the recap's user message (exported for tests).

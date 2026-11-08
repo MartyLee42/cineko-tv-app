@@ -3,7 +3,29 @@ package config
 import (
 	"strings"
 	"testing"
+	"time"
 )
+
+func TestVideoThumbCacheConfig(t *testing.T) {
+	base := map[string]string{"DATABASE_URL": "postgres://x", "APP_SESSION_SECRET": strings.Repeat("s", 32)}
+	c, err := LoadFrom(env(base))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.Video.ThumbCacheMB != 500 || c.Video.ThumbMaxAge != 14*24*time.Hour {
+		t.Fatalf("defaults %d %v", c.Video.ThumbCacheMB, c.Video.ThumbMaxAge)
+	}
+	base["VIDEO_THUMB_CACHE_MB"], base["VIDEO_THUMB_CACHE_DAYS"] = "0", "3"
+	if c, err = LoadFrom(env(base)); err != nil || c.Video.ThumbCacheMB != 0 || c.Video.ThumbMaxAge != 3*24*time.Hour {
+		t.Fatalf("set: %v %+v", err, c)
+	}
+	for k, v := range map[string]string{"VIDEO_THUMB_CACHE_MB": "-1", "VIDEO_THUMB_CACHE_DAYS": "0"} {
+		bad := map[string]string{"DATABASE_URL": "postgres://x", "APP_SESSION_SECRET": strings.Repeat("s", 32), k: v}
+		if _, err := LoadFrom(env(bad)); err == nil {
+			t.Errorf("%s=%s accepted", k, v)
+		}
+	}
+}
 
 func env(m map[string]string) func(string) string { return func(k string) string { return m[k] } }
 

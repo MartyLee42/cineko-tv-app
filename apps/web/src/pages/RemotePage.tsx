@@ -365,6 +365,17 @@ function VideoExtras({ v, steady, run }: { v: VideoPlaybackState; steady: boolea
           </Select>
         </label>
       )}
+      {/* An auto-dubbed video: original / the dubs (the TV keeps the pick for its next videos). */}
+      {(v.audio_tracks?.length ?? 0) > 1 && (
+        <fieldset disabled={!steady} data-testid="remote-video-audio">
+          <TrackSelect
+            label={t("ytaudio.title")}
+            tracks={v.audio_tracks}
+            value={v.audio_track_id ?? ""}
+            onChange={(id) => id && run({ type: "playback.set_audio", payload: { track_id: id } })}
+          />
+        </fieldset>
+      )}
       <div className="space-y-2" data-testid="remote-video-next">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-sm font-semibold text-muted">{t("remote.video.up_next")}</h3>

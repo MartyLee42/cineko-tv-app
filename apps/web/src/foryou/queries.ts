@@ -260,12 +260,37 @@ export function useSetFactsAI() {
 export function useSetAIFeature() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { themes_ai?: boolean; picks_ai?: boolean; companion_ai?: boolean }) => unwrap(api.PUT("/admin/foryou/ai", { body })),
+    mutationFn: (body: { themes_ai?: boolean; picks_ai?: boolean; companion_ai?: boolean; learn_weights?: boolean }) => unwrap(api.PUT("/admin/foryou/ai", { body })),
     onSuccess: (_d, body) => {
       void qc.invalidateQueries({ queryKey: ["admin", "foryou-runs"] });
+      if (body.learn_weights !== undefined) void qc.invalidateQueries({ queryKey: ["admin", "foryou-weights"] });
       // «Ранее в сериале» / «После титров» buttons appear or vanish.
       if (body.companion_ai !== undefined) void qc.invalidateQueries({ predicate: (q) => q.queryKey[0] === "media" && q.queryKey[2] === "companion" });
     },
+  });
+}
+
+/** GET /admin/foryou/weights: every profile's learned source weights. */
+export function useForYouWeights() {
+  return useQuery({ queryKey: ["admin", "foryou-weights"], queryFn: () => unwrap(api.GET("/admin/foryou/weights")) });
+}
+
+/** DELETE /admin/foryou/weights/{id}: back to the default weights. */
+export function useResetWeights() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => unwrap(api.DELETE("/admin/foryou/weights/{id}", { params: { path: { id } } })),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["admin", "foryou-weights"] }),
+  });
+}
+
+/** GET /admin/foryou/quality: recommendation quality for a window. */
+export function useForYouQuality(window: "30" | "90" | "all") {
+  const lang = useCatalogLang();
+  return useQuery({
+    queryKey: ["admin", "foryou-quality", window, lang],
+    queryFn: () => unwrap(api.GET("/admin/foryou/quality", { params: { query: { window, lang } } })),
+    staleTime: 60_000,
   });
 }
 

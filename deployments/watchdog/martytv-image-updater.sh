@@ -28,6 +28,20 @@ SERVICES=(
 
 log() { echo "[image-updater] $*"; }
 
+# Outage alerts (docs/deployment.md "Outage alerts"): a rollback, or YouTube
+# still broken after it, is reported to the API (admins get a Cineko message /
+# Web Push) from the web container to api:8080; the token (ALERT_TOKEN in
+# .env) travels on stdin. Never fails the script.
+# report KIND STATE [CAUSE] [ACTION] [DETAIL]
+report() {
+  local tok body
+  tok=$(grep -m1 '^ALERT_TOKEN=' "$DIR/.env" 2>/dev/null | cut -d= -f2-)
+  [ -n "$tok" ] || return 0
+  body=$(printf '{"kind":"%s","state":"%s","cause":"%s","action":"%s","detail":"%s"}' "$1" "$2" "${3:-}" "${4:-}" "${5:-}")
+  # shellcheck disable=SC2016 # $t / $1 expand inside the container's shell
+  printf '%s\n' "$tok" | timeout 20 docker exec -i "${MARTYTV_WEB:-martytv-web-1}" sh -c 'read -r t; wget -qO- -T 10 --header "Authorization: Bearer $t" --header "Content-Type: application/json" --post-data "$1" http://api:8080/internal/incident' sh "$body" >/dev/null 2>&1 || true
+}
+
 # Current image of a service in compose.yaml.
 current() { awk -v s="  $1:" '$0==s{f=1;next} f&&/^  [a-z]/{f=0} f&&/^    image:/{print $2; exit}' "$COMPOSE"; }
 
@@ -135,7 +149,13 @@ check() {
       log "$svc: $tag not healthy or the test video doesn't play; rolling back to $cur"
       pin "$svc" "$cur"
       docker compose up -d "$svc" >/dev/null 2>&1
-      if healthy "$svc" && plays; then log "$svc: back on $cur, test video plays"; else log "$svc: still broken after rollback"; fi
+      report updater event rollback "" "$svc ${tag}"
+      if healthy "$svc" && plays; then
+        log "$svc: back on $cur, test video plays"
+      else
+        log "$svc: still broken after rollback"
+        report youtube down streams rolled_back
+      fi
     fi
   done
 }

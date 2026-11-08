@@ -7,6 +7,7 @@ import { Spinner, useI18n, type MessageKey } from "@martytv/ui";
 import { Button, ErrorText } from "../components";
 import { AlertIcon, CheckIcon, PlayIcon } from "../icons";
 import { compactCount, countForm, formatDuration, isVideoUnavailable, progressPercent, relativeDate, retryDelay, type VideoItem } from "./logic";
+import { THUMB_SIZES, thumbSrcSet, useGridPrefetch } from "./prefetch";
 import { useSubscribe } from "./queries";
 
 export const watchHref = (id: string) => `/video/watch/${encodeURIComponent(id)}`;
@@ -38,7 +39,26 @@ export function VideoMeta({ v, className = "" }: { v: VideoItem; className?: str
   );
 }
 
-export function Thumb({ v, className = "", hd = false, eager = false, flush = false }: { v: VideoItem; className?: string; hd?: boolean; eager?: boolean; flush?: boolean }) {
+/**
+ * A card's thumbnail: srcset 320w (mqdefault) / 480w (hqdefault), the browser
+ * takes the smallest that fits `sizes` (default: the compact row's width).
+ * The first cards (eager) load at high priority, the rest lazily at low.
+ */
+export function Thumb({
+  v,
+  className = "",
+  hd = false,
+  eager = false,
+  flush = false,
+  sizes = THUMB_SIZES.compact,
+}: {
+  v: VideoItem;
+  className?: string;
+  hd?: boolean;
+  eager?: boolean;
+  flush?: boolean;
+  sizes?: string;
+}) {
   const { t } = useI18n();
   const [failed, setFailed] = useState(false);
   const pct = progressPercent(v.progress, v.duration_seconds);
@@ -48,8 +68,11 @@ export function Thumb({ v, className = "", hd = false, eager = false, flush = fa
       {!failed && (
         <img
           src={hd ? v.thumbnail_hd : v.thumbnail}
+          srcSet={thumbSrcSet(v)}
+          sizes={sizes}
           alt=""
           loading={eager ? "eager" : "lazy"}
+          fetchPriority={eager ? "high" : "low"}
           decoding="async"
           onError={() => setFailed(true)}
           className="absolute inset-0 h-full w-full object-cover"
@@ -81,11 +104,11 @@ export function Thumb({ v, className = "", hd = false, eager = false, flush = fa
 }
 
 /** Grid card: thumbnail, title, channel, views · date. `action` sits next to the title (e.g. remove). */
-export function VideoCard({ v, action, eager, inRow = false }: { v: VideoItem; action?: ReactNode; eager?: boolean; inRow?: boolean }) {
+export function VideoCard({ v, action, eager, inRow = false, idx }: { v: VideoItem; action?: ReactNode; eager?: boolean; inRow?: boolean; idx?: number }) {
   return (
-    <article className="group min-w-0" data-testid="video-card" data-video-id={v.id}>
+    <article className="group min-w-0" data-testid="video-card" data-video-id={v.id} data-thumb-idx={idx}>
       <Link to={watchHref(v.id)} className="block" data-testid="video-link">
-        <Thumb v={v} hd eager={eager} flush={!inRow} />
+        <Thumb v={v} hd eager={eager} flush={!inRow} sizes={inRow ? THUMB_SIZES.row : THUMB_SIZES.grid} />
       </Link>
       <div className="mt-2.5 flex gap-2">
         <div className="min-w-0 flex-1">
@@ -119,10 +142,13 @@ export function VideoRow({ v }: { v: VideoItem }) {
 }
 
 export function VideoGrid({ items, action }: { items: VideoItem[]; action?: (v: VideoItem) => ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  // Cards nearing the screen fetch the next ones' thumbnails ahead.
+  useGridPrefetch(ref, items, THUMB_SIZES.grid);
   return (
-    <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-testid="video-grid">
+    <div ref={ref} className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-testid="video-grid">
       {items.map((v, i) => (
-        <VideoCard key={v.id} v={v} action={action?.(v)} eager={i < 4} />
+        <VideoCard key={v.id} v={v} action={action?.(v)} eager={i < 4} idx={i} />
       ))}
     </div>
   );

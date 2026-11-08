@@ -52,7 +52,7 @@ func (s *Service) TitleFacts(ctx context.Context, t FactsTitle, lang string) ([]
 		return nil, err
 	}
 	b, _ := json.Marshal(t)
-	system := strings.ReplaceAll(factsSystemPrompt, "{LANGUAGE}", tr(lang, "Russian", "English"))
+	system := strings.ReplaceAll(factsSystemPrompt, "{LANGUAGE}", langName(lang))
 	content, tokens, err := s.ai.complete(ctx, system, string(b)+"\nJSON only.", s.aiTemperature(ctx).Facts)
 	if tokens > 0 || err == nil {
 		s.recordAIUsage(ctx, run, tokens)

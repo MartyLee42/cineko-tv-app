@@ -221,7 +221,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** @description Changes only the fields sent (today `ui_language`, what the language pickers write). User-only. */
+        patch: operations["patchProfilePreferences"];
         trace?: never;
     };
     "/users/directory": {
@@ -1734,6 +1735,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profiles/{id}/tickets": {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /** @description Ticket stubs, newest (highest number) first. Missing stubs for finished films are issued on read. The profile's own account (or its TV) and admins only. */
+        get: operations["profileTickets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profiles/{id}/achievements": {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /** @description Unlocked stickers (silent: no events or notifications), recorded on read from the watch history. The profile's own account (or its TV) and admins only. */
+        get: operations["profileAchievements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/media/{id}/progress": {
         parameters: {
             query?: {
@@ -2864,6 +2909,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/foryou/weights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Learned source weights per profile («Учить веса по просмотрам», docs/architecture.md "Learned source weights") with the share-weighted counts of the 60-day window behind them. Admin only. */
+        get: operations["adminForYouWeights"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/foryou/weights/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Forgets a profile's learned weights (back to the defaults; its rows rebuild in the background). Admin only. */
+        delete: operations["adminResetForYouWeights"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/foryou/quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Recommendation quality per profile and for the household, from the
+         *     profiles' own plays and ratings (read-only, cached 5 minutes): the
+         *     shown → played (≥ 10 min) → finished → rated → liked (≥ 7) funnel,
+         *     ratings of recommended titles vs the profile's other ratings,
+         *     calibration by predicted score, per-source quality, precision@10 of
+         *     «Подобрано для вас», best hits and misses. Admin only.
+         */
+        get: operations["adminForYouQuality"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/downloads": {
         parameters: {
             query?: never;
@@ -3559,6 +3662,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/incidents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Outage incidents: open ones first, then the last 30 days. Opened by the API's monitor (TMDB, Prowlarr, TorrServer, Invidious, the VPN proxy, disk, database; ~3 failed checks a minute apart) or the host scripts (POST /internal/incident). Admins get a Cineko message (and Web Push) on open, every 6 h while open, and on recovery. */
+        get: operations["adminListIncidents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/alerts/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The server's VAPID public key (applicationServerKey) and how many browsers of the caller get outage pushes. */
+        get: operations["adminAlertPushStatus"];
+        put?: never;
+        /** @description «Уведомления о сбоях»: store this browser's PushSubscription (upsert by endpoint). Only known push services (FCM, Mozilla, Apple, Windows) over HTTPS. */
+        post: operations["adminAlertPushSubscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/alerts/push/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminAlertPushUnsubscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/alerts/push/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Sends a test notification to the caller's subscribed browsers. */
+        post: operations["adminAlertPushTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/devices": {
         parameters: {
             query?: never;
@@ -3784,8 +3955,11 @@ export interface components {
             clear_pin?: boolean;
         };
         Preferences: {
-            /** @enum {string} */
-            ui_language: "en" | "ru";
+            /**
+             * @description The profile's interface language; "" = not chosen. Apps use it on a device that has no language of its own (that device's choice wins), before the browser/TV language.
+             * @enum {string}
+             */
+            ui_language: "" | "en" | "ru" | "kk";
             preferred_audio_languages: string[];
             preferred_subtitle_languages: string[];
             /** @enum {string} */
@@ -4583,6 +4757,17 @@ export interface components {
              * @enum {string|null}
              */
             error: "unavailable" | "live" | "unplayable" | "failed" | null;
+            /** @description Audio languages of an auto-dubbed video (id = VideoAudioTrack.id; label in the TV's language). Switch with playback.set_audio. Optional; empty for one track. */
+            audio_tracks?: components["schemas"]["Track"][];
+            /** @description The audio track playing. Optional. */
+            audio_track_id?: string | null;
+        };
+        VideoAudioTrack: {
+            /** @description The language as YouTube tags it (ru, en, pt-br); pass as audio. */
+            id: string;
+            language: string;
+            /** @description The video's own audio (not a dub). */
+            original: boolean;
         };
         Track: {
             id: string;
@@ -4619,7 +4804,7 @@ export interface components {
                 /** @description Paused with media.pause (media.resume continues). */
                 paused?: boolean;
             } | null;
-            /** @description «Видео»: the YouTube video on screen (screen = player, media_id/playback null). Controlled with media.pause / media.resume / media.seek / media.stop / media.next_episode (the first playable related video); video.play with the same video_id and a quality switches the quality in place. */
+            /** @description «Видео»: the YouTube video on screen (screen = player, media_id/playback null). Controlled with media.pause / media.resume / media.seek / media.stop / media.next_episode (the first playable related video), playback.set_audio (video.audio_tracks); video.play with the same video_id and a quality switches the quality in place. */
             video?: components["schemas"]["VideoPlaybackState"] | null;
             /** @description Players available on this TV (built-in is always present). */
             players?: components["schemas"]["PlayerKind"][];
@@ -4838,6 +5023,10 @@ export interface components {
             fallback_url?: string | null;
             /** @description Video: the profile's resume position (unfinished videos). */
             position_seconds?: number | null;
+            /** @description Video: the audio languages of an auto-dubbed video (YouTube's order: VIDEO_LANG, the original, …); empty for one track. Switch with a new source ({audio: id}), continuing from the position. */
+            audio_tracks?: components["schemas"]["VideoAudioTrack"][];
+            /** @description Video: the audio_tracks id stream_url plays (null with one track). */
+            audio_track?: string | null;
             /** @description Torrent: the server download of this file (docs «Server downloads»); when done, stream_url/compat_url read the server's copy instead of TorrServer. null when never requested. Optional. */
             download?: components["schemas"]["DownloadBrief"] | null;
         };
@@ -5418,6 +5607,69 @@ export interface components {
         HistoryItem: {
             media: components["schemas"]["MediaSummary"];
             progress: components["schemas"]["WatchProgress"];
+        };
+        /** @description A paper ticket stub for a finished film (issued once, the first time it counts as finished; kept when the film is marked unwatched). Hall/row/seat are a stable hash of (profile, film). */
+        TicketStub: {
+            /** @description The profile's running stub number. */
+            number: number;
+            media: components["schemas"]["MediaSummary"];
+            /** Format: date-time */
+            finished_at: string;
+            /**
+             * Format: date
+             * @description finished_at on the household clock.
+             */
+            date: string;
+            /** @description HH:MM on the household clock. */
+            time: string;
+            hall: number;
+            row: number;
+            seat: number;
+            /** @description The profile's rating (punched holes). */
+            rating: number | null;
+        };
+        TicketPage: {
+            items: components["schemas"]["TicketStub"][];
+            next_cursor: string | null;
+            total: number;
+            /** @description Name printed on the stubs («Cineko»). */
+            cinema: string;
+            /** @description The household's IANA timezone (TZ, else NEW_EPISODES_TZ, else Europe/Moscow). */
+            timezone: string;
+        };
+        /**
+         * @description Sticker id; clients ignore ids they don't know (new stickers may be added).
+         * @example marathon
+         * @example archaeologist
+         * @example polyglot
+         * @example night_owl
+         */
+        AchievementId: string;
+        Achievement: {
+            id: components["schemas"]["AchievementId"];
+            /**
+             * Format: date-time
+             * @description When the history first met the rule.
+             */
+            unlocked_at: string;
+            /**
+             * Format: date
+             * @description unlocked_at on the household clock.
+             */
+            date: string;
+            /**
+             * Format: uuid
+             * @description The title that earned it.
+             */
+            media_id: string | null;
+            media_title: string | null;
+        };
+        AchievementList: {
+            /** @description Unlocked only, oldest first. */
+            items: components["schemas"]["Achievement"][];
+            /** @description Stickers not unlocked yet (never listed). */
+            secret: number;
+            total: number;
         };
         ActivityItem: {
             user: {
@@ -6159,6 +6411,101 @@ export interface components {
             finished_at: string | null;
             duration_ms: number | null;
         };
+        ForYouSourceWeight: {
+            /** @description Learn key: trending, because_you_rated, director, actor, theme, genre, hidden_gem, something_different, ai_collection, ai_theme, ai_picks, rewatch, family, curated. */
+            source: string;
+            /** @description Multiplier in use (0.5–2). */
+            weight: number;
+            /** @description Before the last nightly step. */
+            prev_weight: number;
+            /** @description Where the estimate points (the weight moves at most ±15 % a night). */
+            target: number;
+            impressions: number;
+            opens: number;
+            /** @description Plays of ≥ 10 min (or completions) after an open from the row. */
+            plays: number;
+            completes: number;
+            dismisses: number;
+        };
+        ForYouProfileWeights: {
+            /** Format: uuid */
+            profile_id: string;
+            name: string;
+            owner: string;
+            /** Format: date-time */
+            updated_at: string;
+            items: components["schemas"]["ForYouSourceWeight"][];
+        };
+        ForYouWeights: {
+            /** @description The admin switch learn_weights. */
+            enabled: boolean;
+            /** @description Every learn key, in display order. */
+            sources: string[];
+            items: components["schemas"]["ForYouProfileWeights"][];
+        };
+        ForYouRatingSummary: {
+            n: number;
+            avg: number | null;
+            /** @description Share rated ≥ 7. */
+            liked: number | null;
+            /** @description Share rated ≤ 4. */
+            disliked: number | null;
+        };
+        ForYouQualityStats: {
+            funnel: {
+                shown: number;
+                played: number;
+                finished: number;
+                rated: number;
+                liked: number;
+                disliked: number;
+            };
+            recommended: components["schemas"]["ForYouRatingSummary"];
+            elsewhere: components["schemas"]["ForYouRatingSummary"];
+            /** @description Tertiles of the shown titles by predicted score, low → high (empty under 3 scored titles). */
+            calibration: (components["schemas"]["ForYouRatingSummary"] & {
+                score_min: number;
+                score_max: number;
+                shown: number;
+                played: number;
+            })[];
+            sources: {
+                source: string;
+                shown: number;
+                plays: number;
+                rated: number;
+                avg: number | null;
+                liked: number | null;
+            }[];
+            /** @description Titles shown in the first 10 tiles of «Подобрано для вас». */
+            precision_shown: number;
+            /** @description Of those, rated ≥ 7. */
+            precision_liked: number;
+            hits: components["schemas"]["ForYouQualityTitle"][];
+            misses: components["schemas"]["ForYouQualityTitle"][];
+        };
+        ForYouQualityTitle: {
+            /** Format: uuid */
+            media_id: string;
+            title: string;
+            year: number | null;
+            poster_path: string | null;
+            rating: number;
+        };
+        ForYouQuality: {
+            /** @enum {string} */
+            window: "30" | "90" | "all";
+            /** Format: date-time */
+            generated_at: string;
+            household: components["schemas"]["ForYouQualityStats"];
+            profiles: {
+                /** Format: uuid */
+                profile_id: string;
+                name: string;
+                owner: string;
+                stats: components["schemas"]["ForYouQualityStats"];
+            }[];
+        };
         ForYouAIStatus: {
             /** @description False without DEEPSEEK_API_KEY. */
             enabled: boolean;
@@ -6171,6 +6518,8 @@ export interface components {
             picks_ai?: boolean;
             /** @description «Ранее в сериале» / «После титров» allowed (admin switch, default true). */
             companion_ai: boolean;
+            /** @description The nightly run learns per-profile source weights from plays (admin switch, default true). */
+            learn_weights?: boolean;
             model: string;
             /** @description Tokens used today (Moscow date). */
             tokens_today: number;
@@ -6874,6 +7223,27 @@ export interface components {
             quality?: 480 | 720 | 1080;
             force?: boolean;
         };
+        Incident: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "tmdb" | "prowlarr" | "torrserver" | "invidious" | "proxy" | "disk" | "database" | "youtube" | "vpn" | "updater";
+            /** @description e.g. unauthorized (tmdb), search / streams (youtube), rollback (updater). */
+            cause: string;
+            /** @description Technical detail (error text, free space). */
+            detail: string;
+            /** @enum {string} */
+            source: "monitor" | "host";
+            /** @description What broke, localized. */
+            summary: string;
+            /** @description Actions taken (restarts, rollback), localized. */
+            notes: string[];
+            /** Format: date-time */
+            opened_at: string;
+            /** Format: date-time */
+            closed_at: string | null;
+            reminders: number;
+        };
         AdminVideoStatus: {
             /** @description INVIDIOUS_URL is set. */
             configured: boolean;
@@ -7440,6 +7810,36 @@ export interface operations {
                     "application/json": components["schemas"]["Preferences"];
                 };
             };
+        };
+    };
+    patchProfilePreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    ui_language?: "" | "en" | "ru" | "kk";
+                };
+            };
+        };
+        responses: {
+            /** @description Saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            422: components["responses"]["Error"];
         };
     };
     userDirectory: {
@@ -9159,6 +9559,8 @@ export interface operations {
                     profile_id?: string;
                     /** @description Online only: wanted vertical resolution from the variant's qualities (default: best ≤ the profile's preferred resolution). */
                     quality?: number;
+                    /** @description Video: the audio track — original (the video's own) or a language (ru, pt-br; a base language matches a regional track). Ignored when the video lacks it (then VIDEO_LANG, the original, English — in that order). */
+                    audio?: string;
                 };
             };
         };
@@ -9920,6 +10322,62 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    profileTickets: {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+                /** @description next_cursor of the previous page. */
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of stubs. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketPage"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    profileAchievements: {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unlocked stickers. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AchievementList"];
+                };
+            };
+            404: components["responses"]["Error"];
         };
     };
     mediaProgress: {
@@ -11669,6 +12127,8 @@ export interface operations {
                     picks_ai?: boolean;
                     /** @description False: no «Ранее в сериале» / «После титров» (buttons hidden). */
                     companion_ai?: boolean;
+                    /** @description False: the nightly run stops learning source weights and scoring ignores the stored ones (`ai_feature_learn_weights`; not an AI call). */
+                    learn_weights?: boolean;
                 };
             };
         };
@@ -11680,6 +12140,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ForYouAISettings"];
+                };
+            };
+            403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    adminForYouWeights: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every profile with stored weights. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForYouWeights"];
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    adminResetForYouWeights: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reset. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    adminForYouQuality: {
+        parameters: {
+            query?: {
+                window?: "30" | "90" | "all";
+                lang?: "en" | "ru";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The report. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForYouQuality"];
                 };
             };
             403: components["responses"]["Error"];
@@ -12906,6 +13434,136 @@ export interface operations {
                 };
             };
             403: components["responses"]["Error"];
+        };
+    };
+    adminListIncidents: {
+        parameters: {
+            query?: {
+                /** @description Language of summary / notes (ru default, en, kk). */
+                lang?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["Incident"][];
+                        open: number;
+                    };
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    adminAlertPushStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Status. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description base64url uncompressed P-256 point. */
+                        public_key: string;
+                        subscriptions: number;
+                    };
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    adminAlertPushSubscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    endpoint: string;
+                    keys: {
+                        p256dh: string;
+                        auth: string;
+                    };
+                    /** @description ru | en | kk: the language of pushes and of this admin's alert messages. */
+                    locale?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Subscribed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["Error"];
+        };
+    };
+    adminAlertPushUnsubscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    endpoint: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Removed (or wasn't there). */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminAlertPushTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        sent: number;
+                        failed: number;
+                    };
+                };
+            };
         };
     };
     adminListDevices: {

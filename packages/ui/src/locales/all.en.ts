@@ -56,5 +56,10 @@ import { devicedlEn } from "./devicedl.en";
 import { titleActionsEn } from "./titleactions.en";
 import { appupdateEn } from "./appupdate.en";
 import { iptvplayEn } from "./iptvplay.en";
+import { uilangEn } from "./uilang.en";
+import { learnWeightsEn } from "./learnweights.en";
+import { alertsEn } from "./alerts.en";
+import { keepsakesEn } from "./keepsakes.en";
+import { ytaudioEn } from "./ytaudio.en";
 
-export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn, ...soundtrackEn, ...themesEn, ...smoothEn, ...chaptersEn, ...companionEn, ...devsettingsEn, ...loadersEn, ...loaders2En, ...filmthemeEn, ...multtarkovskyEn, ...andersonEn, ...westernEn, ...quickEn, ...demoEn, ...errorsUserEn, ...devicedlEn, ...titleActionsEn, ...appupdateEn, ...iptvplayEn };
+export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn, ...soundtrackEn, ...themesEn, ...smoothEn, ...chaptersEn, ...companionEn, ...devsettingsEn, ...loadersEn, ...loaders2En, ...filmthemeEn, ...multtarkovskyEn, ...andersonEn, ...westernEn, ...quickEn, ...demoEn, ...errorsUserEn, ...devicedlEn, ...titleActionsEn, ...appupdateEn, ...iptvplayEn, ...uilangEn, ...learnWeightsEn, ...alertsEn, ...keepsakesEn, ...ytaudioEn };

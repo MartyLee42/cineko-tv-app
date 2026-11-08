@@ -41,6 +41,7 @@ installable.
 | `watch` | Phase 5: playback sessions, progress reports (ordering/staleness/completion), manual watched overrides, series next-up, continue watching, history, watchlist/favorites/ratings, the catalog `Personalizer` (`?profile_id`), admin activity/history |
 | `ratings` | Kinopoisk/IMDb ratings: TMDB → Kinopoisk id matching (keyed, budgeted queue), keyless rating refresh, catalog `RatingsSource`, `kinopoisk` integration status |
 | `awards` | Film awards & nominations from Wikidata (P166/P1411) through the `ratings` SPARQL client: curated award groups/tiers, `media_awards` (migration 00028), background backfill + 60-day re-check, `MediaDetail.awards`, poster `award_badge` added to the ratings annotation ([Awards](#awards-and-nominations-wikidata)) |
+| `keepsakes` | Ticket stubs and achievement stickers, derived from `watch_progress` on read (`GET /profiles/{id}/tickets`, `/achievements`; migration 00037). See «Keepsakes» under Watch sync |
 | `imports` | Rating imports: `POST /profiles/{id}/imports/kinopoisk` (Kinopoisk CSV, ≤ 5 MB, owner only) → background job (`import_jobs`/`import_job_items`, migration 00010; one active per profile, resumed on boot, 4 lines at a time). Lines match an existing `kp_id` or TMDB search (original then Russian title; exact → year ±1 → unique ±2 → word-overlap same year; ambiguous = no match); writes the rating with its KP date, `kp_id` + seeded `kp_rating`, and optionally a title-level completed `watch_progress` row (never resumable). `dry_run` matches only. Audited `imports.kinopoisk` (counts) |
 | `messages` | Admin → user messages: inbox, read state, live delivery over the hub |
 | `reco` | Recommendations between people («Посоветовать»): send, inbox/sent, reactions, live delivery over the hub |
@@ -1451,6 +1452,38 @@ series from TMDB and records those that aired after what the profile watched.
   row; web `/new-episodes` (desktop tab, phone Home card); admin card with
   the schedule, last runs and «Проверить сейчас».
 
+### Keepsakes: ticket stubs and stickers (`internal/keepsakes`)
+
+- **Ticket stubs** (`ticket_stubs`, migration 00037): one per finished *film*
+  (series never get stubs — a season stub could come later). A film counts once
+  it is `completed` in `watch_progress` (playback, «Просмотрено», Kinopoisk
+  import). Stubs are issued on read (`GET /profiles/{id}/tickets` inserts the
+  missing ones under a per-profile advisory lock; the migration backfilled the
+  existing history), numbered per profile in finish order, and are kept when a
+  film is later marked unwatched or rewatched. `finished_at` = first
+  `completed_at`. Hall 1–9 / row 1–20 / seat 1–30 are a SHA-256 of
+  (profile, film) — never stored, never change. The punched rating is the live
+  `ratings` row. Paged by stub number, newest first.
+- **Stickers** (`profile_achievements`): pure rules in `rules.go` evaluated on
+  `GET /profiles/{id}/achievements`; newly met ones are stored with the time
+  the history first met the rule (silent: no events, toasts or pushes). Never
+  taken back. Time-of-day rules ignore manual completions (a «Просмотрено»
+  press or an import is not watching):
+  «Марафонец» every aired episode (air date ≤ that Monday) of one season,
+  ≥ 3, finished within one Fri 18:00 – Mon 06:00 window; «Киноархеолог» a
+  film released before 1960; «Полиглот» finished titles (a film or any
+  episode) in 5 original languages; «Ночная сова» something finished
+  02:00–05:00. New rules: append to `Rules` (ids are stored).
+- **Household clock** (`config.Household`): `TZ` from `.env`, else
+  `NEW_EPISODES_TZ` (a UTC `TZ` loses to a real `NEW_EPISODES_TZ`), else
+  Europe/Moscow. Stub dates and the weekend/night rules use it.
+- Access: the profile's account (or its TV) and admins; others get 404.
+- Clients: shared art in `@martytv/ui/keepsakes` (paper ticket, perforation,
+  hole-punched rating, faint Cineko stamp; die-cut SVG stickers). TV: a
+  «Билеты» row + stickers above the watchlist in «Моё» (lazy chunk). Web:
+  `/tickets` (avatar menu, History chip), lazy. Only unlocked stickers are
+  shown, with «ещё N — секрет».
+
 ## Ratings (Kinopoisk/IMDb)
 
 Package `internal/ratings`, migration `00006_ratings.sql`. Every
@@ -2030,6 +2063,63 @@ is MMR-diversified (λ = 0.75; similarity = 0.6·genre Jaccard + 0.2 same
 decade + 0.2 same seed + 0.25 same reason). Titles are unique across rows.
 Cold start (< 3 positive signals): «Популярное сейчас» + top rated.
 
+### Learned source weights («Учить веса по просмотрам»)
+
+`internal/foryou/learn.go`; admin switch `learn_weights` (app_settings
+`ai_feature_learn_weights`, default on). The nightly run learns, per
+profile, which candidate sources actually lead to watching and stores a
+multiplier per *learn key* in `foryou_source_weights`: trending (incl. the
+cold-start popular lists), because_you_rated, director, actor, theme
+(keywords), genre, hidden_gem, something_different, ai_collection, ai_theme
+(AI rubrics), ai_picks (the AI re-ranking of «Подобрано»), rewatch, family,
+curated.
+
+- **Attribution at log time.** Every cached row item carries its credit
+  shares (`x`): its candidate sources' strengths normalised, with the row's
+  own source at least 0.5. `POST /foryou/feedback` looks the (row, title) up
+  in `recs_cache` and stores `sources`, `row_pos`, `item_pos` and the
+  predicted `score` on the event; family / curated rows and collection pages
+  are credited to their source as a whole. Ask / Surprise events are not
+  attributed.
+- **Outcome per impression** (deduplicated per title, row and day): an open
+  (or play event) from the same row within 3 days = 0.2; a playback of
+  ≥ 10 min started within 7 days of that open = 1; a completion within 30
+  days = 1.5; «Не интересно» within 3 days without a play = −0.5. The log
+  has no dwell time; web logs a row at 40 % visibility, the TV its first 8
+  tiles; tiles past index 11 are ignored.
+- **Position bias**: rewards are compared with expected exposure (clicks
+  over expected clicks): an impression counts `1/(1+0.2·row)·1/(1+0.15·tile)`
+  (unknown position 0.5), so a source isn't rewarded for being shown first.
+  Everything decays with a 21-day half-life over a 60-day window.
+- **Smoothing**: rate = (Σreward + 40·prior) / (Σexposure + 40), with the
+  prior chain profile → household per source → household overall → 0.05.
+  Target = rate(source) ÷ the profile's overall rate (ε = 0.01), clamped
+  0.5–2×; under 30 effective impressions the target is 1.
+- **Step limit and exploration**: the weight moves ≤ ±15 % a night and at
+  most once per 20 h (admin reruns don't add steps). Rows are never
+  dropped: a down-weighted source keeps its row (lower down), keeps getting
+  impressions and drifts back toward 1 when it gets too few — it is
+  re-measured.
+- **Use**: `computeProfile` reads the stored multipliers (never recomputed
+  per request; deterministic): each source's strength in the noisy-or is
+  multiplied by its weight, specific rows are ordered by `slot ÷ weight`,
+  the family / curated rows sit at `round(index ÷ weight)` (≥ 1), and
+  ai_picks below 1 reserves proportionally fewer AI picks in «Подобрано».
+  Reasons («потому что…») don't change. Idle profiles are skipped with the
+  rest of the daily run; every update is logged (`foryou: learned source
+  weights`, before→after) and the admin table shows weight, previous weight
+  and the counts. `DELETE /admin/foryou/weights/{id}` resets a profile.
+
+**Quality metrics** (`quality.go`, `GET /admin/foryou/quality?window=30|90|all`,
+cached 5 min): per profile and household, from each title's first
+impression in the window — the shown → played (≥ 10 min) → finished →
+rated → liked (≥ 7) funnel; the ratings of recommended titles vs the
+profile's other ratings in the window (titles not shown before rating —
+imports count too); calibration (tertiles of the predicted score → plays and
+mean rating); per-source plays / mean rating / liked (share-weighted);
+precision@10 of «Подобрано для вас»; best hits and misses. The UI shows
+means only from n ≥ 5 («мало данных»).
+
 ### Serving
 
 `GET /foryou/rows` reads `recs_cache`; missing/expired → computed
@@ -2194,13 +2284,14 @@ short numeric ids, never our uuids; only those ids are accepted back.
   it (with ✦) instead of «Потому что вам понравился …». AI off, failed or
   another language → the deterministic order and reasons. ~1.5–2k tokens.
 
-**Language.** The server knows only ru/en per profile (`profileLang`:
-the language the rows were last asked in, else `ui_language`, which is
-ru/en). The Kazakh UI asks the catalog in Russian (`catalogLang` maps
-kk → ru), so Kazakh viewers get Russian AI reasons and theme names; the
-UI strings around them are Kazakh. Generating Kazakh would need the UI
-locale on the server (an extra field) and a third language in the
-prompts — not done.
+**Language.** Catalog data is ru/en per profile (`profileLang`: the
+language the rows were last asked in, else `ui_language` mapped kk → ru).
+Text the AI writes follows the interface language (see «Interface
+language» below): a profile whose `ui_language` is kk gets its picks'
+reasons in Kazakh (stored with lang kk) and Kazakh rubric titles
+(`foryou_collections.title_kk` / `description_kk`, asked for only then;
+Russian otherwise), shown when the request's `X-Cineko-Language` is kk.
+Household AI collections stay ru/en (Kazakh reads the Russian ones).
 
 **Switches.** `themes_ai` / `picks_ai` (app_settings
 `ai_feature_themes` / `ai_feature_picks`, default on) on the admin
@@ -2677,7 +2768,19 @@ suggestions 1 h, trending/channels/playlists 30 min, videos 6 h but never past
 their stream URLs' `expire` − 30 min). It maps Invidious JSON to Cineko's
 `Video*` types: thumbnails and avatars become same-origin
 `/api/v1/video/thumbs/…` paths (public like IPTV logos, since TV `<img>` can't
-send a bearer; disk cache under `IMAGE_CACHE_DIR/video`, pruned after 7 days);
+send a bearer). Thumbnails (`internal/video/thumbcache.go`) live in a disk
+cache under `IMAGE_CACHE_DIR/video`, bounded by `VIDEO_THUMB_CACHE_MB`
+(default 500; least recently used first, a file's mtime is its last use) and
+`VIDEO_THUMB_CACHE_DAYS` (default 14 unused days); a miss is fetched once
+however many viewers wait (single-flight), at most 8 at a time; every list
+`/video/*` answers queues its cards' thumbnails (hqdefault; related videos
+also mqdefault) for 4 prefetch workers, so the next cards are usually on disk
+before they are asked for. Responses are `public, max-age=604800, immutable`
+with an `ETag` (304 on revalidation). Clients prefetch too: the TV loads the
+focused row's next cards and the rows around it into the image cache (two at
+a time, when idle, `apps/tv/src/video/prefetch.ts`); the PWA gives cards a
+320w/480w `srcset` with `sizes`, high priority for the first four, and loads
+side-scrolling rows and the next grid cards ahead (`apps/web/src/video/prefetch.ts`);
 items with length 0 are live streams; ≤ 60 s or `#shorts` are Shorts
 (`video_hide_shorts`, default on). YouTube retired its trending page and
 Invidious' default list is now mostly live streams, so «В тренде» drops them
@@ -2717,7 +2820,16 @@ range and a `sidx`). `POST /playback/sources {kind: "video"}` picks the best
 H.264 track ≤ the cap (request `quality` → profile `video_quality` → 720) and
 AAC itag 140 — auto-dubbed videos list one itag 140 per language, told apart
 only by the URL's `xtags` (`acont=dubbed:lang=ja`): `VIDEO_LANG` (original or
-dub) first, then the original track, then English — and returns `/api/v1/vstream/<token>/master.m3u8`. The token
+dub) first, then the original track, then English — and returns `/api/v1/vstream/<token>/master.m3u8`
+(`master.<lang>.m3u8` when the track is tagged). The request's `audio`
+(`original` or a language) picks another track; the source lists them in
+`audio_tracks` (one per language) and names the one playing in `audio_track`.
+The language rides in the file names (`a140.<lang>.m3u8` → `m140.<lang>.mp4`;
+untagged names still resolve), so a switch is a new source continuing from
+the position. The players show «Аудио» (original / the dubs) for several
+tracks; a pick is the device's default for the next videos
+(`martytv.video.audio`, `packages/ui/src/videoAudio.ts`); the TV reports
+`video.audio_tracks` / `audio_track_id` and obeys `playback.set_audio`. The token
 (own HMAC label, 12 h) binds the video id and the cap. The proxy builds the
 master (one variant + one audio rendition) and VOD media playlists from the
 parsed sidx: every fragment is an `EXT-X-BYTERANGE` of the same
@@ -2803,6 +2915,47 @@ up to 2 h, then it is skipped for the night. The restart is a
 `POST /containers/<name>/restart` to `restart-proxy`
 (wollomatic/socket-proxy: regex allowlist for exactly those two paths,
 `-allowfrom=api`, own network), so the API never holds the Docker socket.
+
+## Interface language (ru / en / kk)
+
+**Which language a device shows** (`packages/ui` `localeDetect.ts`,
+`localeChoice.ts`), highest first:
+
+1. **This device's own pick** — the PWA's language picker in this browser,
+   or the TV's own «Язык» option (`devices.settings.language`, changeable
+   from a phone). localStorage `martytv.locale`.
+2. **The profile's `ui_language`** (`profile_preferences`, `""` = not
+   chosen). Applied as soon as the active profile's preferences load
+   (PWA: `ProfileLanguage` in `watch/LanguagePicker.tsx`; TV:
+   `useTvOwnLanguage`) and cached in `martytv.locale.profile`, so the next
+   start opens in it before anything loads (the start language's strings
+   are preloaded with the app).
+3. **The browser's / TV's language** (`navigator.language`).
+
+**Pickers.** The PWA picker (Settings → this device, first-run guide)
+sets this browser's pick *and* the profile's `ui_language`
+(`PATCH /profiles/{id}/preferences`, only that field), so the profile's
+new devices follow; it says so under the select, and when another device
+changed the profile's language it offers «Как в профиле» (drops this
+browser's pick). The TV picker sets only the TV's own option (a TV can
+read but not write profile preferences); its hint names the profile's
+language. TVs no longer upload their detected language as the option
+(only a real pick); TVs that did before keep it. Migration 00037 turned
+the old column default `en` into `""` (no app ever let anyone choose it).
+
+**Server text.** `lang` parameters stay the catalog language (en | ru;
+`catalogLang` maps kk → ru, TMDB data unchanged). The apps send
+`X-Cineko-Language` (the language on screen); `internal/uilang`
+puts it in the request context and `uilang.Text(ctx, lang)` gives the
+language of generated text — kk when the app is Kazakh and asked for ru.
+Ask AI (Kazakh-only letters ә ғ қ ң ө ұ ү һ in the question → Kazakh;
+other Cyrillic → Kazakh in a Kazakh app, else Russian), «Ранее в сериале» /
+«После титров» / the chat, AI «Факты» (cached per text language), picks'
+reasons and rubric titles (background runs: the profile's `ui_language`)
+are written in Kazakh («Kazakh (Cyrillic script)» in the prompt; the
+Cyrillic-share checks treat kk like ru). Fixed server strings fall back to
+Russian for kk unless a Kazakh one exists. Release ranking without audio
+preferences uses kk, ru, en for a Kazakh profile.
 
 ## Designs, intros and navigation
 

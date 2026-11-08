@@ -7,9 +7,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -19,13 +18,19 @@ import (
 
 // Thumbnail proxy: video thumbnails (/vi/<id>/<name>.jpg) and channel
 // avatars/banners (/ggpht/<path>) are fetched from Invidious (which reaches
-// i.ytimg.com / yt3.ggpht.com through the VPN), cached on disk under
-// ThumbDir/<sha256> for 7 days and served same-origin. Only those two
-// shapes are accepted, so this is not an open proxy.
+// i.ytimg.com / yt3.ggpht.com through the VPN), kept in the disk cache
+// (thumbcache.go: VIDEO_THUMB_CACHE_MB / _DAYS, LRU) and served same-origin
+// with a week of immutable browser caching. Lists answered by /video/*
+// queue their thumbnails for prefetch (warmThumbs), so the next row is
+// usually on disk before the TV asks. Only those two shapes are accepted,
+// so this is not an open proxy.
 
 const (
 	maxThumbBytes = 2 << 20
 	thumbBadTTL   = 10 * time.Minute
+	// YouTube keeps a thumbnail URL for the video's life (a new custom
+	// thumbnail is rare): browsers and TVs keep it a week without asking.
+	thumbCacheControl = "public, max-age=604800, immutable"
 )
 
 var thumbNames = regexp.MustCompile(`^(default|mqdefault|hqdefault|sddefault|maxresdefault|hq720|maxres|high|medium|start|middle|end|[1-3])\.jpg$`)
@@ -50,36 +55,38 @@ func (s *Service) serveThumb(c fiber.Ctx, path string) error {
 	if !s.client.Configured() {
 		return httpx.NotFound()
 	}
-	key := sha256.Sum256([]byte(path))
-	name := hex.EncodeToString(key[:])
-	var file string
-	if s.thumbDir != "" {
-		file = filepath.Join(s.thumbDir, name[:2], name)
-		if b, err := os.ReadFile(file); err == nil {
-			if ct := sniffThumb(b); ct != "" {
-				return sendThumb(c, ct, b)
-			}
-		}
-	}
-	if at, ok := s.thumbBad.Load(name); ok && time.Since(at.(time.Time)) < thumbBadTTL {
-		return httpx.NotFound()
-	}
-	ctx, cancel := context.WithTimeout(context.WithoutCancel(c.Context()), 15*time.Second)
+	// Detached: a viewer scrolling away must not fail the others waiting on the same fetch.
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(c.Context()), thumbFetchWait)
 	defer cancel()
-	ct, b, err := s.fetchThumb(ctx, path)
-	if err != nil {
-		s.thumbBad.Store(name, time.Now())
+	b, ct, err := s.thumbs.load(ctx, path)
+	switch {
+	case errors.Is(err, errThumbBad):
+		return httpx.NotFound()
+	case err != nil:
 		return httpx.NewError(fiber.StatusBadGateway, "thumbnail_unavailable", "The image could not be loaded.")
 	}
-	if file != "" {
-		if err := os.MkdirAll(filepath.Dir(file), 0o755); err == nil {
-			tmp := file + ".tmp"
-			if os.WriteFile(tmp, b, 0o644) == nil {
-				_ = os.Rename(tmp, file)
+	return sendThumb(c, ct, b)
+}
+
+// warmThumbs queues the thumbnails of a list for prefetch: the cards' size
+// (hqdefault: TV cards and the PWA grid) and, with small, the 320x180 one
+// (the PWA's compact rows: related videos).
+func (s *Service) warmThumbs(items []Item, small bool) {
+	if !s.client.Configured() {
+		return
+	}
+	paths := make([]string, 0, 2*len(items))
+	for _, it := range items {
+		for _, u := range []string{it.ThumbnailHD, it.Thumbnail} {
+			if p, ok := strings.CutPrefix(u, thumbPrefix); ok && strings.HasPrefix(p, "vi/") {
+				paths = append(paths, "/"+p)
+			}
+			if !small {
+				break
 			}
 		}
 	}
-	return sendThumb(c, ct, b)
+	s.thumbs.warm(paths...)
 }
 
 func (s *Service) fetchThumb(ctx context.Context, path string) (string, []byte, error) {
@@ -131,8 +138,14 @@ func sniffThumb(b []byte) string {
 }
 
 func sendThumb(c fiber.Ctx, ct string, b []byte) error {
-	c.Set(fiber.HeaderContentType, ct)
-	c.Set(fiber.HeaderCacheControl, "public, max-age=86400")
+	sum := sha256.Sum256(b)
+	etag := `"` + hex.EncodeToString(sum[:8]) + `"`
+	c.Set(fiber.HeaderCacheControl, thumbCacheControl)
+	c.Set(fiber.HeaderETag, etag)
 	c.Set("X-Content-Type-Options", "nosniff")
+	if inm := c.Get(fiber.HeaderIfNoneMatch); inm != "" && strings.Contains(inm, etag) {
+		return c.SendStatus(fiber.StatusNotModified)
+	}
+	c.Set(fiber.HeaderContentType, ct)
 	return c.Send(b)
 }

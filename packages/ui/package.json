@@ -17,6 +17,8 @@
     "./season-layer": "./src/SeasonLayer.tsx",
     "./cozy-layer": "./src/CozyLayer.tsx",
     "./popcorn": "./src/PopcornLoader.tsx",
+    "./keepsakes": "./src/keepsakes/Keepsakes.tsx",
+    "./keepsakes/logic": "./src/keepsakes/logic.ts",
     "./loaders/logic": "./src/loaders/logic.ts",
     "./loaders/parts": "./src/loaders/parts.tsx",
     "./loaders/paws": "./src/loaders/Paws.tsx",

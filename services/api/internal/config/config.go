@@ -64,10 +64,16 @@ type Config struct {
 	ForYou ForYouConfig
 	// NewEpisodes: the nightly «Новые серии» check (config/newepisodes.go).
 	NewEpisodes NewEpisodesConfig
+	// Household is the household's wall clock (config/household.go): ticket
+	// stubs and the time-of-day achievements (internal/keepsakes).
+	Household *time.Location
 
 	// MetricsToken enables GET /metrics (Prometheus); scrapes send it as a
 	// bearer token. Empty = /metrics answers 404.
 	MetricsToken string
+	// AlertToken authenticates the host scripts' POST /internal/incident
+	// (outage alerts, internal/alerts). Empty = the endpoint answers 404.
+	AlertToken string
 
 	// HostmonSocket is the unix socket of martytv-hostmon (host load for the
 	// admin Server tab). Missing socket → container-only numbers.
@@ -241,6 +247,7 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 		MSXBridge:          get("MSX_BRIDGE", "true") != "false",
 		HostmonSocket:      get("HOSTMON_SOCKET", "/run/martytv/hostmon.sock"),
 		MetricsToken:       secret("METRICS_TOKEN"),
+		AlertToken:         secret("ALERT_TOKEN"),
 		SessionIdleTTL:     duration("SESSION_IDLE_TTL", 30*24*time.Hour),
 		SessionAbsoluteTTL: duration("SESSION_ABSOLUTE_TTL", 90*24*time.Hour),
 		PairingTTL:         duration("PAIRING_TTL", 5*time.Minute),
@@ -317,6 +324,7 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 	c.Kinopoisk.ProxyURL = proxyURL("KINOPOISK_PROXY_URL", secret("KINOPOISK_PROXY_URL"), &errs)
 	c.ForYou = loadForYou(get, secret, &errs)
 	c.NewEpisodes = loadNewEpisodes(get, &errs)
+	c.Household = loadHouseholdTZ(get)
 	c.InvidiousRestart = loadInvidiousRestart(get, &errs)
 	c.Library = loadLibrary(get, &errs)
 	c.Transcoder = TranscoderConfig{URL: strings.TrimRight(get("TRANSCODER_URL", ""), "/"), Secret: secret("TRANSCODER_SECRET")}
@@ -326,6 +334,10 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 		} else if len(c.Transcoder.Secret) < 32 {
 			errs = append(errs, errors.New("TRANSCODER_SECRET must be at least 32 characters when TRANSCODER_URL is set"))
 		}
+	}
+
+	if c.AlertToken != "" && len(c.AlertToken) < 24 {
+		errs = append(errs, errors.New("ALERT_TOKEN must be at least 24 characters"))
 	}
 
 	if !regionPattern.MatchString(c.Catalog.Region) {

@@ -19,6 +19,7 @@ import { isVideoUnavailable, useAutoRetry, useVideoSearch, useVideoSuggestions }
 import { wantsMore } from "../../video/logic";
 import { useVideoMenu } from "../../video/actions";
 import { VideoCard, type VideoGeo } from "../../video/VideoCard";
+import { prefetchGrid } from "../../video/prefetch";
 import { Unavailable } from "./VideoScreen";
 
 const DEBOUNCE = 400;
@@ -125,6 +126,7 @@ export function VideoSearchScreen({
     const top = resultsRef.current?.offsetTop ?? 0;
     scroll(row === 0 ? 0 : top + row * pitchY - 60);
     more(i);
+    prefetchGrid(items, i, cols, G.w);
   };
   useToTop(() => {
     scroll(0);

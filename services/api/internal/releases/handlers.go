@@ -14,6 +14,7 @@ import (
 	"martytv/api/internal/httpx"
 	"martytv/api/internal/profiles"
 	"martytv/api/internal/sources"
+	"martytv/api/internal/uilang"
 )
 
 // SelectionOf converts a profile's sources setting (nil = default all).
@@ -255,7 +256,7 @@ func (h *Handlers) deviceFit(c fiber.Ctx, p *auth.Principal, deviceID, clientID 
 func PrefsOf(pp *profiles.Preferences) Prefs {
 	langs := pp.PreferredAudioLanguages
 	if len(langs) == 0 {
-		langs = uniq(pp.UILanguage, "en")
+		langs = uniq(pp.UILanguage, uilang.Catalog(pp.UILanguage), "en") // Kazakh: kk, then Russian dubs
 	}
 	out := Prefs{Languages: langs, Resolution: pp.PreferredResolution, MaxSizeGB: pp.MaxSizeGB}
 	out.Voiceovers = pp.PreferredVoiceovers

@@ -66,13 +66,15 @@ func (s *Service) annotate(ctx context.Context, profileID string, items []Item) 
 	return nil
 }
 
-// listOut filters Shorts by the profile setting and adds progress.
+// listOut filters Shorts by the profile setting and adds progress. The
+// list's thumbnails are queued for prefetch.
 func (s *Service) listOut(c fiber.Ctx, profileID string, items []Item) ([]Item, error) {
 	items = s.client.Originals(items)
 	items = filterShorts(items, s.prefsFor(c.Context(), profileID).HideShorts && c.Query("shorts") != "true")
 	if err := s.annotate(c.Context(), profileID, items); err != nil {
 		return nil, err
 	}
+	s.warmThumbs(items, false)
 	return items, nil
 }
 
@@ -250,6 +252,7 @@ func (s *Service) videoDetail(c fiber.Ctx) error {
 			return err
 		}
 	}
+	s.warmThumbs(d.Related, true)
 	return c.JSON(d)
 }
 
@@ -397,6 +400,7 @@ func (s *Service) playlist(c fiber.Ctx) error {
 		return err
 	}
 	out.Videos = items
+	s.warmThumbs(items, false)
 	return c.JSON(out)
 }
 
@@ -540,6 +544,7 @@ func (s *Service) listWatchLater(c fiber.Ctx) error {
 	if err := s.annotate(c.Context(), pid, items); err != nil {
 		return err
 	}
+	s.warmThumbs(items, false)
 	return c.JSON(httpx.List(items))
 }
 
@@ -600,6 +605,7 @@ func (s *Service) listHistory(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	s.warmThumbs(items, false)
 	return c.JSON(httpx.List(items))
 }
 
@@ -612,6 +618,7 @@ func (s *Service) listContinue(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	s.warmThumbs(items, false)
 	return c.JSON(httpx.List(items))
 }
 

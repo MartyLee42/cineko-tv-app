@@ -95,6 +95,14 @@ export function ProfileMenu({ userName, onLogout, isAdmin = false }: { userName:
             <span className="w-[30px] text-center text-muted">✎</span>
             {t("profiles.manage")}
           </Link>
+          {profile && (
+            <Link role="menuitem" to="/tickets" onClick={() => setOpen(false)} className={item} data-testid="menu-tickets">
+              <span className="w-[30px] text-center text-lg" aria-hidden>
+                🎟
+              </span>
+              {t("keepsakes.title")}
+            </Link>
+          )}
           <Link role="menuitem" to="/devices" onClick={() => setOpen(false)} className={item} data-testid="menu-devices">
             <TvIcon className="w-[30px] text-lg text-muted" />
             {t("nav.devices")}

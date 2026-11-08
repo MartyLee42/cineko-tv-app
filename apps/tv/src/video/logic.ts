@@ -268,6 +268,9 @@ export interface VideoPlayerInfo {
   qualities: readonly number[];
   volume: number | null;
   error: VideoFailure | null;
+  /** Audio languages of an auto-dubbed video (labels in the TV's language); absent / empty for one track. */
+  audio_tracks?: readonly { id: string; label: string; language: string }[];
+  audio_track?: string | null;
 }
 
 export type VideoPlaybackState = Schemas["VideoPlaybackState"];
@@ -296,6 +299,10 @@ export function videoPlaybackState(video: VideoRef, info: VideoPlayerInfo | null
     qualities: [...(info?.qualities ?? [])],
     volume: info?.volume === null || info?.volume === undefined ? null : Math.round(info.volume * 100) / 100,
     error: info?.error ?? null,
+    // The phone's «Аудио» list (playback.set_audio), only for several tracks.
+    ...(info?.audio_tracks && info.audio_tracks.length > 1
+      ? { audio_tracks: info.audio_tracks.map((a) => ({ id: a.id, label: a.label, language: a.language || null })), audio_track_id: info.audio_track ?? null }
+      : {}),
   };
 }
 

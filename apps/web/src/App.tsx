@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigate, useNavigationType } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAdminRole } from "@martytv/contracts";
@@ -28,6 +28,7 @@ import { useRealtimeCache } from "./remote/state";
 import { clearCatalogCaches } from "./catalog/cache";
 import { BellIcon, GearIcon, HistoryIcon, HomeIcon, PlayIcon, SearchIcon, TvIcon } from "./icons";
 import { ActiveProfileProvider } from "./watch/ActiveProfile";
+import { ProfileLanguage } from "./watch/LanguagePicker";
 import { InboxButton, MessageToast, ProfileMenu, useMessageEvents } from "./watch/header";
 import { useSettings, useThemeSync } from "./watch/queries";
 import type { Settings } from "./watch/settings";
@@ -57,6 +58,16 @@ import { WebCozyLayer } from "./cozy/WebCozyLayer";
 import { ClientPrefsAgent } from "./devprefs/ui";
 import { OfflinePlayerPage, OfflineScreen } from "./offline/ui";
 import { looksOffline } from "./offline/device";
+
+// «Билеты» (ticket wall + stickers): its own chunk with the shared art.
+const TicketsPage = lazy(() => import("./keepsakes/TicketsPage").then((m) => ({ default: m.TicketsPage })));
+function TicketsRoute() {
+  return (
+    <Suspense fallback={<Centered><Spinner /></Centered>}>
+      <TicketsPage />
+    </Suspense>
+  );
+}
 
 /**
  * A new page (a title, a person, another tab…) opens at the top instead of
@@ -108,6 +119,7 @@ export function App() {
             <Route path="account" element={<Navigate to="/settings#account" replace />} />
             <Route path="lists/:list" element={<ListPage />} />
             <Route path="history" element={<HistoryPage />} />
+            <Route path="tickets" element={<TicketsRoute />} />
             <Route path="new-episodes" element={<NewEpisodesPage />} />
             <Route path="recommendations" element={<RecommendationsPage />} />
             <Route path="explore" element={<ExplorePage />} />
@@ -177,6 +189,7 @@ function RequireAuth() {
   }
   return (
     <ActiveProfileProvider key={session.user.id}>
+      <ProfileLanguage />
       <Outlet />
     </ActiveProfileProvider>
   );

@@ -29,6 +29,7 @@ import (
 	"martytv/api/internal/httpx"
 	"martytv/api/internal/profiles"
 	"martytv/api/internal/realtime"
+	"martytv/api/internal/uilang"
 )
 
 const (
@@ -129,6 +130,7 @@ type Service struct {
 	balance    balanceCache   // DeepSeek balance (admin)
 	idf        idfCache       // keyword damping factors (themes.go)
 	curatedDay sync.Map       // profile id → curatedChoice: the day's curated list (curated.go)
+	quality    qualityCache   // admin quality metrics (quality.go)
 
 	runMu   sync.Mutex
 	running string          // active run id
@@ -260,7 +262,7 @@ func (s *Service) computeProfile(ctx context.Context, profileID, lang string, pa
 	for _, c := range cols {
 		refs = append(refs, CollectionRef{ID: c.id, Theme: c.theme})
 		for i, mid := range c.items {
-			cs.add(mid, Source{Type: ReasonAI, CollectionID: c.id, Strength: s.w.SrcAI * (1 - float64(i)*0.02)})
+			cs.add(mid, Source{Type: ReasonAI, CollectionID: c.id, Rubric: c.theme, Strength: s.w.SrcAI * (1 - float64(i)*0.02)})
 		}
 	}
 
@@ -286,6 +288,9 @@ func (s *Service) computeProfile(ctx context.Context, profileID, lang string, pa
 			watchlist[sg.MediaID] = true
 		}
 	}
+	// The profile's learned source multipliers (stored by the nightly run).
+	w := s.w
+	w.SourceMult = s.sourceMult(ctx, profileID)
 	var scored []Scored
 	for _, id := range cs.order {
 		c := cs.m[id]
@@ -321,13 +326,13 @@ func (s *Service) computeProfile(ctx context.Context, profileID, lang string, pa
 			}
 		}
 		c.Sources = srcs
-		scored = append(scored, Score(c, t, s.w))
+		scored = append(scored, Score(c, t, w))
 	}
 	picks, err := s.loadAIPicks(ctx, profileID)
 	if err != nil {
 		return nil, err
 	}
-	rows, cands := BuildRowsAI(scored, t, s.w, refs, cold, picks.ids())
+	rows, cands := BuildRowsAI(scored, t, w, refs, cold, picks.ids())
 	cache := &cacheRow{
 		Rows:          rows,
 		Pool:          BuildPool(scored, s.w),
@@ -477,8 +482,11 @@ func (s *Service) Rows(ctx context.Context, profileID, lang string) (*Rows, erro
 	if err != nil {
 		return nil, err
 	}
-	rows = s.withFamily(ctx, profileID, lang, rows)
-	rows = s.withCurated(ctx, profileID, lang, rows)
+	// Per-request rows sit at their slot ÷ the learned multiplier, like the
+	// cached ones (read from storage, not recomputed).
+	mult := Weights{SourceMult: s.sourceMult(ctx, profileID)}
+	rows = s.withFamily(ctx, profileID, lang, rows, learnedAt(1, mult.mult(LearnFamily)))
+	rows = s.withCurated(ctx, profileID, lang, rows, learnedAt(curatedRowAt, mult.mult(LearnCurated)))
 	at := c.ComputedAt
 	return &Rows{ProfileID: profileID, GeneratedAt: &at, Stale: stale, ColdStart: c.ColdStart, Rows: rows}, nil
 }
@@ -525,17 +533,17 @@ func (s *Service) newRender(ctx context.Context, lang string, mediaIDs []string,
 		return nil, err
 	}
 	if len(colIDs) > 0 {
-		rows, err := s.pool.Query(ctx, `SELECT id, title_ru, title_en FROM foryou_collections WHERE id = ANY($1::uuid[])`, slicesUniq(colIDs))
+		rows, err := s.pool.Query(ctx, `SELECT id, title_ru, title_en, title_kk FROM foryou_collections WHERE id = ANY($1::uuid[])`, slicesUniq(colIDs))
 		if err != nil {
 			return nil, err
 		}
 		for rows.Next() {
-			var id, ru, en string
-			if err := rows.Scan(&id, &ru, &en); err != nil {
+			var id, ru, en, kk string
+			if err := rows.Scan(&id, &ru, &en, &kk); err != nil {
 				rows.Close()
 				return nil, err
 			}
-			rc.cols[id] = pick(lang, ru, en)
+			rc.cols[id] = uilang.Pick(uilang.Text(ctx, lang), ru, en, kk)
 		}
 		rows.Close()
 	}
@@ -635,7 +643,7 @@ func (s *Service) hydrateRows(ctx context.Context, profileID, lang string, cache
 	}
 	s.annotateRatings(ctx, rc.sums)
 	if picks, err := s.loadAIPicks(ctx, profileID); err == nil {
-		rc.whys = picks.whys(lang)
+		rc.whys = picks.whys(uilang.Text(ctx, lang))
 	}
 	out := make([]Row, 0, len(cached))
 	for _, r := range cached {

@@ -24,6 +24,8 @@ export interface VideoControls {
   next(): boolean;
   /** Switches the quality cap in place (continues from the current position). */
   quality(q: VideoQuality): boolean;
+  /** Switches the audio track (PlaybackSource.audio_tracks id) in place; false when the video has no such track. */
+  audio(id: string): boolean;
   /** Title, position, paused… for the device state. */
   info(): VideoPlayerInfo | null;
 }

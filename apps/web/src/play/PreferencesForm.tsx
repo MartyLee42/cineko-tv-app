@@ -83,7 +83,8 @@ function PrefsForm({ profileId, initial }: { profileId: string; initial: Prefere
     }
     setLocalErr(null);
     save.mutate({
-      ui_language: initial.ui_language,
+      // The language picker may have changed it since this form opened (PATCH updates the cache).
+      ui_language: qc.getQueryData<Preferences>(prefsKey(profileId))?.ui_language ?? initial.ui_language,
       preferred_audio_languages: audio,
       preferred_subtitle_languages: subs,
       preferred_resolution: resolution,

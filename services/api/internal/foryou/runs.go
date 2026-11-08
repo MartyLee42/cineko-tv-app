@@ -38,6 +38,8 @@ type runState struct {
 	aiStopped                                  bool
 	// interactive: an Ask AI request (no background pacing).
 	interactive bool
+	// prior: the household's learned-weights prior (once per run).
+	prior householdPrior
 }
 
 func (r *runState) tokens() int { r.mu.Lock(); defer r.mu.Unlock(); return r.aiTokens }
@@ -231,6 +233,10 @@ func (s *Service) runProfile(ctx context.Context, run *runState, pid string, ai 
 		if _, err := s.generateProfileCollections(pctx, run, pid, t); err != nil {
 			s.recordAIError(run, pid, "ai", err)
 		}
+	}
+	// Learned source weights before the rows, so tonight's rows use them.
+	if err := s.learnProfile(pctx, pid, &run.prior); err != nil {
+		run.addError(pid, "weights", errText(err))
 	}
 	// Rows last, so today's collections become rows.
 	c, err := s.computeProfile(pctx, pid, lang, true)

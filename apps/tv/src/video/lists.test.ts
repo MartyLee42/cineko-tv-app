@@ -120,6 +120,7 @@ function controls(o: Partial<VideoControls> = {}): VideoControls & { calls: stri
     seek: (p) => (calls.push(`seek:${p}`), true),
     next: () => (calls.push("next"), true),
     quality: (q) => (calls.push(`quality:${q}`), true),
+    audio: (id) => (calls.push(`audio:${id}`), true),
     info: () => null,
     ...o,
   };
@@ -144,8 +145,16 @@ describe("phone remote → the YouTube player", () => {
     expect(videoControl({ type: "pause" }, null, close)).toBe("failed");
     expect(videoControl({ type: "seek", position_seconds: 1 }, controls({ seek: () => false }), close)).toBe("failed");
     expect(videoControl({ type: "next_episode" }, controls({ next: () => false }), close)).toBe("failed");
-    expect(videoControl({ type: "set_audio", track_id: "a" }, controls(), close)).toBe("unsupported");
+    expect(videoControl({ type: "set_subtitles", track_id: "a" }, controls(), close)).toBe("unsupported");
     expect(videoControl({ type: "select_source", source_id: "s" }, controls(), close)).toBe("unsupported");
+  });
+
+  it("set_audio switches an auto-dub's language; an unknown track fails", () => {
+    const vc = controls({ audio: (id) => id === "ru" });
+    const close = vi.fn();
+    expect(videoControl({ type: "set_audio", track_id: "ru" }, vc, close)).toBe(true);
+    expect(videoControl({ type: "set_audio", track_id: "xx" }, vc, close)).toBe("failed");
+    expect(videoControl({ type: "set_audio", track_id: "ru" }, null, close)).toBe("failed");
   });
 
   it("video.play of the video on screen with a quality switches in place; anything else starts a video", () => {
@@ -202,6 +211,23 @@ describe("DeviceState.video", () => {
     expect(videoPlaybackState({ id: vid(2) }, null)).toEqual(
       expect.objectContaining({ video_id: vid(2), title: null, thumbnail: `/api/v1/video/thumbs/vi/${vid(2)}/mqdefault.jpg`, position_seconds: 0, buffering: true, paused: false, qualities: [] }),
     );
+  });
+
+  it("an auto-dub's languages for the phone's «Аудио» list (none for one track)", () => {
+    const tracks = [
+      { id: "en", label: "Оригинал · Английский", language: "en" },
+      { id: "ru", label: "Русский дубляж", language: "ru" },
+    ];
+    expect(videoPlaybackState({ id: vid(1) }, { ...info, audio_tracks: tracks, audio_track: "ru" })).toEqual(
+      expect.objectContaining({
+        audio_tracks: [
+          { id: "en", label: "Оригинал · Английский", language: "en" },
+          { id: "ru", label: "Русский дубляж", language: "ru" },
+        ],
+        audio_track_id: "ru",
+      }),
+    );
+    expect(videoPlaybackState({ id: vid(1) }, { ...info, audio_tracks: tracks.slice(0, 1), audio_track: "en" })).not.toHaveProperty("audio_tracks");
   });
 
   it("whole seconds, so a paused video's state isn't re-sent", () => {

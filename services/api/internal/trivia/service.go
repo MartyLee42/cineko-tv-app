@@ -34,6 +34,7 @@ import (
 	"martytv/api/internal/foryou"
 	"martytv/api/internal/httpx"
 	"martytv/api/internal/ratings"
+	"martytv/api/internal/uilang"
 )
 
 const (
@@ -262,8 +263,11 @@ func (s *Service) fetchQuotes(ctx context.Context, t *title, lang string) (*Quot
 
 // Facts returns the title's facts: Kinopoisk's, else DeepSeek's.
 func (s *Service) Facts(ctx context.Context, id, lang string) (*Facts, error) {
+	// AI facts follow the interface language (Kazakh for a Kazakh app):
+	// cached under it; the title is read in the catalog language lang.
+	text := uilang.Text(ctx, lang)
 	var f Facts
-	if s.cached(ctx, id, "facts", lang, &f) {
+	if s.cached(ctx, id, "facts", text, &f) {
 		if f.Source != nil && *f.Source == "ai" && (s.ai == nil || !s.ai.AIAvailable(ctx)) {
 			// AI «Факты» switched off: hide the stored ones (kept for when it's back on).
 			return &Facts{Items: []Fact{}, Lang: lang}, nil
@@ -274,13 +278,13 @@ func (s *Service) Facts(ctx context.Context, id, lang string) (*Facts, error) {
 	if err != nil {
 		return nil, err
 	}
-	v, err := s.once(ctx, "f|"+id+"|"+lang, func(ctx context.Context) (any, error) {
-		res, ttl, err := s.fetchFacts(ctx, t, lang)
+	v, err := s.once(ctx, "f|"+id+"|"+text, func(ctx context.Context) (any, error) {
+		res, ttl, err := s.fetchFacts(ctx, t, lang, text)
 		if err != nil {
 			return nil, err
 		}
 		if ttl > 0 {
-			s.store(ctx, id, "facts", lang, res, ttl)
+			s.store(ctx, id, "facts", text, res, ttl)
 		}
 		return res, nil
 	})
@@ -291,7 +295,8 @@ func (s *Service) Facts(ctx context.Context, id, lang string) (*Facts, error) {
 }
 
 // fetchFacts returns the answer and how long to cache it (0 = not at all).
-func (s *Service) fetchFacts(ctx context.Context, t *title, lang string) (*Facts, time.Duration, error) {
+// text is the AI facts' language (lang, or kk when lang is ru).
+func (s *Service) fetchFacts(ctx context.Context, t *title, lang, text string) (*Facts, time.Duration, error) {
 	res := &Facts{Items: []Fact{}, Lang: lang}
 	// kpLater: Kinopoisk may have facts later (no id yet, budget, outage).
 	kpLater := false
@@ -336,7 +341,7 @@ func (s *Service) fetchFacts(ctx context.Context, t *title, lang string) (*Facts
 		// A short miss: the admin may switch AI «Факты» back on.
 		return res, ttlRetry, nil
 	}
-	ai, err := s.ai.TitleFacts(ctx, foryou.FactsTitle{Title: t.name, OriginalTitle: t.original, Year: t.year, Kind: t.kind}, lang)
+	ai, err := s.ai.TitleFacts(ctx, foryou.FactsTitle{Title: t.name, OriginalTitle: t.original, Year: t.year, Kind: t.kind}, text)
 	switch {
 	case foryou.IsAIUnavailable(err):
 		return res, 0, nil

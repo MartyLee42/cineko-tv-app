@@ -14,6 +14,12 @@ info:
     - Pairing TVs: `Authorization: Pairing <poll_secret>` on pairing status/exchange.
 
     Errors always use the `Error` envelope. Collections use `{ "items": [...] }`.
+
+    Language: `lang` parameters choose catalog data (en | ru; a Kazakh app
+    asks for ru). The apps also send `X-Cineko-Language: en | ru | kk`, the
+    language they show: server-written text (Ask AI, «Ранее в сериале»,
+    «После титров», AI facts, personal reasons, rubric titles) follows it
+    when it reads the requested catalog language — Kazakh for kk with lang=ru.
 servers:
   - url: /api/v1
 security:
@@ -271,6 +277,25 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Preferences" }
+    patch:
+      tags: [profiles]
+      operationId: patchProfilePreferences
+      description: Changes only the fields sent (today `ui_language`, what the language pickers write). User-only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ui_language: { type: string, enum: ["", en, ru, kk] }
+      responses:
+        "200":
+          description: Saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Preferences" }
+        "422": { $ref: "#/components/responses/Error" }
 
   /users/directory:
     get:
@@ -1459,6 +1484,7 @@ paths:
                 episode_id: { type: string, format: uuid, description: "Series: which episode to select inside the torrent / which episode of a season-level online variant." }
                 profile_id: { type: string, format: uuid }
                 quality: { type: integer, description: "Online only: wanted vertical resolution from the variant's qualities (default: best ≤ the profile's preferred resolution)." }
+                audio: { type: string, pattern: "^(original|[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?)$", description: "Video: the audio track — original (the video's own) or a language (ru, pt-br; a base language matches a regional track). Ignored when the video lacks it (then VIDEO_LANG, the original, English — in that order)." }
       responses:
         "201":
           description: Source (preparing or ready).
@@ -1975,6 +2001,32 @@ paths:
                 properties:
                   items: { type: array, items: { $ref: "#/components/schemas/HistoryItem" } }
                   next_cursor: { type: [string, "null"] }
+  /profiles/{id}/tickets:
+    parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/Lang" }]
+    get:
+      tags: [watch]
+      operationId: profileTickets
+      description: >-
+        Ticket stubs, newest (highest number) first. Missing stubs for finished films are issued on read.
+        The profile's own account (or its TV) and admins only.
+      parameters:
+        - { name: cursor, in: query, schema: { type: string }, description: next_cursor of the previous page. }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 24 } }
+      responses:
+        "200": { description: A page of stubs., content: { application/json: { schema: { $ref: "#/components/schemas/TicketPage" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+  /profiles/{id}/achievements:
+    parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/Lang" }]
+    get:
+      tags: [watch]
+      operationId: profileAchievements
+      description: >-
+        Unlocked stickers (silent: no events or notifications), recorded on read from the watch history.
+        The profile's own account (or its TV) and admins only.
+      responses:
+        "200": { description: Unlocked stickers., content: { application/json: { schema: { $ref: "#/components/schemas/AchievementList" } } } }
+        "404": { $ref: "#/components/responses/Error" }
   /media/{id}/progress:
     parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/Lang" }]
     get:
@@ -3137,12 +3189,58 @@ paths:
                 themes_ai: { type: boolean, description: "False: the daily run doesn't ask the model to group the scorer's candidates into theme rubrics." }
                 picks_ai: { type: boolean, description: "False: no AI re-ranking of «Подобрано для вас» (stored picks still apply until they expire, 48 h)." }
                 companion_ai: { type: boolean, description: "False: no «Ранее в сериале» / «После титров» (buttons hidden)." }
+                learn_weights: { type: boolean, description: "False: the nightly run stops learning source weights and scoring ignores the stored ones (`ai_feature_learn_weights`; not an AI call)." }
       responses:
         "200":
           description: The new settings.
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ForYouAISettings" }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+  /admin/foryou/weights:
+    get:
+      tags: [foryou]
+      operationId: adminForYouWeights
+      description: Learned source weights per profile («Учить веса по просмотрам», docs/architecture.md "Learned source weights") with the share-weighted counts of the 60-day window behind them. Admin only.
+      responses:
+        "200":
+          description: Every profile with stored weights.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ForYouWeights" }
+        "403": { $ref: "#/components/responses/Error" }
+  /admin/foryou/weights/{id}:
+    delete:
+      tags: [foryou]
+      operationId: adminResetForYouWeights
+      description: Forgets a profile's learned weights (back to the defaults; its rows rebuild in the background). Admin only.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Reset. }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+  /admin/foryou/quality:
+    get:
+      tags: [foryou]
+      operationId: adminForYouQuality
+      description: |
+        Recommendation quality per profile and for the household, from the
+        profiles' own plays and ratings (read-only, cached 5 minutes): the
+        shown → played (≥ 10 min) → finished → rated → liked (≥ 7) funnel,
+        ratings of recommended titles vs the profile's other ratings,
+        calibration by predicted score, per-source quality, precision@10 of
+        «Подобрано для вас», best hits and misses. Admin only.
+      parameters:
+        - { name: window, in: query, schema: { type: string, enum: ["30", "90", "all"], default: "90" } }
+        - { name: lang, in: query, schema: { type: string, enum: [en, ru], default: en } }
+      responses:
+        "200":
+          description: The report.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ForYouQuality" }
         "403": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
   # ---- end foryou
@@ -3813,6 +3911,97 @@ paths:
       responses:
         "200": { description: Status., content: { application/json: { schema: { $ref: "#/components/schemas/AdminVideoStatus" } } } }
         "403": { $ref: "#/components/responses/Error" }
+  # ---------------------------------------------------------------- outage alerts (internal/alerts)
+  /admin/incidents:
+    get:
+      tags: [admin]
+      operationId: adminListIncidents
+      description: "Outage incidents: open ones first, then the last 30 days. Opened by the API's monitor (TMDB, Prowlarr, TorrServer, Invidious, the VPN proxy, disk, database; ~3 failed checks a minute apart) or the host scripts (POST /internal/incident). Admins get a Cineko message (and Web Push) on open, every 6 h while open, and on recovery."
+      parameters:
+        - { name: lang, in: query, description: "Language of summary / notes (ru default, en, kk).", schema: { type: string } }
+      responses:
+        "200":
+          description: Newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, open]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Incident" } }
+                  open: { type: integer }
+        "403": { $ref: "#/components/responses/Error" }
+  /admin/alerts/push:
+    get:
+      tags: [admin]
+      operationId: adminAlertPushStatus
+      description: The server's VAPID public key (applicationServerKey) and how many browsers of the caller get outage pushes.
+      responses:
+        "200":
+          description: Status.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [public_key, subscriptions]
+                properties:
+                  public_key: { type: string, description: "base64url uncompressed P-256 point." }
+                  subscriptions: { type: integer }
+        "403": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [admin]
+      operationId: adminAlertPushSubscribe
+      description: "«Уведомления о сбоях»: store this browser's PushSubscription (upsert by endpoint). Only known push services (FCM, Mozilla, Apple, Windows) over HTTPS."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, keys]
+              properties:
+                endpoint: { type: string }
+                keys:
+                  type: object
+                  required: [p256dh, auth]
+                  properties:
+                    p256dh: { type: string }
+                    auth: { type: string }
+                locale: { type: string, description: "ru | en | kk: the language of pushes and of this admin's alert messages." }
+      responses:
+        "204": { description: Subscribed. }
+        "422": { $ref: "#/components/responses/Error" }
+  /admin/alerts/push/unsubscribe:
+    post:
+      tags: [admin]
+      operationId: adminAlertPushUnsubscribe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint]
+              properties:
+                endpoint: { type: string }
+      responses:
+        "204": { description: Removed (or wasn't there). }
+  /admin/alerts/push/test:
+    post:
+      tags: [admin]
+      operationId: adminAlertPushTest
+      description: Sends a test notification to the caller's subscribed browsers.
+      responses:
+        "200":
+          description: Result.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sent, failed]
+                properties:
+                  sent: { type: integer }
+                  failed: { type: integer }
   # ---------------------------------------------------------------- super_admin: all devices & pairing requests
   /admin/devices:
     get:
@@ -4102,7 +4291,7 @@ components:
       type: object
       required: [ui_language, preferred_audio_languages, preferred_subtitle_languages, preferred_resolution, max_size_gb, preferred_codecs]
       properties:
-        ui_language: { type: string, enum: [en, ru] }
+        ui_language: { type: string, enum: ["", en, ru, kk], description: "The profile's interface language; \"\" = not chosen. Apps use it on a device that has no language of its own (that device's choice wins), before the browser/TV language." }
         preferred_audio_languages: { type: array, items: { type: string } }
         preferred_subtitle_languages: { type: array, items: { type: string } }
         preferred_resolution: { type: string, enum: ["", 480p, 720p, 1080p, 2160p] }
@@ -4860,6 +5049,15 @@ components:
         qualities: { type: array, items: { type: integer }, description: "Heights the video offers (descending)." }
         volume: { type: [number, "null"], minimum: 0, maximum: 1 }
         error: { type: [string, "null"], enum: [unavailable, live, unplayable, failed, null], description: "Set when the TV couldn't play it." }
+        audio_tracks: { type: array, items: { $ref: "#/components/schemas/Track" }, description: "Audio languages of an auto-dubbed video (id = VideoAudioTrack.id; label in the TV's language). Switch with playback.set_audio. Optional; empty for one track." }
+        audio_track_id: { type: [string, "null"], description: "The audio track playing. Optional." }
+    VideoAudioTrack:
+      type: object
+      required: [id, language, original]
+      properties:
+        id: { type: string, description: "The language as YouTube tags it (ru, en, pt-br); pass as audio." }
+        language: { type: string }
+        original: { type: boolean, description: "The video's own audio (not a dub)." }
     Track:
       type: object
       required: [id, label]
@@ -4897,7 +5095,7 @@ components:
                 paused: { type: boolean, description: "Paused with media.pause (media.resume continues)." }
             - type: "null"
         video:
-          description: "«Видео»: the YouTube video on screen (screen = player, media_id/playback null). Controlled with media.pause / media.resume / media.seek / media.stop / media.next_episode (the first playable related video); video.play with the same video_id and a quality switches the quality in place."
+          description: "«Видео»: the YouTube video on screen (screen = player, media_id/playback null). Controlled with media.pause / media.resume / media.seek / media.stop / media.next_episode (the first playable related video), playback.set_audio (video.audio_tracks); video.play with the same video_id and a quality switches the quality in place."
           oneOf:
             - $ref: "#/components/schemas/VideoPlaybackState"
             - type: "null"
@@ -5058,6 +5256,8 @@ components:
         video_id: { type: string, description: "Video: the YouTube video id (kind video)." }
         fallback_url: { type: [string, "null"], description: "Video: progressive MP4 (360p) for engines without fMP4 HLS; null when YouTube has none." }
         position_seconds: { type: [number, "null"], description: "Video: the profile's resume position (unfinished videos)." }
+        audio_tracks: { type: array, items: { $ref: "#/components/schemas/VideoAudioTrack" }, description: "Video: the audio languages of an auto-dubbed video (YouTube's order: VIDEO_LANG, the original, …); empty for one track. Switch with a new source ({audio: id}), continuing from the position." }
+        audio_track: { type: [string, "null"], description: "Video: the audio_tracks id stream_url plays (null with one track)." }
         download: { oneOf: [{ $ref: "#/components/schemas/DownloadBrief" }, { type: "null" }], description: "Torrent: the server download of this file (docs «Server downloads»); when done, stream_url/compat_url read the server's copy instead of TorrServer. null when never requested. Optional." }
 
     # ------------------------------------------------------------ sources
@@ -5506,6 +5706,53 @@ components:
       properties:
         media: { $ref: "#/components/schemas/MediaSummary" }
         progress: { $ref: "#/components/schemas/WatchProgress" }
+
+    # ------------------------------------------------------------ keepsakes: ticket stubs & stickers
+    TicketStub:
+      type: object
+      description: >-
+        A paper ticket stub for a finished film (issued once, the first time it counts as finished; kept when the
+        film is marked unwatched). Hall/row/seat are a stable hash of (profile, film).
+      required: [number, media, finished_at, date, time, hall, row, seat, rating]
+      properties:
+        number: { type: integer, minimum: 1, description: "The profile's running stub number." }
+        media: { $ref: "#/components/schemas/MediaSummary" }
+        finished_at: { type: string, format: date-time }
+        date: { type: string, format: date, description: finished_at on the household clock. }
+        time: { type: string, pattern: "^\\d{2}:\\d{2}$", description: "HH:MM on the household clock." }
+        hall: { type: integer, minimum: 1, maximum: 9 }
+        row: { type: integer, minimum: 1, maximum: 20 }
+        seat: { type: integer, minimum: 1, maximum: 30 }
+        rating: { type: [integer, "null"], minimum: 1, maximum: 10, description: "The profile's rating (punched holes)." }
+    TicketPage:
+      type: object
+      required: [items, next_cursor, total, cinema, timezone]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/TicketStub" } }
+        next_cursor: { type: [string, "null"] }
+        total: { type: integer }
+        cinema: { type: string, description: Name printed on the stubs («Cineko»). }
+        timezone: { type: string, description: "The household's IANA timezone (TZ, else NEW_EPISODES_TZ, else Europe/Moscow)." }
+    AchievementId:
+      type: string
+      description: Sticker id; clients ignore ids they don't know (new stickers may be added).
+      examples: [marathon, archaeologist, polyglot, night_owl]
+    Achievement:
+      type: object
+      required: [id, unlocked_at, date, media_id, media_title]
+      properties:
+        id: { $ref: "#/components/schemas/AchievementId" }
+        unlocked_at: { type: string, format: date-time, description: When the history first met the rule. }
+        date: { type: string, format: date, description: unlocked_at on the household clock. }
+        media_id: { type: [string, "null"], format: uuid, description: The title that earned it. }
+        media_title: { type: [string, "null"] }
+    AchievementList:
+      type: object
+      required: [items, secret, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Achievement" }, description: "Unlocked only, oldest first." }
+        secret: { type: integer, description: Stickers not unlocked yet (never listed). }
+        total: { type: integer }
 
     # ------------------------------------------------------------ admin activity & messages (Phase 5)
     ActivityItem:
@@ -6148,6 +6395,114 @@ components:
         started_at: { type: string, format: date-time }
         finished_at: { type: [string, "null"], format: date-time }
         duration_ms: { type: [integer, "null"] }
+    ForYouSourceWeight:
+      type: object
+      required: [source, weight, prev_weight, target, impressions, opens, plays, completes, dismisses]
+      properties:
+        source: { type: string, description: "Learn key: trending, because_you_rated, director, actor, theme, genre, hidden_gem, something_different, ai_collection, ai_theme, ai_picks, rewatch, family, curated." }
+        weight: { type: number, description: "Multiplier in use (0.5–2)." }
+        prev_weight: { type: number, description: "Before the last nightly step." }
+        target: { type: number, description: "Where the estimate points (the weight moves at most ±15 % a night)." }
+        impressions: { type: number }
+        opens: { type: number }
+        plays: { type: number, description: "Plays of ≥ 10 min (or completions) after an open from the row." }
+        completes: { type: number }
+        dismisses: { type: number }
+    ForYouProfileWeights:
+      type: object
+      required: [profile_id, name, owner, updated_at, items]
+      properties:
+        profile_id: { type: string, format: uuid }
+        name: { type: string }
+        owner: { type: string }
+        updated_at: { type: string, format: date-time }
+        items: { type: array, items: { $ref: "#/components/schemas/ForYouSourceWeight" } }
+    ForYouWeights:
+      type: object
+      required: [enabled, sources, items]
+      properties:
+        enabled: { type: boolean, description: "The admin switch learn_weights." }
+        sources: { type: array, items: { type: string }, description: "Every learn key, in display order." }
+        items: { type: array, items: { $ref: "#/components/schemas/ForYouProfileWeights" } }
+    ForYouRatingSummary:
+      type: object
+      required: [n, avg, liked, disliked]
+      properties:
+        n: { type: integer }
+        avg: { type: [number, "null"] }
+        liked: { type: [number, "null"], description: "Share rated ≥ 7." }
+        disliked: { type: [number, "null"], description: "Share rated ≤ 4." }
+    ForYouQualityStats:
+      type: object
+      required: [funnel, recommended, elsewhere, calibration, sources, precision_shown, precision_liked, hits, misses]
+      properties:
+        funnel:
+          type: object
+          required: [shown, played, finished, rated, liked, disliked]
+          properties:
+            shown: { type: integer }
+            played: { type: integer }
+            finished: { type: integer }
+            rated: { type: integer }
+            liked: { type: integer }
+            disliked: { type: integer }
+        recommended: { $ref: "#/components/schemas/ForYouRatingSummary" }
+        elsewhere: { $ref: "#/components/schemas/ForYouRatingSummary" }
+        calibration:
+          type: array
+          description: Tertiles of the shown titles by predicted score, low → high (empty under 3 scored titles).
+          items:
+            allOf:
+              - { $ref: "#/components/schemas/ForYouRatingSummary" }
+              - type: object
+                required: [score_min, score_max, shown, played]
+                properties:
+                  score_min: { type: number }
+                  score_max: { type: number }
+                  shown: { type: integer }
+                  played: { type: integer }
+        sources:
+          type: array
+          items:
+            type: object
+            required: [source, shown, plays, rated, avg, liked]
+            properties:
+              source: { type: string }
+              shown: { type: number }
+              plays: { type: number }
+              rated: { type: number }
+              avg: { type: [number, "null"] }
+              liked: { type: [number, "null"] }
+        precision_shown: { type: integer, description: "Titles shown in the first 10 tiles of «Подобрано для вас»." }
+        precision_liked: { type: integer, description: "Of those, rated ≥ 7." }
+        hits: { type: array, items: { $ref: "#/components/schemas/ForYouQualityTitle" } }
+        misses: { type: array, items: { $ref: "#/components/schemas/ForYouQualityTitle" } }
+    ForYouQualityTitle:
+      type: object
+      required: [media_id, title, year, poster_path, rating]
+      properties:
+        media_id: { type: string, format: uuid }
+        title: { type: string }
+        year: { type: [integer, "null"] }
+        poster_path: { type: [string, "null"] }
+        rating: { type: integer }
+    ForYouQuality:
+      type: object
+      required: [window, generated_at, household, profiles]
+      properties:
+        window: { type: string, enum: ["30", "90", "all"] }
+        generated_at: { type: string, format: date-time }
+        household: { $ref: "#/components/schemas/ForYouQualityStats" }
+        profiles:
+          type: array
+          items:
+            type: object
+            required: [profile_id, name, owner, stats]
+            properties:
+              profile_id: { type: string, format: uuid }
+              name: { type: string }
+              owner: { type: string }
+              stats: { $ref: "#/components/schemas/ForYouQualityStats" }
     ForYouAIStatus:
       type: object
       required: [enabled, model, tokens_today, daily_budget, run_budget, balance, temperature, facts_ai, companion_ai]
@@ -6158,6 +6513,7 @@ components:
         themes_ai: { type: boolean, description: "The daily run groups each profile's good unseen candidates into AI theme rubrics (admin switch, default true)." }
         picks_ai: { type: boolean, description: "The daily run re-ranks «Подобрано для вас» with a personal reason per title (admin switch, default true)." }
         companion_ai: { type: boolean, description: "«Ранее в сериале» / «После титров» allowed (admin switch, default true)." }
+        learn_weights: { type: boolean, description: "The nightly run learns per-profile source weights from plays (admin switch, default true)." }
         model: { type: string }
         tokens_today: { type: integer, description: "Tokens used today (Moscow date)." }
         daily_budget: { type: integer }
@@ -6810,6 +7166,20 @@ components:
         position_seconds: { type: number, minimum: 0, description: "Start here (the phone's current position)." }
         quality: { type: integer, enum: [480, 720, 1080], description: "Default: the profile's video_quality." }
         force: { type: boolean }
+    Incident:
+      type: object
+      required: [id, kind, cause, detail, source, summary, notes, opened_at, closed_at, reminders]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [tmdb, prowlarr, torrserver, invidious, proxy, disk, database, youtube, vpn, updater] }
+        cause: { type: string, description: "e.g. unauthorized (tmdb), search / streams (youtube), rollback (updater)." }
+        detail: { type: string, description: "Technical detail (error text, free space)." }
+        source: { type: string, enum: [monitor, host] }
+        summary: { type: string, description: "What broke, localized." }
+        notes: { type: array, items: { type: string }, description: "Actions taken (restarts, rollback), localized." }
+        opened_at: { type: string, format: date-time }
+        closed_at: { type: [string, "null"], format: date-time }
+        reminders: { type: integer }
     AdminVideoStatus:
       type: object
       required: [configured, reachable, version, latency_ms, checked_at, last_error, last_error_at, last_ok_at, subscriptions, channels, feed_videos, feed_refreshed_at]

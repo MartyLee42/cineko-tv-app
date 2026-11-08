@@ -3,7 +3,9 @@ package config
 import (
 	"errors"
 	"net/url"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // VideoConfig drives the YouTube «Видео» tab (internal/video).
@@ -19,6 +21,12 @@ type VideoConfig struct {
 	// Lang is the `hl` sent to Invidious (its own strings: "2 дня назад"),
 	// ISO 639-1, default ru.
 	Lang string
+	// ThumbCacheMB bounds the thumbnail/avatar disk cache (least recently
+	// used files go first), VIDEO_THUMB_CACHE_MB, default 500; 0 = no disk cache.
+	ThumbCacheMB int
+	// ThumbMaxAge drops thumbnails not used for this long,
+	// VIDEO_THUMB_CACHE_DAYS, default 14.
+	ThumbMaxAge time.Duration
 }
 
 func loadVideo(get func(string, string) string, errs *[]error) VideoConfig {
@@ -26,6 +34,22 @@ func loadVideo(get func(string, string) string, errs *[]error) VideoConfig {
 		InvidiousURL: strings.TrimRight(strings.TrimSpace(get("INVIDIOUS_URL", "")), "/"),
 		Region:       strings.ToUpper(strings.TrimSpace(get("VIDEO_REGION", "RU"))),
 		Lang:         strings.ToLower(strings.TrimSpace(get("VIDEO_LANG", "ru"))),
+	}
+	c.ThumbCacheMB = 500
+	if v := strings.TrimSpace(get("VIDEO_THUMB_CACHE_MB", "")); v != "" {
+		if n, err := strconv.Atoi(v); err != nil || n < 0 {
+			*errs = append(*errs, errors.New("VIDEO_THUMB_CACHE_MB must be a non-negative integer"))
+		} else {
+			c.ThumbCacheMB = n
+		}
+	}
+	c.ThumbMaxAge = 14 * 24 * time.Hour
+	if v := strings.TrimSpace(get("VIDEO_THUMB_CACHE_DAYS", "")); v != "" {
+		if n, err := strconv.Atoi(v); err != nil || n < 1 {
+			*errs = append(*errs, errors.New("VIDEO_THUMB_CACHE_DAYS must be a positive integer"))
+		} else {
+			c.ThumbMaxAge = time.Duration(n) * 24 * time.Hour
+		}
 	}
 	if c.InvidiousURL != "" {
 		u, err := url.Parse(c.InvidiousURL)

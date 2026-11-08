@@ -10,10 +10,11 @@ import (
 const familyRowLimit = 20
 
 // withFamily inserts the «Семья советует» row (internal/family) as the
-// second row (first when there is no other), computed per request. Its
+// second row (first when there is no other; later when its learned weight
+// is low: pos), computed per request. Its
 // titles leave the other rows (items stay unique across rows); rows left
 // too short are dropped. Errors only drop the family row.
-func (s *Service) withFamily(ctx context.Context, profileID, lang string, rows []Row) []Row {
+func (s *Service) withFamily(ctx context.Context, profileID, lang string, rows []Row, pos int) []Row {
 	if s.family == nil {
 		return rows
 	}
@@ -44,7 +45,7 @@ func (s *Service) withFamily(ctx context.Context, profileID, lang string, rows [
 		r.Items = items
 		out = append(out, r)
 	}
-	at := min(1, len(out))
+	at := min(pos, len(out))
 	return append(out[:at], append([]Row{row}, out[at:]...)...)
 }
 

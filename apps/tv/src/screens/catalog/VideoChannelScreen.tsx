@@ -17,6 +17,7 @@ import { compactCount, countForm, dedupeById, wantsMore, type VideoItem } from "
 import { isVideoUnavailable, setSubscribed, useAutoRetry, useVideoChannel } from "../../video/queries";
 import { useVideoMenu } from "../../video/actions";
 import { VideoCard, videoGeo } from "../../video/VideoCard";
+import { prefetchGrid } from "../../video/prefetch";
 import { Unavailable } from "./VideoScreen";
 
 const EDGE = 40;
@@ -98,6 +99,7 @@ export function VideoChannelScreen({
           const row = Math.floor(i / cols);
           scroll(row === 0 ? 0 : GRID_TOP + row * pitchY - 110);
           more(i);
+          prefetchGrid(items, i, cols, g.w);
         }}
         onSelect={(v) => menu.select(v)}
         onLongPress={(v) => menu.more(v)}

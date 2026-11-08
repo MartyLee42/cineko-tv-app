@@ -57,5 +57,10 @@ import { devicedlKk } from "./devicedl.kk";
 import { titleActionsKk } from "./titleactions.kk";
 import { appupdateKk } from "./appupdate.kk";
 import { iptvplayKk } from "./iptvplay.kk";
+import { uilangKk } from "./uilang.kk";
+import { learnWeightsKk } from "./learnweights.kk";
+import { alertsKk } from "./alerts.kk";
+import { keepsakesKk } from "./keepsakes.kk";
+import { ytaudioKk } from "./ytaudio.kk";
 
-export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk, ...soundtrackKk, ...themesKk, ...smoothKk, ...chaptersKk, ...companionKk, ...devsettingsKk, ...loadersKk, ...loaders2Kk, ...filmthemeKk, ...multtarkovskyKk, ...andersonKk, ...westernKk, ...quickKk, ...demoKk, ...errorsUserKk, ...devicedlKk, ...titleActionsKk, ...appupdateKk, ...iptvplayKk };
+export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk, ...soundtrackKk, ...themesKk, ...smoothKk, ...chaptersKk, ...companionKk, ...devsettingsKk, ...loadersKk, ...loaders2Kk, ...filmthemeKk, ...multtarkovskyKk, ...andersonKk, ...westernKk, ...quickKk, ...demoKk, ...errorsUserKk, ...devicedlKk, ...titleActionsKk, ...appupdateKk, ...iptvplayKk, ...uilangKk, ...learnWeightsKk, ...alertsKk, ...keepsakesKk, ...ytaudioKk };

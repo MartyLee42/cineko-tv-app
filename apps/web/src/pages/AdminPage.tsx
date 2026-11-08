@@ -21,6 +21,7 @@ import { ForYouTab } from "../admin/ForYouTab";
 import { StorageTab } from "../admin/StorageTab";
 import { IptvTab } from "../admin/IptvTab";
 import { DevicesTab } from "../admin/DevicesTab";
+import { IncidentsTab, useIncidents } from "../admin/IncidentsTab";
 import { SeasonalAdminCard } from "../seasons/SeasonalSetting";
 import { NewEpisodesAdminCard } from "../newepisodes/AdminCard";
 
@@ -31,7 +32,7 @@ export function AdminPage() {
   const tabParam = params.get("tab");
   const superAdmin = isSuperAdminRole(session?.user.role);
   const tab: AdminTab =
-    tabParam === "server" || tabParam === "errors" || tabParam === "sources" || tabParam === "foryou" || tabParam === "storage" || tabParam === "iptv" || (tabParam === "devices" && superAdmin)
+    tabParam === "server" || tabParam === "incidents" || tabParam === "errors" || tabParam === "sources" || tabParam === "foryou" || tabParam === "storage" || tabParam === "iptv" || (tabParam === "devices" && superAdmin)
       ? tabParam
       : "overview";
   if (!session || !isAdminRole(session.user.role)) return <Navigate to="/" replace />;
@@ -42,6 +43,10 @@ export function AdminPage() {
       {tab === "server" ? (
         <div role="tabpanel" id="admin-panel-server" aria-labelledby="admin-tab-server">
           <ServerTab />
+        </div>
+      ) : tab === "incidents" ? (
+        <div role="tabpanel" id="admin-panel-incidents" aria-labelledby="admin-tab-incidents">
+          <IncidentsTab />
         </div>
       ) : tab === "errors" ? (
         <div role="tabpanel" id="admin-panel-errors" aria-labelledby="admin-tab-errors">
@@ -81,13 +86,14 @@ export function AdminPage() {
   );
 }
 
-type AdminTab = "overview" | "server" | "errors" | "sources" | "foryou" | "storage" | "iptv" | "devices";
+type AdminTab = "overview" | "server" | "incidents" | "errors" | "sources" | "foryou" | "storage" | "iptv" | "devices";
 
 function AdminTabs({ tab, superAdmin, onChange }: { tab: AdminTab; superAdmin: boolean; onChange: (t: AdminTab) => void }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const tabs: { id: AdminTab; label: MessageKey }[] = [
     { id: "overview", label: "admin.tab.overview" },
     { id: "server", label: "admin.tab.server" },
+    { id: "incidents", label: "alerts.tab" },
     { id: "errors", label: "admin.tab.errors" },
     { id: "sources", label: "admin.tab.sources" },
     { id: "foryou", label: "fy.admin.tab" },
@@ -97,6 +103,7 @@ function AdminTabs({ tab, superAdmin, onChange }: { tab: AdminTab; superAdmin: b
     ...(superAdmin ? [{ id: "devices" as const, label: "admin.tab.devices" as const }] : []),
   ];
   const unseenErrors = useUnseenErrors(tab === "errors");
+  const openIncidents = useIncidents(locale).data?.open ?? 0;
   return (
     <div role="tablist" aria-label={t("nav.admin")} className="no-scrollbar inline-flex max-w-full overflow-x-auto rounded-full border border-border bg-surface p-1">
       {tabs.map((x) => (
@@ -113,6 +120,15 @@ function AdminTabs({ tab, superAdmin, onChange }: { tab: AdminTab; superAdmin: b
           }`}
         >
           {t(x.label)}
+          {x.id === "incidents" && openIncidents > 0 && (
+            <span
+              className="ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1 text-[11px] font-semibold leading-5 text-bg"
+              aria-label={t("alerts.tab_badge", { n: openIncidents })}
+              data-testid="incidents-tab-badge"
+            >
+              {openIncidents}
+            </span>
+          )}
           {x.id === "errors" && unseenErrors > 0 && (
             <span
               className="ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1 text-[11px] font-semibold leading-5 text-bg"

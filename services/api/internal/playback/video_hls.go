@@ -116,7 +116,11 @@ func masterPlaylist(v *VideoTrack, audio *VideoTrack) []byte {
 	codecs := v.Codecs
 	audioAttr := ""
 	if audio != nil {
-		fmt.Fprintf(&b, "#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud\",NAME=\"Audio\",DEFAULT=YES,AUTOSELECT=YES,URI=\"a%d.m3u8\"\n", audio.Itag)
+		lang := ""
+		if audio.Lang != "" {
+			lang = `,LANGUAGE="` + audio.Lang + `"`
+		}
+		fmt.Fprintf(&b, "#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud\",NAME=\"Audio\"%s,DEFAULT=YES,AUTOSELECT=YES,URI=\"a%d%s.m3u8\"\n", lang, audio.Itag, audioSuffix(audio))
 		bw += audio.Bandwidth
 		if audio.Codecs != "" {
 			codecs += "," + audio.Codecs

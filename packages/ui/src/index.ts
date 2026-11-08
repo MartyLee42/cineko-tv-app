@@ -38,4 +38,5 @@ export * from "./loaderSurprise";
 export * from "./loaderPick";
 export * from "./loaderMatch";
 export * from "./companion";
+export * from "./videoAudio";
 export * from "./soundtrack";

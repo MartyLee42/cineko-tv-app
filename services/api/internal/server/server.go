@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"martytv/api/internal/alerts"
 	"martytv/api/internal/appsettings"
 	"martytv/api/internal/audit"
 	"martytv/api/internal/auth"
@@ -33,6 +34,7 @@ import (
 	"martytv/api/internal/integrations/tmdb"
 	"martytv/api/internal/integrations/torrserver"
 	"martytv/api/internal/iptv"
+	"martytv/api/internal/keepsakes"
 	"martytv/api/internal/ivrestart"
 	"martytv/api/internal/messages"
 	"martytv/api/internal/metrics"
@@ -51,6 +53,7 @@ import (
 	"martytv/api/internal/sources/sourcesapi"
 	"martytv/api/internal/sysmon"
 	"martytv/api/internal/trivia"
+	"martytv/api/internal/uilang"
 	"martytv/api/internal/users"
 	"martytv/api/internal/video"
 	"martytv/api/internal/watch"
@@ -99,6 +102,8 @@ type Server struct {
 	InvidiousRestart *ivrestart.Restarter
 	// Metrics refreshes the GET /metrics snapshot (Run); nil without METRICS_TOKEN.
 	Metrics *metrics.Refresher
+	// Alerts: the outage monitor (Run: every minute) and admin notices.
+	Alerts *alerts.Service
 }
 
 // New builds the HTTP application.
@@ -152,6 +157,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	app.Use(prom.Middleware()) // request counters by route template (cheap; also with /metrics off)
 	app.Use(httpx.RequestIDMiddleware())
 	app.Use(httpx.LoggerMiddleware(log))
+	app.Use(uilang.Middleware())        // X-Cineko-Language → the language of generated text
 	app.Use(imports.LimitOtherBodies()) // BodyLimit fits 5 MB import uploads; 1 MiB for every other route
 
 	app.Get("/healthz", func(c fiber.Ctx) error {
@@ -196,6 +202,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	watchSvc.SetNewEpisodes(cfg.NewEpisodes) // nightly «Новые серии» (main: Watch.RunNewEpisodes)
 	watchHandlers := watch.NewHandlers(watchSvc)
 	watchHandlers.Routes(api)
+	// Ticket stubs and achievement stickers (internal/keepsakes), from watch history.
+	keepsakes.New(keepsakes.Options{Pool: pool, Profiles: profileStore, Catalog: catalogSvc, Location: cfg.Household}).Routes(api)
 	msgHandlers := messages.NewHandlers(pool, hub, auditLog)
 	msgHandlers.Routes(api)
 	reco.NewHandlers(pool, catalogSvc, watchSvc, hub, auditLog).Routes(api)
@@ -292,7 +300,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	}
 	videoClient.SetLocale(cfg.Video.Lang, cfg.Video.Region)
 	videoSvc := video.NewService(video.Deps{Pool: pool, Client: videoClient, Profiles: profileStore, Region: cfg.Video.Region,
-		ThumbDir: cfg.Catalog.ImageCacheDir + "/video", Log: log, Prefs: videoPrefs(profileStore)})
+		ThumbDir: cfg.Catalog.ImageCacheDir + "/video", ThumbCacheBytes: int64(cfg.Video.ThumbCacheMB) << 20, ThumbMaxAge: cfg.Video.ThumbMaxAge,
+		Log: log, Prefs: videoPrefs(profileStore)})
 	videoSvc.Routes(api)
 	playbackSvc.SetVideo(videoSvc)
 
@@ -321,6 +330,12 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 		Transcoder:    transcoderStats(playbackSvc),
 	})
 	sysmonSvc.AdminRoutes(admin)
+	// Outage alerts (internal/alerts): the monitor reuses the cached checks above.
+	alertsSvc := alerts.New(alerts.Deps{Pool: pool, Hub: hub, Checks: checker.Statuses, Video: videoSvc.Health,
+		Disks: sysmonSvc.Disks, ProxyURL: cfg.TMDB.ProxyURL, Token: cfg.AlertToken, Location: cfg.InvidiousRestart.Location,
+		PushSubject: pushSubject(cfg), Log: log.With("module", "alerts")})
+	alertsSvc.AdminRoutes(admin)  // /admin/incidents, /admin/alerts/push*
+	alertsSvc.InternalRoutes(app) // POST /internal/incident (host scripts; not proxied by Caddy)
 	clientLog.Routes(api)
 	clientLog.AdminRoutes(admin)
 	appSettings.AdminRoutes(admin)
@@ -345,7 +360,16 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	}
 
 	return &Server{App: app, Auth: authSvc, Pairing: pairSvc, Hub: hub, Catalog: catalogSvc, Playback: playbackSvc, Watch: watchSvc, Sysmon: sysmonSvc, Ratings: ratingsSvc, Awards: awardsSvc, Sources: srcReg, Online: onlineSvc, ClientLog: clientLog, Imports: importSvc, ForYou: forYouSvc, Curated: curatedSvc, Downloads: downloadsSvc, IPTV: iptvSvc, Video: videoSvc, Trivia: triviaSvc,
-		InvidiousRestart: ivrestart.New(cfg.InvidiousRestart, playback.LastVideoStream, log), Metrics: refresher}
+		InvidiousRestart: ivrestart.New(cfg.InvidiousRestart, playback.LastVideoStream, log), Metrics: refresher,
+		Alerts: alertsSvc}
+}
+
+// pushSubject: the VAPID contact, the server's own https URL when it has one.
+func pushSubject(cfg *config.Config) string {
+	if u := cfg.PublicBaseURL; u != nil && u.Scheme == "https" && u.Host != "" {
+		return "https://" + u.Host
+	}
+	return ""
 }
 
 // RunCleanup periodically prunes expired sessions and pairing requests.

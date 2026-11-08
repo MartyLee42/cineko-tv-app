@@ -1,4 +1,5 @@
 import { createApi, RealtimeClient, realtimeUrl } from "@martytv/contracts";
+import { currentLocale } from "@martytv/ui";
 import { credentialStore } from "./platform";
 
 /** `rejected`: the credential the failed request carried (null: unknown, e.g. the socket). */
@@ -20,6 +21,7 @@ function fireUnauthorized(request?: Request) {
 export const api = createApi({
   getBearer: () => credentialStore.get() ?? undefined,
   onUnauthorized: fireUnauthorized,
+  getLanguage: currentLocale, // AI text in the language on screen (Kazakh too)
 });
 
 /** The TV's realtime link. Authenticates with its device credential. */

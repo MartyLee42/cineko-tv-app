@@ -15,6 +15,7 @@ import (
 	"martytv/api/internal/auth"
 	"martytv/api/internal/db"
 	"martytv/api/internal/httpx"
+	"martytv/api/internal/uilang"
 )
 
 const MaxProfilesPerUser = 8
@@ -37,6 +38,8 @@ type Profile struct {
 }
 
 type Preferences struct {
+	// UILanguage: the profile's interface language (en | ru | kk), "" = not
+	// chosen. The apps apply it on a device without a language of its own.
 	UILanguage                 string   `json:"ui_language"`
 	PreferredAudioLanguages    []string `json:"preferred_audio_languages"`
 	PreferredSubtitleLanguages []string `json:"preferred_subtitle_languages"`
@@ -204,7 +207,7 @@ func (s *Store) GetPreferences(ctx context.Context, profileID string) (*Preferen
 		Scan(&p.UILanguage, &p.PreferredAudioLanguages, &p.PreferredSubtitleLanguages,
 			&p.PreferredResolution, &p.MaxSizeGB, &p.PreferredCodecs, &p.PreferredVoiceovers)
 	if db.IsNoRows(err) {
-		return &Preferences{UILanguage: "en", PreferredAudioLanguages: []string{},
+		return &Preferences{UILanguage: "", PreferredAudioLanguages: []string{},
 			PreferredSubtitleLanguages: []string{}, PreferredCodecs: []string{}, PreferredVoiceovers: []string{}}, nil
 	}
 	return &p, err
@@ -226,6 +229,14 @@ func (s *Store) PutPreferences(ctx context.Context, profileID string, p *Prefere
 			updated_at = now()`,
 		profileID, p.UILanguage, nonNil(p.PreferredAudioLanguages), nonNil(p.PreferredSubtitleLanguages),
 		p.PreferredResolution, p.MaxSizeGB, nonNil(p.PreferredCodecs), nonNil(p.PreferredVoiceovers))
+	return err
+}
+
+// SetUILanguage changes only the profile's interface language.
+func (s *Store) SetUILanguage(ctx context.Context, profileID, lang string) error {
+	_, err := s.q.Exec(ctx, `
+		INSERT INTO profile_preferences (profile_id, ui_language, updated_at) VALUES ($1, $2, now())
+		ON CONFLICT (profile_id) DO UPDATE SET ui_language = EXCLUDED.ui_language, updated_at = now()`, profileID, lang)
 	return err
 }
 
@@ -259,6 +270,7 @@ func (h *Handlers) Routes(r fiber.Router) {
 	g.Post("/:id/verify-pin", auth.RequireAny(), h.verifyPIN)
 	g.Get("/:id/preferences", RequireProfileCaller(), h.getPrefs)
 	g.Put("/:id/preferences", auth.RequireUser(), h.putPrefs)
+	g.Patch("/:id/preferences", auth.RequireUser(), h.patchPrefs)
 	g.Get("/:id/settings", RequireProfileCaller(), h.getSettings)
 	g.Put("/:id/settings", RequireProfileCaller(), h.putSettings)
 }
@@ -494,8 +506,8 @@ func (h *Handlers) putPrefs(c fiber.Ctx) error {
 		return err
 	}
 	f := map[string]string{}
-	if in.UILanguage != "en" && in.UILanguage != "ru" {
-		f["ui_language"] = "must be en or ru"
+	if !validUILanguage(in.UILanguage) {
+		f["ui_language"] = "must be en, ru, kk or empty"
 	}
 	for _, l := range append(append([]string{}, in.PreferredAudioLanguages...), in.PreferredSubtitleLanguages...) {
 		if !langRe.MatchString(l) {
@@ -528,6 +540,36 @@ func (h *Handlers) putPrefs(c fiber.Ctx) error {
 	}
 	if err := h.store.PutPreferences(c.Context(), id, &in); err != nil {
 		return err
+	}
+	return h.getPrefs(c)
+}
+
+// validUILanguage: an interface language, or "" (not chosen).
+func validUILanguage(l string) bool { return l == "" || uilang.Valid(l) }
+
+// patchPrefs changes only the fields sent (today ui_language, what the
+// language pickers write), so a picker never overwrites playback choices.
+func (h *Handlers) patchPrefs(c fiber.Ctx) error {
+	id, err := httpx.ParamUUID(c, "id")
+	if err != nil {
+		return err
+	}
+	if _, err := h.accessible(c, id); err != nil {
+		return err
+	}
+	var in struct {
+		UILanguage *string `json:"ui_language"`
+	}
+	if err := httpx.BindJSON(c, &in); err != nil {
+		return err
+	}
+	if in.UILanguage != nil {
+		if !validUILanguage(*in.UILanguage) {
+			return httpx.Validation(map[string]string{"ui_language": "must be en, ru, kk or empty"})
+		}
+		if err := h.store.SetUILanguage(c.Context(), id, *in.UILanguage); err != nil {
+			return err
+		}
 	}
 	return h.getPrefs(c)
 }
