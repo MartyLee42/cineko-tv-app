@@ -1,5 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { ApiError, createApi, RealtimeClient, realtimeUrl } from "@martytv/contracts";
+import { currentLocale } from "@martytv/ui";
 
 let csrfToken: string | undefined;
 
@@ -19,6 +20,7 @@ export const queryClient = new QueryClient({
 
 export const api = createApi({
   getCsrfToken: () => csrfToken,
+  getLanguage: currentLocale, // AI text in the language on screen (Kazakh too)
   onUnauthorized: () => {
     setCsrfToken(undefined);
     queryClient.setQueryData(["session"], null);

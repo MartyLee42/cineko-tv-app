@@ -51,6 +51,7 @@ import (
 	"martytv/api/internal/sources/sourcesapi"
 	"martytv/api/internal/sysmon"
 	"martytv/api/internal/trivia"
+	"martytv/api/internal/uilang"
 	"martytv/api/internal/users"
 	"martytv/api/internal/video"
 	"martytv/api/internal/watch"
@@ -152,6 +153,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	app.Use(prom.Middleware()) // request counters by route template (cheap; also with /metrics off)
 	app.Use(httpx.RequestIDMiddleware())
 	app.Use(httpx.LoggerMiddleware(log))
+	app.Use(uilang.Middleware())        // X-Cineko-Language → the language of generated text
 	app.Use(imports.LimitOtherBodies()) // BodyLimit fits 5 MB import uploads; 1 MiB for every other route
 
 	app.Get("/healthz", func(c fiber.Ctx) error {

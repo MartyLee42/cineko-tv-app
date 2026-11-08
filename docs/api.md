@@ -41,7 +41,7 @@ Base path: `/api/v1`. Realtime: `/api/v1/ws` (see [architecture.md](architecture
 | Area | Endpoints |
 |---|---|
 | auth | `POST /auth/login`, `POST /auth/logout`, `GET /auth/session`, `POST /auth/logout-all`, `GET /auth/sessions`, `DELETE /auth/sessions/{id}`, `POST /auth/password`, `GET/POST /auth/tokens`, `DELETE /auth/tokens/{id}` |
-| profiles | `GET/POST /profiles`, `PATCH/DELETE /profiles/{id}`, `POST /profiles/{id}/verify-pin`, `GET/PUT /profiles/{id}/preferences` |
+| profiles | `GET/POST /profiles`, `PATCH/DELETE /profiles/{id}`, `POST /profiles/{id}/verify-pin`, `GET/PUT/PATCH /profiles/{id}/preferences` (`ui_language`: en, ru, kk or "" = not chosen; PATCH changes only the fields sent) |
 | devices | `GET /devices`, `GET /devices/me` (TV), `POST /devices/register` (token), `POST /devices/demo` (browser session: a «Демо TV» credential for `/demo_tv`, see architecture.md), `GET/PATCH/DELETE /devices/{id}`, `GET/PUT /devices/{id}/permissions`, `DELETE /devices/{id}/permissions/{userId}` |
 | pairing | `POST /pairing`, `GET /pairing/lookup?code=`, `GET /pairing/{id}`, `POST /pairing/{id}/exchange`, `POST /pairing/{id}/approve`, `POST /pairing/{id}/deny` |
 | admin | `GET/POST /admin/users`, `PATCH /admin/users/{id}`, `POST /admin/users/{id}/password`, `GET /admin/integrations` (prowlarr, torrserver, tmdb, kinopoisk — the latter with `budget_remaining`), `GET /admin/system[/history]` |

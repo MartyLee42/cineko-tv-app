@@ -80,7 +80,7 @@ const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
 };
 
 export function useSettingRows() {
-  const { t, locale } = useI18n();
+  const { t, locale, profileLocale } = useI18n();
   const settings = useSettings();
   const profileId = useActiveProfileId();
   const save = useSaveSettings();
@@ -267,6 +267,8 @@ export function useSettingRows() {
       kind: "choice",
       key: "language",
       label: t("settings.language"),
+      // This TV's own pick; the profile's language (set on the phone) applies until one is made.
+      hint: profileLocale ? t("uilang.tv.hint_profile", { lang: LOCALE_NAMES[profileLocale] }) : t("uilang.tv.hint"),
       choices: LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] })),
       value: locale,
       onChange: (v) => tvOwn.set("language", v as Locale),

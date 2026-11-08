@@ -17,6 +17,7 @@ import (
 	"martytv/api/internal/appsettings"
 	"martytv/api/internal/catalog"
 	"martytv/api/internal/realtime"
+	"martytv/api/internal/uilang"
 )
 
 // Ask AI («Спросить ИИ»): the viewer describes what they want in free text
@@ -100,19 +101,31 @@ Rules:
 Answer with JSON only, in this shape:
 {"refused":false,"answer":"","items":[{"title":"","original_title":"","year":1999,"kind":"movie","why":""}],"followups":[""]}`
 
-// askLang: the answer follows the question's language — Cyrillic in the
-// question means Russian, otherwise the app's language.
+// askLang: the answer follows the question's language — Kazakh-only letters
+// mean Kazakh, other Cyrillic means Russian (Kazakh in a Kazakh app),
+// otherwise the app's language. appLang is the app's text language
+// (uilang.Text: kk, ru or en); catalog data comes in uilang.Catalog(result).
 func askLang(prompt, appLang string) string {
+	cyr := false
 	for _, r := range prompt {
-		if unicode.Is(unicode.Cyrillic, r) {
-			return "ru"
+		if strings.ContainsRune("әғқңөұүһӘҒҚҢӨҰҮҺ", r) {
+			return "kk"
 		}
+		if unicode.Is(unicode.Cyrillic, r) {
+			cyr = true
+		}
+	}
+	if cyr {
+		if appLang == "kk" {
+			return "kk"
+		}
+		return "ru"
 	}
 	return appLang
 }
 
 func askSystem(lang string) string {
-	return strings.ReplaceAll(askSystemPrompt, "{LANGUAGE}", tr(lang, "Russian", "English"))
+	return strings.ReplaceAll(askSystemPrompt, "{LANGUAGE}", langName(lang))
 }
 
 // askUserMessage builds the user message: everything is JSON-encoded, so the
@@ -171,12 +184,16 @@ func leaksPrompt(texts ...string) bool {
 }
 
 func refusalText(lang string) string {
-	return tr(lang, "Я могу помочь только с выбором фильмов и сериалов. Расскажите, что хочется посмотреть: настроение, жанр, с кем смотрите.",
-		"I can only help you pick films and series. Tell me what you feel like watching: a mood, a genre, who you're watching with.")
+	return trk(lang, "Я могу помочь только с выбором фильмов и сериалов. Расскажите, что хочется посмотреть: настроение, жанр, с кем смотрите.",
+		"I can only help you pick films and series. Tell me what you feel like watching: a mood, a genre, who you're watching with.",
+		"Мен тек фильмдер мен сериалдарды таңдауға көмектесе аламын. Не көргіңіз келетінін айтыңыз: көңіл күй, жанр, кіммен көресіз.")
 }
 
 func refusalFollowups(lang string) []string {
-	if lang == "ru" {
+	switch lang {
+	case "kk":
+		return []string{"Кешке жеңіл комедия", "Демалысқа сериал", "Бүкіл отбасыға фильм"}
+	case "ru":
 		return []string{"Лёгкая комедия на вечер", "Сериал на выходные", "Фильм для всей семьи"}
 	}
 	return []string{"A light comedy for tonight", "A series for the weekend", "A film for the whole family"}
@@ -355,7 +372,9 @@ func (s *Service) Ask(ctx context.Context, userID string, req AskRequest) (*AskR
 	if s.ai == nil {
 		return nil, errAIDisabled
 	}
-	lang := askLang(req.Prompt, req.Lang)
+	// text: the answer's language (Kazakh too); lang: the catalog data's (kk reads ru).
+	text := askLang(req.Prompt, uilang.Text(ctx, req.Lang))
+	lang := uilang.Catalog(text)
 	if err := s.takeAsk(ctx, userID); err != nil {
 		return nil, err
 	}
@@ -364,7 +383,7 @@ func (s *Service) Ask(ctx context.Context, userID string, req AskRequest) (*AskR
 	res := &AskResult{ProfileID: req.ProfileID, Prompt: req.Prompt, Kind: req.Kind, IncludeWatched: req.IncludeWatched,
 		Items: []AskItem{}, Followups: []string{}}
 	refuse := func() {
-		res.Refused, res.Answer, res.Items, res.Followups = true, refusalText(lang), []AskItem{}, refusalFollowups(lang)
+		res.Refused, res.Answer, res.Items, res.Followups = true, refusalText(text), []AskItem{}, refusalFollowups(text)
 	}
 	if looksLikeInjection(req.Prompt) {
 		refuse()
@@ -387,7 +406,7 @@ func (s *Service) Ask(ctx context.Context, userID string, req AskRequest) (*AskR
 		if err := s.aiBudgetCheck(ctx, run); err != nil {
 			return nil, err
 		}
-		content, tokens, err := s.ai.complete(ctx, askSystem(lang), askUserMessage(sum, vnote, slices.Concat(avoid, extraAvoid), req.Kind, req.Prompt, note), temp)
+		content, tokens, err := s.ai.complete(ctx, askSystem(text), askUserMessage(sum, vnote, slices.Concat(avoid, extraAvoid), req.Kind, req.Prompt, note), temp)
 		if tokens > 0 || err == nil {
 			s.recordAIUsage(ctx, run, tokens)
 		}
@@ -451,8 +470,9 @@ func (s *Service) Ask(ctx context.Context, userID string, req AskRequest) (*AskR
 		picked = picked[:askMaxItems]
 	}
 	if len(picked) == 0 {
-		res.Answer = tr(lang, "Не получилось найти подходящие фильмы в каталоге. Попробуйте описать иначе.",
-			"I couldn't find matching titles in the catalog. Try describing it differently.")
+		res.Answer = trk(text, "Не получилось найти подходящие фильмы в каталоге. Попробуйте описать иначе.",
+			"I couldn't find matching titles in the catalog. Try describing it differently.",
+			"Каталогтан лайықты фильмдер табылмады. Басқаша сипаттап көріңіз.")
 	}
 	s.fillTranslations(ctx, run, picked, lang)
 	sums, err := s.summaries(ctx, req.ProfileID, lang, picked)

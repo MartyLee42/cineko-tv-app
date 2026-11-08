@@ -6,8 +6,6 @@ import {
   COZY_AMBIENCES,
   DESIGN_SWATCH,
   DESIGNS,
-  LOCALE_NAMES,
-  LOCALES,
   Mascot,
   matrixPillSeen,
   ProfileAvatar,
@@ -19,7 +17,6 @@ import {
   useUiSoundsPref,
   type CozyAmbience,
   type DesignSetting,
-  type Locale,
   type MessageKey,
   type ThemeSetting,
   SURPRISE_MODES,
@@ -45,6 +42,7 @@ import { HomagePreview, homageKeys } from "./HomagePreview";
 import { SeasonalSetting } from "../seasons/SeasonalSetting";
 import { ThisDeviceCard } from "../devprefs/ui";
 import { deviceClass, useDeviceClass } from "../devsettings/deviceClass";
+import { LanguagePicker } from "../watch/LanguagePicker";
 
 export function SettingsPage() {
   const { t } = useI18n();
@@ -870,7 +868,7 @@ function LibraryCard({ isAdmin }: { isAdmin: boolean }) {
 }
 
 function DeviceCard() {
-  const { t, locale, setLocale } = useI18n();
+  const { t } = useI18n();
   const cls = useDeviceClass();
   return (
     <Card className="space-y-4">
@@ -904,13 +902,7 @@ function DeviceCard() {
         </Link>
       </div>
       <Field label={t("settings.language")}>
-        <Select value={locale} onChange={(e) => setLocale(e.target.value as Locale)} className="sm:w-72" data-testid="language-select">
-          {LOCALES.map((l) => (
-            <option key={l} value={l}>
-              {LOCALE_NAMES[l]}
-            </option>
-          ))}
-        </Select>
+        <LanguagePicker className="sm:w-72" testId="language-select" />
       </Field>
       <LocalPlayerField />
     </Card>

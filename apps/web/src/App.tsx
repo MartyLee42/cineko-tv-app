@@ -28,6 +28,7 @@ import { useRealtimeCache } from "./remote/state";
 import { clearCatalogCaches } from "./catalog/cache";
 import { BellIcon, GearIcon, HistoryIcon, HomeIcon, PlayIcon, SearchIcon, TvIcon } from "./icons";
 import { ActiveProfileProvider } from "./watch/ActiveProfile";
+import { ProfileLanguage } from "./watch/LanguagePicker";
 import { InboxButton, MessageToast, ProfileMenu, useMessageEvents } from "./watch/header";
 import { useSettings, useThemeSync } from "./watch/queries";
 import type { Settings } from "./watch/settings";
@@ -177,6 +178,7 @@ function RequireAuth() {
   }
   return (
     <ActiveProfileProvider key={session.user.id}>
+      <ProfileLanguage />
       <Outlet />
     </ActiveProfileProvider>
   );

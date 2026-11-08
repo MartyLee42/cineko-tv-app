@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"martytv/api/internal/db"
+	"martytv/api/internal/uilang"
 )
 
 // ---- signals ----
@@ -269,11 +270,20 @@ func (s *Service) profileLang(ctx context.Context, profileID string) string {
 	var l string
 	err := s.pool.QueryRow(ctx, `
 		SELECT COALESCE((SELECT lang FROM recs_cache WHERE profile_id = $1),
-		                (SELECT ui_language FROM profile_preferences WHERE profile_id = $1), 'en')`, profileID).Scan(&l)
-	if err != nil || (l != "ru" && l != "en") {
+		                NULLIF((SELECT ui_language FROM profile_preferences WHERE profile_id = $1), ''), 'en')`, profileID).Scan(&l)
+	if err != nil {
 		return "en"
 	}
-	return l
+	return uilang.Catalog(l) // a Kazakh profile reads the Russian catalog
+}
+
+// profileTextLang is the language of text written for the profile in the
+// background (AI reasons, rubric titles): its ui_language when that reads
+// the catalog language lang (kk for ru), else lang.
+func (s *Service) profileTextLang(ctx context.Context, profileID, lang string) string {
+	var l string
+	_ = s.pool.QueryRow(ctx, `SELECT ui_language FROM profile_preferences WHERE profile_id = $1`, profileID).Scan(&l)
+	return uilang.Text(uilang.With(context.Background(), l), lang)
 }
 
 // seenSet: titles the profile rated, started/completed or dismissed.

@@ -14,6 +14,12 @@ info:
     - Pairing TVs: `Authorization: Pairing <poll_secret>` on pairing status/exchange.
 
     Errors always use the `Error` envelope. Collections use `{ "items": [...] }`.
+
+    Language: `lang` parameters choose catalog data (en | ru; a Kazakh app
+    asks for ru). The apps also send `X-Cineko-Language: en | ru | kk`, the
+    language they show: server-written text (Ask AI, «Ранее в сериале»,
+    «После титров», AI facts, personal reasons, rubric titles) follows it
+    when it reads the requested catalog language — Kazakh for kk with lang=ru.
 servers:
   - url: /api/v1
 security:
@@ -271,6 +277,25 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Preferences" }
+    patch:
+      tags: [profiles]
+      operationId: patchProfilePreferences
+      description: Changes only the fields sent (today `ui_language`, what the language pickers write). User-only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ui_language: { type: string, enum: ["", en, ru, kk] }
+      responses:
+        "200":
+          description: Saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Preferences" }
+        "422": { $ref: "#/components/responses/Error" }
 
   /users/directory:
     get:
@@ -4102,7 +4127,7 @@ components:
       type: object
       required: [ui_language, preferred_audio_languages, preferred_subtitle_languages, preferred_resolution, max_size_gb, preferred_codecs]
       properties:
-        ui_language: { type: string, enum: [en, ru] }
+        ui_language: { type: string, enum: ["", en, ru, kk], description: "The profile's interface language; \"\" = not chosen. Apps use it on a device that has no language of its own (that device's choice wins), before the browser/TV language." }
         preferred_audio_languages: { type: array, items: { type: string } }
         preferred_subtitle_languages: { type: array, items: { type: string } }
         preferred_resolution: { type: string, enum: ["", 480p, 720p, 1080p, 2160p] }

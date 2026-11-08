@@ -221,7 +221,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** @description Changes only the fields sent (today `ui_language`, what the language pickers write). User-only. */
+        patch: operations["patchProfilePreferences"];
         trace?: never;
     };
     "/users/directory": {
@@ -3784,8 +3785,11 @@ export interface components {
             clear_pin?: boolean;
         };
         Preferences: {
-            /** @enum {string} */
-            ui_language: "en" | "ru";
+            /**
+             * @description The profile's interface language; "" = not chosen. Apps use it on a device that has no language of its own (that device's choice wins), before the browser/TV language.
+             * @enum {string}
+             */
+            ui_language: "" | "en" | "ru" | "kk";
             preferred_audio_languages: string[];
             preferred_subtitle_languages: string[];
             /** @enum {string} */
@@ -7440,6 +7444,36 @@ export interface operations {
                     "application/json": components["schemas"]["Preferences"];
                 };
             };
+        };
+    };
+    patchProfilePreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    ui_language?: "" | "en" | "ru" | "kk";
+                };
+            };
+        };
+        responses: {
+            /** @description Saved. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            422: components["responses"]["Error"];
         };
     };
     userDirectory: {

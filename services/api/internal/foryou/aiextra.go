@@ -70,8 +70,20 @@ Rules:
 Answer with JSON only, in this shape:
 {"picks":[{"id":1,"why":""}]}`
 
+// themesKazakh: the extra rule for a Kazakh profile (title_kk, description_kk).
+const themesKazakh = `
+Also write each rubric's title and description in Kazakh, Cyrillic script ("title_kk", at most 60 characters; "description_kk", at most 160 characters), with the same meaning as the Russian ones.`
+
+// themesSystem is the themes prompt; a Kazakh profile also gets Kazakh rubric texts.
+func themesSystem(textLang string) string {
+	if textLang == "kk" {
+		return themesSystemPrompt + themesKazakh
+	}
+	return themesSystemPrompt
+}
+
 func picksSystem(lang string) string {
-	return strings.ReplaceAll(picksSystemPrompt, "{LANGUAGE}", tr(lang, "Russian", "English"))
+	return strings.ReplaceAll(picksSystemPrompt, "{LANGUAGE}", langName(lang))
 }
 
 // ---- switches ----
@@ -204,6 +216,7 @@ type compactViewer struct {
 
 type aiRubric struct {
 	TitleRU, TitleEN, DescriptionRU, DescriptionEN string
+	TitleKK, DescriptionKK                         string // only for a Kazakh profile
 	IDs                                            []int
 }
 
@@ -245,6 +258,13 @@ func parseThemes(content string, valid map[int]string, sentKeywords []string) ([
 			r.TitleEN, r.DescriptionEN = "", ""
 		} else if !inLanguage(r.DescriptionEN, "en") {
 			r.DescriptionEN = ""
+		}
+		r.TitleKK, r.DescriptionKK = str("title_kk", themeTitleMax), str("description_kk", themeDescMax)
+		if r.TitleKK == "" || !inLanguage(r.TitleKK, "kk") || leaksPrompt(r.TitleKK, r.DescriptionKK) ||
+			looksLikeInjection(r.TitleKK+" "+r.DescriptionKK) {
+			r.TitleKK, r.DescriptionKK = "", ""
+		} else if !inLanguage(r.DescriptionKK, "kk") {
+			r.DescriptionKK = ""
 		}
 		var ids []flexYear // numbers or numeric strings
 		_ = json.Unmarshal(m["ids"], &ids)
@@ -364,7 +384,7 @@ func (s *Service) generateThemes(ctx context.Context, run *runState, profileID s
 		msg["liked_themes"] = sentKW
 	}
 	b, _ := json.Marshal(msg)
-	content, err := s.aiCall(ctx, run, themesSystemPrompt, string(b)+"\nJSON only.")
+	content, err := s.aiCall(ctx, run, themesSystem(s.profileTextLang(ctx, profileID, c.Lang)), string(b)+"\nJSON only.")
 	if err != nil {
 		return 0, err
 	}
@@ -401,9 +421,9 @@ func (s *Service) storeThemes(ctx context.Context, run *runState, profileID stri
 		err := pgx.BeginFunc(ctx, s.pool, func(tx pgx.Tx) error {
 			var cid string
 			if err := tx.QueryRow(ctx, `
-				INSERT INTO foryou_collections (profile_id, run_id, kind, title_ru, title_en, description_ru, description_en, model)
-				VALUES ($1, $2, 'theme', $3, $4, $5, $6, $7) RETURNING id`,
-				profileID, run.id, r.TitleRU, r.TitleEN, r.DescriptionRU, r.DescriptionEN, s.cfg.DeepSeekModel).Scan(&cid); err != nil {
+				INSERT INTO foryou_collections (profile_id, run_id, kind, title_ru, title_en, description_ru, description_en, title_kk, description_kk, model)
+				VALUES ($1, $2, 'theme', $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+				profileID, run.id, r.TitleRU, r.TitleEN, r.DescriptionRU, r.DescriptionEN, r.TitleKK, r.DescriptionKK, s.cfg.DeepSeekModel).Scan(&cid); err != nil {
 				return err
 			}
 			_, err := tx.Exec(ctx, `
@@ -545,7 +565,7 @@ func (s *Service) generatePicks(ctx context.Context, run *runState, profileID st
 	sum.AvoidThemes = nil // collection themes don't matter here
 	sum.ViewerNote = viewerNote(tasteNoteOf(st))
 	b, _ := json.Marshal(map[string]any{"viewer": sum, "candidates": lines, "pick": s.w.RerankPicks})
-	lang := c.Lang
+	lang := s.profileTextLang(ctx, profileID, c.Lang) // a Kazakh profile gets Kazakh reasons
 	content, err := s.aiCall(ctx, run, picksSystem(lang), string(b)+"\nJSON only.")
 	if err != nil {
 		return 0, err
@@ -614,9 +634,12 @@ func (s *Service) aiExtras(ctx context.Context, run *runState, profileID string,
 
 // ---- text checks ----
 
-// inLanguage: Russian text is mostly Cyrillic letters (names and titles in
-// Latin are fine), English text has almost none. Empty → true.
+// inLanguage: Russian and Kazakh text is mostly Cyrillic letters (names and
+// titles in Latin are fine), English text has almost none. Empty → true.
 func inLanguage(s, lang string) bool {
+	if lang == "kk" {
+		lang = "ru" // Kazakh letters (ә, қ, ң, ө, ұ, ү, һ, і) are Cyrillic too
+	}
 	cyr, letters := 0, 0
 	for _, r := range s {
 		if !unicode.IsLetter(r) {

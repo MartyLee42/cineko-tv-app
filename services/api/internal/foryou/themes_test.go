@@ -219,6 +219,12 @@ func TestParsePicks(t *testing.T) {
 	if got, err := parsePicks(`{"picks":[]}`, valid, "en", 6); err != nil || got != nil {
 		t.Fatalf("empty picks %v %v", got, err)
 	}
+	// Kazakh profile: Cyrillic lines count, English ones don't.
+	kk := `{"picks":[{"id":1,"why":"Сіз сүйетін Тарковский сияқты"},{"id":2,"why":"Тыныш ғарыш"},{"id":3,"why":"Қорқынышты, бірақ күлкілі"},
+		{"id":4,"why":"Отбасымен көруге"},{"id":5,"why":"Сіздің жанрыңыз"},{"id":6,"why":"In English"}]}`
+	if got, err := parsePicks(kk, valid, "kk", 15); err != nil || len(got) != 5 {
+		t.Fatalf("kk picks %v %v", got, err)
+	}
 	if _, err := parsePicks("not json", valid, "en", 6); err != errInvalidAI {
 		t.Fatalf("garbage: %v", err)
 	}
@@ -253,6 +259,14 @@ func TestParseThemes(t *testing.T) {
 	if len(names) != 2 || names["heist"] != "ограбления" || names["time loop"] != "временную петлю" {
 		t.Fatalf("names %v", names)
 	}
+	// Kazakh texts: kept when Cyrillic, dropped (with the description) otherwise.
+	kk := `{"rubrics":[
+		{"title_ru":"Тихий космос","title_kk":"Тыныш ғарыш","description_kk":"Асықпайтын фантастика","ids":[1,2,3,4,5]},
+		{"title_ru":"Ограбления","title_kk":"Heists","description_kk":"Ұрлық туралы","ids":[6,7,8,9,10]}]}`
+	if r, _, err := parseThemes(kk, valid, nil); err != nil || len(r) != 2 || r[0].TitleKK != "Тыныш ғарыш" || r[0].DescriptionKK != "Асықпайтын фантастика" ||
+		r[1].TitleKK != "" || r[1].DescriptionKK != "" {
+		t.Fatalf("kk rubrics %+v %v", r, err)
+	}
 	if _, _, err := parseThemes(`[]`, valid, nil); err != errInvalidAI {
 		t.Fatalf("array: %v", err)
 	}
@@ -274,6 +288,8 @@ func TestInLanguageAndUnquote(t *testing.T) {
 		{"", "en", true},
 		{"", "ru", true},
 		{"2001", "ru", false},
+		{"Тарковский сияқты баяу, бірақ шешімі бар", "kk", true}, // Kazakh is Cyrillic too
+		{"Slow, like Blade Runner", "kk", false},
 	} {
 		if got := inLanguage(c.s, c.lang); got != c.ok {
 			t.Errorf("inLanguage(%q, %s) = %v", c.s, c.lang, got)
@@ -294,8 +310,13 @@ func TestPromptsAreGuarded(t *testing.T) {
 			t.Fatalf("no injection rule: %.60s", p)
 		}
 	}
-	if !strings.Contains(picksSystem("ru"), "in Russian") || !strings.Contains(picksSystem("en"), "in English") {
+	if !strings.Contains(picksSystem("ru"), "in Russian") || !strings.Contains(picksSystem("en"), "in English") ||
+		!strings.Contains(picksSystem("kk"), "in Kazakh (Cyrillic script)") {
 		t.Fatal("picks language")
+	}
+	// A Kazakh profile's themes prompt also asks for Kazakh rubric texts.
+	if strings.Contains(themesSystem("ru"), "title_kk") || !strings.Contains(themesSystem("kk"), "title_kk") || !leaksPrompt(themesSystem("kk")) {
+		t.Fatal("themes kk")
 	}
 	if !stopKeyword("Based on Novel or Book ") || stopKeyword("heist") {
 		t.Fatal("stoplist")

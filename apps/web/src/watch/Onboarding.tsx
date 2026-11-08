@@ -2,10 +2,10 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { unwrap, type Profile } from "@martytv/contracts";
-import { LOCALE_NAMES, LOCALES, PROFILE_COLORS, ProfileAvatar, useI18n, type Locale, type MessageKey } from "@martytv/ui";
+import { PROFILE_COLORS, ProfileAvatar, useI18n, type MessageKey } from "@martytv/ui";
 import { api } from "../api";
 import { useSession } from "../session";
-import { Button, ErrorText, Field, Input, Select } from "../components";
+import { Button, ErrorText, Field, Input } from "../components";
 import { TvIcon } from "../icons";
 import { AVATARS } from "../pages/ProfilesPage";
 import { LoadingOption, LookPicker, Toggle } from "../pages/SettingsPage";
@@ -13,6 +13,7 @@ import { Chips, VoiceoverEditor } from "../play/PreferencesForm";
 import { formatMaxSize, languageOptions, parseMaxSize, RESOLUTIONS, toggleOrdered, type Preferences } from "../play/prefs";
 import { languageName, resolutionLabel } from "../play/releases";
 import { useActiveProfile } from "./ActiveProfile";
+import { LanguagePicker } from "./LanguagePicker";
 import {
   buildSavePlan,
   canPromptInstall,
@@ -51,7 +52,7 @@ export function OnboardingGate() {
 }
 
 function Onboarding({ profile }: { profile: Profile }) {
-  const { t, locale, setLocale } = useI18n();
+  const { t, locale } = useI18n();
   const qc = useQueryClient();
   const { data: session } = useSession();
   const navigate = useNavigate();
@@ -177,13 +178,7 @@ function Onboarding({ profile }: { profile: Profile }) {
             <div className="space-y-5">
               <LookPicker design={s.design} theme={s.theme} onChange={patch} />
               <Field label={t("settings.language")}>
-                <Select value={locale} onChange={(e) => setLocale(e.target.value as Locale)}>
-                  {LOCALES.map((l) => (
-                    <option key={l} value={l}>
-                      {LOCALE_NAMES[l]}
-                    </option>
-                  ))}
-                </Select>
+                <LanguagePicker />
               </Field>
             </div>
           )}

@@ -13,10 +13,12 @@ import { healthPref } from "../health/agent";
 import { saverPref } from "../idle/logic";
 import { introPref } from "../intro/logic";
 import { prebufferPref, slowHintPref } from "../player/rebuffer";
+import { useActiveProfileId } from "../profile/active";
+import { loadPreferences } from "../profile/settings";
 import { speedtest } from "./speedtest";
 
 type Language = NonNullable<TvOwnSettings["language"]>;
-let language: { get: () => Language; set: (l: Language) => void } | null = null;
+let language: { get: () => Language | undefined; set: (l: Language) => void } | null = null;
 
 /** The local stores behind each option. */
 const STORES: { [K in TvOwnKey]-?: { get: () => TvOwnSettings[K] | undefined; set: (v: NonNullable<TvOwnSettings[K]>) => void } } = {
@@ -97,10 +99,26 @@ export function useTvOwnVersion(): number {
   return useSyncExternalStore(tvOwn.subscribe, tvOwn.version);
 }
 
-/** Connects the language option to the i18n provider (mount once, in App). */
+/**
+ * Connects the language option to the i18n provider (mount once, in App).
+ * The option is this TV's own pick only (never the detected language, so a
+ * new TV doesn't upload one): without it the TV shows the active profile's
+ * ui_language, else its own language.
+ */
 export function useTvOwnLanguage() {
-  const { locale, setLocale } = useI18n();
+  const { deviceLocale, setLocale, setProfileLocale } = useI18n();
   useEffect(() => {
-    language = { get: () => locale as Language, set: (l) => setLocale(l as Locale) };
-  }, [locale, setLocale]);
+    language = { get: () => deviceLocale ?? undefined, set: (l) => setLocale(l as Locale) };
+  }, [deviceLocale, setLocale]);
+  const profileId = useActiveProfileId();
+  useEffect(() => {
+    if (!profileId) return;
+    let live = true;
+    void loadPreferences(profileId).then((p) => {
+      if (live && p) setProfileLocale(p.ui_language);
+    });
+    return () => {
+      live = false;
+    };
+  }, [profileId, setProfileLocale]);
 }

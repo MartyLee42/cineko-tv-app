@@ -2194,13 +2194,14 @@ short numeric ids, never our uuids; only those ids are accepted back.
   it (with ✦) instead of «Потому что вам понравился …». AI off, failed or
   another language → the deterministic order and reasons. ~1.5–2k tokens.
 
-**Language.** The server knows only ru/en per profile (`profileLang`:
-the language the rows were last asked in, else `ui_language`, which is
-ru/en). The Kazakh UI asks the catalog in Russian (`catalogLang` maps
-kk → ru), so Kazakh viewers get Russian AI reasons and theme names; the
-UI strings around them are Kazakh. Generating Kazakh would need the UI
-locale on the server (an extra field) and a third language in the
-prompts — not done.
+**Language.** Catalog data is ru/en per profile (`profileLang`: the
+language the rows were last asked in, else `ui_language` mapped kk → ru).
+Text the AI writes follows the interface language (see «Interface
+language» below): a profile whose `ui_language` is kk gets its picks'
+reasons in Kazakh (stored with lang kk) and Kazakh rubric titles
+(`foryou_collections.title_kk` / `description_kk`, asked for only then;
+Russian otherwise), shown when the request's `X-Cineko-Language` is kk.
+Household AI collections stay ru/en (Kazakh reads the Russian ones).
 
 **Switches.** `themes_ai` / `picks_ai` (app_settings
 `ai_feature_themes` / `ai_feature_picks`, default on) on the admin
@@ -2803,6 +2804,47 @@ up to 2 h, then it is skipped for the night. The restart is a
 `POST /containers/<name>/restart` to `restart-proxy`
 (wollomatic/socket-proxy: regex allowlist for exactly those two paths,
 `-allowfrom=api`, own network), so the API never holds the Docker socket.
+
+## Interface language (ru / en / kk)
+
+**Which language a device shows** (`packages/ui` `localeDetect.ts`,
+`localeChoice.ts`), highest first:
+
+1. **This device's own pick** — the PWA's language picker in this browser,
+   or the TV's own «Язык» option (`devices.settings.language`, changeable
+   from a phone). localStorage `martytv.locale`.
+2. **The profile's `ui_language`** (`profile_preferences`, `""` = not
+   chosen). Applied as soon as the active profile's preferences load
+   (PWA: `ProfileLanguage` in `watch/LanguagePicker.tsx`; TV:
+   `useTvOwnLanguage`) and cached in `martytv.locale.profile`, so the next
+   start opens in it before anything loads (the start language's strings
+   are preloaded with the app).
+3. **The browser's / TV's language** (`navigator.language`).
+
+**Pickers.** The PWA picker (Settings → this device, first-run guide)
+sets this browser's pick *and* the profile's `ui_language`
+(`PATCH /profiles/{id}/preferences`, only that field), so the profile's
+new devices follow; it says so under the select, and when another device
+changed the profile's language it offers «Как в профиле» (drops this
+browser's pick). The TV picker sets only the TV's own option (a TV can
+read but not write profile preferences); its hint names the profile's
+language. TVs no longer upload their detected language as the option
+(only a real pick); TVs that did before keep it. Migration 00037 turned
+the old column default `en` into `""` (no app ever let anyone choose it).
+
+**Server text.** `lang` parameters stay the catalog language (en | ru;
+`catalogLang` maps kk → ru, TMDB data unchanged). The apps send
+`X-Cineko-Language` (the language on screen); `internal/uilang`
+puts it in the request context and `uilang.Text(ctx, lang)` gives the
+language of generated text — kk when the app is Kazakh and asked for ru.
+Ask AI (Kazakh-only letters ә ғ қ ң ө ұ ү һ in the question → Kazakh;
+other Cyrillic → Kazakh in a Kazakh app, else Russian), «Ранее в сериале» /
+«После титров» / the chat, AI «Факты» (cached per text language), picks'
+reasons and rubric titles (background runs: the profile's `ui_language`)
+are written in Kazakh («Kazakh (Cyrillic script)» in the prompt; the
+Cyrillic-share checks treat kk like ru). Fixed server strings fall back to
+Russian for kk unless a Kazakh one exists. Release ranking without audio
+preferences uses kk, ru, en for a Kazakh profile.
 
 ## Designs, intros and navigation
 

@@ -4,20 +4,30 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"martytv/api/internal/uilang"
 )
 
-// Server-side texts (ru/en). Clients may build their own from the typed
-// reason fields instead.
+// Server-side texts (ru/en; Kazakh reads the Russian ones unless a Kazakh
+// text exists: trk). Clients may build their own from the typed reason
+// fields instead. AI-written text follows the interface language
+// (uilang.Text): prompts name it with langName.
 
 func tr(lang, ru, en string) string {
-	if lang == "ru" {
+	if lang == "ru" || lang == "kk" {
 		return ru
 	}
 	return en
 }
 
+// trk is tr with a Kazakh text.
+func trk(lang, ru, en, kk string) string { return uilang.Pick(lang, ru, en, kk) }
+
+// langName is the language's English name for a prompt's {LANGUAGE}.
+func langName(lang string) string { return uilang.Name(lang) }
+
 func quote(lang, s string) string {
-	if lang == "ru" {
+	if lang == "ru" || lang == "kk" {
 		return "«" + s + "»"
 	}
 	return "“" + s + "”"

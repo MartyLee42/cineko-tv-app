@@ -21,6 +21,7 @@ import (
 
 	"martytv/api/internal/catalog"
 	"martytv/api/internal/config"
+	"martytv/api/internal/uilang"
 )
 
 // AI collections (подборки): DeepSeek (OpenAI-compatible chat completions)
@@ -815,7 +816,7 @@ type collectionRow struct {
 
 func (s *Service) readCollections(ctx context.Context, lang, where string, args ...any) ([]collectionRow, error) {
 	rows, err := s.pool.Query(ctx, `
-		SELECT c.id, c.profile_id IS NULL, c.title_ru, c.title_en, c.description_ru, c.description_en, c.generated_at, c.model,
+		SELECT c.id, c.profile_id IS NULL, c.title_ru, c.title_en, c.title_kk, c.description_ru, c.description_en, c.description_kk, c.generated_at, c.model,
 		       COALESCE(array_agg(i.media_id::text ORDER BY i.position) FILTER (WHERE i.media_id IS NOT NULL), '{}')
 		FROM foryou_collections c LEFT JOIN foryou_collection_items i ON i.collection_id = c.id
 		WHERE `+where+`
@@ -828,15 +829,23 @@ func (s *Service) readCollections(ctx context.Context, lang, where string, args 
 	for rows.Next() {
 		var c collectionRow
 		var global bool
-		var tru, ten, dru, den string
-		if err := rows.Scan(&c.ID, &global, &tru, &ten, &dru, &den, &c.GeneratedAt, &c.Model, &c.items); err != nil {
+		var tru, ten, tkk, dru, den, dkk string
+		if err := rows.Scan(&c.ID, &global, &tru, &ten, &tkk, &dru, &den, &dkk, &c.GeneratedAt, &c.Model, &c.items); err != nil {
 			return nil, err
 		}
 		c.Scope = "profile"
 		if global {
 			c.Scope = "global"
 		}
-		c.Title, c.Description = pick(lang, tru, ten), pick(lang, dru, den)
+		// Kazakh: the Kazakh pair when the title exists, else the Russian one.
+		text := uilang.Text(ctx, lang)
+		if text == "kk" && tkk == "" {
+			text = "ru"
+		}
+		c.Title, c.Description = trk(text, tru, ten, tkk), trk(text, dru, den, dkk)
+		if text == "kk" {
+			c.Description = dkk
+		}
 		out = append(out, c)
 	}
 	return out, rows.Err()

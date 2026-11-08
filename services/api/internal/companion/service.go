@@ -40,6 +40,7 @@ import (
 	"martytv/api/internal/foryou"
 	"martytv/api/internal/httpx"
 	"martytv/api/internal/profiles"
+	"martytv/api/internal/uilang"
 )
 
 const (
@@ -341,7 +342,7 @@ func (s *Service) Status(ctx context.Context, pid, id, lang string) (*Status, er
 		st.Recap.Available = st.AIEnabled && recapEligible(len(eps), last, s.now())
 		if st.Recap.Available && len(sel) > 0 {
 			var r Recap
-			_, st.Recap.Cached = s.cached(ctx, id, "recap", recapScope(sel), lang, &r)
+			_, st.Recap.Cached = s.cached(ctx, id, "recap", recapScope(sel), uilang.Text(ctx, lang), &r)
 		}
 	}
 	sc, ok, err := s.scope(ctx, pid, t, movieDone)
@@ -404,21 +405,22 @@ func (s *Service) Recap(ctx context.Context, pid, id, lang string) (*Recap, erro
 		return nil, errNoSynopses
 	}
 	scope := recapScope(sel)
+	text := uilang.Text(ctx, lang) // the recap's language: Kazakh for a Kazakh app (synopses stay in lang)
 	var r Recap
-	if at, ok := s.cached(ctx, id, "recap", scope, lang, &r); ok {
+	if at, ok := s.cached(ctx, id, "recap", scope, text, &r); ok {
 		r.Cached, r.GeneratedAt = true, at
 		return &r, nil
 	}
 	if err := s.take(ctx, pid); err != nil {
 		return nil, err
 	}
-	v, err := s.once(ctx, "recap|"+id+"|"+scope+"|"+lang, func(ctx context.Context) (any, error) {
-		lines, err := s.ai.SeriesRecap(ctx, t.CompanionTitle, recapInput(sel), lang)
+	v, err := s.once(ctx, "recap|"+id+"|"+scope+"|"+text, func(ctx context.Context) (any, error) {
+		lines, err := s.ai.SeriesRecap(ctx, t.CompanionTitle, recapInput(sel), text)
 		if err != nil {
 			return nil, err
 		}
 		res := &Recap{Lines: lines, Through: EpisodeRef{through.Season, through.Episode}, Episodes: len(sel), GeneratedAt: s.now()}
-		s.store(ctx, id, "recap", scope, lang, res, ttlRecap)
+		s.store(ctx, id, "recap", scope, text, res, ttlRecap)
 		return res, nil
 	})
 	if err != nil {
@@ -472,22 +474,23 @@ func (s *Service) AfterCredits(ctx context.Context, pid, id, topic, lang string)
 		return nil, err
 	}
 	key := scopeKey(sc)
+	text := uilang.Text(ctx, lang)
 	var a After
-	if at, ok := s.cached(ctx, id, topic, key, lang, &a); ok {
+	if at, ok := s.cached(ctx, id, topic, key, text, &a); ok {
 		a.Cached, a.GeneratedAt = true, at
 		return &a, nil
 	}
 	if err := s.take(ctx, pid); err != nil {
 		return nil, err
 	}
-	v, err := s.once(ctx, topic+"|"+id+"|"+key+"|"+lang, func(ctx context.Context) (any, error) {
-		txt, err := s.ai.AfterCredits(ctx, t.CompanionTitle, sc, topic, lang)
+	v, err := s.once(ctx, topic+"|"+id+"|"+key+"|"+text, func(ctx context.Context) (any, error) {
+		txt, err := s.ai.AfterCredits(ctx, t.CompanionTitle, sc, topic, text)
 		if err != nil {
 			return nil, err
 		}
 		res := &After{Topic: topic, Known: txt.Known, Paragraphs: txt.Paragraphs, GeneratedAt: s.now()}
 		res.Scope, res.Season = scopeOut(sc)
-		s.store(ctx, id, topic, key, lang, res, ttlAfter)
+		s.store(ctx, id, topic, key, text, res, ttlAfter)
 		return res, nil
 	})
 	if err != nil {
@@ -590,13 +593,13 @@ func (s *Service) SendChat(ctx context.Context, pid, id, lang, message string, r
 	}
 	cctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), callTimeout)
 	defer cancel()
-	reply, err := s.ai.AfterCreditsChat(cctx, t.CompanionTitle, sc, chatContext(msgs), message, lang)
+	reply, err := s.ai.AfterCreditsChat(cctx, t.CompanionTitle, sc, chatContext(msgs), message, uilang.Text(ctx, lang))
 	if err != nil {
 		s.refund(ctx, pid)
 		return nil, err
 	}
 	msgs = append(msgs, foryou.ChatTurn{Role: "user", Text: message}, foryou.ChatTurn{Role: "assistant", Text: reply.Answer})
-	if err := s.saveChat(ctx, pid, id, key, lang, msgs, reply.Followups); err != nil {
+	if err := s.saveChat(ctx, pid, id, key, uilang.Text(ctx, lang), msgs, reply.Followups); err != nil {
 		return nil, err
 	}
 	c := chatOut(msgs, reply.Followups, sc)

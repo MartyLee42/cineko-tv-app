@@ -29,6 +29,7 @@ import (
 	"martytv/api/internal/httpx"
 	"martytv/api/internal/profiles"
 	"martytv/api/internal/realtime"
+	"martytv/api/internal/uilang"
 )
 
 const (
@@ -525,17 +526,17 @@ func (s *Service) newRender(ctx context.Context, lang string, mediaIDs []string,
 		return nil, err
 	}
 	if len(colIDs) > 0 {
-		rows, err := s.pool.Query(ctx, `SELECT id, title_ru, title_en FROM foryou_collections WHERE id = ANY($1::uuid[])`, slicesUniq(colIDs))
+		rows, err := s.pool.Query(ctx, `SELECT id, title_ru, title_en, title_kk FROM foryou_collections WHERE id = ANY($1::uuid[])`, slicesUniq(colIDs))
 		if err != nil {
 			return nil, err
 		}
 		for rows.Next() {
-			var id, ru, en string
-			if err := rows.Scan(&id, &ru, &en); err != nil {
+			var id, ru, en, kk string
+			if err := rows.Scan(&id, &ru, &en, &kk); err != nil {
 				rows.Close()
 				return nil, err
 			}
-			rc.cols[id] = pick(lang, ru, en)
+			rc.cols[id] = uilang.Pick(uilang.Text(ctx, lang), ru, en, kk)
 		}
 		rows.Close()
 	}
@@ -635,7 +636,7 @@ func (s *Service) hydrateRows(ctx context.Context, profileID, lang string, cache
 	}
 	s.annotateRatings(ctx, rc.sums)
 	if picks, err := s.loadAIPicks(ctx, profileID); err == nil {
-		rc.whys = picks.whys(lang)
+		rc.whys = picks.whys(uilang.Text(ctx, lang))
 	}
 	out := make([]Row, 0, len(cached))
 	for _, r := range cached {
