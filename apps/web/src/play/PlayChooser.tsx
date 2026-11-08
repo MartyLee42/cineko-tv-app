@@ -17,6 +17,7 @@ import { OnlinePicker, StreamIcon, useHasOnline } from "./OnlineWatch";
 import { usePlayOnTv, useWatchHere, type PlayTarget } from "./PlayOnTv";
 import { orderChooserTvs, preselectTarget, skipChooser, type ChooserKey } from "./chooser";
 import { useWebInstantPlay } from "./instantPlay";
+import { useScrollLock } from "../scrollLock";
 
 const PHONE = "(max-width: 639px)";
 
@@ -203,6 +204,7 @@ function ChooserPanel({
 
   // Once visible (the popover is hidden until placed): focus the last choice.
   const shown = phone || !!pos;
+  useScrollLock(phone);
   useEffect(() => {
     if (!shown) return;
     const el = panel.current;
@@ -345,7 +347,7 @@ function ChooserPanel({
   return createPortal(
     phone ? (
       <div className="fixed inset-0 z-40 flex items-center justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <div className="absolute inset-0 bg-black/60" onClick={() => onClose()} aria-hidden />
+        <div className="absolute inset-0 touch-none bg-black/60" onClick={() => onClose()} aria-hidden />
         {body}
       </div>
     ) : (
