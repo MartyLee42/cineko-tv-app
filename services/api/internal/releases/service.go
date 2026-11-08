@@ -767,12 +767,27 @@ func (s *Service) Resolve(ctx context.Context, mediaID, releaseID string) (*Reso
 		out.MagnetURI = *magnet
 	}
 	if download != nil {
-		out.DownloadURL = *download
-		if provider == prowlarrRef.ID {
-			out.DownloadURL = s.prowlarr.WithKey(*download)
-		}
+		out.DownloadURL = s.withKey(provider, *download)
 	}
 	return out, nil
+}
+
+// withKey restores a provider's secret in a stored download link (Prowlarr's
+// and Jackett's proxy links are stored without their API key).
+func (s *Service) withKey(provider, link string) string {
+	type keyed interface{ WithKey(string) string }
+	if s.src != nil {
+		if p, ok := s.src.Provider(provider); ok {
+			if k, ok := p.(keyed); ok {
+				return k.WithKey(link)
+			}
+			return link
+		}
+	}
+	if provider == prowlarrRef.ID {
+		return s.prowlarr.WithKey(link)
+	}
+	return link
 }
 
 // softReject reports whether a rejection only reflects uncertainty, so the

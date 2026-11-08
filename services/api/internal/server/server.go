@@ -34,8 +34,8 @@ import (
 	"martytv/api/internal/integrations/tmdb"
 	"martytv/api/internal/integrations/torrserver"
 	"martytv/api/internal/iptv"
-	"martytv/api/internal/keepsakes"
 	"martytv/api/internal/ivrestart"
+	"martytv/api/internal/keepsakes"
 	"martytv/api/internal/messages"
 	"martytv/api/internal/metrics"
 	"martytv/api/internal/pairing"
@@ -144,12 +144,19 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	// client (shared spacing/back-off); badges ride along with the ratings.
 	awardsSvc := awards.New(awards.Options{Pool: pool, Wikidata: ratingsSvc.Wikidata(), Log: log})
 	ratingsSrc := awardsSvc.WithBadges(ratingsSvc)
-	checker := integrations.NewChecker(30*time.Second,
-		integrations.NewProwlarr(cfg.Prowlarr),
+	// Only the chosen torrent search backend is checked (INDEXER).
+	var indexerCheck []integrations.Prober
+	switch cfg.Indexer {
+	case config.IndexerProwlarr:
+		indexerCheck = append(indexerCheck, integrations.NewProwlarr(cfg.Prowlarr))
+	case config.IndexerJackett:
+		indexerCheck = append(indexerCheck, integrations.NewJackett(cfg.Jackett))
+	}
+	checker := integrations.NewChecker(30*time.Second, append(indexerCheck,
 		integrations.NewTorrServer(cfg.TorrServer),
 		integrations.NewTMDB(cfg.TMDB),
 		ratingsSvc,
-	)
+	)...)
 	catalogSvc := catalog.NewService(pool, tmdbClient, cfg.TMDB, cfg.Catalog, log)
 
 	app.Use(recover.New())
@@ -251,7 +258,10 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	// feed /media/{id}/online. A provider package exposes a constructor
 	// returning a sources.Provider (nil = skip) and is added here, e.g.:
 	//   srcReg.Register(anilibria.New(cfg, log))
-	srcReg.Register(releases.NewProwlarrProvider(cfg.Prowlarr))
+	srcReg.Register(releases.NewProwlarrProvider(cfg.Prowlarr)) // unconfigured unless INDEXER=prowlarr
+	if cfg.Indexer == config.IndexerJackett {
+		srcReg.Register(releases.NewJackettProvider(cfg.Jackett))
+	}
 	srcReg.Register(jacred.New(cfg.Jacred))
 	srcReg.Register(anilibria.New("", nil))
 	srcReg.Register(cdnvideohub.New("", nil))
@@ -341,7 +351,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	appSettings.AdminRoutes(admin)
 	deviceHandlers.AdminRoutes(admin) // super_admin: /admin/devices*
 	pairHandlers.AdminRoutes(admin)   // super_admin: /admin/pairing*
-	newStatusService(cfg.TorrServer, checker.Statuses).withSeasonal(appSettings.SeasonalEnabled).withCPU(sysmonSvc.CPUNow).Routes(api)
+	newStatusService(cfg.TorrServer, checker.Statuses).withSeasonal(appSettings.SeasonalEnabled).withCPU(sysmonSvc.CPUNow).withFeatures(FeaturesOf(cfg)).Routes(api)
 	newSpeedtestService().Routes(api) // GET /speedtest: background connection speed tests (TV + PWA)
 
 	api.Use(func(c fiber.Ctx) error { return httpx.NotFound() })

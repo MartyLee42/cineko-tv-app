@@ -37,6 +37,25 @@ type ServiceStatus struct {
 	// CPUPercent is the server's CPU use right now (player stats panel);
 	// null until the first 10 s sample.
 	CPUPercent *float64 `json:"cpu_percent"`
+	// Features: the parts this server has (install options); clients hide
+	// the rest.
+	Features Features `json:"features"`
+}
+
+// Features is ServiceStatus.features.
+type Features struct {
+	Video    bool `json:"video"`
+	Music    bool `json:"music"`
+	Torrents bool `json:"torrents"`
+}
+
+// FeaturesOf derives the features from the configuration.
+func FeaturesOf(cfg *config.Config) Features {
+	return Features{
+		Video:    cfg.Video.Enabled && cfg.Video.InvidiousURL != "",
+		Music:    cfg.MusicEnabled,
+		Torrents: cfg.Indexer != config.IndexerNone,
+	}
 }
 
 // statusService answers GET /status from the shared integrations checker
@@ -49,6 +68,7 @@ type statusService struct {
 	now      func() time.Time
 	seasonal func(context.Context) bool
 	cpu      func() *float64
+	features Features
 
 	mu   sync.Mutex
 	last *ServiceStatus
@@ -65,6 +85,12 @@ func newStatusService(cfg config.TorrServerConfig, statuses func(context.Context
 	if cfg.URL != "" {
 		s.echoURL = cfg.URL + "/echo"
 	}
+	return s
+}
+
+// withFeatures sets ServiceStatus.features.
+func (s *statusService) withFeatures(f Features) *statusService {
+	s.features = f
 	return s
 }
 
@@ -96,6 +122,7 @@ func (s *statusService) get(ctx context.Context) ServiceStatus {
 	if s.cpu != nil {
 		out.CPUPercent = s.cpu()
 	}
+	out.Features = s.features
 	return out
 }
 
@@ -105,7 +132,7 @@ func (s *statusService) probe(ctx context.Context) ServiceStatus {
 		switch it.Name {
 		case "torrserver":
 			st.TorrServer.OK = it.OK
-		case "prowlarr":
+		case "prowlarr", "jackett": // whichever INDEXER chose (only one is checked)
 			st.Prowlarr.OK = it.OK
 		}
 	}

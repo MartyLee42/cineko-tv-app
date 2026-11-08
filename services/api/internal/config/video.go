@@ -10,6 +10,10 @@ import (
 
 // VideoConfig drives the YouTube «Видео» tab (internal/video).
 type VideoConfig struct {
+	// Enabled is VIDEO_ENABLED (default true). false = YouTube «Видео» is not
+	// installed: InvidiousURL is cleared, so the tab answers 503
+	// video_unavailable, no background work runs and nothing is monitored.
+	Enabled bool
 	// InvidiousURL is the self-hosted Invidious on the internal network
 	// (e.g. http://invidious:3000). Empty = the tab answers 503
 	// video_unavailable. It must match Invidious' own domain/external_port
@@ -31,6 +35,7 @@ type VideoConfig struct {
 
 func loadVideo(get func(string, string) string, errs *[]error) VideoConfig {
 	c := VideoConfig{
+		Enabled:      boolSetting(get, "VIDEO_ENABLED", true, errs),
 		InvidiousURL: strings.TrimRight(strings.TrimSpace(get("INVIDIOUS_URL", "")), "/"),
 		Region:       strings.ToUpper(strings.TrimSpace(get("VIDEO_REGION", "RU"))),
 		Lang:         strings.ToLower(strings.TrimSpace(get("VIDEO_LANG", "ru"))),
@@ -57,6 +62,9 @@ func loadVideo(get func(string, string) string, errs *[]error) VideoConfig {
 			*errs = append(*errs, errors.New("INVIDIOUS_URL must be an http(s) URL without credentials"))
 			c.InvidiousURL = ""
 		}
+	}
+	if !c.Enabled {
+		c.InvidiousURL = ""
 	}
 	if len(c.Region) != 2 {
 		*errs = append(*errs, errors.New("VIDEO_REGION must be a 2-letter country code"))

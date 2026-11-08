@@ -54,12 +54,19 @@ type Config struct {
 	// (enables "play in MSX's native player"). MSX_BRIDGE=false → plain menu.
 	MSXBridge bool
 
-	Prowlarr   ProwlarrConfig
-	Jacred     JacredConfig
-	TorrServer TorrServerConfig
-	TMDB       TMDBConfig
-	Catalog    CatalogConfig
-	Kinopoisk  KinopoiskConfig
+	Prowlarr ProwlarrConfig
+	Jackett  JackettConfig
+	// Indexer is the torrent search backend (INDEXER): "prowlarr" (default),
+	// "jackett" or "none". The backend not chosen is left unconfigured.
+	Indexer string
+	// MusicEnabled: Cineko Music is installed (MUSIC_ENABLED, default true);
+	// only reported to clients (GET /status features.music).
+	MusicEnabled bool
+	Jacred       JacredConfig
+	TorrServer   TorrServerConfig
+	TMDB         TMDBConfig
+	Catalog      CatalogConfig
+	Kinopoisk    KinopoiskConfig
 	// ForYou: Phase 6 recommendations and AI collections (config/foryou.go).
 	ForYou ForYouConfig
 	// NewEpisodes: the nightly «Новые серии» check (config/newepisodes.go).
@@ -112,6 +119,20 @@ type ProwlarrConfig struct {
 	URL    string
 	APIKey string
 }
+
+// JackettConfig is Jackett, the alternative torrent search backend
+// (INDEXER=jackett): JACKETT_URL and JACKETT_API_KEY.
+type JackettConfig struct {
+	URL    string
+	APIKey string
+}
+
+// Indexer backends (INDEXER).
+const (
+	IndexerProwlarr = "prowlarr"
+	IndexerJackett  = "jackett"
+	IndexerNone     = "none"
+)
 
 // JacredConfig is the Jacred torrent index (sources provider "jacred").
 type JacredConfig struct {
@@ -256,6 +277,10 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 			URL:    strings.TrimRight(get("PROWLARR_URL", ""), "/"),
 			APIKey: secret("PROWLARR_API_KEY"),
 		},
+		Jackett: JackettConfig{
+			URL:    strings.TrimRight(strings.TrimSpace(get("JACKETT_URL", "")), "/"),
+			APIKey: secret("JACKETT_API_KEY"),
+		},
 		Jacred: JacredConfig{
 			URL:    jacredURL(get("JACRED_URL", "https://jr.maxvol.pro")),
 			APIKey: secret("JACRED_API_KEY"),
@@ -353,6 +378,22 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 	c.TMDB.ProxyURL = proxyURL("TMDB_PROXY_URL", secret("TMDB_PROXY_URL"), &errs)
 	c.IPTV = loadIPTV(get, secret, c.TMDB.ProxyURL, &errs)
 	c.Video = loadVideo(get, &errs)
+	if !c.Video.Enabled {
+		c.InvidiousRestart.Off = true // nothing to restart
+	}
+	c.MusicEnabled = boolSetting(get, "MUSIC_ENABLED", true, &errs)
+	c.Indexer = strings.ToLower(strings.TrimSpace(get("INDEXER", IndexerProwlarr)))
+	switch c.Indexer {
+	case IndexerProwlarr:
+		c.Jackett = JackettConfig{}
+	case IndexerJackett:
+		c.Prowlarr = ProwlarrConfig{}
+	case IndexerNone:
+		c.Prowlarr, c.Jackett = ProwlarrConfig{}, JackettConfig{}
+	default:
+		errs = append(errs, fmt.Errorf("INDEXER must be prowlarr, jackett or none, got %q", c.Indexer))
+		c.Indexer, c.Jackett = IndexerProwlarr, JackettConfig{}
+	}
 
 	if c.DatabaseURL == "" {
 		errs = append(errs, errors.New("DATABASE_URL is required"))
@@ -438,6 +479,21 @@ func splitList(s string) []string {
 		}
 	}
 	return out
+}
+
+// boolSetting parses an on/off switch (true/false, 1/0, yes/no, on/off);
+// empty = def.
+func boolSetting(get func(string, string) string, name string, def bool, errs *[]error) bool {
+	switch strings.ToLower(strings.TrimSpace(get(name, ""))) {
+	case "":
+		return def
+	case "true", "1", "yes", "on":
+		return true
+	case "false", "0", "no", "off":
+		return false
+	}
+	*errs = append(*errs, fmt.Errorf("%s must be true or false", name))
+	return def
 }
 
 func firstNonEmpty(vals ...string) string {

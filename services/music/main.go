@@ -89,7 +89,7 @@ func loadConfig() config {
 	if n < 1 {
 		n = 1
 	}
-	return config{
+	cfg := config{
 		Listen:        env("LISTEN_ADDR", ":8080"),
 		DataDir:       env("MUSIC_DATA_DIR", "/data"),
 		StaticDir:     env("MUSIC_STATIC_DIR", "/srv/music"),
@@ -117,6 +117,29 @@ func loadConfig() config {
 		Region:        env("MUSIC_REGION", "RU"),
 		MetricsToken:  secret("METRICS_TOKEN"),
 	}
+	cfg.applySwitches(env)
+	return cfg
+}
+
+// applySwitches turns off the parts the install left out (install.sh
+// options, same .env as the API): VIDEO_ENABLED=false → no YouTube audio;
+// INDEXER other than prowlarr → no Prowlarr search (Cineko Music searches
+// torrents through Prowlarr only).
+func (c *config) applySwitches(env func(string, string) string) {
+	if off(env("VIDEO_ENABLED", "")) {
+		c.InvidiousURL = ""
+	}
+	if ix := strings.ToLower(strings.TrimSpace(env("INDEXER", "prowlarr"))); ix != "" && ix != "prowlarr" {
+		c.ProwlarrURL, c.ProwlarrKey = "", ""
+	}
+}
+
+func off(v string) bool {
+	switch strings.ToLower(strings.TrimSpace(v)) {
+	case "false", "0", "no", "off":
+		return true
+	}
+	return false
 }
 
 // archiveDir: MUSIC_ASSET_ARCHIVE ("off" disables), default <data>/asset-archive.

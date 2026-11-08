@@ -37,6 +37,7 @@ func (t tr) in(l string) string {
 var names = map[string]tr{
 	KindTMDB:       {"TMDB", "TMDB", "TMDB"},
 	KindProwlarr:   {"Prowlarr", "Prowlarr", "Prowlarr"},
+	KindJackett:    {"Jackett", "Jackett", "Jackett"},
 	KindTorrServer: {"TorrServer", "TorrServer", "TorrServer"},
 	KindInvidious:  {"YouTube", "YouTube", "YouTube"},
 	KindYouTube:    {"YouTube", "YouTube", "YouTube"},
@@ -58,6 +59,9 @@ var problems = map[string]tr{
 	KindProwlarr: {"Prowlarr не отвечает — поиск торрентов не работает",
 		"Prowlarr isn't answering — torrent search doesn't work",
 		"Prowlarr жауап бермейді — торрент іздеу жұмыс істемейді"},
+	KindJackett: {"Jackett не отвечает — поиск торрентов не работает",
+		"Jackett isn't answering — torrent search doesn't work",
+		"Jackett жауап бермейді — торрент іздеу жұмыс істемейді"},
 	KindTorrServer: {"TorrServer не отвечает — торренты не воспроизводятся",
 		"TorrServer isn't answering — torrents don't play",
 		"TorrServer жауап бермейді — торренттер ойнатылмайды"},

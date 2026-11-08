@@ -4507,7 +4507,7 @@ components:
       type: object
       required: [name, configured, ok, checked_at]
       properties:
-        name: { type: string, enum: [prowlarr, torrserver, tmdb, kinopoisk] }
+        name: { type: string, enum: [prowlarr, jackett, torrserver, tmdb, kinopoisk], description: "Only the torrent search backend INDEXER chose is listed (prowlarr or jackett; neither with INDEXER=none)." }
         configured: { type: boolean, description: "kinopoisk: false without KINOPOISK_API_KEY (ratings then stay null)." }
         ok: { type: boolean }
         version: { type: string }
@@ -7180,7 +7180,7 @@ components:
       required: [id, kind, cause, detail, source, summary, notes, opened_at, closed_at, reminders]
       properties:
         id: { type: string, format: uuid }
-        kind: { type: string, enum: [tmdb, prowlarr, torrserver, invidious, proxy, disk, database, youtube, vpn, updater] }
+        kind: { type: string, enum: [tmdb, prowlarr, jackett, torrserver, invidious, proxy, disk, database, youtube, vpn, updater] }
         cause: { type: string, description: "e.g. unauthorized (tmdb), search / streams (youtube), rollback (updater)." }
         detail: { type: string, description: "Technical detail (error text, free space)." }
         source: { type: string, enum: [monitor, host] }

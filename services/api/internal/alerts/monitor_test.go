@@ -46,6 +46,12 @@ func TestObserve(t *testing.T) {
 	if o := find(obs, KindProwlarr); o == nil || !o.OK {
 		t.Fatalf("prowlarr %+v", o)
 	}
+	// INDEXER=jackett: Jackett's check has its own kind.
+	checks = append(checks, integrations.Status{Name: "jackett", Configured: true, Error: "jackett: request timed out"})
+	if o := find(s.observe(context.Background()), KindJackett); o == nil || o.OK {
+		t.Fatalf("jackett %+v", o)
+	}
+	checks = checks[:len(checks)-1]
 	if find(obs, KindTorrServer) != nil || find(obs, "kinopoisk") != nil {
 		t.Fatal("unconfigured / unknown checks observed")
 	}

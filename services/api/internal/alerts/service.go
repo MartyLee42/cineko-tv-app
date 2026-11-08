@@ -207,6 +207,8 @@ func (s *Service) observe(ctx context.Context) []Observation {
 				kind = KindTMDB
 			case "prowlarr":
 				kind = KindProwlarr
+			case "jackett":
+				kind = KindJackett
 			case "torrserver":
 				kind = KindTorrServer
 			}
