@@ -122,6 +122,16 @@
 	@demotv path /demo_tv /demo_tv/
 	redir @demotv /tv/?demo=1 302
 
+	# Optional downloads (e.g. self-built Android apps) from the server's
+	# downloads/ folder next to compose.yaml; empty or missing = 404.
+	handle_path /downloads/* {
+		root * /srv/downloads
+		@apk path *.apk
+		header @apk Content-Type application/vnd.android.package-archive
+		header Cache-Control "no-cache"
+		file_server
+	}
+
 	# TV app (built with base /tv/).
 	handle_path /tv/* {
 		handle /assets/* {

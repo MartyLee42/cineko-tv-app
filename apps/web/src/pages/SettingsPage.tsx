@@ -88,6 +88,7 @@ export function SettingsPage() {
       <DeviceCard />
       <ThisDeviceCard />
       <GuideCard />
+      <AndroidAppsCard />
       <Card className="border-dashed text-sm text-muted">
         <p data-testid="settings-coming-soon">{t("settings.coming_soon")}</p>
       </Card>
@@ -137,6 +138,50 @@ function GuideCard() {
       <p className="mb-2 text-sm text-muted">{t("settings.guides_hint")}</p>
       {link("/docs/martytv-guide.pdf", t("settings.guide_full"), "guide-full")}
       {link("/docs/install-tv.pdf", t("settings.guide_install_tv"), "guide-install-tv")}
+    </Card>
+  );
+}
+
+/** Self-built Android apps (served from the server's downloads/ folder, not in the repo). */
+const ANDROID_APPS = [
+  { href: "/downloads/cineko.apk", key: "settings.android_cineko", testId: "android-cineko" },
+  { href: "/downloads/cineko-music.apk", key: "settings.android_music", testId: "android-music" },
+] as const;
+
+function AndroidAppsCard() {
+  const { t } = useI18n();
+  // Shown only for the files the server actually has.
+  const [have, setHave] = useState<string[]>([]);
+  useEffect(() => {
+    let live = true;
+    Promise.all(
+      ANDROID_APPS.map((a) =>
+        fetch(a.href, { method: "HEAD", cache: "no-store" })
+          .then((r) => (r.ok && (r.headers.get("content-type") ?? "").includes("android") ? a.href : null))
+          .catch(() => null),
+      ),
+    ).then((found) => live && setHave(found.filter((h): h is NonNullable<typeof h> => !!h)));
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (!have.length) return null;
+  return (
+    <Card>
+      <h2 className="text-lg font-bold">{t("settings.android")}</h2>
+      <p className="mb-2 text-sm text-muted">{t("settings.android_hint")}</p>
+      {ANDROID_APPS.filter((a) => have.includes(a.href)).map((a) => (
+        <a
+          key={a.href}
+          href={a.href}
+          download
+          data-testid={a.testId}
+          className="flex min-h-[44px] items-center gap-3 rounded-xl px-2 font-semibold text-accent hover:bg-surface-2"
+        >
+          <span className="flex-1">{t(a.key)}</span>
+          <span className="text-xs font-normal text-muted">APK</span>
+        </a>
+      ))}
     </Card>
   );
 }
