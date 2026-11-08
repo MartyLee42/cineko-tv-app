@@ -228,6 +228,12 @@ func onlineRelease(v sources.Variant, in sources.Info) releases.Release {
 		ID: v.ID, Title: v.Title, Indexer: in.Title, AudioCodecs: []string{}, Languages: []string{},
 		Voiceovers: []releases.Voiceover{}, Seasons: []int{}, Episodes: []int{}, Confidence: 1,
 		Reasons: []string{}, Warnings: []string{},
+		// The source it came from (kind online/anime): the TV keeps the next
+		// episode on the same source and voice («Смотреть онлайн» → next episode online).
+		Provider: releases.ProviderRef{ID: v.Provider, Name: in.Title, Kind: in.Kind},
+	}
+	if r.Provider.ID == "" {
+		r.Provider.ID = in.ID
 	}
 	if r.Title == "" {
 		r.Title = in.Title

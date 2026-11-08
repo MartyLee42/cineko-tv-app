@@ -108,6 +108,14 @@ export function useOnline(q: ReleaseQuery) {
   });
 }
 
+/** GET /media/{id}/online outside React (next episode of an online source). */
+export function fetchOnline(q: ReleaseQuery): Promise<OnlineList> {
+  const query: Record<string, string | number> = { profile_id: q.profile_id, lang: q.lang };
+  if (q.season !== null) query.season = q.season;
+  if (q.season !== null && q.episode !== null) query.episode = q.episode;
+  return unwrap(api.GET("/media/{id}/online", { params: { path: { id: q.media_id }, query } }));
+}
+
 /** Online source: another quality (same source, new stream_url). */
 export function patchQuality(id: string, quality: number): Promise<PlaybackSource> {
   return unwrap(api.PATCH("/playback/sources/{id}", { params: { path: { id } }, body: { quality } }));

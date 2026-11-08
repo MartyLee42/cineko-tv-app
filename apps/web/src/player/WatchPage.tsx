@@ -10,9 +10,10 @@ import { clientId } from "../devprefs/logic";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { unwrap, type PlaybackSource } from "@martytv/contracts";
-import { episodeCode, imageUrl, skipMode } from "@martytv/media-types";
+import { episodeCode, hasMediaSource, hlsMode, imageUrl, isOnlineRelease, nextOnlineVariant, skipMode } from "@martytv/media-types";
 import { loaderPick, matchInfoOf, useI18n } from "@martytv/ui";
 import { api } from "../api";
+import { fetchOnline } from "../play/sourcesApi";
 import { useDevices } from "../queries";
 import { useCatalogConfig, useCatalogLang, useMedia, useSeason } from "../catalog/queries";
 import { SendToTvProvider } from "../remote/SendToTv";
@@ -302,16 +303,24 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
     const ref = nextEpisode({ season: s, episode: e }, season.episodes, m.seasons, nextSeason?.episodes);
     if (!ref?.id) return null;
     const keep = ready && packCovers(ready.release, ref.season, ref.episode) ? ready.release.id : undefined;
+    const target = { media_id: mediaId, episode_id: ref.id, season_number: ref.season, episode_number: ref.episode };
+    const prevRelease = ready?.release;
     return {
       code: episodeCode(ref.season, ref.episode),
       name: ref.name ?? null,
-      go: () =>
-        navigate(
-          watchUrl({ media_id: mediaId, episode_id: ref.id, season_number: ref.season, episode_number: ref.episode }, { release: keep, t: 0 }),
-          { replace: true },
-        ),
+      go: () => {
+        // Watched online: the episode stays online (same source and voice) when it's there.
+        if (!keep && prevRelease && isOnlineRelease(prevRelease)) {
+          void fetchOnline(target, profileId, lang)
+            .then((l) => nextOnlineVariant(l.items, prevRelease, hlsMode(document.createElement("video"), hasMediaSource()))?.id)
+            .catch(() => undefined)
+            .then((id) => navigate(watchUrl(target, { release: id, t: 0 }), { replace: true }));
+          return;
+        }
+        navigate(watchUrl(target, { release: keep, t: 0 }), { replace: true });
+      },
     };
-  }, [m, s, e, season, nextSeason, ready, navigate, mediaId]);
+  }, [m, s, e, season, nextSeason, ready, navigate, mediaId, profileId, lang]);
 
   // ------------------------------------------------------------ previous episode
 
@@ -326,16 +335,24 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
     const ref = prevEpisode({ season: s, episode: e }, season.episodes, m.seasons, prevSeason?.episodes);
     if (!ref?.id) return null;
     const keep = ready && packCovers(ready.release, ref.season, ref.episode) ? ready.release.id : undefined;
+    const target = { media_id: mediaId, episode_id: ref.id, season_number: ref.season, episode_number: ref.episode };
+    const prevRelease = ready?.release;
     return {
       code: episodeCode(ref.season, ref.episode),
       name: ref.name ?? null,
-      go: () =>
-        navigate(
-          watchUrl({ media_id: mediaId, episode_id: ref.id, season_number: ref.season, episode_number: ref.episode }, { release: keep, t: 0 }),
-          { replace: true },
-        ),
+      go: () => {
+        // Watched online: the episode stays online (same source and voice) when it's there.
+        if (!keep && prevRelease && isOnlineRelease(prevRelease)) {
+          void fetchOnline(target, profileId, lang)
+            .then((l) => nextOnlineVariant(l.items, prevRelease, hlsMode(document.createElement("video"), hasMediaSource()))?.id)
+            .catch(() => undefined)
+            .then((id) => navigate(watchUrl(target, { release: id, t: 0 }), { replace: true }));
+          return;
+        }
+        navigate(watchUrl(target, { release: keep, t: 0 }), { replace: true });
+      },
     };
-  }, [m, s, e, season, prevSeason, ready, navigate, mediaId]);
+  }, [m, s, e, season, prevSeason, ready, navigate, mediaId, profileId, lang]);
 
   // ------------------------------------------------------------ leaving
 
