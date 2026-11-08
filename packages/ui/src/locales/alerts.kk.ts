@@ -3,7 +3,7 @@ export const alertsKk = {
   "alerts.tab": "Инциденттер",
   "alerts.tab_badge": "Ашық инциденттер: {n}",
   "alerts.title": "Инциденттер",
-  "alerts.hint": "Cineko TMDB, YouTube, TorrServer, Prowlarr, VPN, диск пен дерекқорды минут сайын тексереді; сервер күзетшісі қайта іске қосуларды хабарлайды. Әр ақау мен қалпына келу туралы әкімшілерге хабар келеді.",
+  "alerts.hint": "Cineko TMDB, YouTube, TorrServer, Prowlarr не Jackett, VPN, диск пен дерекқорды минут сайын тексереді; сервер күзетшісі қайта іске қосуларды хабарлайды. Әр ақау мен қалпына келу туралы әкімшілерге хабар келеді.",
   "alerts.empty": "Соңғы 30 күнде ақау болған жоқ.",
   "alerts.open": "Қазір",
   "alerts.recent": "Соңғы 30 күн",

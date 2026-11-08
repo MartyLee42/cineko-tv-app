@@ -3,7 +3,7 @@ export const alertsEn = {
   "alerts.tab": "Incidents",
   "alerts.tab_badge": "Open incidents: {n}",
   "alerts.title": "Incidents",
-  "alerts.hint": "Cineko checks TMDB, YouTube, TorrServer, Prowlarr, the VPN, the disk and the database every minute; the server's watchdog reports its restarts. Admins get a message for every outage and recovery.",
+  "alerts.hint": "Cineko checks TMDB, YouTube, TorrServer, Prowlarr or Jackett, the VPN, the disk and the database every minute; the server's watchdog reports its restarts. Admins get a message for every outage and recovery.",
   "alerts.empty": "No outages in the last 30 days.",
   "alerts.open": "Now",
   "alerts.recent": "Last 30 days",

@@ -21,11 +21,12 @@ type Patch = { enabled?: boolean; base_url?: string; credentials?: Record<string
 
 /**
  * What the admin can change per source (what its provider reads): Jacred a
- * base URL and an API key, AniLiberty a base URL, Prowlarr nothing (env
+ * base URL and an API key, AniLiberty a base URL, Prowlarr and Jackett nothing (env
  * only). Sources added later: a URL, and a key when they need credentials.
  */
 const SETTINGS: Record<string, { url: boolean; key: boolean }> = {
   prowlarr: { url: false, key: false },
+  jackett: { url: false, key: false },
   jacred: { url: true, key: true },
   anilibria: { url: true, key: false },
 };

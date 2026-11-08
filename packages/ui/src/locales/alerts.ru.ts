@@ -3,7 +3,7 @@ export const alertsRu = {
   "alerts.tab": "Инциденты",
   "alerts.tab_badge": "Открытых инцидентов: {n}",
   "alerts.title": "Инциденты",
-  "alerts.hint": "Cineko сам проверяет TMDB, YouTube, TorrServer, Prowlarr, VPN, диск и базу раз в минуту; сторож на сервере сообщает о перезапусках. О каждом сбое и восстановлении администраторы получают сообщение.",
+  "alerts.hint": "Cineko сам проверяет TMDB, YouTube, TorrServer, Prowlarr или Jackett, VPN, диск и базу раз в минуту; сторож на сервере сообщает о перезапусках. О каждом сбое и восстановлении администраторы получают сообщение.",
   "alerts.empty": "За 30 дней сбоев не было.",
   "alerts.open": "Сейчас",
   "alerts.recent": "За 30 дней",
