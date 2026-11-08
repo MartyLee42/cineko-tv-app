@@ -23,9 +23,12 @@ server's loopback interface only; you reach them through an SSH tunnel.
 
 ## Requirements
 
-- A 64-bit Linux server (amd64 or arm64) with **2+ CPU cores, 4 GB RAM**
-  (8 GB is comfortable), and disk space for the databases plus TorrServer's
-  cache. The whole stack idles at under 1 GB of RAM.
+- A 64-bit Linux server (amd64 or arm64) with **2+ CPU cores and 4 GB RAM**
+  (8 GB is comfortable). See [Sizing](#sizing) for what the stack really uses.
+- A **current distribution**: Ubuntu 22.04 / 24.04, Debian 12 or newer
+  (kernel 5.15+, cgroup v2). Older ones work but leak memory — see
+  [Sizing](#sizing). On a VPS pick **KVM** (own kernel); container-based VPSes
+  (OpenVZ, LXC) often can't run Docker properly.
 - **Docker Engine** with the **compose plugin 2.24+**:
   `curl -fsSL https://get.docker.com | sh` (or
   [the official guide](https://docs.docker.com/engine/install/)). Run Docker as
@@ -37,6 +40,44 @@ server's loopback interface only; you reach them through an SSH tunnel.
 - A free [TMDB](https://www.themoviedb.org/signup) account for the catalog
   (Settings → API → "API Read Access Token"). Optional, but without it the
   catalog is empty.
+
+## Sizing
+
+Measured on a household server (6 cores, 8 GB, Ubuntu 24.04, the full stack:
+Cineko, Prowlarr + FlareSolverr, TorrServer, Invidious + companion, plus a
+VPN container):
+
+| | Idle | Peaks |
+|---|---|---|
+| All containers together | ~850 MB | ~1.5–2 GB |
+| API | ~40 MB | ~200 MB during the nightly «Для вас» run |
+| Postgres (≈ 200 MB database) | ~85 MB | ~150 MB |
+| Prowlarr | ~130 MB | — |
+| FlareSolverr | ~230 MB | ~650 MB while solving a Cloudflare challenge |
+| Invidious + companion | ~200 MB | companion ~460 MB generating its PO token at start |
+| TorrServer | ~90 MB | + its RAM cache per playing torrent (128 MB by default) |
+| Transcoder | ~5 MB | ffmpeg per compatibility/re-encode job (≤ `TRANSCODER_MAX_JOBS`, capped by its 1.5 GB `mem_limit`) |
+| Whole server incl. the OS | ~1.7 GB used | — |
+
+- **RAM**: 4 GB runs everything for a family; 8 GB leaves room for several
+  simultaneous streams and re-encodes. On 4 GB keep TorrServer's cache at
+  64–128 MB and `TRANSCODER_MAX_JOBS=1`.
+- **CPU**: idle is near 0 %. Direct play and remuxing are cheap; only
+  re-encoding video (XviD / MPEG-2 / VC-1, see [GPU transcoding](#gpu-transcoding))
+  needs real CPU — roughly one core per 1080p stream without a GPU.
+- **Disk**: ~4–5 GB of Docker images (old images pile up after updates:
+  `docker image prune`), a few hundred MB of databases and caches for a
+  household, plus TorrServer's disk cache if enabled and any
+  [server downloads](#server-downloads-on-another-disk).
+- **Network**: one 1080p WEB-DL stream needs ~8–10 Mbit/s, a 4K remux 60–100;
+  the server downloads from peers and uploads to viewers at the same time.
+- **Old kernels leak memory.** With cgroup v1 (Ubuntu 20.04, kernel 5.4) every
+  container re-creation (each update or deploy) leaves kernel "per-CPU"
+  memory behind that `docker stats` never shows: one server had 1.3 GB stuck
+  after ten days of frequent updates, and only a reboot freed it. Kernels
+  5.15+ with cgroup v2 don't have the problem — upgrade the OS
+  (`do-release-upgrade`) or reboot now and then. Check with
+  `grep Percpu /proc/meminfo` (normal: a few hundred MB at most).
 
 ## Install with `install.sh`
 
@@ -136,8 +177,11 @@ recreates the containers whose settings changed.
   `deployments/compose.override.yaml`, which `scripts/cineko.sh`, `make prod`
   and `install.sh` load automatically. Keep `deployments/compose.yaml`
   unmodified so updates merge cleanly.
-- **Memory**: every container has a `mem_limit`. On a small server lower
-  TorrServer's cache in its settings and `TRANSCODER_MAX_JOBS`.
+- **Memory**: every container has a `mem_limit` (API 768 MB; Postgres,
+  music, Prowlarr, Invidious, companion 512 MB; FlareSolverr 1 GB; transcoder
+  1.5 GB; TorrServer 2 GB). The limits are ceilings, not reservations. Raise or
+  lower them in `deployments/compose.override.yaml`; on a small server lower
+  TorrServer's cache and `TRANSCODER_MAX_JOBS` first. See [Sizing](#sizing).
 
 ## GPU transcoding
 
