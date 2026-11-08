@@ -69,11 +69,18 @@ func (s *Service) Cancel(ctx context.Context, who caller, id string) error {
 	if src.Kind != "" && src.Kind != "torrent" {
 		return nil
 	}
+	s.abandon(id, src.InfoHash)
+	return nil
+}
+
+// abandon stops preparing a torrent source and, when this process added its
+// torrent for it and nothing else uses it, removes the source and the
+// torrent in the background (Cancel; an instant-play warm nobody played).
+func (s *Service) abandon(id, hash string) {
 	s.stopPreparing(id)
 	if !s.takeFresh(id) {
-		return nil
+		return
 	}
-	hash := src.InfoHash
 	s.bg.Add(1)
 	go func() {
 		defer s.bg.Done()
@@ -112,7 +119,6 @@ func (s *Service) Cancel(ctx context.Context, who caller, id string) error {
 		}
 		log.Info("cancelled: torrent removed")
 	}()
-	return nil
 }
 
 var btihHex = regexp.MustCompile(`(?i)btih:([0-9a-f]{40})`)

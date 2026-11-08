@@ -931,6 +931,47 @@ before), nothing streams it, no other source or download uses the hash, and
 no session of it got past 30 s. Anything that was already in TorrServer
 (e.g. Lampa's torrents) is never removed.
 
+### Instant play («Мгновенный старт», `warm.go`)
+
+A title page that stays on one target for 2 s (TV Details; the PWA title
+page only when Play plays *here* — no TV to choose, or «здесь» last time)
+sends `POST /playback/warm {media_id, episode_id?, release_id | source_id,
+profile_id, start_seconds?}`; another target or leaving the page sends
+`DELETE /playback/warm?profile_id=` (the debounce/cancel logic is
+`packages/media-types/src/instantPlay.ts`). **The client names the release**:
+Play's choice is made on the client (`nextRelease` with the TV's codec
+probe, measured rate and compat; `bestForBrowser` on the PWA) over the same
+cached `/releases` list, so the warm is exactly what Play will start. For
+«Продолжить» (resume with the last session's source) it sends `source_id`
+and the resume position.
+
+The server answers at once (`warming` or `skipped` + reason) and, in the
+background, runs the regular `create` (resolve, TorrServer add, metadata,
+file choice — the same row Play would get), kicks ffprobe, then opens a
+TorrServer reader at the start of the file (or ~4 MB before the resume
+point's share of it), reads 16 MiB and **keeps the reader open** for 4 min,
+so TorrServer keeps the torrent connected (its own cache, `CacheSize`,
+bounds what it prefetches ahead). `POST /playback/sources` with the same
+user / title / episode / release then returns that source as is — no
+resolve, no TorrServer call — usually `ready`, so the TV skips to
+«starting»; a GET of a warmed source (resume by id) counts the same. The
+reader stays open 30 s more for the player's first request.
+
+Limits: one warm per profile (a newer one replaces it), 2 per server;
+skipped when the admin switch is off (`/admin/playback` `instant_play`,
+Admin → Server; app_settings `ai_feature_instant_play`, default on), while 3+
+torrents are streamed or any compat stream (MP4 / HLS) runs, for a file
+already downloaded to the server, for online variants and unknown releases;
+the TV also skips while its player runs or the engine asks to save data. A
+warm nobody played (cancelled, replaced, Play chose another release = miss,
+or 12 min passed) is dropped 15 s later (Play may be on its way) through the
+cancel path above — the torrent goes only when the warm added it and nothing
+else uses it. Warms never create playback sessions, so no history,
+«Продолжить» or watch events. `cineko_instant_play_total{result}` counts
+started / hit / miss / cancelled / expired / failed / skipped. State is in
+memory (one API instance); a restart forgets warms (their sources stay as
+ordinary prepared sources).
+
 ### TV player extras
 
 - **«Продолжить»** plays `WatchProgress.source_id` (the last session's
@@ -2155,6 +2196,30 @@ votes) and `exclude_ids`, then picks among the best 60 with probability
 filters (random page 1–3, ≥ 200 votes), position-weighted. Moods → genres:
 cozy 35/10751/10749/16 (not 27/53/80/10752), tense 53/80/9648/28, funny
 35, thoughtful 18/878/36/99, scary 27, romantic 10749, family 10751/16.
+
+**«Cineko TV»** (`channel.go`, TV `apps/tv/src/channel/`): a lean-back
+channel. Nothing is computed ahead — `GET /profiles/{id}/channel` runs when
+the viewer tunes in (the «Cineko TV» chip first in the «ТВ» screen's group
+row). The programme takes the cached pool's films (rank-scored 1 … 0.5)
+without anything rated, started, finished or dismissed, rewatch picks,
+hidden anime, or films whose torrent search in the last 24 h found nothing
+and that have no online variant (`release_search_cache` /
+`online_search_cache`, no new search); plus the next episode of series in
+progress (`watch.ContinueWatching`, score 0.9 − 0.05·i, resuming an episode
+left mid-way). `buildProgramme` picks greedily among the best 40 with a
+0–0.2 random nudge, −0.35 for the previous pick's main genre, −0.15 for any
+shared genre, −0.1 for the main genre two back; series episodes never follow
+each other and fill ≤ ⌈count/3⌉ slots. Unknown runtimes: 105 min (film) /
+45 min (episode). The TV (lazy chunk) builds the clock from the runtimes
+(the current pick from the player's position/duration once known), plays
+each pick with the normal player (best release) and moves on at the end —
+or at the credits with auto-skip — without an «Up next» prompt; CH±/▲▼/⏭⏮
+switch picks (fetching 8 more, `exclude`-ing the programme, when fewer than
+3 are left), OK opens the guide («Следующий», «Не то» = dismiss + skip,
+«Звук и субтитры», «Выйти»), Back leaves. The next pick's releases are
+fetched 45 s into the current one. Plays log feedback `impression` + `play`
+with `row_id: "channel"`; learning credits them with the title's cached row
+sources (no position).
 
 **Explore** sections: moods, decades, languages («Корейское кино»…),
 best by genre, 20 curated TMDB keyword themes (ids checked live; two thin

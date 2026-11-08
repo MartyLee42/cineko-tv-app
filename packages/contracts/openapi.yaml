@@ -974,6 +974,24 @@ paths:
         "200": { description: Saved (audited appearance.updated)., content: { application/json: { schema: { $ref: "#/components/schemas/AdminAppearance" } } } }
         "403": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
+  /admin/playback:
+    get:
+      tags: [admin]
+      operationId: adminPlayback
+      description: "Server-wide playback switches (app_settings). instant_play = «Мгновенный старт» (POST /playback/warm; default true)."
+      responses:
+        "200": { description: Current switches., content: { application/json: { schema: { $ref: "#/components/schemas/AdminPlayback" } } } }
+        "403": { $ref: "#/components/responses/Error" }
+    put:
+      tags: [admin]
+      operationId: updateAdminPlayback
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/AdminPlayback" } } }
+      responses:
+        "200": { description: Saved (audited playback_settings.updated)., content: { application/json: { schema: { $ref: "#/components/schemas/AdminPlayback" } } } }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
 
   # ---------------------------------------------------------------- catalog (Phase 2)
   /catalog/config:
@@ -1495,6 +1513,51 @@ paths:
         "409": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
         "502": { $ref: "#/components/responses/Error" }
+  /playback/warm:
+    post:
+      tags: [playback]
+      operationId: warmPlayback
+      description: |
+        Instant play («Мгновенный старт»): a title page open for a couple of seconds names the
+        release its Play would start (the client's own ranking, as for Play). In the background
+        the server prepares it like POST /playback/sources (TorrServer, metadata, file), reads a
+        small head of the file (or of `start_seconds`) and keeps the torrent connected for a few
+        minutes. POST /playback/sources with the same media / episode / release then returns that
+        source at once (usually `ready`). One warm per profile (a newer one replaces it), two per
+        server; a warm nobody plays is dropped after `expires_at` (its torrent only when it was added
+        for it). Never creates playback sessions or history. Answers at once.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [media_id, profile_id]
+              description: "release_id, or source_id when Play resumes the source the title was last watched with (WatchProgress.source_id; its release and episode are used, and its GET counts as Play)."
+              properties:
+                media_id: { type: string, format: uuid }
+                episode_id: { type: string, format: uuid, description: "Series: the episode Play would start (resume / next up)." }
+                release_id: { type: string, maxLength: 128 }
+                source_id: { type: string, format: uuid }
+                profile_id: { type: string, format: uuid }
+                start_seconds: { type: number, minimum: 0, description: "The resume position Play will start at (0 = the start)." }
+      responses:
+        "202":
+          description: Warming, or skipped with a reason.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WarmResult" }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [playback]
+      operationId: cancelPlaybackWarm
+      description: The viewer left the title page — the profile's warm stops (dropped after a few seconds unless Play takes it meanwhile).
+      parameters:
+        - { name: profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Cancelled (or nothing to cancel). }
+        "422": { $ref: "#/components/responses/Error" }
   /playback/sources/{id}:
     parameters: [{ $ref: "#/components/parameters/Id" }]
     get:
@@ -2603,7 +2666,7 @@ paths:
                 profile_id: { type: string, format: uuid }
                 media_id: { type: string, format: uuid }
                 action: { $ref: "#/components/schemas/ForYouFeedbackAction" }
-                row_id: { type: string, maxLength: 80, description: "ForYouRow.id (or a surface like `surprise`, `collection:<id>`, `explore`)." }
+                row_id: { type: string, maxLength: 80, description: "ForYouRow.id (or a surface like `surprise`, `collection:<id>`, `explore`, `channel`)." }
                 events: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/ForYouFeedbackEvent" } }
       responses:
         "202":
@@ -2765,6 +2828,34 @@ paths:
       responses:
         "200": { description: The list., content: { application/json: { schema: { $ref: "#/components/schemas/CuratedList" } } } }
         "404": { $ref: "#/components/responses/Error" }
+  /profiles/{id}/channel:
+    get:
+      tags: [foryou]
+      operationId: getChannel
+      description: |
+        «Cineko TV»: a programme for the lean-back channel, built on request
+        (the TV calls it when the viewer tunes in; nothing is computed ahead).
+        Films from the profile's «Для вас» pool by score (with a little
+        randomness), never rated, started, finished or dismissed ones, anime
+        hidden when the profile hides it, and films whose recent torrent search
+        found nothing (with no online variant) left out; plus the next episode
+        of series in progress (at most a third of the slots, never two in a
+        row). Consecutive picks alternate genres. Runtimes are estimates when
+        `runtime_known` is false; the TV builds the clock from them. Plays
+        started on the channel are reported as feedback with `row_id: "channel"`.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: count, in: query, schema: { type: integer, minimum: 1, maximum: 20, default: 8 } }
+        - { name: exclude, in: query, description: "Comma-separated media ids already on the programme (≤ 200).", schema: { type: string } }
+        - { $ref: "#/components/parameters/Lang" }
+      responses:
+        "200":
+          description: The programme, in order.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChannelProgramme" }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
   /profiles/{id}/notes:
     get:
       tags: [foryou]
@@ -5532,6 +5623,21 @@ components:
       required: [seasonal_effects]
       properties:
         seasonal_effects: { type: boolean }
+    AdminPlayback:
+      type: object
+      required: [instant_play]
+      properties:
+        instant_play: { type: boolean, description: "«Мгновенный старт»: title pages warm the release Play would start (POST /playback/warm). Default true." }
+    WarmResult:
+      type: object
+      required: [status, reason, expires_at]
+      properties:
+        status: { type: string, enum: [warming, skipped] }
+        reason:
+          type: [string, "null"]
+          enum: [disabled, busy, limit, local, online, no_release, unavailable, null]
+          description: "Skipped: switched off by the admin, the server is busy (streams / transcoding), the server's warm limit, already downloaded to the server, an online variant, an unknown release, no TorrServer / release search."
+        expires_at: { type: [string, "null"], format: date-time, description: "Warming: Play takes the prepared source until then." }
     ImportJob:
       type: object
       required: [id, profile_id, source, status, overwrite, mark_watched, dry_run, total, processed, matched, rated, skipped, unmatched, error, created_at, started_at, finished_at]
@@ -6317,6 +6423,32 @@ components:
           required: [exclude_ids]
           properties:
             exclude_ids: { type: array, items: { type: string, format: uuid }, description: "Send back as exclude_ids to get a different pick." }
+    ChannelItem:
+      type: object
+      required: [media, episode, runtime_minutes, runtime_known, resume_seconds, source, reason]
+      properties:
+        media: { $ref: "#/components/schemas/MediaSummary" }
+        episode:
+          oneOf:
+            - type: "null"
+            - type: object
+              required: [id, season_number, episode_number, name]
+              properties:
+                id: { type: string, format: uuid }
+                season_number: { type: integer }
+                episode_number: { type: integer }
+                name: { type: string }
+        runtime_minutes: { type: integer, description: "Estimated when runtime_known is false." }
+        runtime_known: { type: boolean }
+        resume_seconds: { type: number, description: "An episode left mid-way starts here (0 = the beginning)." }
+        source: { type: string, enum: [foryou, continue], description: "continue: the next episode of a series in progress." }
+        reason: { oneOf: [{ $ref: "#/components/schemas/ForYouReason" }, { type: "null" }] }
+    ChannelProgramme:
+      type: object
+      required: [items, pool_size]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/ChannelItem" } }
+        pool_size: { type: integer, description: "Candidates left after the exclusions." }
     ExploreTile:
       type: object
       required: [id, kind, title, subtitle, emoji, image_path, collection_id, discover]

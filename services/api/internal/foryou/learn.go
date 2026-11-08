@@ -586,6 +586,17 @@ func attribute(cached []cachedRow, rowID, mediaID string) *feedbackAttr {
 		return &feedbackAttr{shares: map[string]float64{LearnCurated: 1}, rowPos: ip(curatedRowAt)}
 	case strings.HasPrefix(rowID, "collection:"):
 		return &feedbackAttr{shares: map[string]float64{LearnAICollection: 1}}
+	case rowID == ChannelRowID:
+		// «Cineko TV»: the title's credit from the row it is cached in, if any
+		// (no position: the channel shows one title at a time).
+		for _, r := range cached {
+			for _, it := range r.Items {
+				if it.MediaID == mediaID && len(it.Src) > 0 {
+					return &feedbackAttr{shares: it.Src}
+				}
+			}
+		}
+		return nil
 	}
 	for ri, r := range cached {
 		if r.ID != rowID {

@@ -88,6 +88,18 @@ func (a *hlsActivity) note(hash string) {
 	}
 }
 
+// any: an HLS compat stream ran within hlsSeenFor.
+func (a *hlsActivity) any() bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	for _, t := range a.seen {
+		if time.Since(t) <= hlsSeenFor {
+			return true
+		}
+	}
+	return false
+}
+
 func (a *hlsActivity) addTo(out map[string]bool) {
 	a.mu.Lock()
 	defer a.mu.Unlock()

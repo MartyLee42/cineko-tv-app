@@ -7,6 +7,7 @@ import { useServerFeatures } from "../features";
 import { Card, ErrorText } from "../components";
 import { HistoryChart } from "./HistoryChart";
 import { AdminVideoCard } from "../video/AdminVideoCard";
+import { InstantPlayCard } from "./InstantPlayCard";
 import {
   cpuLevel,
   diskLevel,
@@ -79,6 +80,7 @@ export function ServerTab() {
       <div className="grid gap-4 lg:grid-cols-2">
         <AppPanel app={s.app} />
         <TorrServerPanel ts={s.app.torrserver} />
+        {s.app.torrserver.configured && <InstantPlayCard />}
         {features.video && <AdminVideoCard />}
       </div>
       {s.containers.length > 0 && <ContainersTable s={s} />}

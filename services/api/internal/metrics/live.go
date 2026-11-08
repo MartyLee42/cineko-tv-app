@@ -23,6 +23,26 @@ func (m *Metrics) RegisterLive(pool *pgxpool.Pool, activeStreams func() int64, w
 	}
 }
 
+var instantPlayDesc = prometheus.NewDesc(Namespace+"_instant_play_total",
+	"Instant play warms by result (started, hit, miss, cancelled, expired, failed, skipped).", []string{"result"}, nil)
+
+// RegisterInstantPlay adds cineko_instant_play_total{result} (playback/warm.go).
+func (m *Metrics) RegisterInstantPlay(stats func() map[string]uint64) {
+	m.reg.MustRegister(counterMapCollector{desc: instantPlayDesc, stats: stats})
+}
+
+type counterMapCollector struct {
+	desc  *prometheus.Desc
+	stats func() map[string]uint64
+}
+
+func (c counterMapCollector) Describe(ch chan<- *prometheus.Desc) { ch <- c.desc }
+func (c counterMapCollector) Collect(ch chan<- prometheus.Metric) {
+	for k, v := range c.stats() {
+		ch <- prometheus.MustNewConstMetric(c.desc, prometheus.CounterValue, float64(v), k)
+	}
+}
+
 var wsDesc = prometheus.NewDesc(Namespace+"_websocket_connections", "Open realtime WebSockets by kind (users, devices).", []string{"kind"}, nil)
 
 type wsCollector struct{ counts func() (int, int) }

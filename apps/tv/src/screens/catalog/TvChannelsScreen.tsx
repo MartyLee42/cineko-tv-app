@@ -19,10 +19,13 @@ import { useReportDeep, useToTop } from "../../design/topJump";
 import { channelChips, epgProgress, filterGroup, hhmm, offlineLabel, type Chip } from "../../iptv/logic";
 import { ChannelLogo, EpgBar } from "../../iptv/ChannelLogo";
 import { setFavorite, useIptvChannels } from "../../iptv/queries";
+import { ChannelMark } from "../../channel/ChannelLogo";
 
 const EDGE = 40;
 const ROW_TOP = 110;
 const GRID_TOP = 270;
+/** «Cineko TV» leads the group chips (the channel built from recommendations). */
+const CKTV: Chip = { id: "cineko-tv", key: null, name: "Cineko TV", count: 0 };
 
 interface TileGeo {
   cols: number;
@@ -44,11 +47,14 @@ export function TvChannelsScreen({
   mem,
   onPlay,
   onDay,
+  onChannel,
 }: {
   mem: RouteMemory;
   onPlay: (channel: IptvChannel, list: IptvChannel[]) => void;
   /** «Программа на сегодня» of a channel. */
   onDay?: (channel: IptvChannel) => void;
+  /** «Cineko TV»: tune in. */
+  onChannel?: () => void;
 }) {
   const { t } = useI18n();
   const features = useServerFeatures();
@@ -59,6 +65,7 @@ export function TvChannelsScreen({
   const q = useIptvChannels();
   const all = useMemo(() => q.data?.items ?? [], [q.data]);
   const chips = useMemo(() => channelChips(q.data?.groups ?? [], all), [q.data, all]);
+  const rowChips = useMemo(() => (onChannel ? [CKTV, ...chips] : chips), [chips, onChannel]);
   const [group, setGroup] = useState(() => mem.get<string>("group") ?? "all");
   const active = chips.some((c) => c.id === group) ? group : "all";
   const items = useMemo(() => filterGroup(all, active), [all, active]);
@@ -71,7 +78,7 @@ export function TvChannelsScreen({
   }, []);
 
   const chipLabel = (c: Chip) => (c.key ? t(c.key as MessageKey) : c.name);
-  useInitialFocus(!q.isPending, mem, () => (items[0] ? cardKey("ch", items[0].id) : cardKey("grp", "all")));
+  useInitialFocus(!q.isPending, mem, () => (items[0] ? cardKey("ch", items[0].id) : cardKey("grp", onChannel ? CKTV.id : "all")));
 
   const scroll = (v: number) => {
     setTy(v);
@@ -175,18 +182,30 @@ export function TvChannelsScreen({
           {items.length > 0 && <span className="mb-1 ml-auto mr-12 text-[22px] text-muted">{t("iptv.tv.screen_hint")}</span>}
         </div>
         <FocusBlock focusKey="ch-groups" onEnter={() => scroll(0)} className="pt-2">
-          {chips.length > 0 && !q.isPending && (
+          {rowChips.length > 0 && !q.isPending && (
             <HRow
               focusKey="ch-groups-row"
-              items={chips}
+              items={rowChips}
               itemKey={(c) => cardKey("grp", c.id)}
               itemWidth={250}
               itemHeight={76}
               gap={16}
               viewport={width}
-              initialIndex={Math.max(0, chips.findIndex((c) => c.id === active))}
-              onSelect={(c) => pickGroup(c.id)}
-              renderItem={(c, focused) => (
+              initialIndex={Math.max(0, rowChips.findIndex((c) => c.id === active))}
+              onSelect={(c) => (c === CKTV ? onChannel?.() : pickGroup(c.id))}
+              renderItem={(c, focused) =>
+                c === CKTV ? (
+                  <div
+                    data-testid="cineko-tv-entry"
+                    title={t("channel.entry_hint")}
+                    className={`tv-focus tv-chip flex h-[76px] items-center justify-center px-4 text-[24px] font-bold ${design === "terminal" ? "t-label text-[19px]" : "rounded-control"} ${
+                      focused ? "is-focused" : "border-2 border-accent bg-surface-2 text-text"
+                    }`}
+                  >
+                    <ChannelMark size={40} className={focused ? "" : "text-text"} />
+                    <span className="ml-3 truncate">{CKTV.name}</span>
+                  </div>
+                ) : (
                 <div
                   data-group={c.id}
                   className={`tv-focus tv-chip flex h-[76px] items-center justify-center px-5 text-[24px] font-semibold ${design === "terminal" ? "t-label text-[19px]" : "rounded-control"} ${
@@ -196,7 +215,8 @@ export function TvChannelsScreen({
                   <span className="truncate">{chipLabel(c)}</span>
                   <span className="ml-2 shrink-0 opacity-60">{c.count}</span>
                 </div>
-              )}
+              )
+              }
             />
           )}
         </FocusBlock>

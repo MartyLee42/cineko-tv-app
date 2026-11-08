@@ -32,6 +32,7 @@ import { errorKey, type Flow, type PlayContext } from "./session";
 import { PlayerChooser } from "../players/PlayerChooser";
 import { claimKeys, type KeyClaim } from "../remote/keyOwner";
 import { openMessageBanner } from "../messages/MessageLayer";
+import { channelState, useChannelOn } from "../channel/state";
 
 export { useFlow };
 
@@ -410,6 +411,8 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   const autoplay = settings.autoplay_next_episode;
   // «Отсчёт перед следующим» off: the next episode starts at once (no card).
   const countdownOn = settings.autoplay_countdown;
+  // «Cineko TV» drives this playback: its OSD replaces the controls, the end moves on to the next pick.
+  const chanOn = useChannelOn();
   const [, setTick] = useState(0);
   const rerender = useCallback(() => setTick((n) => n + 1), []);
   const [controls, setControls] = useState(true);
@@ -501,16 +504,19 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   const skip = useSkip({
     active: playing && player.started,
     mode: skipMode(settings.skip_segments),
-    ending: playing && ctx.kind === "series" && sleep.state.mode !== "episode" && !!player.nextRef(),
+    // On the channel: the credits (auto-skip mode) go straight to the next pick.
+    ending: chanOn ? playing && skipMode(settings.skip_segments) === "auto" : playing && ctx.kind === "series" && sleep.state.mode !== "episode" && !!player.nextRef(),
     playKey: `${flow.source?.id ?? ""}|${ctx.season ?? ""}|${ctx.episode ?? ""}`,
-    autoplay,
+    autoplay: autoplay || chanOn,
     startCountdown: () => {
+      if (channelState.hooks()?.onEnded()) return;
       if (!countdownOn) {
         if (!player.nextEpisode()) player.close();
       } else setCountdown((c) => c ?? COUNTDOWN);
     },
     nextEpisode: () => {
       setCountdown(null);
+      if (channelState.hooks()?.onEnded()) return;
       if (!player.nextEpisode()) player.close();
     },
   });
@@ -536,7 +542,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   useEffect(() => {
     hushRef.current = hush;
   });
-  const controlsShown = !hush && (controls || paused);
+  const controlsShown = !hush && ((controls && !chanOn) || paused);
   // Paused: the overlay also hides after PAUSED_CONTROLS_MS without a key
   // (any key brings it back), so a paused frame isn't covered for good.
   const [keyTick, setKeyTick] = useState(0);
@@ -593,6 +599,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
       if (!player.endedForReal()) return;
       // «После этой серии»: the goodnight screen instead of the next one.
       if (sleepRef.current.atEpisodeEnd()) return;
+      if (channelState.hooks()?.onEnded()) return;
       if (ctx.kind === "series" && player.nextRef()) {
         if (autoplay && !countdownOn) {
           if (!player.nextEpisode()) player.close();
@@ -679,6 +686,22 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
       }
       // «Лови!»: the loading screen's game takes the arrows (Back / OK / media keys stay the player's).
       if (player.loading() && loaderKey(k)) return;
+      // The ▼ panel: series start on «Следующая серия» (else the previous one); films: the current audio.
+      const openPanel = () => {
+        const cur = itemsRef.current;
+        const sel = player.tracks();
+        const epAt = cur.findIndex((i) => i.group === "episode" && i.id === "next");
+        const firstEp = cur.findIndex((i) => i.group === "episode");
+        const at = epAt >= 0 ? epAt : firstEp >= 0 ? firstEp : Math.max(0, cur.findIndex((i) => i.group === "audio" && i.id === sel.audioId));
+        setPanel(at);
+        setControls(false);
+      };
+      // «Cineko TV»: CH±/▲▼ switch picks, OK the programme, Back leaves (the panel, a seek and hints keep their keys).
+      const ch = channelState.hooks();
+      if (ch && !seekRef.current && st.countdown === null) {
+        const hint = !!(skipRef.current.marker || skipRef.current.undo || player.slowHint() || player.stutterHint() || player.compatOffBlocks() || sl.slow);
+        if (ch.onKey(k, { panel: st.panel !== null, skip: hint, openPanel })) return;
+      }
       if (flow.phase !== "playing") {
         if (k === "back") player.back();
         if (k === "stop") player.close();
@@ -800,15 +823,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         }
         case "down": {
           if (openMessageBanner()) return;
-          const cur = itemsRef.current;
-          const sel = player.tracks();
-          // Series: start on «Следующая серия» (else the previous one); films: the current audio.
-          const epAt = cur.findIndex((i) => i.group === "episode" && i.id === "next");
-          const firstEp = cur.findIndex((i) => i.group === "episode");
-          const at = epAt >= 0 ? epAt : firstEp >= 0 ? firstEp : Math.max(0, cur.findIndex((i) => i.group === "audio" && i.id === sel.audioId));
-          setPanel(at);
-          setControls(false);
-          return;
+          return openPanel();
         }
         case "next":
         case "prev": {

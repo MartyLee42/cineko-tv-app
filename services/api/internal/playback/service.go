@@ -209,6 +209,7 @@ type Service struct {
 	tc     *transcoder       // nil = no compat streams (compat.go)
 	lib    Library           // nil = no server downloads (library.go)
 	segs   *segments.Service // nil = no intro/credits databases (segments.go)
+	warm   *warmer           // instant play: sources prepared before Play (warm.go)
 }
 
 func NewService(pool *pgxpool.Pool, cfg *config.Config, r releases.Resolver, log *slog.Logger) *Service {
@@ -225,6 +226,7 @@ func NewService(pool *pgxpool.Pool, cfg *config.Config, r releases.Resolver, log
 		probing:    map[string]time.Time{},
 		waking:     map[string]time.Time{},
 		tc:         newTranscoder(cfg.Transcoder),
+		warm:       newWarmer(),
 	}
 }
 
@@ -235,7 +237,10 @@ func (s *Service) SetResolver(r releases.Resolver) { s.releases = r }
 func (s *Service) SetTimings(t Timings) { s.t = t }
 
 // Wait blocks until background work has finished (tests, shutdown).
-func (s *Service) Wait() { s.bg.Wait() }
+func (s *Service) Wait() {
+	s.warm.endAll(s)
+	s.bg.Wait()
+}
 
 // apiError is a service-level failure the handlers map to HTTP.
 type apiError struct {
@@ -279,39 +284,61 @@ type CreateInput struct {
 }
 
 // Create resolves a release, registers it with TorrServer and starts
-// preparing the source (or reuses an existing one).
+// preparing the source (or reuses an existing one). A matching instant-play
+// warm (warm.go) is used as is: no resolve, no TorrServer round trip.
 func (s *Service) Create(ctx context.Context, who caller, in CreateInput, log *slog.Logger) (*PlaybackSource, error) {
+	if hit := s.warmHit(ctx, who, in, log); hit != nil {
+		return hit, nil
+	}
+	out, err := s.create(ctx, who, in, log)
+	if err == nil && out != nil {
+		s.warmPlayed(who, in, out.ID)
+	}
+	return out, err
+}
+
+// checkCreate validates the title / episode / profile of a create (or warm)
+// request and returns the media row and the file target.
+func (s *Service) checkCreate(ctx context.Context, who caller, in CreateInput) (*mediaRow, target, error) {
 	m, err := s.st.media(ctx, in.MediaID)
 	if errors.Is(err, errNotFound) {
-		return nil, &apiError{Status: 404, Code: "not_found", Msg: "Media not found."}
+		return nil, target{}, &apiError{Status: 404, Code: "not_found", Msg: "Media not found."}
 	}
 	if err != nil {
-		return nil, err
+		return nil, target{}, err
 	}
 	tgt := target{}
 	if m.Kind == "series" {
 		if in.EpisodeID == nil {
-			return nil, validation("episode_id", "Required for series.")
+			return nil, tgt, validation("episode_id", "Required for series.")
 		}
 		season, number, err := s.st.episode(ctx, in.MediaID, *in.EpisodeID)
 		if errors.Is(err, errNotFound) {
-			return nil, validation("episode_id", "Unknown episode for this title.")
+			return nil, tgt, validation("episode_id", "Unknown episode for this title.")
 		}
 		if err != nil {
-			return nil, err
+			return nil, tgt, err
 		}
 		tgt = target{Episode: true, Season: season, Number: number}
 	} else if in.EpisodeID != nil {
-		return nil, validation("episode_id", "Movies have no episodes.")
+		return nil, tgt, validation("episode_id", "Movies have no episodes.")
 	}
 	if in.ProfileID != nil {
 		ok, err := s.st.profileAccessible(ctx, *in.ProfileID, who.UserID, who.DeviceID)
 		if err != nil {
-			return nil, err
+			return nil, tgt, err
 		}
 		if !ok {
-			return nil, validation("profile_id", "Unknown profile.")
+			return nil, tgt, validation("profile_id", "Unknown profile.")
 		}
+	}
+	return m, tgt, nil
+}
+
+func (s *Service) create(ctx context.Context, who caller, in CreateInput, log *slog.Logger) (*PlaybackSource, error) {
+	m, tgt, err := s.checkCreate(ctx, who, in)
+	if err != nil {
+		return nil, err
 	}
 
 	// Intro/credits times: looked up while the source prepares.
@@ -583,6 +610,7 @@ func (s *Service) Get(ctx context.Context, who caller, id string) (*PlaybackSour
 	if err != nil {
 		return nil, err
 	}
+	s.warmGot(who, id)
 	if src.Status == "preparing" {
 		// Resume after a restart (no preparer in this process).
 		if tgt, err := s.targetFor(ctx, src); err == nil {

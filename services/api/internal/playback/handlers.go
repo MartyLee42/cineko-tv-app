@@ -26,6 +26,9 @@ func (h *Handlers) Routes(app *fiber.App, api fiber.Router) {
 	g.Patch("/sources/:id", h.patch)
 	g.Delete("/sources/:id", h.cancel)
 	g.Get("/sources/:id/files", h.files)
+	// Instant play (warm.go): title pages warm the release Play would start.
+	g.Post("/warm", h.warm)
+	g.Delete("/warm", h.cancelWarm)
 	// HEAD is registered explicitly: Fiber's auto-registered HEAD routes are
 	// appended after the /api/v1 catch-all and would never match.
 	// The /:filename variant is the same stream; the trailing name is ignored
@@ -230,5 +233,60 @@ func (h *Handlers) cancel(c fiber.Ctx) error {
 	if err := h.svc.Cancel(c.Context(), callerFrom(c), strings.Clone(id)); err != nil {
 		return toHTTP(err)
 	}
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
+// warm: instant play — prepare the release Play would start (warm.go).
+func (h *Handlers) warm(c fiber.Ctx) error {
+	var in WarmInput
+	if err := httpx.BindJSON(c, &in); err != nil {
+		return err
+	}
+	in.MediaID = strings.TrimSpace(in.MediaID)
+	fields := map[string]string{}
+	if !validUUID(in.MediaID) {
+		fields["media_id"] = "Must be a UUID."
+	}
+	if !validUUID(in.ProfileID) {
+		fields["profile_id"] = "Required, a UUID."
+	}
+	if in.SourceID != nil {
+		if !validUUID(*in.SourceID) {
+			fields["source_id"] = "Must be a UUID."
+		}
+		id := strings.Clone(*in.SourceID)
+		in.SourceID = &id
+	} else if in.ReleaseID == "" || len(in.ReleaseID) > 128 {
+		fields["release_id"] = "Required (or source_id), at most 128 characters."
+	}
+	if in.EpisodeID != nil && !validUUID(*in.EpisodeID) {
+		fields["episode_id"] = "Must be a UUID."
+	}
+	if in.StartSeconds < 0 || in.StartSeconds > 1e6 {
+		fields["start_seconds"] = "Between 0 and 1000000."
+	}
+	if len(fields) > 0 {
+		return httpx.Validation(fields)
+	}
+	in.ReleaseID, in.ProfileID = strings.Clone(in.ReleaseID), strings.Clone(in.ProfileID)
+	if in.EpisodeID != nil {
+		ep := strings.Clone(*in.EpisodeID)
+		in.EpisodeID = &ep
+	}
+	out, err := h.svc.Warm(c.Context(), callerFrom(c), in, h.logger(c))
+	if err != nil {
+		return toHTTP(err)
+	}
+	c.Set(fiber.HeaderCacheControl, "no-store")
+	return c.Status(fiber.StatusAccepted).JSON(out)
+}
+
+// cancelWarm: the viewer left the title page (DELETE /playback/warm?profile_id=).
+func (h *Handlers) cancelWarm(c fiber.Ctx) error {
+	profileID := c.Query("profile_id")
+	if !validUUID(profileID) {
+		return httpx.Validation(map[string]string{"profile_id": "Required, a UUID."})
+	}
+	h.svc.CancelWarm(callerFrom(c), strings.Clone(profileID))
 	return c.SendStatus(fiber.StatusNoContent)
 }

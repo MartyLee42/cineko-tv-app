@@ -32,6 +32,9 @@ const playback = chunk(() => {
   return import("./player/chunkPlayback");
 });
 
+// «Cineko TV»: only when the viewer tunes in (never prefetched).
+const channel = chunk(() => import("./channel/chunkChannel"));
+
 /** React.lazy over a named export of a chunk. */
 function from<M, K extends keyof M>(load: () => Promise<M>, name: K) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the caller gets the export's own type back
@@ -67,6 +70,8 @@ export const TasteQuiz = from(settings, "TasteQuiz");
 export const PlayerLayer = from(playback, "PlayerLayer");
 export const LivePlayer = from(playback, "LivePlayer");
 export const VideoPlayer = from(playback, "VideoPlayer");
+
+export const ChannelLayer = from(channel, "ChannelLayer");
 
 
 /** While a screen's chunk loads: the spinner fades in only if it takes a while (no flash when prefetched). */

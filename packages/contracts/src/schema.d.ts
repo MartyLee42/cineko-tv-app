@@ -803,6 +803,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/playback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Server-wide playback switches (app_settings). instant_play = «Мгновенный старт» (POST /playback/warm; default true). */
+        get: operations["adminPlayback"];
+        put: operations["updateAdminPlayback"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/catalog/config": {
         parameters: {
             query?: never;
@@ -1258,6 +1275,33 @@ export interface paths {
          */
         post: operations["createPlaybackSource"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/playback/warm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Instant play («Мгновенный старт»): a title page open for a couple of seconds names the
+         *     release its Play would start (the client's own ranking, as for Play). In the background
+         *     the server prepares it like POST /playback/sources (TorrServer, metadata, file), reads a
+         *     small head of the file (or of `start_seconds`) and keeps the torrent connected for a few
+         *     minutes. POST /playback/sources with the same media / episode / release then returns that
+         *     source at once (usually `ready`). One warm per profile (a newer one replaces it), two per
+         *     server; a warm nobody plays is dropped after `expires_at` (its torrent only when it was added
+         *     for it). Never creates playback sessions or history. Answers at once.
+         */
+        post: operations["warmPlayback"];
+        /** @description The viewer left the title page — the profile's warm stops (dropped after a few seconds unless Play takes it meanwhile). */
+        delete: operations["cancelPlaybackWarm"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2457,6 +2501,34 @@ export interface paths {
          *     `media: null` («нет в каталоге»).
          */
         get: operations["getCurated"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profiles/{id}/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description «Cineko TV»: a programme for the lean-back channel, built on request
+         *     (the TV calls it when the viewer tunes in; nothing is computed ahead).
+         *     Films from the profile's «Для вас» pool by score (with a little
+         *     randomness), never rated, started, finished or dismissed ones, anime
+         *     hidden when the profile hides it, and films whose recent torrent search
+         *     found nothing (with no online variant) left out; plus the next episode
+         *     of series in progress (at most a third of the slots, never two in a
+         *     row). Consecutive picks alternate genres. Runtimes are estimates when
+         *     `runtime_known` is false; the TV builds the clock from them. Plays
+         *     started on the channel are reported as feedback with `row_id: "channel"`.
+         */
+        get: operations["getChannel"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5409,6 +5481,24 @@ export interface components {
         AdminAppearance: {
             seasonal_effects: boolean;
         };
+        AdminPlayback: {
+            /** @description «Мгновенный старт»: title pages warm the release Play would start (POST /playback/warm). Default true. */
+            instant_play: boolean;
+        };
+        WarmResult: {
+            /** @enum {string} */
+            status: "warming" | "skipped";
+            /**
+             * @description Skipped: switched off by the admin, the server is busy (streams / transcoding), the server's warm limit, already downloaded to the server, an online variant, an unknown release, no TorrServer / release search.
+             * @enum {string|null}
+             */
+            reason: "disabled" | "busy" | "limit" | "local" | "online" | "no_release" | "unavailable" | null;
+            /**
+             * Format: date-time
+             * @description Warming: Play takes the prepared source until then.
+             */
+            expires_at: string | null;
+        };
         ImportJob: {
             /** Format: uuid */
             id: string;
@@ -6315,6 +6405,32 @@ export interface components {
                 /** @description Send back as exclude_ids to get a different pick. */
                 exclude_ids: string[];
             };
+        };
+        ChannelItem: {
+            media: components["schemas"]["MediaSummary"];
+            episode: null | {
+                /** Format: uuid */
+                id: string;
+                season_number: number;
+                episode_number: number;
+                name: string;
+            };
+            /** @description Estimated when runtime_known is false. */
+            runtime_minutes: number;
+            runtime_known: boolean;
+            /** @description An episode left mid-way starts here (0 = the beginning). */
+            resume_seconds: number;
+            /**
+             * @description continue: the next episode of a series in progress.
+             * @enum {string}
+             */
+            source: "foryou" | "continue";
+            reason: components["schemas"]["ForYouReason"] | null;
+        };
+        ChannelProgramme: {
+            items: components["schemas"]["ChannelItem"][];
+            /** @description Candidates left after the exclusions. */
+            pool_size: number;
         };
         ExploreTile: {
             /**
@@ -8872,6 +8988,53 @@ export interface operations {
             422: components["responses"]["Error"];
         };
     };
+    adminPlayback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current switches. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPlayback"];
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    updateAdminPlayback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPlayback"];
+            };
+        };
+        responses: {
+            /** @description Saved (audited playback_settings.updated). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPlayback"];
+                };
+            };
+            403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
     catalogConfig: {
         parameters: {
             query?: never;
@@ -9581,6 +9744,68 @@ export interface operations {
             409: components["responses"]["Error"];
             422: components["responses"]["Error"];
             502: components["responses"]["Error"];
+        };
+    };
+    warmPlayback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    media_id: string;
+                    /**
+                     * Format: uuid
+                     * @description Series: the episode Play would start (resume / next up).
+                     */
+                    episode_id?: string;
+                    release_id?: string;
+                    /** Format: uuid */
+                    source_id?: string;
+                    /** Format: uuid */
+                    profile_id: string;
+                    /** @description The resume position Play will start at (0 = the start). */
+                    start_seconds?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Warming, or skipped with a reason. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarmResult"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    cancelPlaybackWarm: {
+        parameters: {
+            query: {
+                profile_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancelled (or nothing to cancel). */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["Error"];
         };
     };
     getPlaybackSource: {
@@ -11301,7 +11526,7 @@ export interface operations {
                     /** Format: uuid */
                     media_id?: string;
                     action?: components["schemas"]["ForYouFeedbackAction"];
-                    /** @description ForYouRow.id (or a surface like `surprise`, `collection:<id>`, `explore`). */
+                    /** @description ForYouRow.id (or a surface like `surprise`, `collection:<id>`, `explore`, `channel`). */
                     row_id?: string;
                     events?: components["schemas"]["ForYouFeedbackEvent"][];
                 };
@@ -11552,6 +11777,36 @@ export interface operations {
                 };
             };
             404: components["responses"]["Error"];
+        };
+    };
+    getChannel: {
+        parameters: {
+            query?: {
+                count?: number;
+                /** @description Comma-separated media ids already on the programme (≤ 200). */
+                exclude?: string;
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The programme, in order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelProgramme"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     listMediaNotes: {

@@ -138,6 +138,7 @@ export function CatalogShell({
   onContinue,
   onLive,
   onVideo,
+  onChannel,
 }: {
   profile: Profile;
   stack: StackEntry[];
@@ -154,6 +155,8 @@ export function CatalogShell({
   onLive?: (channel: IptvChannel, list: IptvChannel[]) => void;
   /** «Видео»: play a YouTube video from `start` (null = its resume position). */
   onVideo?: (video: VideoItem, start: number | null) => void;
+  /** «Cineko TV»: tune in to the channel built from recommendations. */
+  onChannel?: () => void;
 }) {
   const [settings, setSettings] = useState(false);
   // «Давайте определим ваш вкус» (taste/TasteQuiz.tsx), from the Home invitation.
@@ -218,6 +221,7 @@ export function CatalogShell({
         <TvChannelsScreen
           mem={mem}
           onPlay={(c, l) => (rememberFocus(mem), onLive?.(c, l))}
+          onChannel={onChannel && (() => (rememberFocus(mem), onChannel()))}
           onDay={(c) => (rememberFocus(mem), setStack((s) => push(s, { name: "tv-day", channel: c })))}
         />
       );

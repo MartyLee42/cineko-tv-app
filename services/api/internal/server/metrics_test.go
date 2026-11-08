@@ -71,6 +71,7 @@ func TestMetricsEndpoint(t *testing.T) {
 		`cineko_db_pool_total_conns`,
 		`cineko_websocket_connections{kind="devices"}`,
 		`cineko_active_streams 0`,
+		`cineko_instant_play_total{result="hit"} 0`,
 		`cineko_host_memory_total_bytes`,
 		`cineko_http_requests_total{method="POST",route="/api/v1/devices/:id/health",status="2xx"} 1`,
 		`go_goroutines`,

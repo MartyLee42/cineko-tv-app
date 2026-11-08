@@ -77,6 +77,7 @@ type Deps struct {
 	Hub      Notifier              // optional
 	Family   FamilySource          // optional: «Семья советует» row
 	Curated  CuratedSource         // optional: «Подборки» row and Explore section
+	Continue ContinueSource        // optional: «Cineko TV» plays series in progress
 	Audit    *audit.Logger
 	Config   config.ForYouConfig
 	Log      *slog.Logger
@@ -105,6 +106,7 @@ type Service struct {
 	hub      Notifier
 	family   FamilySource
 	curated  CuratedSource
+	cont     ContinueSource
 	audit    *audit.Logger
 	cfg      config.ForYouConfig
 	log      *slog.Logger
@@ -143,7 +145,7 @@ type Service struct {
 func NewService(d Deps) *Service {
 	s := &Service{
 		pool: d.Pool, cat: d.Catalog, personal: d.Personal, profiles: d.Profiles, ratings: d.Ratings,
-		hub: d.Hub, family: d.Family, curated: d.Curated, audit: d.Audit, cfg: d.Config, log: d.Log, settings: d.Settings, w: DefaultWeights(),
+		hub: d.Hub, family: d.Family, curated: d.Curated, cont: d.Continue, audit: d.Audit, cfg: d.Config, log: d.Log, settings: d.Settings, w: DefaultWeights(),
 		now:     time.Now,
 		pace:    rate.NewLimiter(rate.Limit(4), 4),
 		baseCtx: context.Background(),

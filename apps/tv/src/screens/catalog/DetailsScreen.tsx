@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MyNote } from "../../foryou/MyNote";
 import { ApiError, type CatalogConfig, type Episode, type MediaDetail, type MediaSummary, type Profile, type Release, type WatchProgress } from "@martytv/contracts";
-import { catalogLang, episodeCode, formatDate, formatRuntime, imageUrl, placeholderColor, variantRelease } from "@martytv/media-types";
+import { catalogLang, episodeCode, formatDate, formatRuntime, imageUrl, placeholderColor, saveDataOn, variantRelease, type WarmTarget } from "@martytv/media-types";
 import { GenreReaction, showAfterButton, showQuotesButton, showRecapButton, useI18n } from "@martytv/ui";
 import { FocusBlock, FocusButton, FocusLine, getCurrentFocusKey, offsetWithin, setFocus, useInitialFocus } from "../../focus";
 import { playerKey } from "../../player/keys";
@@ -17,6 +17,7 @@ import { WatchBadges } from "../../components/Poster";
 import { ActionMenu, type MenuAction } from "../../components/ActionMenu";
 import { formatClock } from "../../player/format";
 import { useReleasesLazy } from "../../player/data";
+import { useInstantPlay } from "../../player/instantPlay";
 import { engineProbe, nextRelease } from "../../player/codecs";
 import { useSettings } from "../../profile/settings";
 import { useFilmTheme } from "../../filmtheme/load";
@@ -274,6 +275,20 @@ export function DetailsScreen({
     best: bestRelease,
     items: relItems,
   };
+  // «Мгновенный старт»: the server warms what the Play button starts — the source this was last watched with
+  // when it resumes («Продолжить», as `play` does), else the best release — once the page stays on it.
+  const warmProg = progressOf(ep);
+  const warmResume = resumeChoice(warmProg);
+  const warmAt = warmResume.kind === "resume" ? warmResume.at : 0;
+  const warmTarget: WarmTarget | null =
+    !d || !onPlay || (d.kind === "series" && !ep)
+      ? null
+      : warmAt > 0 && warmProg?.source_id
+        ? { media_id: d.id, profile_id: profile.id, source_id: warmProg.source_id, start_seconds: warmAt, ...(ep && { episode_id: ep.id }) }
+        : bestRelease && !releases.isPending
+          ? { media_id: d.id, profile_id: profile.id, release_id: bestRelease.id, start_seconds: warmAt, ...(ep && { episode_id: ep.id }) }
+          : null;
+  useInstantPlay(warmTarget, () => !player.busy() && !saveDataOn());
   // «Смотреть онлайн»: online (non-anime) variants, fetched once Details settles; series: the shown season.
   const onlineQ = d ? { media_id: d.id, season: d.kind === "series" ? (seasonNo ?? 1) : null, episode: null, profile_id: profile.id, lang: catalogLang(locale) } : null;
   const onlineSettled = useSettled(onlineQ ? JSON.stringify(onlineQ) : null, RELEASES_DELAY);
