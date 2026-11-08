@@ -300,7 +300,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	}
 	videoClient.SetLocale(cfg.Video.Lang, cfg.Video.Region)
 	videoSvc := video.NewService(video.Deps{Pool: pool, Client: videoClient, Profiles: profileStore, Region: cfg.Video.Region,
-		ThumbDir: cfg.Catalog.ImageCacheDir + "/video", Log: log, Prefs: videoPrefs(profileStore)})
+		ThumbDir: cfg.Catalog.ImageCacheDir + "/video", ThumbCacheBytes: int64(cfg.Video.ThumbCacheMB) << 20, ThumbMaxAge: cfg.Video.ThumbMaxAge,
+		Log: log, Prefs: videoPrefs(profileStore)})
 	videoSvc.Routes(api)
 	playbackSvc.SetVideo(videoSvc)
 

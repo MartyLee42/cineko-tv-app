@@ -31,6 +31,7 @@ import { dedupeById, fullTabError, tabRows, wantsMore, withoutIds, type RowId, t
 import { isVideoUnavailable, useAutoRetry, useVideoContinue, useVideoFeed, useVideoHistory, useVideoTrending, useVideoWatchLater } from "../../video/queries";
 import { useVideoMenu } from "../../video/actions";
 import { VideoCard, videoGeo } from "../../video/VideoCard";
+import { prefetchAround, thumbPrefetch } from "../../video/prefetch";
 
 const EDGE = 40;
 /** Title line + the «Поиск» button. */
@@ -143,6 +144,27 @@ export function VideoScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subs.length, feed.isFetching]);
 
+  // Thumbnails ahead of focus: the row's next cards and the rows around it (also when a list lands).
+  const prefetch = (r: RowId, idx: number) => {
+    const i = focusable.indexOf(r);
+    if (i < 0) return;
+    prefetchAround(
+      focusable.map((x) => data[x]!),
+      i,
+      idx,
+      g.w,
+      focusable.map((x) => mem.get<number>(`idx-${x}`) ?? 0),
+    );
+  };
+  const focusableKey = focusable.map((r) => `${r}:${data[r]!.length}`).join();
+  useEffect(() => {
+    const r = (mem.get<RowId>("row") ?? focusable[0]) as RowId | undefined;
+    if (r && focusable.includes(r)) prefetch(r, mem.get<number>(`idx-${r}`) ?? 0);
+    else if (focusable[0]) prefetch(focusable[0], 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusableKey]);
+  useEffect(() => () => thumbPrefetch.clear(), []);
+
   // ☰ / Tools / ContextMenu on a card: the same menu as holding OK.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -197,6 +219,7 @@ export function VideoScreen({
                   mem.set(`idx-${r}`, idx);
                   focusRow(r);
                   if (sub) moreFeed(idx);
+                  prefetch(r, idx);
                 }}
                 onSelect={(v) => menu.select(v)}
                 onLongPress={(v) => menu.more(v, { inWatchLater: r === "watch_later", inHistory: r === "history" })}

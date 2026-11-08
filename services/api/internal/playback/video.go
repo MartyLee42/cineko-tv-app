@@ -56,6 +56,10 @@ type VideoTrack struct {
 	IndexFrom int64  // sidx = bytes [IndexFrom, IndexTo]; adaptive only
 	IndexTo   int64
 	Size      int64 // content length (0 = unknown)
+	// Audio: YouTube's track language (xtags lang, lowercase; "" = the only,
+	// untagged track) and whether it is the video's own audio (not a dub).
+	Lang     string
+	Original bool
 }
 
 // VideoCaption is a subtitle track (VTT from Invidious /api/v1/captions).
@@ -204,6 +208,10 @@ type VideoSource struct {
 	VideoID         string           `json:"video_id"`
 	FallbackURL     *string          `json:"fallback_url"`
 	PositionSeconds *float64         `json:"position_seconds"`
+	// AudioTracks: the languages to switch between (video_audio.go; empty
+	// for one track); AudioTrack: the one stream_url plays.
+	AudioTracks []VideoAudioTrack `json:"audio_tracks"`
+	AudioTrack  *string           `json:"audio_track"`
 }
 
 // maxVideoHeight caps every request (the task: 480/720/1080).
@@ -221,10 +229,17 @@ func (h *Handlers) createVideo(c fiber.Ctx, in CreateInput) error {
 	if in.Quality != nil && (*in.Quality < 0 || *in.Quality > 4320) {
 		fields["quality"] = "A resolution height such as 720, or 0 for the profile default."
 	}
+	audio := ""
+	if in.Audio != nil {
+		audio = strings.ToLower(*in.Audio)
+		if !validAudioPref(audio) {
+			fields["audio"] = `"original" or a language code such as ru.`
+		}
+	}
 	if len(fields) > 0 {
 		return httpx.Validation(fields)
 	}
-	out, err := h.svc.createVideo(c.Context(), callerFrom(c), *in.VideoID, in.ProfileID, in.Quality, h.logger(c))
+	out, err := h.svc.createVideo(c.Context(), callerFrom(c), *in.VideoID, in.ProfileID, in.Quality, audio, h.logger(c))
 	if err != nil {
 		return toHTTP(err)
 	}
@@ -249,7 +264,7 @@ func videoErr(err error) error {
 	return err
 }
 
-func (s *Service) createVideo(ctx context.Context, who caller, id string, profileID *string, quality *int, log *slog.Logger) (*VideoSource, error) {
+func (s *Service) createVideo(ctx context.Context, who caller, id string, profileID *string, quality *int, audio string, log *slog.Logger) (*VideoSource, error) {
 	if s.video == nil {
 		return nil, errVideoUnavailable
 	}
@@ -286,7 +301,7 @@ func (s *Service) createVideo(ctx context.Context, who caller, id string, profil
 	src := &VideoSource{
 		ID: uuid.NewString(), Release: videoRelease(vs.Title), Status: "ready", StreamExpiresAt: exp,
 		CreatedAt: time.Now().UTC(), Kind: "video", VideoID: vs.ID, Qualities: videoQualities(vs), Subtitles: []StreamSubtitle{},
-		Provider: &ProviderRef{ID: "youtube", Name: "YouTube", Kind: "online"},
+		Provider: &ProviderRef{ID: "youtube", Name: "YouTube", Kind: "online"}, AudioTracks: []VideoAudioTrack{},
 	}
 	if vs.Duration > 0 {
 		d := vs.Duration
@@ -300,11 +315,16 @@ func (s *Service) createVideo(ctx context.Context, who caller, id string, profil
 	}
 	if v := pickVideoTrack(vs.Video, q); v != nil && len(vs.Audio) > 0 {
 		h := v.Height
-		src.Quality, src.Format, src.StreamURL, src.MimeType = &h, "hls", base+"master.m3u8", hlsMime
+		a := pickAudio(vs.Audio, audio)
+		src.Quality, src.Format, src.StreamURL, src.MimeType = &h, "hls", base+"master"+audioSuffix(a)+".m3u8", hlsMime
+		if src.AudioTracks = audioTrackList(vs.Audio); len(src.AudioTracks) > 0 {
+			lang := a.Lang
+			src.AudioTrack = &lang
+		}
 		// The player asks for the master, then both media playlists and
 		// init segments one after another, each a round trip to YouTube:
 		// fetch the two indexes (with their init segments) right away.
-		go s.warmVideo(vs.ID, *v, vs.Audio[0])
+		go s.warmVideo(vs.ID, *v, *a)
 	} else if fallback != nil {
 		h := fallback.Height
 		src.Quality, src.Format, src.StreamURL, src.MimeType = &h, "mp4", *src.FallbackURL, "video/mp4"
@@ -324,7 +344,7 @@ func (s *Service) createVideo(ctx context.Context, who caller, id string, profil
 			src.PositionSeconds = &pos
 		}
 	}
-	log.Info("playback source", "kind", "video", "video_id", vs.ID, "format", src.Format, "quality", *src.Quality)
+	log.Info("playback source", "kind", "video", "video_id", vs.ID, "format", src.Format, "quality", *src.Quality, "audio", ptrOr(src.AudioTrack))
 	return src, nil
 }
 
@@ -359,7 +379,11 @@ func videoQualities(vs *VideoStreams) []int {
 
 // ---- GET|HEAD /api/v1/vstream/<token>/<name> ----
 
-var videoName = regexp.MustCompile(`^(master\.m3u8|([va])(\d{1,4})\.m3u8|([mp])(\d{1,4})\.mp4|cc(\d{1,2})\.vtt)$`)
+// Names: master[.<lang>].m3u8, v<itag>.m3u8, a<itag>[.<lang>].m3u8,
+// m<itag>[.<lang>].mp4 (fragments), p<itag>.mp4 (progressive), cc<n>.vtt.
+var videoName = regexp.MustCompile(`^(master(?:\.(` + audioLang + `))?\.m3u8|([va])(\d{1,4})(?:\.(` + audioLang + `))?\.m3u8|([mp])(\d{1,4})(?:\.(` + audioLang + `))?\.mp4|cc(\d{1,2})\.vtt)$`)
+
+const audioLang = `[a-z]{2,3}(?:-[a-z0-9]{2,8})?`
 
 func videoStreamError() error {
 	return httpx.NewError(fiber.StatusBadGateway, "stream_unavailable", "The video is not responding.")
@@ -399,19 +423,24 @@ func (h *Handlers) videoStream(c fiber.Ctx) error {
 		return videoStreamError()
 	}
 	switch {
-	case m[1] == "master.m3u8":
+	case strings.HasPrefix(m[1], "master."):
 		v := pickVideoTrack(vs.Video, q)
 		if v == nil || len(vs.Audio) == 0 {
 			return httpx.NotFound()
 		}
-		return sendVODPlaylist(c, masterPlaylist(v, &vs.Audio[0]))
-	case m[2] != "":
-		itag, _ := strconv.Atoi(m[3])
-		tracks := vs.Video
-		if m[2] == "a" {
-			tracks = vs.Audio
+		a := pickAudio(vs.Audio, m[2])
+		if m[2] == "" {
+			a = &vs.Audio[0]
 		}
-		t := findTrack(tracks, itag)
+		return sendVODPlaylist(c, masterPlaylist(v, a))
+	case m[3] != "":
+		itag, _ := strconv.Atoi(m[4])
+		var t *VideoTrack
+		if m[3] == "a" {
+			t = audioByName(vs.Audio, itag, m[5])
+		} else if m[5] == "" {
+			t = findTrack(vs.Video, itag)
+		}
 		if t == nil || t.InitEnd <= 0 || t.IndexTo <= t.IndexFrom {
 			return httpx.NotFound()
 		}
@@ -420,23 +449,32 @@ func (h *Handlers) videoStream(c fiber.Ctx) error {
 			log.Info("video sidx failed", "itag", itag, "err", errString(err))
 			return videoStreamError()
 		}
-		return sendVODPlaylist(c, mediaPlaylist("m"+strconv.Itoa(itag)+".mp4", t.InitEnd+1, segs))
-	case m[4] != "":
-		itag, _ := strconv.Atoi(m[5])
+		media := "m" + strconv.Itoa(itag) + ".mp4"
+		if m[3] == "a" {
+			media = "m" + strconv.Itoa(itag) + audioSuffix(t) + ".mp4"
+		}
+		return sendVODPlaylist(c, mediaPlaylist(media, t.InitEnd+1, segs))
+	case m[6] != "":
+		itag, _ := strconv.Atoi(m[7])
 		var t *VideoTrack
-		if m[4] == "m" {
-			if t = findTrack(vs.Video, itag); t == nil {
-				t = findTrack(vs.Audio, itag)
+		switch {
+		case m[6] == "p":
+			if m[8] == "" {
+				t = findTrack(vs.Progressive, itag)
 			}
-		} else {
-			t = findTrack(vs.Progressive, itag)
+		case m[8] != "":
+			t = findAudio(vs.Audio, itag, m[8])
+		default:
+			if t = findTrack(vs.Video, itag); t == nil {
+				t = audioByName(vs.Audio, itag, "")
+			}
 		}
 		if t == nil {
 			return httpx.NotFound()
 		}
-		return h.videoBytes(c, id, itag, m[4] == "p", *t, log)
+		return h.videoBytes(c, id, itag, m[6] == "p", *t, log)
 	default:
-		n, _ := strconv.Atoi(m[6])
+		n, _ := strconv.Atoi(m[9])
 		if n >= len(vs.Captions) {
 			return httpx.NotFound()
 		}
@@ -533,7 +571,36 @@ func (s *Service) videoDo(ctx context.Context, req *http.Request) (*http.Respons
 func staleStatus(code int) bool { return code == http.StatusForbidden || code == http.StatusGone }
 
 func sidxKey(id string, t VideoTrack) string {
-	return id + "|" + strconv.Itoa(t.Itag) + "|" + strconv.FormatInt(t.Size, 10)
+	return id + "|" + strconv.Itoa(t.Itag) + "|" + t.Lang + "|" + strconv.FormatInt(t.Size, 10)
+}
+
+// audioByName is the audio track of a/m<itag>[.<lang>]: without a language
+// (playlists from before the language was in the names) the untagged
+// track, else the first one with the itag.
+func audioByName(ts []VideoTrack, itag int, lang string) *VideoTrack {
+	if t := findAudio(ts, itag, lang); t != nil || lang != "" {
+		return t
+	}
+	return findTrack(ts, itag)
+}
+
+// refreshedTrack finds t again in freshly fetched streams (same itag; same
+// language for audio).
+func refreshedTrack(vs *VideoStreams, t VideoTrack, progressive bool) *VideoTrack {
+	switch {
+	case progressive:
+		return findTrack(vs.Progressive, t.Itag)
+	case strings.HasPrefix(t.Mime, "audio/"):
+		return findAudio(vs.Audio, t.Itag, t.Lang)
+	}
+	return findTrack(vs.Video, t.Itag)
+}
+
+func ptrOr(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
 }
 
 // videoSidx fetches and parses a track's sidx (cached per id/itag/size).
@@ -627,7 +694,7 @@ func (s *Service) videoIndex(ctx context.Context, id string, t VideoTrack, log *
 			if err != nil {
 				return sidxCached{}, err
 			}
-			nt := findTrack(append(append([]VideoTrack{}, vs.Video...), vs.Audio...), t.Itag)
+			nt := refreshedTrack(vs, t, false)
 			if nt == nil {
 				return sidxCached{}, errors.New("track vanished")
 			}
@@ -709,8 +776,7 @@ func (h *Handlers) videoBytes(c fiber.Ctx, id string, itag int, progressive bool
 				cancel()
 				return videoStreamError()
 			}
-			all := append(append(append([]VideoTrack{}, vs.Video...), vs.Audio...), vs.Progressive...)
-			nt := findTrack(all, itag)
+			nt := refreshedTrack(vs, t, progressive)
 			if nt == nil {
 				cancel()
 				return httpx.NotFound()

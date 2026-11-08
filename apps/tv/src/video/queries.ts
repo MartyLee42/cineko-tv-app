@@ -157,11 +157,13 @@ export function useAutoRetry(failed: boolean, retry: () => void) {
   }, [failed, tick]);
 }
 
-/** A fresh playback source (new stream token); `quality` caps the height. */
-export function createVideoSource(videoId: string, quality: number | null): Promise<PlaybackSource> {
+/** A fresh playback source (new stream token); `quality` caps the height, `audio` picks the track ("original" / a language). */
+export function createVideoSource(videoId: string, quality: number | null, audio?: string | null): Promise<PlaybackSource> {
   const profile = activeProfile.get();
   return unwrap(
-    api.POST("/playback/sources", { body: { kind: "video", video_id: videoId, ...withProfile(profile), ...(quality ? { quality } : {}) } }),
+    api.POST("/playback/sources", {
+      body: { kind: "video", video_id: videoId, ...withProfile(profile), ...(quality ? { quality } : {}), ...(audio ? { audio } : {}) },
+    }),
   );
 }
 

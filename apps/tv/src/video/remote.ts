@@ -6,7 +6,8 @@ import type { VideoControls, VideoSession } from "./session";
 /**
  * Runs a playback command on the YouTube player: pause / resume / seek /
  * stop as for films, next_episode = «Следующее видео» (the first playable
- * related one). Sources, audio and subtitle tracks don't apply.
+ * related one), set_audio = an auto-dub's language (the TV reports
+ * video.audio_tracks). Sources and subtitle tracks don't apply.
  */
 export function videoControl(cmd: PlayerCommand, vc: VideoControls | null, close: () => void): true | "failed" | "unsupported" {
   if (cmd.type === "stop") {
@@ -22,6 +23,8 @@ export function videoControl(cmd: PlayerCommand, vc: VideoControls | null, close
       return vc ? vc.seek(cmd.position_seconds) || "failed" : "failed";
     case "next_episode":
       return vc ? vc.next() || "failed" : "failed";
+    case "set_audio":
+      return vc ? vc.audio(cmd.track_id) || "failed" : "failed";
     default:
       return "unsupported";
   }

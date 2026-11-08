@@ -4,14 +4,17 @@
 // fallback for old engines. Keys like the film player: OK pauses (or
 // commits a pending seek), ◀▶ seek (accelerating), ▲▼ open the panel
 // (quality chips + related videos); Back cancels a pending seek, closes the
-// panel, folds the pause overlay, else leaves. Phones control it through
-// media.pause/resume/seek/stop/next_episode and video.play (quality); the
+// panel, folds the pause overlay, else leaves. An auto-dubbed video gets an
+// «Аудио» line in the panel (original / the dubs); the pick reloads from the
+// same position and stays the device's default (videoAudioPref). Phones
+// control it through media.pause/resume/seek/stop/next_episode,
+// playback.set_audio and video.play (quality); the
 // player reports its state for DeviceState.video. Progress is reported every
 // ~10 s, on pause and on exit.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pause as pauseNav, resume as resumeNav } from "@noriginmedia/norigin-spatial-navigation";
 import { ApiError, type PlaybackSource } from "@martytv/contracts";
-import { Spinner, useI18n } from "@martytv/ui";
+import { audioLabel, audioOptions, prefForTrack, Spinner, useI18n, videoAudioPref, type VideoAudioOption, type VideoAudioTrackLike } from "@martytv/ui";
 import { nextInSeries, pickNextVideo, seriesPart } from "@martytv/media-types";
 import { activeProfile } from "../profile/active";
 import { useDesign, type Design } from "../design/context";
@@ -49,7 +52,8 @@ const CARD_PITCH = 352;
 
 type Phase = "loading" | "playing" | "error";
 type Failure = VideoFailure;
-type Panel = { line: "quality" | "related"; idx: number };
+type PanelLine = "audio" | "quality" | "related";
+type Panel = { line: PanelLine; idx: number };
 
 export function VideoPlayer() {
   const session = useVideoSession();
@@ -58,7 +62,7 @@ export function VideoPlayer() {
 }
 
 function VideoInner({ session }: { session: VideoSession }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const design = useDesign();
   const settings = useSettings();
   const id = session.video.id;
@@ -95,6 +99,10 @@ function VideoInner({ session }: { session: VideoSession }) {
   // A quality picked in the panel holds for this session; a new video starts from the session's / profile's.
   const [picked, setPicked] = useState<{ seq: number; q: VideoQuality } | null>(null);
   const cap: VideoQuality = picked && picked.seq === session.seq ? picked.q : quality;
+  /** The source's audio languages and the one playing (auto-dubs; empty for one track). */
+  const [audio, setAudio] = useState<{ seq: number; tracks: readonly VideoAudioTrackLike[]; current: string | null }>({ seq: -1, tracks: [], current: null });
+  const audioOpts: VideoAudioOption[] = audio.seq === session.seq && mode !== "mp4" ? audioOptions(audio.tracks, audio.current) : [];
+  const audioNames = audioOpts.map((o) => audioLabel(o, t, locale));
 
   const showOsd = useCallback(() => {
     setOsd(true);
@@ -178,7 +186,8 @@ function VideoInner({ session }: { session: VideoSession }) {
     };
     const start = async () => {
       try {
-        src = await createVideoSource(id, cap);
+        // The device's audio choice (the panel / the phone set it); none = the server's default.
+        src = await createVideoSource(id, cap, videoAudioPref.get());
       } catch (e) {
         if (cancelled) return;
         if (isVideoUnavailable(e)) return fail("unavailable");
@@ -187,6 +196,7 @@ function VideoInner({ session }: { session: VideoSession }) {
         return fail("failed");
       }
       if (cancelled) return;
+      setAudio({ seq: session.seq, tracks: src.audio_tracks ?? [], current: src.audio_track ?? null });
       const resume = resumeFrom.current;
       resumeFrom.current = null;
       startAt = resume ?? startPosition(session.start, src.position_seconds, src.duration_seconds ?? session.video.duration_seconds);
@@ -299,6 +309,21 @@ function VideoInner({ session }: { session: VideoSession }) {
     },
     [cap, session.seq],
   );
+  /** An audio track of this video: kept as the device's choice, reloaded from here. */
+  const switchAudio = useCallback(
+    (trackId: string) => {
+      const v = videoRef.current;
+      const tr = audio.seq === session.seq ? audio.tracks.find((x) => x.id === trackId) : undefined;
+      if (!tr) return false;
+      videoAudioPref.set(prefForTrack(tr));
+      if (trackId === (audio.current ?? audio.tracks[0]?.id)) return true;
+      resumeFrom.current = v && v.currentTime > 1 ? v.currentTime : null;
+      setAudio({ ...audio, current: trackId });
+      setReload((n) => n + 1);
+      return true;
+    },
+    [audio, session.seq],
+  );
   const play = useCallback((v: VideoItem) => videoSession.open(v, { quality: cap }), [cap]);
 
   // ---- the end: «Далее» (the series' next part, else a random related video) or the related panel.
@@ -332,12 +357,14 @@ function VideoInner({ session }: { session: VideoSession }) {
   const block = d ? blockReason(d) : null;
   const shownFailure: Failure | null = failure ?? (block === "live" ? "live" : null);
   const channelName = d?.channel.name ?? session.video.channel_name ?? "";
-  const st = useRef({ detail: d, upNext, panel, related, qualities, cap, seek, dur, phase, failure: shownFailure, paused, osd, hush, title, channelName, channelId: d?.channel_id ?? session.video.channel_id ?? null });
+  const audioTracks = audioOpts.map((o, i) => ({ id: o.id, label: audioNames[i]!, language: o.language }));
+  const audioCurrent = audioOpts.find((o) => o.selected)?.id ?? null;
+  const st = useRef({ detail: d, upNext, panel, related, qualities, cap, seek, dur, phase, failure: shownFailure, paused, osd, hush, title, channelName, channelId: d?.channel_id ?? session.video.channel_id ?? null, audioOpts, audioTracks, audioCurrent });
   useEffect(() => {
-    st.current = { detail: d, upNext, panel, related, qualities, cap, seek, dur, phase, failure: shownFailure, paused, osd, hush, title, channelName, channelId: d?.channel_id ?? session.video.channel_id ?? null };
+    st.current = { detail: d, upNext, panel, related, qualities, cap, seek, dur, phase, failure: shownFailure, paused, osd, hush, title, channelName, channelId: d?.channel_id ?? session.video.channel_id ?? null, audioOpts, audioTracks, audioCurrent };
   });
-  // Title / channel / quality / phase changes reach the phone at once.
-  useEffect(() => videoSession.changed(), [title, channelName, cap, phase, shownFailure, qualities.length]);
+  // Title / channel / quality / audio / phase changes reach the phone at once.
+  useEffect(() => videoSession.changed(), [title, channelName, cap, phase, shownFailure, qualities.length, audioCurrent, audioTracks.length]);
   useEffect(() => {
     videoSession.setControls({
       pause: () => {
@@ -373,6 +400,11 @@ function VideoInner({ session }: { session: VideoSession }) {
         showOsd();
         return true;
       },
+      audio: (trackId) => {
+        if (st.current.failure || !switchAudio(trackId)) return false;
+        showOsd();
+        return true;
+      },
       info: () => {
         const v = videoRef.current;
         const c = st.current;
@@ -388,11 +420,13 @@ function VideoInner({ session }: { session: VideoSession }) {
           qualities: c.qualities,
           volume: v ? v.volume : null,
           error: c.failure,
+          audio_tracks: c.audioTracks,
+          audio_track: c.audioCurrent,
         };
       },
     });
     return () => videoSession.setControls(null);
-  }, [id, play, switchQuality, showOsd]);
+  }, [id, play, switchQuality, switchAudio, showOsd]);
 
   useEffect(() => {
     pauseNav();
@@ -425,7 +459,16 @@ function VideoInner({ session }: { session: VideoSession }) {
       if (!k) return;
       e.preventDefault();
       e.stopImmediatePropagation();
-      const { panel, related, qualities, cap, failure } = st.current;
+      const { panel, related, qualities, cap, failure, audioOpts } = st.current;
+      // The panel's lines, top to bottom: «Аудио», quality, related videos.
+      const lines: PanelLine[] = [];
+      if (audioOpts.length > 1) lines.push("audio");
+      if (qualities.length > 1) lines.push("quality");
+      if (related.length > 0) lines.push("related");
+      const lineAt = (line: PanelLine): Panel => ({
+        line,
+        idx: line === "audio" ? Math.max(0, audioOpts.findIndex((o) => o.selected)) : line === "quality" ? Math.max(0, qualities.indexOf(cap)) : 0,
+      });
       if (failure) {
         if ((k === "back" || k === "stop" || k === "ok") && !e.repeat) videoSession.close();
         return;
@@ -443,11 +486,12 @@ function VideoInner({ session }: { session: VideoSession }) {
         return;
       }
       if (panel) {
-        const items = panel.line === "related" ? related.length : qualities.length;
+        const items = panel.line === "related" ? related.length : panel.line === "audio" ? audioOpts.length : qualities.length;
+        const at = lines.indexOf(panel.line);
         if (k === "left") setPanel({ ...panel, idx: Math.max(0, panel.idx - 1) });
         else if (k === "right") setPanel({ ...panel, idx: Math.min(Math.max(0, items - 1), panel.idx + 1) });
-        else if (k === "up" && panel.line === "related" && qualities.length > 1) setPanel({ line: "quality", idx: Math.max(0, qualities.indexOf(cap)) });
-        else if (k === "down" && panel.line === "quality" && related.length > 0) setPanel({ line: "related", idx: 0 });
+        else if (k === "up" && at > 0) setPanel(lineAt(lines[at - 1]!));
+        else if (k === "down" && at >= 0 && at < lines.length - 1) setPanel(lineAt(lines[at + 1]!));
         else if (k === "down" && panel.line === "related") setPanel(null);
         else if (k === "ok" && !e.repeat) {
           if (panel.line === "related") {
@@ -456,6 +500,10 @@ function VideoInner({ session }: { session: VideoSession }) {
               setPanel(null);
               play(v);
             }
+          } else if (panel.line === "audio") {
+            const o = audioOpts[panel.idx];
+            setPanel(null);
+            if (o) switchAudio(o.id);
           } else {
             const q = qualities[panel.idx];
             setPanel(null);
@@ -492,8 +540,7 @@ function VideoInner({ session }: { session: VideoSession }) {
         case "down":
         case "chup":
         case "chdown":
-          if (related.length > 0) return setPanel({ line: "related", idx: 0 });
-          if (qualities.length > 1) return setPanel({ line: "quality", idx: Math.max(0, qualities.indexOf(cap)) });
+          if (lines.length > 0) return setPanel(lineAt(lines[lines.length - 1]!));
           return showOsd();
         case "next": {
           const cur = st.current.detail;
@@ -529,7 +576,7 @@ function VideoInner({ session }: { session: VideoSession }) {
       unregister();
       resumeNav();
     };
-  }, [togglePause, switchQuality, play, showOsd]);
+  }, [togglePause, switchQuality, switchAudio, play, showOsd]);
 
   const visible = (osd || paused || !!seek || !!panel) && !(hush && !seek && !panel);
   return (
@@ -550,11 +597,15 @@ function VideoInner({ session }: { session: VideoSession }) {
           dur={dur}
           seeking={!!seek}
           paused={paused && !hush}
-          note={mode === "mp4" ? t("video.tv.fallback") : t("video.tv.quality_note", { q: `${Math.min(cap, qualities[0] ?? cap)}p` })}
+          note={
+            mode === "mp4"
+              ? t("video.tv.fallback")
+              : [t("video.tv.quality_note", { q: `${Math.min(cap, qualities[0] ?? cap)}p` }), audioCurrent && audioNames[audioOpts.findIndex((o) => o.id === audioCurrent)]].filter(Boolean).join(" · ")
+          }
           bottom={!panel}
         />
       )}
-      {!shownFailure && panel && <PanelView design={design} panel={panel} related={related} qualities={qualities} cap={cap} />}
+      {!shownFailure && panel && <PanelView design={design} panel={panel} related={related} qualities={qualities} cap={cap} audio={audioOpts} audioNames={audioNames} />}
       {!shownFailure && upNext && <UpNextCard upNext={upNext} design={design} />}
     </div>
   );
@@ -658,7 +709,23 @@ function Osd({
   );
 }
 
-function PanelView({ design, panel, related, qualities, cap }: { design: Design; panel: Panel; related: VideoItem[]; qualities: number[]; cap: number }) {
+function PanelView({
+  design,
+  panel,
+  related,
+  qualities,
+  cap,
+  audio,
+  audioNames,
+}: {
+  design: Design;
+  panel: Panel;
+  related: VideoItem[];
+  qualities: number[];
+  cap: number;
+  audio: VideoAudioOption[];
+  audioNames: string[];
+}) {
   const { t } = useI18n();
   const meta = useVideoMeta();
   const terminal = design === "terminal";
@@ -667,6 +734,26 @@ function PanelView({ design, panel, related, qualities, cap }: { design: Design;
   const first = Math.max(0, Math.min((rIdx < 0 ? 0 : rIdx) - 1, related.length - PANEL_CARDS));
   return (
     <div data-testid="video-panel" data-line={panel.line} className={`absolute bottom-0 left-0 w-full px-[96px] pb-[48px] pt-[28px] ${bg}`}>
+      {audio.length > 1 && (
+        <div data-testid="video-audio" className="mb-6 flex items-center">
+          <span className={`mr-6 text-[24px] text-muted ${terminal ? "t-label text-[19px]" : ""}`}>{t("ytaudio.title")}</span>
+          {audio.map((o, i) => {
+            const focused = panel.line === "audio" && panel.idx === i;
+            return (
+              <span
+                key={o.id}
+                data-audio={o.id}
+                className={`tv-chip mr-4 flex h-[60px] items-center px-7 text-[24px] font-semibold ${terminal ? "font-mono" : "rounded-control"} ${
+                  focused ? "is-focused" : o.selected ? "bg-accent text-on-accent" : "bg-surface-2 text-text"
+                }`}
+              >
+                {audioNames[i]}
+              </span>
+            );
+          })}
+          {panel.line === "audio" && <span className="ml-2 text-[20px] text-muted">{t("ytaudio.hint")}</span>}
+        </div>
+      )}
       {qualities.length > 1 && (
         <div data-testid="video-qualities" className="mb-6 flex items-center">
           <span className={`mr-6 text-[24px] text-muted ${terminal ? "t-label text-[19px]" : ""}`}>{t("video.quality")}</span>

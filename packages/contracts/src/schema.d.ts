@@ -4757,6 +4757,17 @@ export interface components {
              * @enum {string|null}
              */
             error: "unavailable" | "live" | "unplayable" | "failed" | null;
+            /** @description Audio languages of an auto-dubbed video (id = VideoAudioTrack.id; label in the TV's language). Switch with playback.set_audio. Optional; empty for one track. */
+            audio_tracks?: components["schemas"]["Track"][];
+            /** @description The audio track playing. Optional. */
+            audio_track_id?: string | null;
+        };
+        VideoAudioTrack: {
+            /** @description The language as YouTube tags it (ru, en, pt-br); pass as audio. */
+            id: string;
+            language: string;
+            /** @description The video's own audio (not a dub). */
+            original: boolean;
         };
         Track: {
             id: string;
@@ -4793,7 +4804,7 @@ export interface components {
                 /** @description Paused with media.pause (media.resume continues). */
                 paused?: boolean;
             } | null;
-            /** @description «Видео»: the YouTube video on screen (screen = player, media_id/playback null). Controlled with media.pause / media.resume / media.seek / media.stop / media.next_episode (the first playable related video); video.play with the same video_id and a quality switches the quality in place. */
+            /** @description «Видео»: the YouTube video on screen (screen = player, media_id/playback null). Controlled with media.pause / media.resume / media.seek / media.stop / media.next_episode (the first playable related video), playback.set_audio (video.audio_tracks); video.play with the same video_id and a quality switches the quality in place. */
             video?: components["schemas"]["VideoPlaybackState"] | null;
             /** @description Players available on this TV (built-in is always present). */
             players?: components["schemas"]["PlayerKind"][];
@@ -5012,6 +5023,10 @@ export interface components {
             fallback_url?: string | null;
             /** @description Video: the profile's resume position (unfinished videos). */
             position_seconds?: number | null;
+            /** @description Video: the audio languages of an auto-dubbed video (YouTube's order: VIDEO_LANG, the original, …); empty for one track. Switch with a new source ({audio: id}), continuing from the position. */
+            audio_tracks?: components["schemas"]["VideoAudioTrack"][];
+            /** @description Video: the audio_tracks id stream_url plays (null with one track). */
+            audio_track?: string | null;
             /** @description Torrent: the server download of this file (docs «Server downloads»); when done, stream_url/compat_url read the server's copy instead of TorrServer. null when never requested. Optional. */
             download?: components["schemas"]["DownloadBrief"] | null;
         };
@@ -9544,6 +9559,8 @@ export interface operations {
                     profile_id?: string;
                     /** @description Online only: wanted vertical resolution from the variant's qualities (default: best ≤ the profile's preferred resolution). */
                     quality?: number;
+                    /** @description Video: the audio track — original (the video's own) or a language (ru, pt-br; a base language matches a regional track). Ignored when the video lacks it (then VIDEO_LANG, the original, English — in that order). */
+                    audio?: string;
                 };
             };
         };

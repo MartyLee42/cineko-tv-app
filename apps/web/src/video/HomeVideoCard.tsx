@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { useI18n } from "@martytv/ui";
 import { PlayIcon } from "../icons";
 import { useContinue } from "./queries";
+import { THUMB_SIZES } from "./prefetch";
 import { Thumb, watchHref } from "./ui";
 
 export function HomeVideoCard({ className = "" }: { className?: string }) {
@@ -18,7 +19,7 @@ export function HomeVideoCard({ className = "" }: { className?: string }) {
           data-testid="video-home-continue"
           className="group flex min-w-0 flex-1 items-center gap-3 rounded-3xl border border-accent/30 bg-gradient-to-r from-accent/20 via-accent/5 to-surface p-3 transition hover:border-accent sm:p-3.5"
         >
-          <Thumb v={last} className="w-28 shrink-0 !rounded-xl" />
+          <Thumb v={last} className="w-28 shrink-0 !rounded-xl" sizes={THUMB_SIZES.tiny} />
           <span className="min-w-0 flex-1">
             <span className="block text-xs font-semibold uppercase tracking-wide text-accent">{t("video.web.card_continue")}</span>
             <span className="line-clamp-2 font-bold leading-snug">{last.title}</span>

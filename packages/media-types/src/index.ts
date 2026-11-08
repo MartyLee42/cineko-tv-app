@@ -81,6 +81,7 @@ export * from "./newEpisodes";
 export * from "./fit";
 export * from "./fileFormat";
 export * from "./videoNext";
+export * from "./thumbPrefetch";
 export * from "./smooth";
 export * from "./chapters";
 export * from "./filmTheme";

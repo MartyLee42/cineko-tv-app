@@ -272,8 +272,10 @@ type CreateInput struct {
 	// Kind "iptv" + ChannelID: a live channel (live.go); "" / "release" otherwise.
 	Kind      string  `json:"kind"`
 	ChannelID *string `json:"channel_id"`
-	// Kind "video" + VideoID: a YouTube video via Invidious (video.go).
+	// Kind "video" + VideoID: a YouTube video via Invidious (video.go);
+	// Audio picks its audio track ("original" or a language, video_audio.go).
 	VideoID *string `json:"video_id"`
+	Audio   *string `json:"audio"`
 }
 
 // Create resolves a release, registers it with TorrServer and starts

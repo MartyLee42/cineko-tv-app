@@ -7,6 +7,7 @@ import (
 	"martytv/api/internal/playback"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -32,13 +33,42 @@ type fakeInvidious struct {
 	videoHits atomic.Int32
 	thumbHits atomic.Int32
 	lastRange atomic.Value
+	lastXtags atomic.Value // the audio track (xtags) of the last videoplayback call
 }
 
 const (
 	rickChannel  = "UCuAXFkgsw1L7xaCfnd5JJOw"
 	otherChannel = "UCaaaaaaaaaaaaaaaaaaaaaa"
 	rickVideo    = "dQw4w9WgXcQ"
+	dubVideo     = "dubDUBdub01" // video.json with three AAC tracks: ja and ru dubs, the English original
 )
+
+// dubbedFixture is video.json as an auto-dubbed video: itag 140 once per
+// language, told apart only by the URL's xtags.
+func dubbedFixture(b []byte) []byte {
+	var v map[string]any
+	_ = json.Unmarshal(b, &v)
+	v["videoId"] = dubVideo
+	var out []any
+	for _, f := range v["adaptiveFormats"].([]any) {
+		m := f.(map[string]any)
+		if m["itag"] != "140" {
+			out = append(out, m)
+			continue
+		}
+		for _, x := range []string{"acont=dubbed:lang=ja", "acont=original:lang=en", "acont=dubbed:lang=ru"} {
+			c := map[string]any{}
+			for k, val := range m {
+				c[k] = val
+			}
+			c["url"] = m["url"].(string) + "&xtags=" + url.QueryEscape(x)
+			out = append(out, c)
+		}
+	}
+	v["adaptiveFormats"] = out
+	r, _ := json.Marshal(v)
+	return r
+}
 
 func readFixture(t *testing.T, name string) []byte {
 	t.Helper()
@@ -84,6 +114,8 @@ func newFakeInvidious(t *testing.T) *fakeInvidious {
 				t.Errorf("video fetched without local=true")
 			}
 			_, _ = w.Write(fixture("video.json"))
+		case p == "/api/v1/videos/"+dubVideo:
+			_, _ = w.Write(dubbedFixture(fixture("video.json")))
 		case p == "/api/v1/videos/liveLIVE001":
 			fmt.Fprintf(w, `{"type":"video","videoId":"liveLIVE001","title":"Live","author":"X","authorId":"%s","lengthSeconds":0,"liveNow":true,"adaptiveFormats":[],"formatStreams":[]}`, otherChannel)
 		case strings.HasPrefix(p, "/api/v1/videos/"):
@@ -133,6 +165,7 @@ func newFakeInvidious(t *testing.T) *fakeInvidious {
 				return
 			}
 			f.lastRange.Store(r.Header.Get("Range"))
+			f.lastXtags.Store(r.URL.Query().Get("xtags"))
 			from, _ := strconv.ParseInt(m[1], 10, 64)
 			to := size - 1
 			if m[2] != "" {
@@ -603,5 +636,76 @@ func TestVideoFeedPagingAndOriginalTitles(t *testing.T) {
 	}
 	if got := title(vids, "LaOUkDBDjW8"); got != "Rick Astley - Dance (Live at The O2, London, April 2026)" {
 		t.Fatalf("unknown title changed: %q", got)
+	}
+}
+
+// Auto-dubbed videos: the source lists the languages, plays the viewer's
+// language by default (VIDEO_LANG ru), and `audio` picks another one; the
+// language rides in the stream's file names down to the bytes fetched.
+func TestVideoAudioTracks(t *testing.T) {
+	env, f := newVideoEnv(t)
+	alice, _ := env.NewUserClient("alice", "user")
+	tv := env.Client()
+	create := func(audio string) map[string]any {
+		body := map[string]any{"kind": "video", "video_id": dubVideo}
+		if audio != "" {
+			body["audio"] = audio
+		}
+		return alice.Do("POST", "/api/v1/playback/sources", body).Expect(201).JSON()
+	}
+	src := create("")
+	tracks := src["audio_tracks"].([]any)
+	if len(tracks) != 3 || src["audio_track"] != "ru" {
+		t.Fatalf("default: %v %v", src["audio_track"], tracks)
+	}
+	if first := tracks[0].(map[string]any); first["id"] != "ru" || first["original"] != false {
+		t.Fatalf("first track %v", first)
+	}
+	if orig := tracks[1].(map[string]any); orig["id"] != "en" || orig["original"] != true {
+		t.Fatalf("original track %v", orig)
+	}
+	stream := src["stream_url"].(string)
+	if !strings.HasSuffix(stream, "/master.ru.m3u8") {
+		t.Fatalf("stream %s", stream)
+	}
+
+	orig := create("original")
+	if orig["audio_track"] != "en" || !strings.HasSuffix(orig["stream_url"].(string), "/master.en.m3u8") {
+		t.Fatalf("original: %v %v", orig["audio_track"], orig["stream_url"])
+	}
+	stream = orig["stream_url"].(string)
+	base := strings.TrimSuffix(stream, "master.en.m3u8")
+	master := string(tv.Do("GET", stream, nil).Expect(200).Body)
+	if !strings.Contains(master, `LANGUAGE="en"`) || !strings.Contains(master, `URI="a140.en.m3u8"`) {
+		t.Fatalf("master:\n%s", master)
+	}
+	apl := string(tv.Do("GET", base+"a140.en.m3u8", nil).Expect(200).Body)
+	if !strings.Contains(apl, "m140.en.mp4") {
+		t.Fatalf("audio playlist:\n%s", apl)
+	}
+	tv.Do("GET", base+"m140.ja.mp4", nil).Expect(200)
+	if x, _ := f.lastXtags.Load().(string); !strings.Contains(x, "lang=ja") {
+		t.Fatalf("fetched %q for m140.ja.mp4", x)
+	}
+	tv.Do("GET", base+"m140.en.mp4", nil).Expect(200)
+	if x, _ := f.lastXtags.Load().(string); !strings.Contains(x, "lang=en") {
+		t.Fatalf("fetched %q for m140.en.mp4", x)
+	}
+	tv.Do("GET", base+"m140.fr.mp4", nil).Expect(404)
+	tv.Do("GET", base+"v136.en.m3u8", nil).Expect(404)
+
+	// A language the video lacks: the default; a region variant of one it has: that one.
+	if s := create("de"); s["audio_track"] != "ru" {
+		t.Fatalf("de: %v", s["audio_track"])
+	}
+	if s := create("JA-jp"); s["audio_track"] != "ja" {
+		t.Fatalf("ja-jp: %v", s["audio_track"])
+	}
+	alice.Do("POST", "/api/v1/playback/sources", map[string]any{"kind": "video", "video_id": dubVideo, "audio": "../x"}).Expect(422)
+
+	// One track: no list, the old file names.
+	single := alice.Do("POST", "/api/v1/playback/sources", map[string]any{"kind": "video", "video_id": rickVideo, "audio": "ru"}).Expect(201).JSON()
+	if len(single["audio_tracks"].([]any)) != 0 || single["audio_track"] != nil || !strings.HasSuffix(single["stream_url"].(string), "/master.m3u8") {
+		t.Fatalf("single track: %v %v %v", single["audio_tracks"], single["audio_track"], single["stream_url"])
 	}
 }

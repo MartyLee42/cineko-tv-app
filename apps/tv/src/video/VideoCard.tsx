@@ -10,6 +10,7 @@ import { ProgressBar } from "../components/Poster";
 import { Brackets } from "../design/cards";
 import { useDesign, type Design } from "../design/context";
 import { ago, compactCount, countForm, formatDuration, progressFraction, type VideoItem } from "./logic";
+import { cardThumb } from "./prefetch";
 
 /** Card geometry per design (thumbnail + caption). */
 export interface VideoGeo {
@@ -61,7 +62,7 @@ export function VideoThumb({ v, w, h, design, focused, className = "" }: { v: Vi
       className={`tv-focus mt-card relative overflow-hidden ${corners} ${focused ? "is-focused" : ""} ${className}`}
       style={{ width: w, height: h, background: legacyColor(placeholderColor(v.id)) }}
     >
-      <Img src={w > 340 ? v.thumbnail_hd : v.thumbnail} className="absolute left-0 top-0 h-full w-full object-cover" />
+      <Img src={cardThumb(v, w)} className="absolute left-0 top-0 h-full w-full object-cover" />
       {v.live ? (
         <span data-testid="video-live" className="absolute bottom-3 right-3 rounded bg-danger px-2 text-[18px] font-bold uppercase leading-[28px] text-bg">
           {t("video.live")}

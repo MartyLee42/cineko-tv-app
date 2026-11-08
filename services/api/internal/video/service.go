@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -27,7 +25,6 @@ const (
 	feedRefreshEvery = 30 * time.Minute
 	healthEvery      = time.Minute
 	feedPerChannel   = 30
-	thumbMaxAge      = 7 * 24 * time.Hour
 )
 
 // Qualities are the allowed video_quality values.
@@ -53,9 +50,13 @@ type Deps struct {
 	Prefs func(ctx context.Context, profileID string) Prefs
 	// Region for trending/search (ISO 3166-1 alpha-2, default RU).
 	Region string
-	// ThumbDir caches proxied thumbnails/avatars ("" = no disk cache).
-	ThumbDir string
-	Log      *slog.Logger
+	// ThumbDir caches proxied thumbnails/avatars ("" = no disk cache),
+	// at most ThumbCacheBytes (0 = no disk cache), dropping files unused
+	// for ThumbMaxAge (default 14 days).
+	ThumbDir        string
+	ThumbCacheBytes int64
+	ThumbMaxAge     time.Duration
+	Log             *slog.Logger
 }
 
 // Service is the «Видео» tab backend.
@@ -65,7 +66,6 @@ type Service struct {
 	profiles ProfileAccess
 	prefs    func(ctx context.Context, profileID string) Prefs
 	region   string
-	thumbDir string
 	log      *slog.Logger
 	st       *store
 
@@ -73,7 +73,7 @@ type Service struct {
 
 	refreshMu sync.Mutex // one feed refresh at a time
 	kick      chan string
-	thumbBad  sync.Map // path → time.Time of a failed fetch
+	thumbs    *thumbCache
 }
 
 // NewService builds the service; Client may be unconfigured (every call
@@ -85,11 +85,15 @@ func NewService(d Deps) *Service {
 	if d.Log == nil {
 		d.Log = slog.Default()
 	}
+	if d.ThumbMaxAge <= 0 {
+		d.ThumbMaxAge = 14 * 24 * time.Hour
+	}
 	s := &Service{pool: d.Pool, client: d.Client, profiles: d.Profiles, prefs: d.Prefs, region: d.Region,
-		thumbDir: d.ThumbDir, log: d.Log.With("module", "video"), st: &store{q: d.Pool}, kick: make(chan string, 64)}
+		log: d.Log.With("module", "video"), st: &store{q: d.Pool}, kick: make(chan string, 64)}
 	if s.client == nil {
 		s.client, _ = NewClient("", nil)
 	}
+	s.thumbs = newThumbCache(d.ThumbDir, d.ThumbCacheBytes, d.ThumbMaxAge, s.fetchThumb)
 	s.client.onResult = s.health.record
 	return s
 }
@@ -159,6 +163,8 @@ func (s *Service) Run(ctx context.Context) {
 	defer feed.Stop()
 	prune := time.NewTicker(6 * time.Hour)
 	defer prune.Stop()
+	go s.thumbs.scan()
+	go s.thumbs.runWarm(ctx)
 	s.probe(ctx)
 	for {
 		select {
@@ -172,7 +178,7 @@ func (s *Service) Run(ctx context.Context) {
 		case id := <-s.kick:
 			s.refreshChannel(ctx, id)
 		case <-prune.C:
-			s.pruneThumbs()
+			s.thumbs.evict()
 		}
 	}
 }
@@ -235,22 +241,6 @@ func (s *Service) kickChannel(id string) {
 	case s.kick <- id:
 	default:
 	}
-}
-
-func (s *Service) pruneThumbs() {
-	if s.thumbDir == "" {
-		return
-	}
-	cutoff := time.Now().Add(-thumbMaxAge)
-	_ = filepath.WalkDir(s.thumbDir, func(p string, d os.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return nil
-		}
-		if info, err := d.Info(); err == nil && info.ModTime().Before(cutoff) {
-			_ = os.Remove(p)
-		}
-		return nil
-	})
 }
 
 // ---- health (admin card) ----

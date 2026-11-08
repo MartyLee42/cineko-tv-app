@@ -1484,6 +1484,7 @@ paths:
                 episode_id: { type: string, format: uuid, description: "Series: which episode to select inside the torrent / which episode of a season-level online variant." }
                 profile_id: { type: string, format: uuid }
                 quality: { type: integer, description: "Online only: wanted vertical resolution from the variant's qualities (default: best ≤ the profile's preferred resolution)." }
+                audio: { type: string, pattern: "^(original|[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?)$", description: "Video: the audio track — original (the video's own) or a language (ru, pt-br; a base language matches a regional track). Ignored when the video lacks it (then VIDEO_LANG, the original, English — in that order)." }
       responses:
         "201":
           description: Source (preparing or ready).
@@ -5048,6 +5049,15 @@ components:
         qualities: { type: array, items: { type: integer }, description: "Heights the video offers (descending)." }
         volume: { type: [number, "null"], minimum: 0, maximum: 1 }
         error: { type: [string, "null"], enum: [unavailable, live, unplayable, failed, null], description: "Set when the TV couldn't play it." }
+        audio_tracks: { type: array, items: { $ref: "#/components/schemas/Track" }, description: "Audio languages of an auto-dubbed video (id = VideoAudioTrack.id; label in the TV's language). Switch with playback.set_audio. Optional; empty for one track." }
+        audio_track_id: { type: [string, "null"], description: "The audio track playing. Optional." }
+    VideoAudioTrack:
+      type: object
+      required: [id, language, original]
+      properties:
+        id: { type: string, description: "The language as YouTube tags it (ru, en, pt-br); pass as audio." }
+        language: { type: string }
+        original: { type: boolean, description: "The video's own audio (not a dub)." }
     Track:
       type: object
       required: [id, label]
@@ -5085,7 +5095,7 @@ components:
                 paused: { type: boolean, description: "Paused with media.pause (media.resume continues)." }
             - type: "null"
         video:
-          description: "«Видео»: the YouTube video on screen (screen = player, media_id/playback null). Controlled with media.pause / media.resume / media.seek / media.stop / media.next_episode (the first playable related video); video.play with the same video_id and a quality switches the quality in place."
+          description: "«Видео»: the YouTube video on screen (screen = player, media_id/playback null). Controlled with media.pause / media.resume / media.seek / media.stop / media.next_episode (the first playable related video), playback.set_audio (video.audio_tracks); video.play with the same video_id and a quality switches the quality in place."
           oneOf:
             - $ref: "#/components/schemas/VideoPlaybackState"
             - type: "null"
@@ -5246,6 +5256,8 @@ components:
         video_id: { type: string, description: "Video: the YouTube video id (kind video)." }
         fallback_url: { type: [string, "null"], description: "Video: progressive MP4 (360p) for engines without fMP4 HLS; null when YouTube has none." }
         position_seconds: { type: [number, "null"], description: "Video: the profile's resume position (unfinished videos)." }
+        audio_tracks: { type: array, items: { $ref: "#/components/schemas/VideoAudioTrack" }, description: "Video: the audio languages of an auto-dubbed video (YouTube's order: VIDEO_LANG, the original, …); empty for one track. Switch with a new source ({audio: id}), continuing from the position." }
+        audio_track: { type: [string, "null"], description: "Video: the audio_tracks id stream_url plays (null with one track)." }
         download: { oneOf: [{ $ref: "#/components/schemas/DownloadBrief" }, { type: "null" }], description: "Torrent: the server download of this file (docs «Server downloads»); when done, stream_url/compat_url read the server's copy instead of TorrServer. null when never requested. Optional." }
 
     # ------------------------------------------------------------ sources

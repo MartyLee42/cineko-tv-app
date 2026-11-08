@@ -11,6 +11,7 @@ import { CvVoiceOfAmerica } from "../catalog/CvLenin";
 import { BookmarkIcon, CloseIcon, HistoryIcon, SearchIcon } from "../icons";
 import { useActiveProfile } from "../watch/ActiveProfile";
 import { appendUnique, parseTab, TABS, type VideoItem, type VideoTab } from "./logic";
+import { THUMB_SIZES, useRowPrefetch } from "./prefetch";
 import { useContinue, useFeed, useRemoveHistory, useSubscriptions, useSuggestions, useTrending, useVideoHistory, useVideoSearch, useWatchLater, useWatchLaterToggle, type VideoChannelRef } from "./queries";
 import { ChannelAvatar, channelHref, EmptyState, GridSkeleton, LoadMore, SubscribeButton, VideoCard, VideoError, VideoGrid, VideoRow, useVideoFormat } from "./ui";
 
@@ -69,13 +70,16 @@ function SubscriptionsTab() {
   const cont = useContinue();
   const items = useMemo(() => (feed.data?.pages ?? []).reduce<VideoItem[]>((acc, p) => appendUnique(acc, p.items), []), [feed.data]);
   const channels = subs.data ?? [];
+  // «Продолжить» scrolls sideways: its off-screen thumbnails load once the row is near.
+  const contRow = useRef<HTMLDivElement>(null);
+  useRowPrefetch(contRow, cont.data ?? [], THUMB_SIZES.row);
 
   return (
     <div className="space-y-7">
       {(cont.data?.length ?? 0) > 0 && (
         <section data-testid="video-continue">
           <h2 className="mb-3 text-lg font-bold">{t("video.continue")}</h2>
-          <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          <div ref={contRow} className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
             {cont.data!.map((v) => (
               <div key={v.id} className="w-64 shrink-0 sm:w-72">
                 <VideoCard v={v} inRow />
