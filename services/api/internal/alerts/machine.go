@@ -1,5 +1,5 @@
 // Package alerts tells admins when something the household depends on
-// breaks: TMDB, YouTube (Invidious), TorrServer, Prowlarr, the VPN proxy,
+// breaks: TMDB, YouTube (Invidious), TorrServer, Prowlarr (or Jackett), the VPN proxy,
 // the disk or the database. The API's monitor feeds its own cached checks
 // into a debounce state machine (Machine) once a minute; the host scripts
 // (watchdog, image updater) report what they see and do through
@@ -16,6 +16,7 @@ import (
 const (
 	KindTMDB       = "tmdb"
 	KindProwlarr   = "prowlarr"
+	KindJackett    = "jackett" // the torrent search backend when INDEXER=jackett
 	KindTorrServer = "torrserver"
 	KindInvidious  = "invidious" // Invidious doesn't answer (API probe)
 	KindProxy      = "proxy"     // the outbound proxy (VPN) refuses connections

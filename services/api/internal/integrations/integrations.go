@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"martytv/api/internal/config"
+	"martytv/api/internal/integrations/jackett"
 	"martytv/api/internal/integrations/tmdb"
 	"martytv/api/internal/integrations/torrserver"
 )
@@ -108,6 +109,33 @@ func (p *Prowlarr) Probe(ctx context.Context) Status {
 		return st
 	}
 	st.OK, st.Version = true, body.Version
+	return st
+}
+
+// ---- Jackett ----
+
+// Jackett checks the alternative torrent search backend (INDEXER=jackett)
+// with an authenticated torznab caps request.
+type Jackett struct {
+	client *jackett.Client
+}
+
+func NewJackett(cfg config.JackettConfig) *Jackett {
+	return &Jackett{client: jackett.NewWithTimeout(cfg, 10*time.Second)}
+}
+
+func (j *Jackett) Name() string { return "jackett" }
+
+func (j *Jackett) Probe(ctx context.Context) Status {
+	st := Status{Name: j.Name(), Configured: j.client.Configured(), CheckedAt: time.Now().UTC()}
+	if !st.Configured {
+		return st
+	}
+	if err := j.client.Caps(ctx); err != nil {
+		st.Error = err.Error()
+		return st
+	}
+	st.OK = true
 	return st
 }
 

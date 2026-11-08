@@ -79,3 +79,34 @@ func TestServiceStatusTorrServerDown(t *testing.T) {
 		t.Fatalf("torrserver %v", torr)
 	}
 }
+
+// GET /status features follow the install options (VIDEO_ENABLED,
+// MUSIC_ENABLED, INDEXER); off = also no Invidious / Prowlarr checks.
+func TestServiceStatusFeatures(t *testing.T) {
+	env := testutil.New(t, func(c *config.Config) { c.Video.InvidiousURL = "http://invidious.invalid:3000" })
+	alice, _ := env.NewUserClient("alice", "user")
+	f := alice.Do("GET", "/api/v1/status", nil).Expect(200).JSON()["features"].(map[string]any)
+	if f["video"] != true || f["music"] != true || f["torrents"] != true {
+		t.Fatalf("defaults %v", f)
+	}
+
+	off := testutil.New(t, func(c *config.Config) {
+		c.Video.Enabled, c.Video.InvidiousURL = false, ""
+		c.MusicEnabled = false
+		c.Indexer, c.Prowlarr = config.IndexerNone, config.ProwlarrConfig{}
+	})
+	bob, _ := off.NewUserClient("bob", "user")
+	f = bob.Do("GET", "/api/v1/status", nil).Expect(200).JSON()["features"].(map[string]any)
+	if f["video"] != false || f["music"] != false || f["torrents"] != false {
+		t.Fatalf("off %v", f)
+	}
+	if code := bob.Do("GET", "/api/v1/video/trending", nil).Expect(503).ErrorCode(); code != "video_unavailable" {
+		t.Fatalf("video off: %s", code)
+	}
+	admin, _ := off.NewUserClient("root", "admin")
+	for _, it := range admin.Do("GET", "/api/v1/admin/integrations", nil).Expect(200).Items() {
+		if it["name"] == "prowlarr" || it["name"] == "jackett" {
+			t.Fatalf("INDEXER=none still checks %v", it["name"])
+		}
+	}
+}

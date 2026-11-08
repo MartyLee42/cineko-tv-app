@@ -4198,8 +4198,11 @@ export interface components {
             expires_at: string;
         };
         IntegrationStatus: {
-            /** @enum {string} */
-            name: "prowlarr" | "torrserver" | "tmdb" | "kinopoisk";
+            /**
+             * @description Only the torrent search backend INDEXER chose is listed (prowlarr or jackett; neither with INDEXER=none).
+             * @enum {string}
+             */
+            name: "prowlarr" | "jackett" | "torrserver" | "tmdb" | "kinopoisk";
             /** @description kinopoisk: false without KINOPOISK_API_KEY (ratings then stay null). */
             configured: boolean;
             ok: boolean;
@@ -7227,7 +7230,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "tmdb" | "prowlarr" | "torrserver" | "invidious" | "proxy" | "disk" | "database" | "youtube" | "vpn" | "updater";
+            kind: "tmdb" | "prowlarr" | "jackett" | "torrserver" | "invidious" | "proxy" | "disk" | "database" | "youtube" | "vpn" | "updater";
             /** @description e.g. unauthorized (tmdb), search / streams (youtube), rollback (updater). */
             cause: string;
             /** @description Technical detail (error text, free space). */

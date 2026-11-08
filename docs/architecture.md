@@ -550,6 +550,22 @@ server.New ── srcReg.Register(prowlarr | jacred | anilibria …)
   playback ──────┘ Online(id).Resolve(variant) → upstream stream (proxied)
 ```
 
+- **Torrent search backend** (`INDEXER`, install option): `prowlarr`
+  (default), `jackett` or `none`. Only the chosen one is configured,
+  health-checked (`/admin/integrations`, alerts) and reported as `/status`
+  `prowlarr.ok`; Prowlarr stays registered (unconfigured) so saved source
+  selections keep working, Jackett is registered only with
+  `INDEXER=jackett`. **Jackett** (`integrations/jackett`,
+  `releases/jackett.go`, `JACKETT_URL` + `JACKETT_API_KEY`): its "all
+  indexers" search waits for the slowest tracker (over a minute with a
+  blocked one), so the provider lists the configured indexers (torznab
+  `t=indexers&configured=true`, cached 10 min) and searches each one per
+  query in parallel (`/api/v2.0/indexers/{id}/results`, 20 s each, below the
+  25 s search deadline); a slow or failing indexer becomes a warning (generic
+  text: Jackett's errors quote tracker URLs). Without the list it falls
+  back to the "all" search. Download links carry `jackett_apikey`: stored
+  without it and re-added at resolve (any provider with `WithKey`).
+  Cineko Music searches torrents through Prowlarr only.
 - **Contract** (`sources/types.go`): `Provider{Info, Probe}`;
   `TorrentProvider.SearchTorrents(ctx, Title) (*TorrentResult, error)`
   returns raw `Torrent`s (title, size, seeders, info hash, magnet or a
@@ -2701,6 +2717,13 @@ machine.
 
 ## Video (Invidious)
 
+`VIDEO_ENABLED=false` (install option) leaves YouTube out: the API clears
+`INVIDIOUS_URL` (every video call answers 503 `video_unavailable`, no probe,
+feed refresh or thumbnail workers, no nightly Invidious restart, no Invidious
+alerts), Cineko Music drops YouTube audio, and `/status` `features.video` is
+false so the apps hide the tab. `MUSIC_ENABLED=false` only sets
+`features.music`.
+
 The «Видео» tab plays YouTube through a **self-hosted Invidious**
 (`quay.io/invidious/invidious`) and its required helper
 **invidious-companion**, which fetches the player data and stream URLs
@@ -3236,6 +3259,7 @@ owner's role).
 | Service | Version | Verified endpoints |
 |---|---|---|
 | Prowlarr | 2.4.0.5397 (Docker) | `GET /api/v1/system/status`, `GET /api/v1/indexer` (5 torrent indexers: RuTracker, RuTor, NoNaMe Club, BigFANGroup, ExKinoRay), `GET /api/v1/search`, `GET /api/v1/indexerstatus` with `X-Api-Key`; download links `/{indexerId}/download?apikey&link&file` serve the .torrent (or 301 to a magnet) |
+| Jackett | 0.24.2900 (Docker, `INDEXER=jackett`) | `GET /api/v2.0/indexers/all/results/torznab/api?t=indexers&configured=true` and `?t=caps`, `GET /api/v2.0/indexers/{id}/results?Query=` (JSON `Results[]`, `Indexers[].Error`), key in `apikey`; download links `/dl/{indexer}/?jackett_apikey&path&file` |
 | TorrServer | MatriX.141 | `GET /echo` (no auth). Basic auth needed for `POST /torrents`; full route list in [integrations/torrserver-matrix141.swagger.json](integrations/torrserver-matrix141.swagger.json) |
 | TMDB | v3 | `GET /configuration` with the v4 bearer token and with the v3 key |
 | Kinopoisk | — | `rating.kinopoisk.ru/<id>.xml` (keyless) verified live; keyed APIs checked against their OpenAPI specs (no key yet). See [Ratings](#ratings-kinopoiskimdb) |
