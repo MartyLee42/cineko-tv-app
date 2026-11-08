@@ -35,3 +35,4 @@ e2e/scripts/install-guide.mjs
 gluetun.env
 backups/
 deployments/compose.override.yaml
+.pnpm-store/
