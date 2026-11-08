@@ -3618,6 +3618,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/incidents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Outage incidents: open ones first, then the last 30 days. Opened by the API's monitor (TMDB, Prowlarr, TorrServer, Invidious, the VPN proxy, disk, database; ~3 failed checks a minute apart) or the host scripts (POST /internal/incident). Admins get a Cineko message (and Web Push) on open, every 6 h while open, and on recovery. */
+        get: operations["adminListIncidents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/alerts/push": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The server's VAPID public key (applicationServerKey) and how many browsers of the caller get outage pushes. */
+        get: operations["adminAlertPushStatus"];
+        put?: never;
+        /** @description «Уведомления о сбоях»: store this browser's PushSubscription (upsert by endpoint). Only known push services (FCM, Mozilla, Apple, Windows) over HTTPS. */
+        post: operations["adminAlertPushSubscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/alerts/push/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminAlertPushUnsubscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/alerts/push/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Sends a test notification to the caller's subscribed browsers. */
+        post: operations["adminAlertPushTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/devices": {
         parameters: {
             query?: never;
@@ -7032,6 +7100,27 @@ export interface components {
              */
             quality?: 480 | 720 | 1080;
             force?: boolean;
+        };
+        Incident: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "tmdb" | "prowlarr" | "torrserver" | "invidious" | "proxy" | "disk" | "database" | "youtube" | "vpn" | "updater";
+            /** @description e.g. unauthorized (tmdb), search / streams (youtube), rollback (updater). */
+            cause: string;
+            /** @description Technical detail (error text, free space). */
+            detail: string;
+            /** @enum {string} */
+            source: "monitor" | "host";
+            /** @description What broke, localized. */
+            summary: string;
+            /** @description Actions taken (restarts, rollback), localized. */
+            notes: string[];
+            /** Format: date-time */
+            opened_at: string;
+            /** Format: date-time */
+            closed_at: string | null;
+            reminders: number;
         };
         AdminVideoStatus: {
             /** @description INVIDIOUS_URL is set. */
@@ -13165,6 +13254,136 @@ export interface operations {
                 };
             };
             403: components["responses"]["Error"];
+        };
+    };
+    adminListIncidents: {
+        parameters: {
+            query?: {
+                /** @description Language of summary / notes (ru default, en, kk). */
+                lang?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["Incident"][];
+                        open: number;
+                    };
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    adminAlertPushStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Status. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description base64url uncompressed P-256 point. */
+                        public_key: string;
+                        subscriptions: number;
+                    };
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    adminAlertPushSubscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    endpoint: string;
+                    keys: {
+                        p256dh: string;
+                        auth: string;
+                    };
+                    /** @description ru | en | kk: the language of pushes and of this admin's alert messages. */
+                    locale?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Subscribed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["Error"];
+        };
+    };
+    adminAlertPushUnsubscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    endpoint: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Removed (or wasn't there). */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminAlertPushTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        sent: number;
+                        failed: number;
+                    };
+                };
+            };
         };
     };
     adminListDevices: {

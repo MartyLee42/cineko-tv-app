@@ -3884,6 +3884,97 @@ paths:
       responses:
         "200": { description: Status., content: { application/json: { schema: { $ref: "#/components/schemas/AdminVideoStatus" } } } }
         "403": { $ref: "#/components/responses/Error" }
+  # ---------------------------------------------------------------- outage alerts (internal/alerts)
+  /admin/incidents:
+    get:
+      tags: [admin]
+      operationId: adminListIncidents
+      description: "Outage incidents: open ones first, then the last 30 days. Opened by the API's monitor (TMDB, Prowlarr, TorrServer, Invidious, the VPN proxy, disk, database; ~3 failed checks a minute apart) or the host scripts (POST /internal/incident). Admins get a Cineko message (and Web Push) on open, every 6 h while open, and on recovery."
+      parameters:
+        - { name: lang, in: query, description: "Language of summary / notes (ru default, en, kk).", schema: { type: string } }
+      responses:
+        "200":
+          description: Newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, open]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Incident" } }
+                  open: { type: integer }
+        "403": { $ref: "#/components/responses/Error" }
+  /admin/alerts/push:
+    get:
+      tags: [admin]
+      operationId: adminAlertPushStatus
+      description: The server's VAPID public key (applicationServerKey) and how many browsers of the caller get outage pushes.
+      responses:
+        "200":
+          description: Status.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [public_key, subscriptions]
+                properties:
+                  public_key: { type: string, description: "base64url uncompressed P-256 point." }
+                  subscriptions: { type: integer }
+        "403": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [admin]
+      operationId: adminAlertPushSubscribe
+      description: "«Уведомления о сбоях»: store this browser's PushSubscription (upsert by endpoint). Only known push services (FCM, Mozilla, Apple, Windows) over HTTPS."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint, keys]
+              properties:
+                endpoint: { type: string }
+                keys:
+                  type: object
+                  required: [p256dh, auth]
+                  properties:
+                    p256dh: { type: string }
+                    auth: { type: string }
+                locale: { type: string, description: "ru | en | kk: the language of pushes and of this admin's alert messages." }
+      responses:
+        "204": { description: Subscribed. }
+        "422": { $ref: "#/components/responses/Error" }
+  /admin/alerts/push/unsubscribe:
+    post:
+      tags: [admin]
+      operationId: adminAlertPushUnsubscribe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [endpoint]
+              properties:
+                endpoint: { type: string }
+      responses:
+        "204": { description: Removed (or wasn't there). }
+  /admin/alerts/push/test:
+    post:
+      tags: [admin]
+      operationId: adminAlertPushTest
+      description: Sends a test notification to the caller's subscribed browsers.
+      responses:
+        "200":
+          description: Result.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sent, failed]
+                properties:
+                  sent: { type: integer }
+                  failed: { type: integer }
   # ---------------------------------------------------------------- super_admin: all devices & pairing requests
   /admin/devices:
     get:
@@ -6990,6 +7081,20 @@ components:
         position_seconds: { type: number, minimum: 0, description: "Start here (the phone's current position)." }
         quality: { type: integer, enum: [480, 720, 1080], description: "Default: the profile's video_quality." }
         force: { type: boolean }
+    Incident:
+      type: object
+      required: [id, kind, cause, detail, source, summary, notes, opened_at, closed_at, reminders]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [tmdb, prowlarr, torrserver, invidious, proxy, disk, database, youtube, vpn, updater] }
+        cause: { type: string, description: "e.g. unauthorized (tmdb), search / streams (youtube), rollback (updater)." }
+        detail: { type: string, description: "Technical detail (error text, free space)." }
+        source: { type: string, enum: [monitor, host] }
+        summary: { type: string, description: "What broke, localized." }
+        notes: { type: array, items: { type: string }, description: "Actions taken (restarts, rollback), localized." }
+        opened_at: { type: string, format: date-time }
+        closed_at: { type: [string, "null"], format: date-time }
+        reminders: { type: integer }
     AdminVideoStatus:
       type: object
       required: [configured, reachable, version, latency_ms, checked_at, last_error, last_error_at, last_ok_at, subscriptions, channels, feed_videos, feed_refreshed_at]

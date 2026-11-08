@@ -101,6 +101,7 @@ func serve() error {
 	go srv.Curated.Run(ctx)          // «Подборки»: resolve list items into the catalog (startup + daily)
 	go srv.IPTV.Run(ctx)             // IPTV playlists 12 h, guides 6 h, favorite/recent channel probes
 	go srv.Watch.RunNewEpisodes(ctx) // nightly «Новые серии» check (NEW_EPISODES_AT, NEW_EPISODES_TZ)
+	go srv.Alerts.Run(ctx)           // outage monitor every minute; admins get a message / Web Push
 	go srv.Video.Run(ctx)            // Invidious health 1 min, subscription feeds 30 min
 	go srv.InvidiousRestart.Run(ctx) // nightly Invidious restart (INVIDIOUS_RESTART_AT), postponed while a video plays
 	// Server downloads: queue, resume after restarts, hourly eviction janitor.

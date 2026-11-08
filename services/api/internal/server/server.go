@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"martytv/api/internal/alerts"
 	"martytv/api/internal/appsettings"
 	"martytv/api/internal/audit"
 	"martytv/api/internal/auth"
@@ -100,6 +101,8 @@ type Server struct {
 	InvidiousRestart *ivrestart.Restarter
 	// Metrics refreshes the GET /metrics snapshot (Run); nil without METRICS_TOKEN.
 	Metrics *metrics.Refresher
+	// Alerts: the outage monitor (Run: every minute) and admin notices.
+	Alerts *alerts.Service
 }
 
 // New builds the HTTP application.
@@ -323,6 +326,12 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 		Transcoder:    transcoderStats(playbackSvc),
 	})
 	sysmonSvc.AdminRoutes(admin)
+	// Outage alerts (internal/alerts): the monitor reuses the cached checks above.
+	alertsSvc := alerts.New(alerts.Deps{Pool: pool, Hub: hub, Checks: checker.Statuses, Video: videoSvc.Health,
+		Disks: sysmonSvc.Disks, ProxyURL: cfg.TMDB.ProxyURL, Token: cfg.AlertToken, Location: cfg.InvidiousRestart.Location,
+		PushSubject: pushSubject(cfg), Log: log.With("module", "alerts")})
+	alertsSvc.AdminRoutes(admin)  // /admin/incidents, /admin/alerts/push*
+	alertsSvc.InternalRoutes(app) // POST /internal/incident (host scripts; not proxied by Caddy)
 	clientLog.Routes(api)
 	clientLog.AdminRoutes(admin)
 	appSettings.AdminRoutes(admin)
@@ -347,7 +356,16 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	}
 
 	return &Server{App: app, Auth: authSvc, Pairing: pairSvc, Hub: hub, Catalog: catalogSvc, Playback: playbackSvc, Watch: watchSvc, Sysmon: sysmonSvc, Ratings: ratingsSvc, Awards: awardsSvc, Sources: srcReg, Online: onlineSvc, ClientLog: clientLog, Imports: importSvc, ForYou: forYouSvc, Curated: curatedSvc, Downloads: downloadsSvc, IPTV: iptvSvc, Video: videoSvc, Trivia: triviaSvc,
-		InvidiousRestart: ivrestart.New(cfg.InvidiousRestart, playback.LastVideoStream, log), Metrics: refresher}
+		InvidiousRestart: ivrestart.New(cfg.InvidiousRestart, playback.LastVideoStream, log), Metrics: refresher,
+		Alerts: alertsSvc}
+}
+
+// pushSubject: the VAPID contact, the server's own https URL when it has one.
+func pushSubject(cfg *config.Config) string {
+	if u := cfg.PublicBaseURL; u != nil && u.Scheme == "https" && u.Host != "" {
+		return "https://" + u.Host
+	}
+	return ""
 }
 
 // RunCleanup periodically prunes expired sessions and pairing requests.
