@@ -87,6 +87,9 @@
 # Audio is flushed immediately and never buffered (Range requests pass
 # through; a track or a transcode can stream for a long time).
 (music) {
+	# MUSIC_ENABLED=false (install.sh without Cineko Music): not here.
+	@nomusic expression `{env.MUSIC_ENABLED} == "false"`
+	respond @nomusic 404
 	reverse_proxy music:8080 {
 		header_up X-Forwarded-For {client_ip}
 		flush_interval -1

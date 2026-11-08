@@ -12,6 +12,15 @@
 # `docker compose up -d --build` builds them from this checkout instead.
 # Third-party images are pinned; bump them deliberately.
 #
+# Optional parts are compose profiles, chosen by install.sh and kept in .env
+# as COMPOSE_PROFILES (scripts/cineko.sh adds them for older .env files):
+#   youtube    Invidious + companion (+ restart-proxy): the «Видео» tab
+#   music      Cineko Music
+#   prowlarr   Prowlarr + FlareSolverr (torrent search; INDEXER=prowlarr)
+#   jackett    Jackett + FlareSolverr instead (INDEXER=jackett)
+#   torrserver TorrServer (leave it out and set TORRSERVER_URL for your own)
+#   vpn        gluetun (outbound VPN)
+#
 # Settings come from the repository-root .env (see deployments/env.example).
 # Local changes go into deployments/compose.override.yaml (scripts/cineko.sh
 # and `make prod` load it when present), never into this file.
@@ -63,6 +72,7 @@ services:
       TRUSTED_PROXIES: 172.16.0.0/12,10.0.0.0/8,192.168.0.0/16
       GOMEMLIMIT: 400MiB
       PROWLARR_URL: ${PROWLARR_URL:-http://prowlarr:9696}
+      JACKETT_URL: ${JACKETT_URL:-http://jackett:9117}
       TORRSERVER_URL: ${TORRSERVER_URL:-http://torrserver:8090}
       # Browser compatibility streams (same secret on both sides).
       TRANSCODER_URL: http://transcoder:8090
@@ -85,6 +95,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    # Your own Prowlarr / Jackett / TorrServer on this machine: use
+    # http://host.docker.internal:<port> in .env.
+    extra_hosts: ["host.docker.internal:host-gateway"]
     mem_limit: 768m
     networks: [internal, media, restart]
 
@@ -110,6 +123,9 @@ services:
     volumes:
       # HLS segments for Safari / iPad (wiped on restart).
       - transcoder-hls:/var/cache/martytv-hls
+    # Your own Prowlarr / Jackett / TorrServer on this machine: use
+    # http://host.docker.internal:<port> in .env.
+    extra_hosts: ["host.docker.internal:host-gateway"]
     <<: *hardening
     mem_limit: 1536m
     networks: [internal, media]
@@ -129,6 +145,7 @@ services:
   # Music at /music: its own app; reads the same .env (PROWLARR_*, TORRSERVER_*).
   music:
     image: ghcr.io/martylee42/cineko-tv-app-music:${CINEKO_VERSION:-latest}
+    profiles: [music]
     build:
       context: ../services/music
       target: runtime
@@ -139,6 +156,7 @@ services:
       MARTYTV_API_URL: http://api:8080
       INVIDIOUS_URL: ${INVIDIOUS_URL:-http://invidious:3000}
       PROWLARR_URL: ${PROWLARR_URL:-http://prowlarr:9696}
+      JACKETT_URL: ${JACKETT_URL:-http://jackett:9117}
       TORRSERVER_URL: ${TORRSERVER_URL:-http://torrserver:8090}
       MUSIC_CACHE_GB: ${MUSIC_CACHE_GB:-10}
       MUSIC_PROXY_URL: ${MUSIC_PROXY_URL:-${OUTBOUND_PROXY_URL:-}}
@@ -146,6 +164,9 @@ services:
     volumes:
       # SQLite library + audio and cover caches.
       - music-data:/data
+    # Your own Prowlarr / Jackett / TorrServer on this machine: use
+    # http://host.docker.internal:<port> in .env.
+    extra_hosts: ["host.docker.internal:host-gateway"]
     read_only: true
     tmpfs: [/tmp]
     mem_limit: 512m
@@ -168,6 +189,8 @@ services:
       MUSIC_SITE_ADDRESS: ${MUSIC_DOMAIN:-http://music.invalid}
       CADDY_TRUSTED_PROXIES: ${CADDY_TRUSTED_PROXIES:-private_ranges}
       CADDY_CLIENT_IP_HEADER: ${CADDY_CLIENT_IP_HEADER:-X-Forwarded-For}
+      # false = no Cineko Music: /music/ and its host answer 404 instead of 502.
+      MUSIC_ENABLED: ${MUSIC_ENABLED:-true}
     ports:
       # 80: HTTP (and the ACME HTTP-01 challenge). 443: HTTPS + HTTP/3.
       - "${HTTP_PORT:-80}:80"
@@ -179,7 +202,12 @@ services:
       # Earlier releases' hashed /assets and /tv/assets for pages opened before
       # a deploy (TVs run one page for days); filled and pruned at start.
       - asset-archive:/srv/asset-archive
-    depends_on: [api, music]
+    depends_on:
+      api:
+        condition: service_started
+      music:
+        condition: service_started
+        required: false
     mem_limit: 256m
     networks: [internal]
 
@@ -188,6 +216,7 @@ services:
   # .env (PROWLARR_API_KEY) and adds FlareSolverr and a few public indexers.
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:2.7.0.5723-ls167
+    profiles: [prowlarr]
     restart: unless-stopped
     environment:
       PUID: "1000"
@@ -208,9 +237,10 @@ services:
     networks: [media]
 
   # Solves Cloudflare challenges for indexers that need it (Prowlarr indexer
-  # proxy, tag "flaresolverr").
+  # proxy, tag "flaresolverr"; Jackett's FlareSolverr API URL).
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+    profiles: [prowlarr, jackett]
     restart: unless-stopped
     environment:
       LOG_LEVEL: info
@@ -218,10 +248,37 @@ services:
     mem_limit: 1g
     networks: [media]
 
+  # Jackett: the alternative torrent search (INDEXER=jackett, profile
+  # "jackett"). install.sh copies its API key into .env (JACKETT_API_KEY),
+  # points it at FlareSolverr and adds a few public indexers. Web UI for
+  # setup over an SSH tunnel only.
+  jackett:
+    image: lscr.io/linuxserver/jackett:v0.24.2900-ls14
+    profiles: [jackett]
+    restart: unless-stopped
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: ${TZ:-Etc/UTC}
+      AUTO_UPDATE: "false"
+    volumes:
+      - jackett-config:/config
+    ports:
+      - "127.0.0.1:${JACKETT_UI_PORT:-9117}:9117"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs -o /dev/null http://127.0.0.1:9117/UI/Login || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    mem_limit: 512m
+    networks: [media]
+
   # Streams torrents over HTTP. Only Cineko (api, music, transcoder) talks to
   # it; clients never see it.
   torrserver:
     image: ghcr.io/yourok/torrserver:MatriX.149
+    profiles: [torrserver]
     restart: unless-stopped
     environment:
       # Image defaults: config in /opt/ts/config, torrents in /opt/ts/torrents.
@@ -249,6 +306,7 @@ services:
   # Nothing published. Secrets INVIDIOUS_* are generated by install.sh.
   invidious-db:
     image: postgres:17-alpine
+    profiles: [youtube]
     restart: unless-stopped
     environment:
       POSTGRES_USER: invidious
@@ -267,6 +325,7 @@ services:
 
   invidious:
     image: quay.io/invidious/invidious:2.20261022.0
+    profiles: [youtube]
     restart: unless-stopped
     environment:
       # domain/external_port must match INVIDIOUS_URL (stream URLs carry it).
@@ -314,6 +373,7 @@ services:
 
   companion:
     image: quay.io/invidious/invidious-companion:2026.10.18-fcb0456
+    profiles: [youtube]
     restart: unless-stopped
     environment:
       SERVER_SECRET_KEY: ${INVIDIOUS_COMPANION_KEY:?missing}
@@ -334,6 +394,7 @@ services:
   # its group id); no capabilities, read-only, its own network.
   restart-proxy:
     image: wollomatic/socket-proxy:1.12.0
+    profiles: [youtube]
     restart: unless-stopped
     user: "0:0"
     command:
@@ -390,6 +451,7 @@ volumes:
   caddy_config:
   asset-archive:
   prowlarr-config:
+  jackett-config:
   torrserver-data:
   invidious-pgdata:
   companion-cache:

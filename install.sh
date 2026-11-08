@@ -35,6 +35,15 @@ TS_CACHE_MB=${CINEKO_TS_CACHE_MB:-}  # TorrServer settings; empty = keep .env / 
 TS_DROP=${CINEKO_TS_REMOVE_CACHE_ON_DROP:-}
 TS_RUTOR=${CINEKO_TS_RUTOR_SEARCH:-}
 SKIP_TORRSERVER=${CINEKO_SKIP_TORRSERVER:-0}
+# Optional parts (empty = keep .env, or ask on the first run).
+YOUTUBE_OPT=${CINEKO_YOUTUBE:-}      # 1 | 0: the «Видео» tab (Invidious)
+MUSIC_OPT=${CINEKO_MUSIC:-}          # 1 | 0: Cineko Music
+INDEXER_OPT=${CINEKO_INDEXER:-}      # prowlarr | jackett | none
+PROWLARR_URL_OPT=${CINEKO_PROWLARR_URL:-}  # your own Prowlarr (no container)
+PROWLARR_KEY_OPT=${CINEKO_PROWLARR_KEY:-}
+JACKETT_URL_OPT=${CINEKO_JACKETT_URL:-}    # your own Jackett (no container)
+JACKETT_KEY_OPT=${CINEKO_JACKETT_KEY:-}
+TORRSERVER_URL_OPT=${CINEKO_TORRSERVER_URL:-}  # your own TorrServer (no container)
 NO_START=0
 
 usage() {
@@ -68,6 +77,19 @@ Usage: ./install.sh [options]
   --ts-rutor-search true|false
                          TorrServer's own rutor search (default false)
   --skip-torrserver      don't apply TorrServer settings
+
+Optional parts (asked on the first run; later runs keep your choice):
+  --no-youtube | --youtube
+                         without/with the YouTube «Видео» tab (Invidious +
+                         companion, ~200 MB RAM). Off = no containers, no tab
+  --no-music | --music   without/with Cineko Music
+  --indexer NAME         torrent search: prowlarr (default), jackett or none
+  --prowlarr-url URL     use your own Prowlarr (no container), with
+  --prowlarr-key KEY     its API key
+  --jackett-url URL      use your own Jackett (no container), with
+  --jackett-key KEY      its API key
+  --torrserver-url URL   use your own TorrServer (no container), e.g.
+                         http://host.docker.internal:8090 on this machine
   --build                build images from this checkout
   --pull                 only use prebuilt images from GHCR (fail otherwise)
   --no-start             only write .env
@@ -103,6 +125,16 @@ while [ $# -gt 0 ]; do
     --ts-remove-cache-on-drop) TS_DROP=${2:?}; shift ;;
     --ts-rutor-search) TS_RUTOR=${2:?}; shift ;;
     --skip-torrserver) SKIP_TORRSERVER=1 ;;
+    --no-youtube) YOUTUBE_OPT=0 ;;
+    --youtube) YOUTUBE_OPT=1 ;;
+    --no-music) MUSIC_OPT=0 ;;
+    --music) MUSIC_OPT=1 ;;
+    --indexer) INDEXER_OPT=${2:?--indexer needs prowlarr, jackett or none}; shift ;;
+    --prowlarr-url) PROWLARR_URL_OPT=${2:?}; shift ;;
+    --prowlarr-key) PROWLARR_KEY_OPT=${2:?}; shift ;;
+    --jackett-url) JACKETT_URL_OPT=${2:?}; shift ;;
+    --jackett-key) JACKETT_KEY_OPT=${2:?}; shift ;;
+    --torrserver-url) TORRSERVER_URL_OPT=${2:?}; shift ;;
     --build) BUILD_MODE=build ;;
     --pull) BUILD_MODE=pull ;;
     --no-start) NO_START=1 ;;
@@ -295,9 +327,91 @@ env_default ALERT_TOKEN "$(rand 48)"     # POST /internal/incident: host scripts
 [[ $(env_get INVIDIOUS_COMPANION_KEY) =~ ^[A-Za-z0-9]{16}$ ]] || env_set INVIDIOUS_COMPANION_KEY "$(rand 16)"
 ok "secrets present (generated where missing)"
 
+# --- optional parts ------------------------------------------------------------
+# An .env from before these options has everything on (as it always had):
+# a part is only asked about on the first run.
+ask_parts() { [ "$FIRST_RUN" = 1 ] && interactive; }
+url_ok() { [[ $1 =~ ^https?://[^/@[:space:]]+(:[0-9]+)?/?$ ]] || die "$2 must look like http://host:port"; }
+[ "$FIRST_RUN" = 1 ] && interactive && echo "  Optional parts (every one can be changed later by re-running ./install.sh):"
+
+# YouTube «Видео» (Invidious + companion).
+case "$YOUTUBE_OPT" in
+  1) env_set VIDEO_ENABLED true ;;
+  0) env_set VIDEO_ENABLED false ;;
+  "")
+    if [ -z "$(env_get VIDEO_ENABLED)" ]; then
+      if ask_parts && ! confirm "YouTube «Видео» tab (Invidious + companion, ~200 MB RAM)?" y; then env_set VIDEO_ENABLED false
+      else env_set VIDEO_ENABLED true; fi
+    fi ;;
+  *) die "CINEKO_YOUTUBE must be 1 or 0" ;;
+esac
+# Cineko Music.
+case "$MUSIC_OPT" in
+  1) env_set MUSIC_ENABLED true ;;
+  0) env_set MUSIC_ENABLED false ;;
+  "")
+    if [ -z "$(env_get MUSIC_ENABLED)" ]; then
+      if ask_parts && ! confirm "Cineko Music (music app at /music/)?" y; then env_set MUSIC_ENABLED false
+      else env_set MUSIC_ENABLED true; fi
+    fi ;;
+  *) die "CINEKO_MUSIC must be 1 or 0" ;;
+esac
+if [ "$(env_get MUSIC_ENABLED)" = false ] && [ -n "$(env_get MUSIC_DOMAIN)" ]; then
+  env_set MUSIC_DOMAIN ""; warn "Cineko Music is off: MUSIC_DOMAIN cleared"
+fi
+# Torrent search: Prowlarr or Jackett, bundled or your own, or none.
+[ -n "$PROWLARR_URL_OPT" ] && [ -z "$INDEXER_OPT" ] && INDEXER_OPT=prowlarr
+[ -n "$JACKETT_URL_OPT" ] && [ -z "$INDEXER_OPT" ] && INDEXER_OPT=jackett
+if [ -z "$INDEXER_OPT" ] && [ -z "$(env_get INDEXER)" ]; then
+  INDEXER_OPT=prowlarr
+  if ask_parts; then
+    echo "  Torrent search: 1) Prowlarr (bundled, default)  2) Jackett (bundled)  3) none"
+    ask ix "Choose 1, 2 or 3" 1
+    case "$ix" in 2|jackett) INDEXER_OPT=jackett ;; 3|none) INDEXER_OPT=none ;; *) INDEXER_OPT=prowlarr ;; esac
+    if [ "$INDEXER_OPT" != none ]; then
+      ask own "Your own ${INDEXER_OPT^} URL instead of the bundled one (Enter = bundled)" ""
+      if [ -n "$own" ]; then
+        if [ "$INDEXER_OPT" = jackett ]; then JACKETT_URL_OPT=$own; ask_secret JACKETT_KEY_OPT "Its API key"
+        else PROWLARR_URL_OPT=$own; ask_secret PROWLARR_KEY_OPT "Its API key"; fi
+      fi
+    fi
+  fi
+fi
+if [ -n "$INDEXER_OPT" ]; then
+  [[ $INDEXER_OPT =~ ^(prowlarr|jackett|none)$ ]] || die "--indexer must be prowlarr, jackett or none"
+  env_set INDEXER "$INDEXER_OPT"
+fi
+if [ -n "$PROWLARR_URL_OPT" ]; then url_ok "$PROWLARR_URL_OPT" --prowlarr-url; env_set PROWLARR_URL "${PROWLARR_URL_OPT%/}"; fi
+if [ -n "$JACKETT_URL_OPT" ]; then url_ok "$JACKETT_URL_OPT" --jackett-url; env_set JACKETT_URL "${JACKETT_URL_OPT%/}"; fi
+[ -z "$PROWLARR_KEY_OPT" ] || env_set PROWLARR_API_KEY "$PROWLARR_KEY_OPT"
+[ -z "$JACKETT_KEY_OPT" ] || env_set JACKETT_API_KEY "$JACKETT_KEY_OPT"
 # Fixed service wiring (only written when missing, so your edits stay).
 env_default PROWLARR_URL http://prowlarr:9696
+env_default JACKETT_URL http://jackett:9117
+# TorrServer: bundled or your own.
+if [ -z "$TORRSERVER_URL_OPT" ] && [ -z "$(env_get TORRSERVER_URL)" ] && ask_parts; then
+  ask TORRSERVER_URL_OPT "Your own TorrServer URL instead of the bundled one (Enter = bundled)" ""
+fi
+if [ -n "$TORRSERVER_URL_OPT" ]; then url_ok "$TORRSERVER_URL_OPT" --torrserver-url; env_set TORRSERVER_URL "${TORRSERVER_URL_OPT%/}"; fi
 env_default TORRSERVER_URL http://torrserver:8090
+
+# Which bundled containers to run: compose profiles in .env (vpn added below).
+part_on() {  # part_on SERVICE: is the bundled container wanted?
+  case "$1" in
+    youtube) [ "$(env_get VIDEO_ENABLED)" != false ] ;;
+    music) [ "$(env_get MUSIC_ENABLED)" != false ] ;;
+    prowlarr) [ "$(env_get INDEXER)" = prowlarr ] && [ "$(env_get PROWLARR_URL)" = http://prowlarr:9696 ] ;;
+    jackett) [ "$(env_get INDEXER)" = jackett ] && [ "$(env_get JACKETT_URL)" = http://jackett:9117 ] ;;
+    torrserver) [ "$(env_get TORRSERVER_URL)" = http://torrserver:8090 ] ;;
+  esac
+}
+[ -n "$(env_get INDEXER)" ] || env_set INDEXER prowlarr
+PARTS=()
+for part in youtube music prowlarr jackett torrserver; do part_on "$part" && PARTS+=("$part"); done
+ok "parts: ${PARTS[*]:-none}$([ "$(env_get INDEXER)" = none ] && echo " (no torrent search)")"
+[ "$(env_get INDEXER)" = prowlarr ] && ! part_on prowlarr && ok "torrent search: your Prowlarr at $(env_get PROWLARR_URL)"
+[ "$(env_get INDEXER)" = jackett ] && ! part_on jackett && ok "torrent search: your Jackett at $(env_get JACKETT_URL)"
+part_on torrserver || ok "TorrServer: yours at $(env_get TORRSERVER_URL)"
 # TorrServer settings (applied after start by scripts/torrserver-settings.sh):
 # a flag replaces the .env value, otherwise yours stays.
 [[ -z $TS_CACHE_MB || $TS_CACHE_MB =~ ^[0-9]+$ ]] || die "--ts-cache-mb must be a number of megabytes"
@@ -358,8 +472,8 @@ if [ -n "$proxy" ]; then
   env_default IMAGE_PROXY true   # clients load TMDB images through the server
   ok "outbound proxy: ${scheme}://${host}:${port}"
 fi
+[[ ,$(env_get COMPOSE_PROFILES), == *,vpn,* ]] && VPN=1
 if [ "$VPN" = 1 ]; then
-  env_set COMPOSE_PROFILES vpn
   if [ ! -f "$ROOT/gluetun.env" ]; then
     cat > "$ROOT/gluetun.env" <<'EOF'
 # gluetun (profile "vpn") settings: https://github.com/qdm12/gluetun-wiki
@@ -378,13 +492,18 @@ EOF
     die "the VPN profile needs your VPN provider settings: edit $ROOT/gluetun.env, then re-run ./install.sh"
   fi
   ok "VPN profile on (gluetun)"
+  PARTS+=(vpn)
 fi
+profiles=$(IFS=,; echo "${PARTS[*]}")
+env_set COMPOSE_PROFILES "$profiles"
+env_set CINEKO_PARTS_VERSION 1
 
 [ "$NO_START" = 1 ] && { step "Done (--no-start): .env written"; exit 0; }
 
 # --- 3. images and start -----------------------------------------------------------
 step "Starting the stack"
-OURS=(api transcoder music web)
+OURS=(api transcoder web)
+part_on music && OURS+=(music)
 case "$BUILD_MODE" in
   build) dc build "${OURS[@]}" ;;
   pull) dc pull "${OURS[@]}" ;;
@@ -394,6 +513,17 @@ case "$BUILD_MODE" in
 esac
 dc up -d --remove-orphans --quiet-pull
 ok "containers started"
+# Parts switched off since the last run: remove their containers (their data
+# volumes stay, so switching back on keeps settings).
+off=()
+for pair in invidious:youtube companion:youtube invidious-db:youtube restart-proxy:youtube \
+  music:music prowlarr:prowlarr jackett:jackett torrserver:torrserver; do
+  part_on "${pair#*:}" || off+=("${pair%%:*}")
+done
+part_on prowlarr || part_on jackett || off+=(flaresolverr)
+if [ ${#off[@]} -gt 0 ] && [ -n "$(dc --profile '*' ps -aq "${off[@]}" 2>/dev/null)" ]; then
+  dc --profile '*' rm -sf "${off[@]}" >/dev/null 2>&1 && ok "removed containers of parts that are off: ${off[*]}"
+fi
 
 wait_for() {  # wait_for "what" seconds command...
   local what=$1 secs=$2; shift 2
@@ -410,9 +540,16 @@ wait_for "API healthy" 180 api_healthy || { dc logs --tail=40 api >&2; die "the 
 # --- 4. Prowlarr -----------------------------------------------------------------------
 prowlarr_key() { dc exec -T prowlarr sed -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' /config/config.xml 2>/dev/null | tr -d '\r\n'; }
 prowlarr_up() { dc exec -T prowlarr curl -fs http://127.0.0.1:9696/ping; }
-if [ "$SKIP_PROWLARR" != 1 ] && [ "$(env_get PROWLARR_URL)" != http://prowlarr:9696 ]; then
+restart_readers() {  # api (and music) read the indexer key from .env: recreate them
+  local s=(api); part_on music && s+=(music)
+  dc up -d "${s[@]}" >/dev/null 2>&1 || dc up -d "${s[@]}"
+  wait_for "API healthy" 120 api_healthy || true
+}
+[ "$(env_get INDEXER)" = prowlarr ] || SKIP_PROWLARR=1
+if [ "$SKIP_PROWLARR" != 1 ] && ! part_on prowlarr; then
   step "Prowlarr (torrent search)"
   ok "using your own Prowlarr at $(env_get PROWLARR_URL) (not configured by install.sh)"
+  [ -n "$(env_get PROWLARR_API_KEY)" ] || note "Set PROWLARR_API_KEY in .env (your Prowlarr → Settings → General), then scripts/cineko.sh up -d."
   SKIP_PROWLARR=1
 fi
 if [ "$SKIP_PROWLARR" != 1 ]; then
@@ -437,13 +574,56 @@ if [ "$SKIP_PROWLARR" != 1 ]; then
     note "Prowlarr didn't come up: check 'scripts/cineko.sh logs prowlarr', then re-run ./install.sh."
   fi
   # api and music read PROWLARR_API_KEY from .env: recreate them if it changed.
-  dc up -d api music >/dev/null 2>&1 || dc up -d api music
-  wait_for "API healthy" 120 api_healthy || true
+  restart_readers
+fi
+
+# --- 4b. Jackett (instead of Prowlarr) ---------------------------------------------
+jx() { dc exec -T jackett "$@"; }
+jackett_up() { jx curl -fs -o /dev/null http://127.0.0.1:9117/UI/Login; }
+if [ "$(env_get INDEXER)" = jackett ]; then
+  step "Jackett (torrent search)"
+  if ! part_on jackett; then
+    ok "using your own Jackett at $(env_get JACKETT_URL) (not configured by install.sh)"
+    [ -n "$(env_get JACKETT_API_KEY)" ] || note "Set JACKETT_API_KEY in .env (your Jackett's dashboard, top right), then scripts/cineko.sh up -d."
+  elif wait_for "Jackett up" 180 jackett_up; then
+    key=$(jx sh -c 'cat /config/Jackett/ServerConfig.json 2>/dev/null' | grep -o '"APIKey": *"[A-Za-z0-9]*"' | sed -E 's/.*"([A-Za-z0-9]+)"$/\1/')
+    if [ -z "$key" ]; then
+      warn "couldn't read Jackett's API key; set JACKETT_API_KEY in .env by hand (Jackett's dashboard)"
+    else
+      [ "$(env_get JACKETT_API_KEY)" = "$key" ] || { env_set JACKETT_API_KEY "$key"; ok "JACKETT_API_KEY saved to .env"; }
+      # The UI API needs Jackett's session cookie (no admin password set yet).
+      J=http://127.0.0.1:9117
+      jx sh -c "rm -f /tmp/cineko.jar; curl -fs -c /tmp/cineko.jar -b /tmp/cineko.jar -L -o /dev/null $J/UI/Dashboard" || warn "Jackett: no session"
+      cfg=$(jx curl -fs -b /tmp/cineko.jar "$J/api/v2.0/server/config" || true)
+      if [ -n "$cfg" ]; then
+        if printf '%s' "$cfg" | sed -E 's#"flaresolverrurl":(null|"[^"]*")#"flaresolverrurl":"http://flaresolverr:8191/"#' \
+          | dc exec -T jackett curl -fs -o /dev/null -b /tmp/cineko.jar -H 'Content-Type: application/json' --data-binary @- "$J/api/v2.0/server/config"; then
+          ok "Jackett → FlareSolverr"
+        else warn "Jackett: couldn't set FlareSolverr (set it in Jackett's UI)"; fi
+      fi
+      have=$(jx curl -fs -b /tmp/cineko.jar "$J/api/v2.0/indexers?configured=true" 2>/dev/null | grep -o '"id":"[a-z0-9-]*"' | sed 's/"id":"//; s/"//' | tr '\n' ' ')
+      IFS=, read -ra list <<<"$INDEXERS"
+      for ix in "${list[@]}"; do
+        ix=${ix%%:*}; [ -n "$ix" ] || continue
+        [[ " $have " == *" $ix "* ]] && continue
+        c=$(jx curl -fs -b /tmp/cineko.jar "$J/api/v2.0/indexers/$ix/config" 2>/dev/null || true)
+        if [ -z "$c" ]; then warn "Jackett has no indexer \"$ix\""; continue; fi
+        if printf '%s' "$c" | dc exec -T jackett curl -fs -m 90 -o /dev/null -b /tmp/cineko.jar -H 'Content-Type: application/json' --data-binary @- "$J/api/v2.0/indexers/$ix/config"; then
+          ok "Jackett indexer: $ix"
+        else warn "Jackett: couldn't add $ix (site unreachable? add it in Jackett's UI)"; fi
+      done
+      jx rm -f /tmp/cineko.jar >/dev/null 2>&1 || true
+    fi
+  else
+    note "Jackett didn't come up: check 'scripts/cineko.sh logs jackett', then re-run ./install.sh."
+  fi
+  restart_readers
 fi
 
 # --- 5. TorrServer settings ---------------------------------------------------------
 # Cache size, cache cleanup and rutor search from .env. Written only when they
 # differ (a change makes TorrServer reconnect, interrupting open streams).
+part_on torrserver || SKIP_TORRSERVER=1
 if [ "$SKIP_TORRSERVER" != 1 ]; then
   step "TorrServer settings"
   if ! CINEKO_ENV_FILE="$ENV_FILE" sh "$ROOT/scripts/torrserver-settings.sh"; then
@@ -493,11 +673,12 @@ step "Cineko is running"
 cat <<EOF
   Web app (phones, computers):  $base
   TV app:                       $base/tv/
-  Music:                        $base/music
+$(part_on music && echo "  Music:                        $base/music")
   Media Station X start parameter (MSX → Settings → Start Parameter): $host
-
-  Prowlarr UI (indexers):  ssh -L 9696:127.0.0.1:$(env_get PROWLARR_UI_PORT | grep . || echo 9696) <you>@<this server>, then http://localhost:9696
-  TorrServer UI:           ssh -L 8090:127.0.0.1:$(env_get TORRSERVER_UI_PORT | grep . || echo 8090) <you>@<this server>, then http://localhost:8090
+$(part_on prowlarr && echo "
+  Prowlarr UI (indexers):  ssh -L 9696:127.0.0.1:$(env_get PROWLARR_UI_PORT | grep . || echo 9696) <you>@<this server>, then http://localhost:9696")$(part_on jackett && echo "
+  Jackett UI (indexers):   ssh -L 9117:127.0.0.1:$(env_get JACKETT_UI_PORT | grep . || echo 9117) <you>@<this server>, then http://localhost:9117")$(part_on torrserver && echo "
+  TorrServer UI:           ssh -L 8090:127.0.0.1:$(env_get TORRSERVER_UI_PORT | grep . || echo 8090) <you>@<this server>, then http://localhost:8090")
 
   Manage:   scripts/cineko.sh ps | logs -f api | restart api …
   Update:   scripts/update.sh        Backup: scripts/backup.sh

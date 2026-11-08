@@ -21,8 +21,9 @@ echo "==> music library"
 dc exec -T music sh -c 'cd /data && tar -cf - music.db*' > "$OUT/music-data.tar" \
   || echo "    (music volume not backed up)"
 
-echo "==> prowlarr + torrserver settings"
-dc exec -T prowlarr tar -C /config -cf - --exclude=./logs --exclude=./Backups . > "$OUT/prowlarr-config.tar" || echo "    (prowlarr skipped)"
+echo "==> prowlarr / jackett + torrserver settings"
+dc exec -T prowlarr tar -C /config -cf - --exclude=./logs --exclude=./Backups . > "$OUT/prowlarr-config.tar" 2>/dev/null || { rm -f "$OUT/prowlarr-config.tar"; echo "    (prowlarr not running: skipped)"; }
+dc exec -T jackett tar -C /config -cf - --exclude=./Jackett/log.txt . > "$OUT/jackett-config.tar" 2>/dev/null || rm -f "$OUT/jackett-config.tar"
 dc exec -T torrserver tar -C /opt/ts -cf - config > "$OUT/torrserver-config.tar" || echo "    (torrserver skipped)"
 
 cp "${CINEKO_ENV_FILE:-$ROOT/.env}" "$OUT/env"
