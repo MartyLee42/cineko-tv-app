@@ -25,8 +25,10 @@ func Open(ctx context.Context, url string) (*pgxpool.Pool, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse DATABASE_URL: %w", err)
 	}
-	cfg.MaxConns = 20
-	cfg.MaxConnIdleTime = 5 * time.Minute
+	// A household's load fits in a few connections; each idle backend keeps
+	// a few MB of Postgres memory, so idle ones close after a minute.
+	cfg.MaxConns = 10
+	cfg.MaxConnIdleTime = time.Minute
 	cfg.ConnConfig.RuntimeParams["timezone"] = "UTC"
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {

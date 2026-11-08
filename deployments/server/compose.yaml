@@ -13,8 +13,9 @@ services:
       POSTGRES_USER: martytv
       POSTGRES_DB: martytv
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?missing}
-    # Small instance: the box is shared with TorrServer.
-    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=40", "-c", "work_mem=4MB"]
+    # Small instance: the box is shared with TorrServer. jit=off: JIT only pays
+    # off for big analytic queries; here it costs memory and latency. SSD disk.
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=40", "-c", "work_mem=4MB", "-c", "jit=off", "-c", "random_page_cost=1.1"]
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
