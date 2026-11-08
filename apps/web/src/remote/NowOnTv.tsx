@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { DeviceState } from "@martytv/contracts";
@@ -68,10 +69,43 @@ function BarControls({ deviceId, s }: { deviceId: string; s: DeviceState }) {
   );
 }
 
+/**
+ * On a title page the phone bar would sit right over the play button and its
+ * options, so it stays hidden until they are scrolled past.
+ */
+export function useCoversPlay(pathname: string) {
+  const [covers, setCovers] = useState(false);
+  const onTitle = pathname.startsWith("/title/");
+  useEffect(() => {
+    if (!onTitle) return;
+    let raf = 0;
+    const check = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const el = document.querySelector('[data-testid="play-chooser"]');
+        setCovers(!!el && el.getBoundingClientRect().bottom > 0);
+      });
+    };
+    check();
+    // The play button appears once the title loads.
+    const timer = window.setInterval(check, 1000);
+    window.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearInterval(timer);
+      window.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
+  }, [onTitle, pathname]);
+  return onTitle && covers;
+}
+
 /** Floating mini-bar (above the bottom nav on phones) for the title on the TV. */
 export function NowOnTvBar() {
   const { t } = useI18n();
   const { pathname } = useLocation();
+  const coversPlay = useCoversPlay(pathname);
   const tv = useFocusTv();
   const s = tv?.state;
   const mediaId = s?.playback?.media_id ?? s?.media_id;
@@ -88,7 +122,7 @@ export function NowOnTvBar() {
   return (
     <>
       <div className="h-16 md:hidden" aria-hidden />
-      <div className="pointer-events-none fixed inset-x-0 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-3 md:inset-x-auto md:bottom-6 md:right-6 md:px-0">
+      <div data-hidden-for-play={coversPlay || undefined} className={`pointer-events-none fixed inset-x-0 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-3 md:inset-x-auto md:bottom-6 md:right-6 md:px-0${coversPlay ? " max-md:hidden" : ""}`}>
         <div className="pointer-events-auto flex w-full max-w-md items-center gap-1.5 rounded-2xl border border-border bg-surface-2 p-2 shadow-2xl shadow-black/50 transition hover:border-accent md:w-[26rem]">
         <Link
           to={`/remote/${tv.device.id}`}
