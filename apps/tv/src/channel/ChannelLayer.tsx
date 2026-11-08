@@ -264,7 +264,8 @@ function Osd({ snap, failed }: { snap: ChannelSnapshot; failed: boolean }) {
     <div data-testid="channel-osd" data-osd={snap.osd ?? "none"} className={`pointer-events-none absolute left-0 top-0 z-30 h-full w-full ${calm ? "cktv-calm" : ""}`}>
       {snap.osd !== null && (
         <>
-          <div className="cktv-scrim-top absolute left-0 top-0 h-[220px] w-full" />
+          {!started && <div data-testid="channel-cover" className="cktv-cover absolute left-0 top-0 h-full w-full" />}
+          <div className="cktv-scrim-top absolute left-0 top-0 h-[240px] w-full" />
           <div className="absolute left-[96px] top-[60px]">
             <ChannelLogo size={64} live={t("channel.live")} />
           </div>
@@ -316,7 +317,7 @@ function Strip({ snap, slots, now }: { snap: ChannelSnapshot; slots: Slot[]; now
   const later = slots.slice(1, 3);
   return (
     <div data-testid="channel-strip" className="absolute bottom-0 left-0 w-full">
-      <div className="cktv-scrim-bottom absolute bottom-0 left-0 h-[600px] w-full" />
+      <div className="cktv-scrim-bottom absolute bottom-0 left-0 h-[640px] w-full" />
       <div className="relative flex items-end px-[96px] pb-[64px]">
         <div className="min-w-0 flex-1">
           <NowBlock it={cur} slot={slots[0]} now={now} />
@@ -353,7 +354,7 @@ function Guide({ snap, slots, now, focus }: { snap: ChannelSnapshot; slots: Slot
   };
   return (
     <div data-testid="channel-guide" className="absolute bottom-0 left-0 w-full">
-      <div className="cktv-scrim-bottom absolute bottom-0 left-0 h-[860px] w-full" />
+      <div className="cktv-scrim-bottom absolute bottom-0 left-0 h-[880px] w-full" />
       <div className="relative flex items-end px-[96px] pb-[56px]">
         <div className="cktv-poster mr-10 flex h-[330px] w-[220px] shrink-0 items-center justify-center overflow-hidden rounded-card bg-surface-2">
           {cur.media.poster_path ? (

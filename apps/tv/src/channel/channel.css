@@ -11,8 +11,12 @@
   50% { opacity: 0.25; }
 }
 
-.cktv-scrim-top { background: linear-gradient(180deg, rgba(var(--mt-bg), 0.88) 0%, rgba(var(--mt-bg), 0.5) 55%, rgba(var(--mt-bg), 0) 100%); }
-.cktv-scrim-bottom { background: linear-gradient(0deg, rgba(var(--mt-bg), 0.99) 0%, rgba(var(--mt-bg), 0.97) 58%, rgba(var(--mt-bg), 0.6) 80%, rgba(var(--mt-bg), 0) 100%); }
+/* Scrims in the design's background colour: the text sits on ≥ 0.94 of it
+   whatever the film shows (light designs too). */
+.cktv-scrim-top { background: linear-gradient(180deg, rgba(var(--mt-bg), 0.96) 0%, rgba(var(--mt-bg), 0.9) 55%, rgba(var(--mt-bg), 0) 100%); }
+.cktv-scrim-bottom { background: linear-gradient(0deg, rgb(var(--mt-bg)) 0%, rgba(var(--mt-bg), 0.96) 74%, rgba(var(--mt-bg), 0.7) 86%, rgba(var(--mt-bg), 0) 100%); }
+/* While the pick still loads, the OSD covers the loading screen (its title / stage / % would show through). */
+.cktv-cover { background-color: rgb(var(--mt-bg)); }
 
 .cktv-progress-fill { transition: transform 0.9s linear; }
 .cktv-note { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35); }
