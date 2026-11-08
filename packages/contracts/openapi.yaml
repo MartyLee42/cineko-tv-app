@@ -2328,6 +2328,7 @@ paths:
                       latency_ms: { type: [integer, "null"], description: "Round trip of TorrServer /echo; null when down." }
                   prowlarr:
                     type: object
+                    description: "The torrent search backend (Prowlarr, or Jackett when INDEXER=jackett)."
                     required: [ok]
                     properties:
                       ok: { type: boolean }
@@ -2335,6 +2336,14 @@ paths:
                   server_time: { type: string, format: date-time }
                   seasonal_effects: { type: boolean, description: "Admin switch of the holiday animations (PUT /admin/appearance); false = off for everyone." }
                   cpu_percent: { type: [number, "null"], description: "Server CPU use right now, % of all cores (latest 10 s sample); null until the first sample. The TV player's stats panel shows it." }
+                  features:
+                    type: object
+                    description: "Parts this server has (install.sh options). Clients hide what's off: no «Видео» tab without video, no Cineko Music links without music. Absent on older servers = everything on."
+                    required: [video, music, torrents]
+                    properties:
+                      video: { type: boolean, description: "YouTube «Видео» (VIDEO_ENABLED and an Invidious URL)." }
+                      music: { type: boolean, description: "Cineko Music is installed (MUSIC_ENABLED)." }
+                      torrents: { type: boolean, description: "A torrent search backend is configured (INDEXER prowlarr or jackett)." }
         "401": { $ref: "#/components/responses/Error" }
 
   # ---------------------------------------------------------------- recommendations between people («Посоветовать», Phase 6 early)

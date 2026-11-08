@@ -10908,6 +10908,7 @@ export interface operations {
                             /** @description Round trip of TorrServer /echo; null when down. */
                             latency_ms: number | null;
                         };
+                        /** @description The torrent search backend (Prowlarr, or Jackett when INDEXER=jackett). */
                         prowlarr: {
                             ok: boolean;
                         };
@@ -10919,6 +10920,15 @@ export interface operations {
                         seasonal_effects: boolean;
                         /** @description Server CPU use right now, % of all cores (latest 10 s sample); null until the first sample. The TV player's stats panel shows it. */
                         cpu_percent: number | null;
+                        /** @description Parts this server has (install.sh options). Clients hide what's off: no «Видео» tab without video, no Cineko Music links without music. Absent on older servers = everything on. */
+                        features?: {
+                            /** @description YouTube «Видео» (VIDEO_ENABLED and an Invidious URL). */
+                            video: boolean;
+                            /** @description Cineko Music is installed (MUSIC_ENABLED). */
+                            music: boolean;
+                            /** @description A torrent search backend is configured (INDEXER prowlarr or jackett). */
+                            torrents: boolean;
+                        };
                     };
                 };
             };
