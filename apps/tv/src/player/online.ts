@@ -100,3 +100,6 @@ export function pickerOnlineGroup(list: OnlineList | null | undefined) {
   const kinds = (["online", "anime"] as const).filter((k) => items.some((v) => v.provider.kind === k) || failed.some((p) => p.kind === k));
   return { items, failed, show: items.length > 0 || failed.length > 0, kinds };
 }
+
+/** Shared with the PWA (@martytv/media-types): online → next episode stays online. */
+export { isOnlineRelease, nextOnlineVariant } from "@martytv/media-types";

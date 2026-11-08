@@ -2,7 +2,7 @@
 // <video> element while the player is shown, answers remote commands
 // synchronously and reports PlaybackState. React components subscribe to it.
 import type { Episode, PlaybackLoading, PlaybackSource, PlaybackState, Release, Schemas } from "@martytv/contracts";
-import { isAndroid, skipTarget } from "@martytv/media-types";
+import { hasMediaSource, hlsMode, isAndroid, skipTarget } from "@martytv/media-types";
 import { setMediaContext } from "@martytv/ui";
 import { hasAudio } from "./audio";
 import { tvVolume } from "./volume";
@@ -79,6 +79,7 @@ import {
   cachedReleases,
   cachedSeason,
   createSource,
+  fetchOnline,
   fetchReleases,
   findEpisode,
   cancelSource,
@@ -88,6 +89,7 @@ import {
   patchQuality,
   releaseQuery,
 } from "./data";
+import { isOnlineRelease, nextOnlineVariant } from "./online";
 import { nextEpisode as resolveNext, packCovers, prevEpisode as resolvePrev, type EpisodeRef } from "./episodes";
 import { episodeLabel, releaseRow } from "./format";
 import { loadTracker, newAttempt, stageOf } from "./loading";
@@ -979,6 +981,17 @@ export class PlayerController {
           this.dispatch({ type: "ctx", patch: { episode_id: ep.id, episode_name: ep.name } });
         }
         const cur = this.ctx()!;
+        // Watched online: the next episode stays online (same source and voice) when it's there.
+        if (prevRelease && isOnlineRelease(prevRelease)) {
+          const v = await fetchOnline(releaseQuery(cur))
+            .then((l) => nextOnlineVariant(l.items, prevRelease, hlsMode(engineProbe(), hasMediaSource())))
+            .catch(() => null);
+          if (gen !== this.gen) return;
+          if (v) {
+            const q = this.onlineQuality.get(prevRelease.id);
+            return await this.prepareRelease(gen, v.id, q !== undefined && v.qualities.includes(q) ? q : undefined);
+          }
+        }
         if (prevRelease && packCovers(prevRelease, ref.season, ref.episode)) {
           this.dispatch({ type: "chosen", release: prevRelease });
           return this.prepare(gen, cur, prevRelease, () => void this.searchAndPlay(gen));

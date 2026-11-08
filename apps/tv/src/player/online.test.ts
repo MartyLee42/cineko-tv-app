@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { OnlineList, OnlineVariant } from "./data";
-import { defaultEpisode, defaultVariant, groupBySource, pickerOnlineGroup, pickerRows, playableEpisodes, qualityChoices, rowScroll, watchOnlineItems } from "./online";
+import { defaultEpisode, defaultVariant, groupBySource, isOnlineRelease, nextOnlineVariant, pickerOnlineGroup, pickerRows, playableEpisodes, qualityChoices, rowScroll, watchOnlineItems } from "./online";
 
 const v = (id: string, o: Partial<OnlineVariant> = {}): OnlineVariant => ({
   id,
@@ -97,5 +97,37 @@ describe("pickerOnlineGroup", () => {
     expect(g.failed.map((p) => p.id)).toEqual(["collaps"]);
     expect(pickerOnlineGroup(list([v("a", { provider: anime })])).kinds).toEqual(["anime"]);
     expect(pickerOnlineGroup(undefined).show).toBe(false);
+  });
+});
+
+describe("next episode of an online source", () => {
+  const rel = (id: string, provider: { id: string; name: string; kind: "online" | "anime" | "torrent" } | undefined, studio: string | null) => ({
+    id,
+    provider: provider as never,
+    voiceovers: studio ? [{ kind: null, studio, language: "ru" }] : [],
+  });
+  it("tells online releases from torrents", () => {
+    expect(isOnlineRelease(rel("oabc", collaps, "LostFilm"))).toBe(true);
+    expect(isOnlineRelease(rel("oabc", anime, "AniLiberty"))).toBe(true);
+    expect(isOnlineRelease(rel("3f2a…", { id: "prowlarr", name: "Prowlarr", kind: "torrent" }, null))).toBe(false);
+    // An older server (no provider on online releases): the "o" id says it.
+    expect(isOnlineRelease(rel("o123", undefined, null))).toBe(true);
+    expect(isOnlineRelease(rel("9c1e", undefined, null))).toBe(false);
+    expect(isOnlineRelease(null)).toBe(false);
+  });
+  it("keeps the same source and voice", () => {
+    const items = [v("a", { preferred: true, voice: "Дубляж" }), v("b", { provider: collaps, voice: "LostFilm" }), v("c", { voice: "LostFilm" })];
+    expect(nextOnlineVariant(items, rel("oprev", collaps, "LostFilm"), "native")?.id).toBe("b");
+  });
+  it("then the same voice on another source, then the same source, then the server's pick", () => {
+    const items = [v("a", { preferred: true, voice: "Дубляж" }), v("c", { voice: "LostFilm" }), v("d", { provider: collaps, voice: "Кубик в кубе" })];
+    expect(nextOnlineVariant(items, rel("oprev", { id: "kodik", name: "Kodik", kind: "online" }, "LostFilm"), "native")?.id).toBe("c");
+    expect(nextOnlineVariant(items, rel("oprev", collaps, "HDrezka"), "native")?.id).toBe("d");
+    expect(nextOnlineVariant(items, rel("oprev", { id: "kodik", name: "Kodik", kind: "online" }, "HDrezka"), "native")?.id).toBe("a");
+  });
+  it("prefers MP4 where HLS can't play; none online → null (torrents)", () => {
+    const items = [v("h", { provider: collaps, voice: "LostFilm", format: "hls", preferred: true }), v("m", { provider: collaps, voice: "LostFilm", format: "mp4" })];
+    expect(nextOnlineVariant(items, rel("oprev", collaps, "LostFilm"), "none")?.id).toBe("m");
+    expect(nextOnlineVariant([], rel("oprev", collaps, "LostFilm"), "native")).toBeNull();
   });
 });

@@ -253,3 +253,58 @@ export function markerKey(m: SkipMarkerLike): string {
 export function skipMode(v: unknown): SkipMode {
   return v === "auto" || v === "off" ? v : "button";
 }
+
+// ---------------------------------------------------------------- next episode online
+
+interface NextReleaseLike {
+  id: string;
+  provider?: { id: string; kind?: string | null } | null;
+  voiceovers: readonly { studio?: string | null }[];
+}
+interface NextVariantLike {
+  id: string;
+  provider: { id: string };
+  voice: string;
+  format: string;
+  preferred: boolean;
+}
+
+/** A release played from «Смотреть онлайн» / anime sources (not a torrent). */
+export function isOnlineRelease(r: Pick<NextReleaseLike, "id" | "provider"> | null | undefined): boolean {
+  if (!r) return false;
+  const kind = r.provider?.kind;
+  if (kind) return kind !== "torrent";
+  return r.id.startsWith("o"); // older servers: online ids are "o" + hash; torrents are info hashes
+}
+
+// The server names an online release's voice-over after the variant's voice label.
+const releaseVoice = (r: NextReleaseLike) => (r.voiceovers[0]?.studio ?? "").trim().toLowerCase();
+const variantVoice = (v: NextVariantLike) => v.voice.trim().toLowerCase();
+
+/**
+ * The next episode's variant after an online episode: the same source and
+ * voice, else the same voice elsewhere, else the same source, else the
+ * server's pick — so «онлайн» stays online. null = no online variant (the
+ * caller falls back to torrents). MP4 where HLS can't play natively.
+ */
+export function nextOnlineVariant<V extends NextVariantLike>(items: readonly V[], prev: NextReleaseLike, hls: "native" | "hlsjs" | "none"): V | null {
+  const playable = items.filter((v) => hls !== "none" || v.format === "mp4");
+  const pool = playable.length > 0 ? playable : [...items];
+  if (pool.length === 0) return null;
+  const voice = releaseVoice(prev);
+  const src = prev.provider?.id ?? "";
+  const tiers: ((v: V) => boolean)[] = [
+    (v) => !!src && v.provider.id === src && !!voice && variantVoice(v) === voice,
+    (v) => !!voice && variantVoice(v) === voice,
+    (v) => !!src && v.provider.id === src,
+    () => true,
+  ];
+  for (const t of tiers) {
+    const hit = pool.filter(t);
+    if (hit.length === 0) continue;
+    const top = hit.find((v) => v.preferred) ?? hit[0]!;
+    if (hls === "native" || top.format === "mp4") return top;
+    return hit.find((v) => v.format === "mp4") ?? top;
+  }
+  return null;
+}
