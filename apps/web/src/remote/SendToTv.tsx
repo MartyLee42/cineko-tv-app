@@ -187,7 +187,7 @@ export function Sheet({
         aria-modal
         aria-label={title}
         data-testid={testId}
-        className={`relative max-h-[85dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl border border-border bg-surface px-4 pb-4 pt-2 shadow-2xl shadow-black/60 md:rounded-2xl md:pb-5 md:pt-4 ${
+        className={`relative max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl border border-border bg-surface px-4 pb-4 pt-2 shadow-2xl shadow-black/60 md:rounded-2xl md:pb-5 md:pt-4 ${
           wide ? "md:max-w-2xl md:px-5" : "md:max-w-md"
         }`}
       >

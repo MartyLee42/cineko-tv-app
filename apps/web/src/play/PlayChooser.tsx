@@ -247,7 +247,7 @@ function ChooserPanel({
       style={phone ? undefined : pos ? { position: "fixed", left: pos.left, top: pos.top, maxHeight: pos.max, transform: pos.up ? "translateY(-100%)" : undefined } : { position: "fixed", visibility: "hidden" }}
       className={
         phone
-          ? "relative max-h-[85dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl border border-border bg-surface px-3 pb-3 pt-2 shadow-2xl shadow-black/60"
+          ? "relative max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl border border-border bg-surface px-3 pb-3 pt-2 shadow-2xl shadow-black/60"
           : "z-50 max-h-[70vh] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-border bg-surface p-2 shadow-2xl shadow-black/50"
       }
     >
