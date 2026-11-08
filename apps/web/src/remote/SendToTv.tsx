@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Device } from "@martytv/contracts";
@@ -178,7 +179,9 @@ export function Sheet({
     };
   }, []);
 
-  return (
+  // Portalled: a transformed or z-indexed ancestor would otherwise trap it under
+  // the bottom nav and the now-on-TV bar, and centre it on that ancestor.
+  return createPortal(
     <div className="fixed inset-0 z-40 flex items-center justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] md:p-6">
       <div className="absolute inset-0 touch-none bg-black/60 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
       <div
@@ -207,7 +210,8 @@ export function Sheet({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
