@@ -145,6 +145,9 @@ const FRAME_EVERY = 4;
 const FRAME_GRACE_MS = 10_000;
 /** «Картинка подтормаживает…» hides by itself after this long. */
 const STUTTER_HINT_MS = 20_000;
+/** Online sources: at most this many refetches per episode, this far apart. */
+export const ONLINE_REFETCH_MAX = 3;
+export const ONLINE_REFETCH_GAP_MS = 2 * 60_000;
 
 export type ChangeKind = "flow" | "playback" | "progress";
 type Listener = (kind: ChangeKind) => void;
@@ -323,6 +326,9 @@ export class PlayerController {
   /** «Картинка подтормаживает — включить более лёгкую раздачу?» (`at`: shown / last touched). Once per source. */
   private stutter: { at: number } | null = null;
   private stutterSeen = false;
+  /** Online sources: stream refetches after dropped frames (this episode). */
+  private refetches = 0;
+  private refetchAt: number | null = null;
   private tickTimer: ReturnType<typeof setInterval> | undefined;
   /** «Выбрать раздачу полегче»: the picker ranks releases under this rate first. */
   lighterRate: number | null = null;
@@ -1860,6 +1866,8 @@ export class PlayerController {
     this.lastFrames = null;
     this.stutter = null;
     this.stutterSeen = false;
+    this.refetches = 0;
+    this.refetchAt = null;
   }
 
   /**
@@ -1878,12 +1886,14 @@ export class PlayerController {
     const c = readFrames(v);
     this.lastFrames = c;
     if (!c) return;
-    const judged = (!src.kind || src.kind === "torrent") && !src.live && !this.compat?.video;
+    const online = src.kind === "online" && !src.live && !this.compat?.video;
+    const judged = ((!src.kind || src.kind === "torrent") && !src.live && !this.compat?.video) || online;
     const hidden = typeof document !== "undefined" && document.hidden;
     const steady =
       judged && !hidden && !v.paused && !v.seeking && !v.ended && v.readyState >= 3 && !this.rebuf && this.stallAt === null && v.playbackRate === 1 && now - this.seekedAt > FRAME_GRACE_MS;
     const r = stutterStep(this.frames, { at: now, total: c.total, dropped: c.dropped, steady });
     this.frames = r.state;
+    if (r.stutter && online) return this.refetchOnline(now, r.ratio);
     if (!r.stutter || this.stutterSeen) return;
     this.stutterSeen = true;
     const token = sourceSmoothToken(src);
@@ -1894,6 +1904,25 @@ export class PlayerController {
     }
     this.stutter = { at: now };
     this.emit("playback");
+  }
+
+  /**
+   * Online source dropping frames (green / broken frames on some TVs —
+   * the decoder lost its way): reopen the same stream at the same spot and
+   * quality, which gives the decoder a clean start. No ranking note, no
+   * quality change; at most ONLINE_REFETCH_MAX per episode, ONLINE_REFETCH_GAP_MS apart.
+   */
+  private refetchOnline(now: number, ratio: number | null) {
+    this.frames = STUTTER0;
+    if (this.refetches >= ONLINE_REFETCH_MAX) return;
+    if (this.refetchAt !== null && now - this.refetchAt < ONLINE_REFETCH_GAP_MS) return;
+    if (this.flow.phase !== "playing" || !this.video) return;
+    this.refetches++;
+    this.refetchAt = now;
+    console.info("[martytv] online frames dropping: refetching the stream", { ratio, n: this.refetches });
+    this.seekedAt = now; // the new stream gets the start-up grace before frames are judged again
+    this.resumeAt = this.trustedPosition();
+    this.recoverPrematureEnd(false);
   }
 
   /** «Картинка подтормаживает…» while shown. */

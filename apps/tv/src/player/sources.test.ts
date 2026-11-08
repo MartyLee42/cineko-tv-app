@@ -424,4 +424,69 @@ describe("first load stuck before a frame", () => {
       c.close();
     }
   });
+
+  it("an online stream dropping frames is refetched at the same spot and quality, at most 3 times, 2 min apart", async () => {
+    const data = await import("./data");
+    let n = 0;
+    const fresh = () => online({ stream_url: `/api/v1/stream/r${++n}/index.m3u8` });
+    vi.mocked(data.getSource).mockImplementation(async () => fresh());
+    const { PlayerController, ONLINE_REFETCH_GAP_MS, ONLINE_REFETCH_MAX } = await import("./controller");
+    const transport = { start: async () => ({ id: "sess", resume_position_seconds: null, progress: null, report_token: null }), report: async () => null, beacon: () => undefined };
+    const c = new PlayerController(Date.now, transport as never);
+    const v = new FakeVideo() as FakeVideo & { getVideoPlaybackQuality(): { totalVideoFrames: number; droppedVideoFrames: number } };
+    let total = 0;
+    let dropped = 0;
+    v.getVideoPlaybackQuality = () => ({ totalVideoFrames: total, droppedVideoFrames: dropped });
+    (v as unknown as { playbackRate: number }).playbackRate = 1;
+    c.attach(v as unknown as HTMLVideoElement);
+    const ctx = { media_id: MOVIE, kind: "movie" as const, title: "T", poster_path: null, backdrop_path: null, season: null, episode: null, episode_id: null, episode_name: null, profile_id: "p", lang: "en" as const, player: "builtin" as const, app: null };
+    c.playRelease(ctx, variantRelease(variant) as Release);
+    await vi.waitFor(() => expect(c.flow.phase).toBe("playing"));
+    v.dispatchEvent(new Event("loadedmetadata"));
+    v.paused = false;
+    v.dispatchEvent(new Event("playing"));
+    const tick = () => (c as unknown as { tick(): void }).tick();
+    const now = vi.spyOn(Date, "now");
+    let t = Date.now();
+    let srcs = new Set<string>([v.src]);
+    // Plays on, a third of the frames dropped: ticks every 0.5 s.
+    const play = async (ms: number, dropping = true) => {
+      for (let el = 0; el < ms; el += 500) {
+        t += 500;
+        now.mockReturnValue(t);
+        v.currentTime += 0.5;
+        v.readyState = 4;
+        v.paused = false;
+        total += 12;
+        if (dropping) dropped += 4;
+        tick();
+        await Promise.resolve();
+        srcs.add(v.src);
+      }
+      await new Promise((r) => setTimeout(r, 0));
+      srcs.add(v.src);
+    };
+    try {
+      await play(20_000);
+      expect(srcs.size).toBe(1); // a window of drops is needed first
+      await play(40_000);
+      await vi.waitFor(() => expect(v.src).toMatch(/\/r1\//));
+      expect(c.flow.phase).toBe("playing");
+      expect(c.qualities()?.current ?? null).toBe(1080); // same quality
+      // Still dropping: no second refetch within the gap.
+      await play(ONLINE_REFETCH_GAP_MS - 70_000);
+      expect(v.src).toMatch(/\/r1\//);
+      // After the gap, more; never more than the cap.
+      for (let i = 0; i < 6; i++) await play(ONLINE_REFETCH_GAP_MS);
+      expect(n).toBe(ONLINE_REFETCH_MAX);
+      // A smooth stream is left alone.
+      srcs = new Set([v.src]);
+      await play(60_000, false);
+      expect(srcs.size).toBe(1);
+    } finally {
+      now.mockRestore();
+      vi.mocked(data.getSource).mockImplementation(async () => online());
+      c.close();
+    }
+  });
 });
