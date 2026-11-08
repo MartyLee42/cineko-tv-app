@@ -17,6 +17,7 @@ import {
 } from "@martytv/ui";
 import { registerSW } from "virtual:pwa-register";
 import { initInstall } from "./install/install";
+import { watchForUpdates } from "./swUpdate";
 import { api, queryClient } from "./api";
 import { App } from "./App";
 import { readCachedLook, setLook, syncThemeColorMeta } from "./watch/settings";
@@ -34,7 +35,7 @@ captureInstallPrompt();
 // «Звуки интерфейса»: a click on buttons and links (off unless switched on in Settings).
 installClickSounds();
 
-registerSW({ immediate: true });
+registerSW({ immediate: true, onRegisteredSW: (_url, reg) => watchForUpdates(reg) });
 // Catch `beforeinstallprompt` before React mounts (it fires early, once).
 initInstall();
 
