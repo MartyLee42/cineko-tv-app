@@ -2,6 +2,7 @@ package foryou
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -55,6 +56,9 @@ func (s *Service) AdminRoutes(admin fiber.Router) {
 	admin.Post("/foryou/rerun", s.hRerun)
 	admin.Get("/foryou/runs", s.hRuns)
 	admin.Put("/foryou/ai", s.hPutAI)
+	admin.Get("/foryou/weights", s.hWeights)
+	admin.Delete("/foryou/weights/:id", s.hResetWeights)
+	admin.Get("/foryou/quality", s.hQuality)
 }
 
 // ---- params ----
@@ -201,13 +205,32 @@ func (s *Service) hFeedback(c fiber.Ctx) error {
 // (rows filter dismissed titles at read time and rebuild in the background).
 func (s *Service) Feedback(ctx context.Context, profileID string, events []feedbackEvent) (int, error) {
 	ids, actions, rows := make([]string, len(events)), make([]string, len(events)), make([]string, len(events))
+	// Attribution (learn.go): source shares and position from the cached
+	// row the title was served in; NULL when unknown.
+	srcs, rowPos, itemPos := make([]*string, len(events)), make([]*int, len(events)), make([]*int, len(events))
+	scores := make([]*float64, len(events))
+	var cached []cachedRow
+	for _, e := range events {
+		if e.RowID != "" {
+			if c, err := s.loadCache(ctx, profileID); err == nil && c != nil {
+				cached = c.Rows
+			}
+			break
+		}
+	}
 	for i, e := range events {
 		ids[i], actions[i], rows[i] = e.MediaID, e.Action, e.RowID
+		if a := attribute(cached, e.RowID, e.MediaID); a != nil {
+			b, _ := json.Marshal(a.shares)
+			str := string(b)
+			srcs[i], rowPos[i], itemPos[i], scores[i] = &str, a.rowPos, a.itemPos, a.score
+		}
 	}
 	tag, err := s.pool.Exec(ctx, `
-		INSERT INTO foryou_feedback (profile_id, media_id, action, row_id)
-		SELECT $1, t.m::uuid, t.a, t.r FROM unnest($2::text[], $3::text[], $4::text[]) AS t(m, a, r)
-		WHERE EXISTS (SELECT 1 FROM media WHERE id = t.m::uuid)`, profileID, ids, actions, rows)
+		INSERT INTO foryou_feedback (profile_id, media_id, action, row_id, sources, row_pos, item_pos, score)
+		SELECT $1, t.m::uuid, t.a, t.r, t.s::jsonb, t.rp, t.ip, t.sc
+		FROM unnest($2::text[], $3::text[], $4::text[], $5::text[], $6::int[], $7::int[], $8::float8[]) AS t(m, a, r, s, rp, ip, sc)
+		WHERE EXISTS (SELECT 1 FROM media WHERE id = t.m::uuid)`, profileID, ids, actions, rows, srcs, rowPos, itemPos, scores)
 	if err != nil {
 		return 0, err
 	}
@@ -487,7 +510,8 @@ func (s *Service) hRuns(c fiber.Ctx) error {
 		"ai": fiber.Map{"enabled": s.ai != nil, "model": s.cfg.DeepSeekModel, "tokens_today": used,
 			"daily_budget": s.cfg.AIDailyTokens, "run_budget": s.cfg.AIRunTokens, "balance": s.aiBalance(c.Context()),
 			"temperature": s.aiTemperature(c.Context()), "facts_ai": s.factsAI(c.Context()),
-			"themes_ai": s.themesAI(c.Context()), "picks_ai": s.picksAI(c.Context()), "companion_ai": s.companionAI(c.Context())},
+			"themes_ai": s.themesAI(c.Context()), "picks_ai": s.picksAI(c.Context()), "companion_ai": s.companionAI(c.Context()),
+			"learn_weights": s.learnEnabled(c.Context())},
 		"daily_at":    s.cfg.DailyAt(),
 		"next_run_at": next,
 	})
@@ -518,12 +542,14 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 		ThemesAI    *bool      `json:"themes_ai"`
 		PicksAI     *bool      `json:"picks_ai"`
 		CompanionAI *bool      `json:"companion_ai"`
+		// LearnWeights: «Учить веса по просмотрам» (learn.go; not an AI call).
+		LearnWeights *bool `json:"learn_weights"`
 	}
 	if err := httpx.BindJSON(c, &in); err != nil {
 		return err
 	}
-	if in.Temperature == nil && in.FactsAI == nil && in.ThemesAI == nil && in.PicksAI == nil && in.CompanionAI == nil {
-		return httpx.Validation(map[string]string{"temperature": "temperature, facts_ai, themes_ai, picks_ai or companion_ai is required"})
+	if in.Temperature == nil && in.FactsAI == nil && in.ThemesAI == nil && in.PicksAI == nil && in.CompanionAI == nil && in.LearnWeights == nil {
+		return httpx.Validation(map[string]string{"temperature": "temperature, facts_ai, themes_ai, picks_ai, companion_ai or learn_weights is required"})
 	}
 	if in.Temperature == nil {
 		in.Temperature = &tempInput{}
@@ -557,7 +583,7 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 			return err
 		}
 	}
-	for name, v := range map[string]*bool{AIFeatureThemes: in.ThemesAI, AIFeaturePicks: in.PicksAI, AIFeatureCompanion: in.CompanionAI} {
+	for name, v := range map[string]*bool{AIFeatureThemes: in.ThemesAI, AIFeaturePicks: in.PicksAI, AIFeatureCompanion: in.CompanionAI, AIFeatureLearn: in.LearnWeights} {
 		if v == nil {
 			continue
 		}
@@ -569,9 +595,42 @@ func (s *Service) hPutAI(c fiber.Ctx) error {
 		s.audit.Record(c.Context(), audit.Event{UserID: p.UserID, Action: "foryou.ai_updated", TargetType: "app_settings", TargetID: "ai_temperature",
 			IP: c.IP(), RequestID: httpx.RequestID(c), Metadata: map[string]any{"collections": t.Collections, "ask": t.Ask, "music": t.Music, "facts": t.Facts,
 				"companion": t.Companion, "facts_ai": s.factsAI(c.Context()), "themes_ai": s.themesAI(c.Context()), "picks_ai": s.picksAI(c.Context()),
-				"companion_ai": s.companionAI(c.Context())}})
+				"companion_ai": s.companionAI(c.Context()), "learn_weights": s.learnEnabled(c.Context())}})
 	}
 	return c.JSON(s.aiSettingsView(c.Context()))
+}
+
+// hWeights is GET /admin/foryou/weights: every profile's learned source
+// weights with the counts behind them.
+func (s *Service) hWeights(c fiber.Ctx) error {
+	items, err := s.learnedWeights(c.Context())
+	if err != nil {
+		return err
+	}
+	return c.JSON(fiber.Map{"enabled": s.learnEnabled(c.Context()), "sources": LearnSources, "items": items})
+}
+
+// hResetWeights is DELETE /admin/foryou/weights/:id: the profile starts
+// again from the default weights (rows rebuild in the background).
+func (s *Service) hResetWeights(c fiber.Ctx) error {
+	pid := c.Params("id")
+	if !isUUID(pid) {
+		return httpx.NotFound()
+	}
+	ok, err := s.resetWeights(c.Context(), pid)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return httpx.NotFound()
+	}
+	s.rebuildAsync(pid, s.profileLang(c.Context(), pid), "weights")
+	if s.audit != nil {
+		p := auth.PrincipalFrom(c)
+		s.audit.Record(c.Context(), audit.Event{UserID: p.UserID, Action: "foryou.weights_reset", TargetType: "profile", TargetID: pid,
+			IP: c.IP(), RequestID: httpx.RequestID(c)})
+	}
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
 // tempInput is the temperature part of PUT /admin/foryou/ai.

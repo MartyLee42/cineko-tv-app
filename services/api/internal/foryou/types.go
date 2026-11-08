@@ -93,6 +93,8 @@ type cachedItem struct {
 	Reason  Reason  `json:"r"`
 	// Watchlist marks pool-only entries (the profile's own watchlist).
 	Watchlist bool `json:"w,omitempty"`
+	// Src: the item's credit per learn key (row items only; learn.go).
+	Src map[string]float64 `json:"x,omitempty"`
 }
 
 type cachedRow struct {

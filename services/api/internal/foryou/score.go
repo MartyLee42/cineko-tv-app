@@ -15,6 +15,8 @@ type Source struct {
 	GenreIDs     []int
 	CollectionID string
 	KeywordID    int // theme
+	// Rubric: the collection is an AI theme rubric (learn key ai_theme).
+	Rubric bool
 	// Strength 0..1: how strongly this source vouches for the candidate
 	// (seed/person affinity × rank in the TMDB list).
 	Strength float64
@@ -71,11 +73,12 @@ func genreMatch(c *Candidate, t *Taste) float64 {
 }
 
 // sourceStrength combines sources as a noisy-or (several independent
-// reasons reinforce each other, never beyond 1).
-func sourceStrength(c *Candidate) float64 {
+// reasons reinforce each other, never beyond 1). Each strength is scaled by
+// the profile's learned multiplier for its source (learn.go).
+func sourceStrength(c *Candidate, w Weights) float64 {
 	miss := 1.0
-	for _, s := range c.Sources {
-		miss *= 1 - math.Max(0, math.Min(1, s.Strength))
+	for i := range c.Sources {
+		miss *= 1 - math.Max(0, math.Min(1, c.Sources[i].Strength*w.mult(learnKey(&c.Sources[i]))))
 	}
 	return 1 - miss
 }
@@ -90,7 +93,7 @@ var typePriority = map[string]float64{
 func Score(c *Candidate, t *Taste, w Weights) Scored {
 	q := quality(c, w)
 	g := genreMatch(c, t)
-	src := sourceStrength(c)
+	src := sourceStrength(c, w)
 	pop := math.Min(1, math.Log1p(c.Popularity)/math.Log1p(1000))
 	s := w.Quality*q + w.Genre*g + w.Decade*t.decadeScore(c.Year) + w.Language*t.langScore(c.Lang) +
 		w.Country*t.countryScore(c.Countries) + w.Source*src + w.Popularity*pop +
@@ -286,7 +289,9 @@ type rowSpec struct {
 	itemReason *Reason // nil = each item keeps its own main reason
 	key        func(*Scored) (float64, bool)
 	slot       int // display position
-	items      []cachedItem
+	// learn: the row's learn key (its slot follows the learned multiplier).
+	learn string
+	items []cachedItem
 }
 
 // BuildRows turns scored candidates into ordered rows. Every title appears
@@ -366,7 +371,7 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 			if spec.itemReason != nil {
 				r = *spec.itemReason
 			}
-			out = append(out, cachedItem{MediaID: s.MediaID, Score: s.Score, Reason: r})
+			out = append(out, cachedItem{MediaID: s.MediaID, Score: s.Score, Reason: r, Src: itemShares(s.Candidate, spec.learn, w)})
 		}
 		return out
 	}
@@ -397,7 +402,7 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 	}
 
 	if cold {
-		popular := &rowSpec{id: "popular", kind: RowPopular, reason: Reason{Type: ReasonPopular}, itemReason: &Reason{Type: ReasonPopular},
+		popular := &rowSpec{id: "popular", kind: RowPopular, learn: LearnTrending, reason: Reason{Type: ReasonPopular}, itemReason: &Reason{Type: ReasonPopular},
 			key: func(s *Scored) (float64, bool) {
 				src := s.source(ReasonPopular, func(x *Source) bool { return x.MediaID == "trending" })
 				if src == nil {
@@ -445,7 +450,7 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 			}
 			for _, seed := range t.Seeds {
 				r := Reason{Type: ReasonBecause, MediaID: seed.MediaID}
-				if try(&rowSpec{id: "byr:" + seed.MediaID, kind: RowBecause, reason: r, itemReason: &r, slot: slot,
+				if try(&rowSpec{id: "byr:" + seed.MediaID, kind: RowBecause, learn: LearnBecause, reason: r, itemReason: &r, slot: slot,
 					key: func(s *Scored) (float64, bool) {
 						src := s.source(ReasonBecause, func(x *Source) bool { return x.MediaID == seed.MediaID })
 						if src == nil {
@@ -469,7 +474,7 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 				}
 				pid, _ := strconv.Atoi(a.Key)
 				r := Reason{Type: kind, PersonID: pid}
-				if try(&rowSpec{id: kind + ":" + a.Key, kind: kind, reason: r, itemReason: &r, slot: slot,
+				if try(&rowSpec{id: kind + ":" + a.Key, kind: kind, learn: kind, reason: r, itemReason: &r, slot: slot,
 					key: func(s *Scored) (float64, bool) {
 						src := s.source(kind, func(x *Source) bool { return x.PersonID == pid })
 						if src == nil {
@@ -484,7 +489,7 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 	}
 	simple := func(id, kind, srcType string, rowReason Reason, slot int, key func(*Scored, *Source) (float64, bool)) func() {
 		return func() {
-			try(&rowSpec{id: id, kind: kind, reason: rowReason, slot: slot, key: func(s *Scored) (float64, bool) {
+			try(&rowSpec{id: id, kind: kind, learn: learnKey(&Source{Type: srcType}), reason: rowReason, slot: slot, key: func(s *Scored) (float64, bool) {
 				src := s.source(srcType, nil)
 				if src == nil {
 					return 0, false
@@ -501,7 +506,7 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 			aiCols = append(aiCols, c)
 		}
 	}
-	collectionOf := func(cols []CollectionRef) func(i, slot int) func() {
+	collectionOf := func(cols []CollectionRef, learn string) func(i, slot int) func() {
 		return func(i, slot int) func() {
 			return func() {
 				if i >= len(cols) {
@@ -509,7 +514,7 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 				}
 				cid := cols[i].ID
 				r := Reason{Type: ReasonAI, CollectionID: cid}
-				try(&rowSpec{id: "ai:" + cid, kind: RowAI, reason: r, itemReason: &r, slot: slot, key: func(s *Scored) (float64, bool) {
+				try(&rowSpec{id: "ai:" + cid, kind: RowAI, learn: learn, reason: r, itemReason: &r, slot: slot, key: func(s *Scored) (float64, bool) {
 					src := s.source(ReasonAI, func(x *Source) bool { return x.CollectionID == cid })
 					if src == nil {
 						return 0, false
@@ -519,7 +524,7 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 			}
 		}
 	}
-	collection, themeCollection := collectionOf(aiCols), collectionOf(themeCols)
+	collection, themeCollection := collectionOf(aiCols, LearnAICollection), collectionOf(themeCols, LearnAITheme)
 	// theme: a row per liked keyword whose discover source found enough.
 	theme := func(slot int) func() {
 		return func() {
@@ -532,7 +537,7 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 				}
 				kid, _ := strconv.Atoi(a.Key)
 				r := Reason{Type: ReasonTheme, KeywordID: kid}
-				if try(&rowSpec{id: "theme:" + a.Key, kind: RowTheme, reason: r, itemReason: &r, slot: slot,
+				if try(&rowSpec{id: "theme:" + a.Key, kind: RowTheme, learn: LearnTheme, reason: r, itemReason: &r, slot: slot,
 					key: func(s *Scored) (float64, bool) {
 						src := s.source(ReasonTheme, func(x *Source) bool { return x.KeywordID == kid })
 						if src == nil {
@@ -573,7 +578,10 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 		key: func(s *Scored) (float64, bool) { return s.Score, s.source(ReasonRewatch, nil) == nil }}
 	// Phase 0: the AI re-ranking's picks are «Подобрано для вас» — reserved
 	// before any specific row can take them (model order, still eligible).
+	// A learned ai_picks multiplier below 1 reserves fewer of them (the
+	// scorer's best fill the rest).
 	var aiTop []cachedItem
+	maxAI := int(math.Round(float64(w.TopPicks) * math.Min(1, w.mult(LearnAIPicks))))
 	if len(aiPicks) > 0 {
 		byID := make(map[string]*Scored, len(sorted))
 		for _, s := range sorted {
@@ -581,14 +589,14 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 		}
 		for _, id := range aiPicks {
 			s := byID[id]
-			if len(aiTop) >= w.TopPicks || s == nil || used[id] || s.Watchlist {
+			if len(aiTop) >= maxAI || s == nil || used[id] || s.Watchlist {
 				continue
 			}
 			if _, ok := top.key(s); !ok {
 				continue
 			}
 			used[id] = true
-			aiTop = append(aiTop, cachedItem{MediaID: id, Score: s.Score, Reason: s.Reason})
+			aiTop = append(aiTop, cachedItem{MediaID: id, Score: s.Score, Reason: s.Reason, Src: itemShares(s.Candidate, LearnAIPicks, w)})
 		}
 	}
 	for _, step := range plan {
@@ -610,7 +618,18 @@ func BuildRowsAI(all []Scored, t *Taste, w Weights, cols []CollectionRef, cold b
 	for _, sp := range specs {
 		sp.items = append(sp.items, pick(w.RowSize-len(sp.items), sp)...)
 	}
-	slices.SortStableFunc(specs, func(a, b *rowSpec) int { return a.slot - b.slot })
+	// Display order: slot ÷ the row's learned multiplier (a source that
+	// leads to plays moves up, one that doesn't moves down; none disappears).
+	slices.SortStableFunc(specs, func(a, b *rowSpec) int {
+		ea, eb := float64(a.slot)/w.mult(a.learn), float64(b.slot)/w.mult(b.learn)
+		switch {
+		case ea < eb:
+			return -1
+		case ea > eb:
+			return 1
+		}
+		return a.slot - b.slot
+	})
 	return finish(append([]*rowSpec{top}, specs...)), cands
 }
 

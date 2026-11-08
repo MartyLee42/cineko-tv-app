@@ -2030,6 +2030,63 @@ is MMR-diversified (λ = 0.75; similarity = 0.6·genre Jaccard + 0.2 same
 decade + 0.2 same seed + 0.25 same reason). Titles are unique across rows.
 Cold start (< 3 positive signals): «Популярное сейчас» + top rated.
 
+### Learned source weights («Учить веса по просмотрам»)
+
+`internal/foryou/learn.go`; admin switch `learn_weights` (app_settings
+`ai_feature_learn_weights`, default on). The nightly run learns, per
+profile, which candidate sources actually lead to watching and stores a
+multiplier per *learn key* in `foryou_source_weights`: trending (incl. the
+cold-start popular lists), because_you_rated, director, actor, theme
+(keywords), genre, hidden_gem, something_different, ai_collection, ai_theme
+(AI rubrics), ai_picks (the AI re-ranking of «Подобрано»), rewatch, family,
+curated.
+
+- **Attribution at log time.** Every cached row item carries its credit
+  shares (`x`): its candidate sources' strengths normalised, with the row's
+  own source at least 0.5. `POST /foryou/feedback` looks the (row, title) up
+  in `recs_cache` and stores `sources`, `row_pos`, `item_pos` and the
+  predicted `score` on the event; family / curated rows and collection pages
+  are credited to their source as a whole. Ask / Surprise events are not
+  attributed.
+- **Outcome per impression** (deduplicated per title, row and day): an open
+  (or play event) from the same row within 3 days = 0.2; a playback of
+  ≥ 10 min started within 7 days of that open = 1; a completion within 30
+  days = 1.5; «Не интересно» within 3 days without a play = −0.5. The log
+  has no dwell time; web logs a row at 40 % visibility, the TV its first 8
+  tiles; tiles past index 11 are ignored.
+- **Position bias**: rewards are compared with expected exposure (clicks
+  over expected clicks): an impression counts `1/(1+0.2·row)·1/(1+0.15·tile)`
+  (unknown position 0.5), so a source isn't rewarded for being shown first.
+  Everything decays with a 21-day half-life over a 60-day window.
+- **Smoothing**: rate = (Σreward + 40·prior) / (Σexposure + 40), with the
+  prior chain profile → household per source → household overall → 0.05.
+  Target = rate(source) ÷ the profile's overall rate (ε = 0.01), clamped
+  0.5–2×; under 30 effective impressions the target is 1.
+- **Step limit and exploration**: the weight moves ≤ ±15 % a night and at
+  most once per 20 h (admin reruns don't add steps). Rows are never
+  dropped: a down-weighted source keeps its row (lower down), keeps getting
+  impressions and drifts back toward 1 when it gets too few — it is
+  re-measured.
+- **Use**: `computeProfile` reads the stored multipliers (never recomputed
+  per request; deterministic): each source's strength in the noisy-or is
+  multiplied by its weight, specific rows are ordered by `slot ÷ weight`,
+  the family / curated rows sit at `round(index ÷ weight)` (≥ 1), and
+  ai_picks below 1 reserves proportionally fewer AI picks in «Подобрано».
+  Reasons («потому что…») don't change. Idle profiles are skipped with the
+  rest of the daily run; every update is logged (`foryou: learned source
+  weights`, before→after) and the admin table shows weight, previous weight
+  and the counts. `DELETE /admin/foryou/weights/{id}` resets a profile.
+
+**Quality metrics** (`quality.go`, `GET /admin/foryou/quality?window=30|90|all`,
+cached 5 min): per profile and household, from each title's first
+impression in the window — the shown → played (≥ 10 min) → finished →
+rated → liked (≥ 7) funnel; the ratings of recommended titles vs the
+profile's other ratings in the window (titles not shown before rating —
+imports count too); calibration (tertiles of the predicted score → plays and
+mean rating); per-source plays / mean rating / liked (share-weighted);
+precision@10 of «Подобрано для вас»; best hits and misses. The UI shows
+means only from n ≥ 5 («мало данных»).
+
 ### Serving
 
 `GET /foryou/rows` reads `recs_cache`; missing/expired → computed

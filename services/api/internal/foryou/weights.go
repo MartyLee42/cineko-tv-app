@@ -118,6 +118,32 @@ type Weights struct {
 	// Score penalty × strength for a matching genre / a runtime over ReasonLongRuntime.
 	ReasonGenrePenalty, ReasonRuntimePenalty float64
 	ReasonLongRuntime                        int
+
+	// ---- learned source weights (learn.go) ----
+
+	// SourceMult: the profile's stored multiplier per learn key (nil = 1).
+	// It scales each source's strength in Score and a row's display slot.
+	SourceMult map[string]float64
+	// Window and decay of the impressions the learner reads.
+	LearnWindowDays int
+	LearnHalfLife   time.Duration
+	// LearnPrior: pseudo-impressions (position-expected) of the shrinkage
+	// toward the household; LearnMinImpressions: below this many effective
+	// impressions a source targets 1.
+	LearnPrior, LearnMinImpressions float64
+	// Bounds of a multiplier and the largest relative change per night.
+	LearnMin, LearnMax, LearnStep float64
+	// LearnEps keeps the rate ratio finite; LearnBaseRate is the prior when
+	// the household has no data at all.
+	LearnEps, LearnBaseRate float64
+	// Rewards per impression (the best outcome counts).
+	RewardOpen, RewardPlay, RewardComplete, RewardDismiss float64
+	// A playback counts from this position (seconds).
+	LearnPlaySeconds float64
+	// The row's own source gets at least this share of an item's credit.
+	LearnRowShare float64
+	// Impressions further right than this tile (0-based) are ignored.
+	LearnMaxItemPos int
 }
 
 // DefaultWeights are the production weights.
@@ -147,6 +173,11 @@ func DefaultWeights() Weights {
 		MinSignals: 3, PoolSize: 400,
 
 		ReasonMinTitles: 2, ReasonFullTitles: 4, ReasonGenrePenalty: 0.4, ReasonRuntimePenalty: 0.3, ReasonLongRuntime: 130,
+
+		LearnWindowDays: 60, LearnHalfLife: 21 * 24 * time.Hour, LearnPrior: 40, LearnMinImpressions: 30,
+		LearnMin: 0.5, LearnMax: 2, LearnStep: 0.15, LearnEps: 0.01, LearnBaseRate: 0.05,
+		RewardOpen: 0.2, RewardPlay: 1, RewardComplete: 1.5, RewardDismiss: -0.5,
+		LearnPlaySeconds: 600, LearnRowShare: 0.5, LearnMaxItemPos: 11,
 	}
 }
 

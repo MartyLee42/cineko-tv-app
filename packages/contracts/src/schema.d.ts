@@ -2865,6 +2865,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/foryou/weights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Learned source weights per profile («Учить веса по просмотрам», docs/architecture.md "Learned source weights") with the share-weighted counts of the 60-day window behind them. Admin only. */
+        get: operations["adminForYouWeights"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/foryou/weights/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Forgets a profile's learned weights (back to the defaults; its rows rebuild in the background). Admin only. */
+        delete: operations["adminResetForYouWeights"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/foryou/quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Recommendation quality per profile and for the household, from the
+         *     profiles' own plays and ratings (read-only, cached 5 minutes): the
+         *     shown → played (≥ 10 min) → finished → rated → liked (≥ 7) funnel,
+         *     ratings of recommended titles vs the profile's other ratings,
+         *     calibration by predicted score, per-source quality, precision@10 of
+         *     «Подобрано для вас», best hits and misses. Admin only.
+         */
+        get: operations["adminForYouQuality"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/downloads": {
         parameters: {
             query?: never;
@@ -6163,6 +6221,101 @@ export interface components {
             finished_at: string | null;
             duration_ms: number | null;
         };
+        ForYouSourceWeight: {
+            /** @description Learn key: trending, because_you_rated, director, actor, theme, genre, hidden_gem, something_different, ai_collection, ai_theme, ai_picks, rewatch, family, curated. */
+            source: string;
+            /** @description Multiplier in use (0.5–2). */
+            weight: number;
+            /** @description Before the last nightly step. */
+            prev_weight: number;
+            /** @description Where the estimate points (the weight moves at most ±15 % a night). */
+            target: number;
+            impressions: number;
+            opens: number;
+            /** @description Plays of ≥ 10 min (or completions) after an open from the row. */
+            plays: number;
+            completes: number;
+            dismisses: number;
+        };
+        ForYouProfileWeights: {
+            /** Format: uuid */
+            profile_id: string;
+            name: string;
+            owner: string;
+            /** Format: date-time */
+            updated_at: string;
+            items: components["schemas"]["ForYouSourceWeight"][];
+        };
+        ForYouWeights: {
+            /** @description The admin switch learn_weights. */
+            enabled: boolean;
+            /** @description Every learn key, in display order. */
+            sources: string[];
+            items: components["schemas"]["ForYouProfileWeights"][];
+        };
+        ForYouRatingSummary: {
+            n: number;
+            avg: number | null;
+            /** @description Share rated ≥ 7. */
+            liked: number | null;
+            /** @description Share rated ≤ 4. */
+            disliked: number | null;
+        };
+        ForYouQualityStats: {
+            funnel: {
+                shown: number;
+                played: number;
+                finished: number;
+                rated: number;
+                liked: number;
+                disliked: number;
+            };
+            recommended: components["schemas"]["ForYouRatingSummary"];
+            elsewhere: components["schemas"]["ForYouRatingSummary"];
+            /** @description Tertiles of the shown titles by predicted score, low → high (empty under 3 scored titles). */
+            calibration: (components["schemas"]["ForYouRatingSummary"] & {
+                score_min: number;
+                score_max: number;
+                shown: number;
+                played: number;
+            })[];
+            sources: {
+                source: string;
+                shown: number;
+                plays: number;
+                rated: number;
+                avg: number | null;
+                liked: number | null;
+            }[];
+            /** @description Titles shown in the first 10 tiles of «Подобрано для вас». */
+            precision_shown: number;
+            /** @description Of those, rated ≥ 7. */
+            precision_liked: number;
+            hits: components["schemas"]["ForYouQualityTitle"][];
+            misses: components["schemas"]["ForYouQualityTitle"][];
+        };
+        ForYouQualityTitle: {
+            /** Format: uuid */
+            media_id: string;
+            title: string;
+            year: number | null;
+            poster_path: string | null;
+            rating: number;
+        };
+        ForYouQuality: {
+            /** @enum {string} */
+            window: "30" | "90" | "all";
+            /** Format: date-time */
+            generated_at: string;
+            household: components["schemas"]["ForYouQualityStats"];
+            profiles: {
+                /** Format: uuid */
+                profile_id: string;
+                name: string;
+                owner: string;
+                stats: components["schemas"]["ForYouQualityStats"];
+            }[];
+        };
         ForYouAIStatus: {
             /** @description False without DEEPSEEK_API_KEY. */
             enabled: boolean;
@@ -6175,6 +6328,8 @@ export interface components {
             picks_ai?: boolean;
             /** @description «Ранее в сериале» / «После титров» allowed (admin switch, default true). */
             companion_ai: boolean;
+            /** @description The nightly run learns per-profile source weights from plays (admin switch, default true). */
+            learn_weights?: boolean;
             model: string;
             /** @description Tokens used today (Moscow date). */
             tokens_today: number;
@@ -11703,6 +11858,8 @@ export interface operations {
                     picks_ai?: boolean;
                     /** @description False: no «Ранее в сериале» / «После титров» (buttons hidden). */
                     companion_ai?: boolean;
+                    /** @description False: the nightly run stops learning source weights and scoring ignores the stored ones (`ai_feature_learn_weights`; not an AI call). */
+                    learn_weights?: boolean;
                 };
             };
         };
@@ -11714,6 +11871,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ForYouAISettings"];
+                };
+            };
+            403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    adminForYouWeights: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every profile with stored weights. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForYouWeights"];
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    adminResetForYouWeights: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reset. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
+        };
+    };
+    adminForYouQuality: {
+        parameters: {
+            query?: {
+                window?: "30" | "90" | "all";
+                lang?: "en" | "ru";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The report. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForYouQuality"];
                 };
             };
             403: components["responses"]["Error"];

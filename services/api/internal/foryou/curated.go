@@ -157,7 +157,7 @@ func (s *Service) curatedPick(ctx context.Context, profileID string, progress []
 
 // withCurated inserts the day's «Подборка» row (show_curated, default on).
 // Errors only drop the row.
-func (s *Service) withCurated(ctx context.Context, profileID, lang string, rows []Row) []Row {
+func (s *Service) withCurated(ctx context.Context, profileID, lang string, rows []Row, pos int) []Row {
 	if s.curated == nil {
 		return rows
 	}
@@ -182,7 +182,7 @@ func (s *Service) withCurated(ctx context.Context, profileID, lang string, rows 
 	if row == nil {
 		return rows
 	}
-	at := min(curatedRowAt, len(rows))
+	at := min(pos, len(rows))
 	return append(rows[:at:at], append([]Row{*row}, rows[at:]...)...)
 }
 

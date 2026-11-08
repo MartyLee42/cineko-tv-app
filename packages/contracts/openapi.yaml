@@ -3162,12 +3162,58 @@ paths:
                 themes_ai: { type: boolean, description: "False: the daily run doesn't ask the model to group the scorer's candidates into theme rubrics." }
                 picks_ai: { type: boolean, description: "False: no AI re-ranking of «Подобрано для вас» (stored picks still apply until they expire, 48 h)." }
                 companion_ai: { type: boolean, description: "False: no «Ранее в сериале» / «После титров» (buttons hidden)." }
+                learn_weights: { type: boolean, description: "False: the nightly run stops learning source weights and scoring ignores the stored ones (`ai_feature_learn_weights`; not an AI call)." }
       responses:
         "200":
           description: The new settings.
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ForYouAISettings" }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+  /admin/foryou/weights:
+    get:
+      tags: [foryou]
+      operationId: adminForYouWeights
+      description: Learned source weights per profile («Учить веса по просмотрам», docs/architecture.md "Learned source weights") with the share-weighted counts of the 60-day window behind them. Admin only.
+      responses:
+        "200":
+          description: Every profile with stored weights.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ForYouWeights" }
+        "403": { $ref: "#/components/responses/Error" }
+  /admin/foryou/weights/{id}:
+    delete:
+      tags: [foryou]
+      operationId: adminResetForYouWeights
+      description: Forgets a profile's learned weights (back to the defaults; its rows rebuild in the background). Admin only.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Reset. }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+  /admin/foryou/quality:
+    get:
+      tags: [foryou]
+      operationId: adminForYouQuality
+      description: |
+        Recommendation quality per profile and for the household, from the
+        profiles' own plays and ratings (read-only, cached 5 minutes): the
+        shown → played (≥ 10 min) → finished → rated → liked (≥ 7) funnel,
+        ratings of recommended titles vs the profile's other ratings,
+        calibration by predicted score, per-source quality, precision@10 of
+        «Подобрано для вас», best hits and misses. Admin only.
+      parameters:
+        - { name: window, in: query, schema: { type: string, enum: ["30", "90", "all"], default: "90" } }
+        - { name: lang, in: query, schema: { type: string, enum: [en, ru], default: en } }
+      responses:
+        "200":
+          description: The report.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ForYouQuality" }
         "403": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
   # ---- end foryou
@@ -6173,6 +6219,114 @@ components:
         started_at: { type: string, format: date-time }
         finished_at: { type: [string, "null"], format: date-time }
         duration_ms: { type: [integer, "null"] }
+    ForYouSourceWeight:
+      type: object
+      required: [source, weight, prev_weight, target, impressions, opens, plays, completes, dismisses]
+      properties:
+        source: { type: string, description: "Learn key: trending, because_you_rated, director, actor, theme, genre, hidden_gem, something_different, ai_collection, ai_theme, ai_picks, rewatch, family, curated." }
+        weight: { type: number, description: "Multiplier in use (0.5–2)." }
+        prev_weight: { type: number, description: "Before the last nightly step." }
+        target: { type: number, description: "Where the estimate points (the weight moves at most ±15 % a night)." }
+        impressions: { type: number }
+        opens: { type: number }
+        plays: { type: number, description: "Plays of ≥ 10 min (or completions) after an open from the row." }
+        completes: { type: number }
+        dismisses: { type: number }
+    ForYouProfileWeights:
+      type: object
+      required: [profile_id, name, owner, updated_at, items]
+      properties:
+        profile_id: { type: string, format: uuid }
+        name: { type: string }
+        owner: { type: string }
+        updated_at: { type: string, format: date-time }
+        items: { type: array, items: { $ref: "#/components/schemas/ForYouSourceWeight" } }
+    ForYouWeights:
+      type: object
+      required: [enabled, sources, items]
+      properties:
+        enabled: { type: boolean, description: "The admin switch learn_weights." }
+        sources: { type: array, items: { type: string }, description: "Every learn key, in display order." }
+        items: { type: array, items: { $ref: "#/components/schemas/ForYouProfileWeights" } }
+    ForYouRatingSummary:
+      type: object
+      required: [n, avg, liked, disliked]
+      properties:
+        n: { type: integer }
+        avg: { type: [number, "null"] }
+        liked: { type: [number, "null"], description: "Share rated ≥ 7." }
+        disliked: { type: [number, "null"], description: "Share rated ≤ 4." }
+    ForYouQualityStats:
+      type: object
+      required: [funnel, recommended, elsewhere, calibration, sources, precision_shown, precision_liked, hits, misses]
+      properties:
+        funnel:
+          type: object
+          required: [shown, played, finished, rated, liked, disliked]
+          properties:
+            shown: { type: integer }
+            played: { type: integer }
+            finished: { type: integer }
+            rated: { type: integer }
+            liked: { type: integer }
+            disliked: { type: integer }
+        recommended: { $ref: "#/components/schemas/ForYouRatingSummary" }
+        elsewhere: { $ref: "#/components/schemas/ForYouRatingSummary" }
+        calibration:
+          type: array
+          description: Tertiles of the shown titles by predicted score, low → high (empty under 3 scored titles).
+          items:
+            allOf:
+              - { $ref: "#/components/schemas/ForYouRatingSummary" }
+              - type: object
+                required: [score_min, score_max, shown, played]
+                properties:
+                  score_min: { type: number }
+                  score_max: { type: number }
+                  shown: { type: integer }
+                  played: { type: integer }
+        sources:
+          type: array
+          items:
+            type: object
+            required: [source, shown, plays, rated, avg, liked]
+            properties:
+              source: { type: string }
+              shown: { type: number }
+              plays: { type: number }
+              rated: { type: number }
+              avg: { type: [number, "null"] }
+              liked: { type: [number, "null"] }
+        precision_shown: { type: integer, description: "Titles shown in the first 10 tiles of «Подобрано для вас»." }
+        precision_liked: { type: integer, description: "Of those, rated ≥ 7." }
+        hits: { type: array, items: { $ref: "#/components/schemas/ForYouQualityTitle" } }
+        misses: { type: array, items: { $ref: "#/components/schemas/ForYouQualityTitle" } }
+    ForYouQualityTitle:
+      type: object
+      required: [media_id, title, year, poster_path, rating]
+      properties:
+        media_id: { type: string, format: uuid }
+        title: { type: string }
+        year: { type: [integer, "null"] }
+        poster_path: { type: [string, "null"] }
+        rating: { type: integer }
+    ForYouQuality:
+      type: object
+      required: [window, generated_at, household, profiles]
+      properties:
+        window: { type: string, enum: ["30", "90", "all"] }
+        generated_at: { type: string, format: date-time }
+        household: { $ref: "#/components/schemas/ForYouQualityStats" }
+        profiles:
+          type: array
+          items:
+            type: object
+            required: [profile_id, name, owner, stats]
+            properties:
+              profile_id: { type: string, format: uuid }
+              name: { type: string }
+              owner: { type: string }
+              stats: { $ref: "#/components/schemas/ForYouQualityStats" }
     ForYouAIStatus:
       type: object
       required: [enabled, model, tokens_today, daily_budget, run_budget, balance, temperature, facts_ai, companion_ai]
@@ -6183,6 +6337,7 @@ components:
         themes_ai: { type: boolean, description: "The daily run groups each profile's good unseen candidates into AI theme rubrics (admin switch, default true)." }
         picks_ai: { type: boolean, description: "The daily run re-ranks «Подобрано для вас» with a personal reason per title (admin switch, default true)." }
         companion_ai: { type: boolean, description: "«Ранее в сериале» / «После титров» allowed (admin switch, default true)." }
+        learn_weights: { type: boolean, description: "The nightly run learns per-profile source weights from plays (admin switch, default true)." }
         model: { type: string }
         tokens_today: { type: integer, description: "Tokens used today (Moscow date)." }
         daily_budget: { type: integer }

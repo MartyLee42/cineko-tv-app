@@ -7,6 +7,7 @@ import { ProgressBar } from "../watch/components";
 import { anyRunning, runProgress } from "../foryou/logic";
 import { useForYouRuns, useRerun, useSetAIFeature, useSetAITemperature, useSetFactsAI, type AITemperature, type ForYouRun, type RerunBody } from "../foryou/queries";
 import { balanceLow, formatBalance, type AIBalance } from "../foryou/taste";
+import { ForYouLearnCard } from "./ForYouLearnCard";
 
 type Scope = RerunBody["scope"];
 const OTHER = "__other__";
@@ -138,6 +139,8 @@ export function ForYouTab() {
       {ai$?.enabled && ai$.temperature && (
         <TemperatureCard current={ai$.temperature} factsAI={ai$.facts_ai} themesAI={ai$.themes_ai ?? true} picksAI={ai$.picks_ai ?? true} companionAI={ai$.companion_ai ?? true} />
       )}
+
+      {runs.data && <ForYouLearnCard learnOn={ai$?.learn_weights ?? true} />}
 
       <Card className="space-y-3">
         <h2 className="font-semibold">{t("fy.admin.runs")}</h2>
