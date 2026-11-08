@@ -260,6 +260,8 @@ services:
       MUSIC_SITE_ADDRESS: ${MUSIC_DOMAIN:-http://music.invalid}
       CADDY_TRUSTED_PROXIES: ${CADDY_TRUSTED_PROXIES:-private_ranges}
       CADDY_CLIENT_IP_HEADER: ${CADDY_CLIENT_IP_HEADER:-X-Forwarded-For}
+      # Optional assetlinks.json for an Android (TWA) wrapper of the apps.
+      ANDROID_ASSETLINKS: ${ANDROID_ASSETLINKS:-}
     ports:
       # 80: ACME HTTP-01 challenge + redirect to HTTPS. 443: HTTPS (TCP) and HTTP/3 (UDP).
       - "80:80"
