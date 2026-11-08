@@ -189,6 +189,8 @@ services:
       MUSIC_SITE_ADDRESS: ${MUSIC_DOMAIN:-http://music.invalid}
       CADDY_TRUSTED_PROXIES: ${CADDY_TRUSTED_PROXIES:-private_ranges}
       CADDY_CLIENT_IP_HEADER: ${CADDY_CLIENT_IP_HEADER:-X-Forwarded-For}
+      # Optional assetlinks.json for an Android (TWA) wrapper of the apps.
+      ANDROID_ASSETLINKS: ${ANDROID_ASSETLINKS:-}
       # false = no Cineko Music: /music/ and its host answer 404 instead of 502.
       MUSIC_ENABLED: ${MUSIC_ENABLED:-true}
     ports:

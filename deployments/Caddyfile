@@ -28,6 +28,17 @@
 		Referrer-Policy strict-origin-when-cross-origin
 		-Server
 	}
+
+	# Android app links (a self-built TWA wrapper): ANDROID_ASSETLINKS holds
+	# the whole assetlinks.json. Unset = 404 like any missing file.
+	@assetlinks {
+		path /.well-known/assetlinks.json
+		expression `{env.ANDROID_ASSETLINKS} != ""`
+	}
+	handle @assetlinks {
+		header Content-Type application/json
+		respond "{env.ANDROID_ASSETLINKS}" 200
+	}
 }
 
 # An app's hashed assets (/assets/*, immutable): this build's, else the asset
