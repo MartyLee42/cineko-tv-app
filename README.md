@@ -12,7 +12,8 @@
 <p align="center">
   <a href="https://martylee42.github.io/cineko-tv-app/"><b>Try Cineko Lite</b></a> (no server, runs in your browser) ·
   <a href="#install">Install the full version</a> ·
-  <a href="docs/deployment.md">Deployment guide</a>
+  <a href="docs/deployment.md">Deployment guide</a> ·
+  <a href="https://github.com/MartyLee42/cineko-tv-app/releases/download/guide-2026-11-08/cineko-guide.pdf">Руководство / User guide (PDF)</a>
 </p>
 
 ---
@@ -83,6 +84,10 @@ for a lean install. `./install.sh --help` lists every option.
 Operate with `scripts/cineko.sh <compose args>` (e.g. `scripts/cineko.sh ps`, `logs -f api`), update with
 `scripts/update.sh`, back up with `scripts/backup.sh`. Private trackers, GPU transcoding, the VPN profile,
 nginx, metrics, restore and troubleshooting: **[docs/deployment.md](docs/deployment.md)**.
+
+**Руководство / User guide (PDF, Russian):** [cineko-guide.pdf](https://github.com/MartyLee42/cineko-tv-app/releases/download/guide-2026-11-08/cineko-guide.pdf) — phone, TV,
+remote, troubleshooting, plus every design and loading animation; [cineko-install-tv.pdf](https://github.com/MartyLee42/cineko-tv-app/releases/download/guide-2026-11-08/cineko-install-tv.pdf)
+— installing Cineko on a TV (Media Station X). Sources and how to rebuild them: [docs/guide](docs/guide/README.md).
 
 Prebuilt images are published to GHCR (`ghcr.io/martylee42/cineko-tv-app-{api,web,music,transcoder}`);
 the installer falls back to building from source when they can't be pulled.

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Как установить Cineko на телевизор</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<section class="page cover">
+  <div class="glow"></div>
+  <div class="in">
+    <div class="wordmark"><img src="../../packages/ui/src/marty/happy.webp" alt=""><span>cineko</span><span class="tv">tv</span></div>
+    <h1>Как установить<br><em>Cineko</em><br>на телевизор</h1>
+    <p class="lead">Десять минут — и фильмы, сериалы, телеканалы и YouTube с нашего сервера будут на большом экране. Понадобятся телевизор, телефон и пульт.</p>
+    <div class="box dark" style="max-width:110mm;margin-top:8mm">
+      <p class="small muted" style="color:#b3a1d6;margin-bottom:1mm">Сайт и приложение для телефона</p>
+      <p style="font-family:Mono,monospace;font-size:17pt;color:#ff4fd8;margin:0">{{SITE}}</p>
+      <p class="small" style="color:#f6efff;margin:1.5mm 0 0">Логин и пароль даёт администратор.</p>
+    </div>
+    <img class="mascot" src="../../packages/ui/src/marty/popcorn.webp" alt="" style="width:80mm;bottom:28mm">
+    <div class="bottom">ИНСТРУКЦИЯ · ТЕЛЕВИЗОР · НОЯБРЬ 2026</div>
+  </div>
+</section>
+
+<section class="page">
+  <p class="kicker">Что понадобится</p>
+  <h1>Перед началом</h1>
+  <div class="grid2">
+    <div class="box"><h3>📺 Телевизор</h3><p>Samsung (Tizen), LG (webOS), Android TV / Google TV, Amazon Fire TV — подойдёт почти любой «умный» телевизор с интернетом.</p></div>
+    <div class="box"><h3>📱 Телефон</h3><p>С ним вы подключите телевизор и сможете отправлять на него фильмы. Нужны логин и пароль Cineko.</p></div>
+  </div>
+
+  <h2>1 · Установите Media Station X</h2>
+  <p>Это бесплатное приложение-«пульт запуска», через которое открывается Cineko.</p>
+  <table>
+    <tr><th>Телевизор</th><th>Где найти</th></tr>
+    <tr><td>Samsung</td><td>Кнопка Home → Apps (Приложения) → поиск → <b>Media Station X</b> → Установить</td></tr>
+    <tr><td>LG</td><td>LG Content Store → поиск → <b>Media Station X</b> → Установить</td></tr>
+    <tr><td>Android TV / Google TV</td><td>Google Play → <b>Media Station X</b> → Установить</td></tr>
+    <tr><td>Fire TV</td><td>Amazon Appstore → <b>Media Station X</b> → Get</td></tr>
+    <tr><td>iPad</td><td>App Store → <b>Media Station X</b> → Загрузить. Адрес — тот же (шаг 2). На iPad откроется версия для пальцев с обычной клавиатурой: вместо шага 3 один раз войдите логином и паролем.</td></tr>
+  </table>
+
+  <h2>2 · Укажите наш адрес</h2>
+  <p>Откройте Media Station X. Меню этого приложения на английском:</p>
+  <ol class="steps">
+    <li>Шестерёнка <span class="ui">Settings</span> → <span class="ui">Start Parameter</span> → <span class="ui">Setup</span>.</li>
+    <li>Введите адрес вашего сервера Cineko, например <b style="font-family:Mono,monospace;font-size:12pt">{{SITE}}</b> (адрес даст администратор).</li>
+    <li>Включите значок замка 🔒 (защищённое соединение HTTPS).</li>
+    <li>Нажмите <span class="ui">OK</span> / <span class="ui">Confirm</span> и перезапустите Media Station X.</li>
+  </ol>
+  <div class="box"><p>После перезапуска появится меню с кнопкой <b>Cineko</b> (и другими, если администратор их добавил). Настройка запоминается — повторять не нужно.</p></div>
+  <div class="foot"><span>Cineko · установка на телевизор</span><span>2 / 4</span></div>
+</section>
+
+<section class="page">
+  <p class="kicker">Подключение</p>
+  <h1>3 · Подключите телевизор к своему аккаунту</h1>
+  <p>Нажмите <b>Cineko</b>. На экране появятся QR-код и короткий код вида <span class="key">K7QM-2XPD</span>.</p>
+  <figure class="shot" style="width:66%"><img src="img/tv-01-pairing.jpg" alt=""><figcaption>Экран подключения: QR-код, код и адрес для ввода вручную. Код действует 5 минут — потом телевизор сам покажет новый.</figcaption></figure>
+  <div class="grid2">
+    <div class="box"><h3>Способ 1 · QR-код</h3><p>Войдите в Cineko на телефоне ({{SITE}}), наведите камеру на QR-код, проверьте, что код совпадает, задайте название («Гостиная») и нажмите <span class="ui">Подключить ТВ</span>.</p></div>
+    <div class="box"><h3>Способ 2 · код вручную</h3><p>На телефоне или компьютере откройте <b>{{SITE}}/pair</b> (или <span class="ui">Устройства</span> → <span class="ui">Подключить ТВ</span>) и введите код с экрана телевизора.</p></div>
+  </div>
+  <p>Через пару секунд телевизор подключится сам и спросит <b>«Кто смотрит?»</b> — выберите профиль стрелками и <span class="key">OK</span>. В следующий раз Cineko откроется сразу — подключать заново не нужно.</p>
+
+  <h2>4 · Смотрите</h2>
+  <table class="keys">
+    <tr><td><span class="key">◀ ▲ ▼ ▶</span> <span class="key">OK</span></td><td>Перемещение и выбор. Слева — меню: поиск, главная, ТВ, видео, фильмы, сериалы, настройки.</td></tr>
+    <tr><td><span class="key">Назад</span></td><td>Ровно один шаг назад. На главной — дважды, чтобы выйти.</td></tr>
+    <tr><td><span class="key">⏯</span> на карточке</td><td>Сразу включить лучший вариант раздачи.</td></tr>
+    <tr><td><span class="ui">Смотреть</span></td><td>Cineko сам подберёт раздачу под ваш телевизор. Кнопка ☰ рядом — выбрать самому: качество, озвучка, размер, число сидов.</td></tr>
+    <tr><td>Долгое <span class="key">OK</span> на раздаче</td><td>«Смотреть в…» — выбрать плеер: Cineko, плеер Media Station X (если файл не играет — попробуйте его) или внешнее приложение на Android.</td></tr>
+  </table>
+  <div class="box"><p><b>Телефон — это пульт.</b> На странице фильма нажмите <span class="ui">Смотреть на ТВ</span> — фильм откроется на телевизоре. Нажмите на телевизор на главной телефона — откроется пульт: пауза, перемотка, следующая серия, звук и субтитры.</p></div>
+  <div class="foot"><span>Cineko · установка на телевизор</span><span>3 / 4</span></div>
+</section>
+
+<section class="page">
+  <p class="kicker">Если что-то не так</p>
+  <h1>Частые вопросы</h1>
+  <table>
+    <tr><th>Проблема</th><th>Что сделать</th></tr>
+    <tr><td>Не появилось меню с кнопкой Cineko</td><td>Проверьте адрес <b>{{SITE}}</b> и замок 🔒 в Start Parameter, затем полностью закройте и снова откройте Media Station X.</td></tr>
+    <tr><td>QR-код не сканируется</td><td>Введите код вручную на {{SITE}}/pair.</td></tr>
+    <tr><td>«Профилей пока нет»</td><td>Создайте профиль на телефоне: <span class="ui">Профили</span> → <span class="ui">Добавить профиль</span>. Телевизор обновится сам.</td></tr>
+    <tr><td>Видео не запускается или нет звука</td><td>Некоторые телевизоры не умеют HEVC, DTS или MKV. Выберите другую раздачу (лучше H.264 / AAC) или «Смотреть в… → плеер Media Station X».</td></tr>
+    <tr><td>Долго «Готовим поток…»</td><td>У раздачи мало сидов. Подождите минуту или выберите вариант с бо́льшим числом сидов.</td></tr>
+    <tr><td>На телевизоре «Переподключение…»</td><td>Проверьте интернет; Cineko подключится сама, как только сеть вернётся.</td></tr>
+    <tr><td>Старый телевизор подтормаживает</td><td>В <span class="ui">Настройки</span> выберите оформление «Кинозал», выключите «Анимация при запуске» и поставьте пресет «Слабый ТВ / медленный интернет».</td></tr>
+    <tr><td>На iPad нужна версия для ТВ</td><td>Аватар → «Версия для ТВ». Назад в MSX — «Вернуться в Media Station X».</td></tr>
+    <tr><td>Нужно отключить телевизор</td><td>На телефоне: <span class="ui">Устройства</span> → <span class="ui">Отключить</span>. Чтобы подключить снова — шаг 3.</td></tr>
+  </table>
+  <div class="grid2" style="margin-top:6mm">
+    <div class="box"><h3>Без Media Station X</h3><p>Откройте браузер телевизора и перейдите по адресу <b>{{SITE}}/tv</b>. Дальше — как в шаге 3.</p></div>
+    <div class="box"><h3>Приложение на телефон</h3><p><b>iPhone:</b> Safari → {{SITE}} → «Поделиться» → «На экран „Домой“».<br><b>Android:</b> Chrome → {{SITE}} → меню ⋮ → «Установить приложение».</p></div>
+  </div>
+  <div class="box dark" style="display:flex;gap:5mm;align-items:center;margin-top:5mm">
+    <img src="../../packages/ui/src/marty/love.webp" alt="" style="width:24mm">
+    <p style="margin:0">Подробно обо всём — в полной инструкции «Как пользоваться Cineko»: на телефоне <span class="ui">Настройки</span> → <span class="ui">Инструкции</span>.</p>
+  </div>
+  <div class="foot"><span>Cineko · установка на телевизор</span><span>4 / 4</span></div>
+</section>
+
+</body>
+</html>

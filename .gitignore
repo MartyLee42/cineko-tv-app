@@ -26,8 +26,11 @@ get-docker.sh
 .claude/
 # Household-only material (kept locally, not published)
 docs/private/
-docs/guide/
 docs/research/
+# Guide PDFs are built into docs/guide/out/ and published as a release
+docs/guide/out/
+docs/guide/.render-*.html
+docs/guide/shots/out-cred.json
 e2e/scripts/guide-shots.mjs
 e2e/scripts/install-guide.mjs
 

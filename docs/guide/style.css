@@ -1,0 +1,141 @@
+/* Cineko guides — A4 print styles (Chromium page.pdf), in the «Каркас» wave-terrain look:
+   night-purple sky, magenta neon (--lime keeps its old name), cyan headings, wave terrain
+   with a magenta sun on the cover and part dividers (render.mjs adds the SVG). */
+@font-face { font-family: Onest; font-weight: 400; src: url("../../node_modules/.pnpm/@fontsource+onest@5.3.1/node_modules/@fontsource/onest/files/onest-cyrillic-400-normal.woff2") format("woff2"); unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: Onest; font-weight: 400; src: url("../../node_modules/.pnpm/@fontsource+onest@5.3.1/node_modules/@fontsource/onest/files/onest-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: Onest; font-weight: 600; src: url("../../node_modules/.pnpm/@fontsource+onest@5.3.1/node_modules/@fontsource/onest/files/onest-cyrillic-500-normal.woff2") format("woff2"); unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: Onest; font-weight: 600; src: url("../../node_modules/.pnpm/@fontsource+onest@5.3.1/node_modules/@fontsource/onest/files/onest-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: Onest; font-weight: 700; src: url("../../node_modules/.pnpm/@fontsource+onest@5.3.1/node_modules/@fontsource/onest/files/onest-cyrillic-700-normal.woff2") format("woff2"); unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: Onest; font-weight: 700; src: url("../../node_modules/.pnpm/@fontsource+onest@5.3.1/node_modules/@fontsource/onest/files/onest-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: Unbounded; font-weight: 800; src: url("../../node_modules/.pnpm/@fontsource+unbounded@5.3.0/node_modules/@fontsource/unbounded/files/unbounded-cyrillic-800-normal.woff2") format("woff2"); unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+@font-face { font-family: Unbounded; font-weight: 800; src: url("../../node_modules/.pnpm/@fontsource+unbounded@5.3.0/node_modules/@fontsource/unbounded/files/unbounded-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: Mono; font-weight: 500; src: url("../../node_modules/.pnpm/@fontsource+jetbrains-mono@5.3.0/node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: Mono; font-weight: 500; src: url("../../node_modules/.pnpm/@fontsource+jetbrains-mono@5.3.0/node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-cyrillic-500-normal.woff2") format("woff2"); unicode-range: U+0400-045F; }
+
+@page { size: A4; margin: 0; }
+:root {
+  --ink: #f6efff; --muted: #b3a1d6; --paper: #0d0420; --soft: #1e0f3d; --line: #3d2470;
+  --lime: #ff4fd8; --lime-ink: #3ce8ff; --dark: #07021a; --dark2: #2e1858; --red: #ff6b8b;
+  --on-accent: #160420; --body: #f6efff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #888; }
+body { font-family: Onest, "DejaVu Sans", sans-serif; color: var(--body); font-size: 10.4pt; line-height: 1.42; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+.page { width: 210mm; height: 297mm; position: relative; overflow: hidden; background: var(--paper); padding: 16mm 15mm 18mm; page-break-after: always; break-after: page; }
+.page:last-child { page-break-after: auto; break-after: auto; }
+.page > .foot { position: absolute; left: 15mm; right: 15mm; bottom: 8mm; display: flex; justify-content: space-between; font-size: 7.5pt; letter-spacing: .18em; text-transform: uppercase; color: #8f7cb8; border-top: 1px solid rgba(255,79,216,.28); padding-top: 2.5mm; z-index: 2; }
+
+.kicker { font-size: 8pt; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--lime-ink); margin: 0 0 1.5mm; }
+h1 { font-family: Unbounded, Onest, sans-serif; font-weight: 800; font-size: 21pt; line-height: 1.12; margin: 0 0 4mm; letter-spacing: -.01em; color: var(--ink); text-shadow: 0 0 5mm rgba(255,79,216,.22); }
+h2 { font-size: 12.5pt; font-weight: 700; margin: 5mm 0 1.6mm; color: var(--ink); }
+h3 { font-size: 10.6pt; font-weight: 700; margin: 3.5mm 0 1mm; color: var(--ink); }
+p { margin: 0 0 2.2mm; }
+.lead { font-size: 11.6pt; color: var(--body); margin-bottom: 4mm; }
+.muted { color: var(--muted); }
+.shot figcaption, .designs figcaption { color: #c4b2e6; }
+.small { font-size: 8.8pt; }
+ul, ol { margin: 0 0 2.4mm; padding-left: 5mm; }
+li { margin-bottom: 1mm; }
+b, strong { font-weight: 700; color: var(--ink); }
+
+/* «Названия кнопок» and remote keys */
+.ui { font-weight: 600; color: var(--ink); background: var(--soft); border: 1px solid #5c369c; border-radius: 1.4mm; padding: 0 1.3mm; white-space: nowrap; }
+.key { display: inline-block; font-family: Mono, monospace; font-size: 8.4pt; font-weight: 500; background: var(--dark2); color: #fff; border: 1px solid #6b44ad; border-bottom-width: 2px; border-radius: 1.2mm; padding: .2mm 1.5mm; line-height: 1.5; white-space: nowrap; }
+.new { display: inline-block; font-size: 6.8pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; background: var(--lime); color: var(--on-accent); border-radius: 1mm; padding: .3mm 1.4mm; vertical-align: 1.2pt; margin-left: 1mm; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+.split { display: grid; grid-template-columns: 62mm 1fr; gap: 7mm; align-items: start; }
+.split.tv { grid-template-columns: 1fr; }
+
+.shot { margin: 0 0 3mm; }
+.shot img { display: block; width: 100%; border-radius: 2.4mm; border: 1px solid #5c369c; box-shadow: 0 0 4mm rgba(255,79,216,.12); }
+.shot.phone img { border-radius: 4mm; border: 1.6mm solid #2e1858; }
+.shot figcaption { font-size: 8pt; color: var(--muted); margin-top: 1.2mm; }
+.phones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; }
+.phones.two { grid-template-columns: repeat(2, 56mm); justify-content: start; }
+img.crop { object-fit: cover; object-position: top; }
+
+.box { background: var(--soft); border: 1px solid var(--line); border-left: 1.6mm solid var(--lime); border-radius: 2mm; padding: 3mm 4mm; margin: 3mm 0; }
+.box.dark { background: var(--dark); color: var(--body); border-color: #3d2470; border-left-color: var(--lime); }
+.box.warn { border-left-color: #f5a524; }
+.box p:last-child, .box ul:last-child { margin-bottom: 0; }
+.box h3 { margin-top: 0; }
+
+table { width: 100%; border-collapse: collapse; margin: 2mm 0 3mm; font-size: 9.2pt; }
+th { text-align: left; font-size: 7.4pt; letter-spacing: .14em; text-transform: uppercase; color: var(--lime-ink); font-weight: 700; padding: 1.4mm 2mm; border-bottom: 1.5px solid var(--lime); }
+td { padding: 1.6mm 2mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+td:first-child { font-weight: 600; width: 34%; color: var(--ink); }
+table.keys td:first-child { width: 24%; }
+
+ol.steps { list-style: none; padding: 0; counter-reset: s; }
+ol.steps > li { counter-increment: s; position: relative; padding-left: 9mm; margin-bottom: 2.4mm; }
+ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: -.3mm; width: 6mm; height: 6mm; border-radius: 50%; background: var(--lime); color: var(--on-accent); font-weight: 700; font-size: 9pt; display: flex; align-items: center; justify-content: center; }
+
+/* Cover */
+.cover { background: var(--dark); color: #f2f4f8; padding: 0; }
+.cover .glow { position: absolute; inset: 0; background: radial-gradient(60% 30% at 50% 58%, rgba(255,79,216,.20), transparent 70%); }
+.cover .in { position: relative; z-index: 1; padding: 22mm 18mm 12mm; height: 100%; display: flex; flex-direction: column; }
+.wordmark { display: flex; align-items: center; gap: 3mm; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 20pt; letter-spacing: -.02em; }
+.wordmark .tv { background: var(--lime); color: var(--on-accent); border-radius: 3mm; padding: 0 2.6mm 1mm; }
+.wordmark img { width: 15mm; height: 15mm; object-fit: contain; }
+.cover h1 { font-size: 40pt; line-height: 1.02; margin: 18mm 0 6mm; color: #fff; text-shadow: 0 0 8mm rgba(255,79,216,.45); }
+.cover h1 em { font-style: normal; color: var(--lime); }
+.cover .lead { color: var(--body); font-size: 13pt; max-width: 135mm; }
+.cover .mascot { position: absolute; right: 14mm; bottom: 58mm; width: 70mm; filter: drop-shadow(0 0 6mm rgba(255,79,216,.45)); }
+.cover .tags { display: flex; gap: 2.5mm; flex-wrap: wrap; margin-top: 6mm; }
+.cover .tags span { border: 1px solid #5c369c; background: rgba(30,15,61,.7); border-radius: 10mm; padding: 1mm 3.5mm; font-size: 9.5pt; color: var(--ink); }
+.cover .bottom { margin-top: auto; font-size: 9pt; color: #f6efff; opacity: .8; letter-spacing: .08em; }
+
+/* Section divider */
+.divider { background: var(--dark); color: #fff; }
+.divider .num { position: relative; z-index: 1; font-family: Unbounded, sans-serif; font-weight: 800; font-size: 90pt; color: var(--lime); line-height: 1; margin-top: 28mm; text-shadow: 0 0 8mm rgba(255,79,216,.55); }
+.divider h1 { position: relative; z-index: 1; font-size: 34pt; color: #fff; margin: 4mm 0 6mm; }
+.divider .lead { position: relative; z-index: 1; color: var(--body); max-width: 140mm; }
+.divider ul { position: relative; z-index: 1; list-style: none; padding: 0; columns: 2; column-gap: 10mm; margin-top: 8mm; color: var(--ink); font-size: 11pt; }
+.divider li::before { content: "→ "; color: var(--lime); }
+.divider img.mascot { position: absolute; z-index: 1; right: 14mm; top: 22mm; width: 52mm; filter: drop-shadow(0 0 5mm rgba(255,79,216,.45)); }
+.divider .foot { border-color: rgba(255,79,216,.35); color: #c4b2e6; }
+
+/* TOC */
+.toc { columns: 2; column-gap: 10mm; font-size: 9.6pt; }
+.toc div { display: flex; gap: 2mm; break-inside: avoid; padding: .9mm 0; border-bottom: 1px dotted #5c369c; color: var(--body); }
+.toc div span:first-child { flex: 1; }
+.toc .part { font-weight: 700; border-bottom: none; margin-top: 2mm; color: var(--lime-ink); letter-spacing: .1em; text-transform: uppercase; font-size: 8pt; }
+
+/* Design gallery */
+.designs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4mm 5mm; }
+.designs figure { margin: 0; }
+.designs img { width: 100%; display: block; border-radius: 1.8mm; border: 1px solid #5c369c; }
+.designs figcaption { font-size: 8.6pt; margin-top: 1mm; }
+.designs figcaption b { font-size: 9.4pt; }
+
+/* Remote drawing */
+.remote { width: 46mm; background: #1e0f3d; border: 1px solid #5c369c; border-radius: 22mm 22mm 14mm 14mm; padding: 7mm 5mm 8mm; color: #fff; text-align: center; font-size: 8pt; }
+.remote .row { display: flex; justify-content: center; gap: 2.4mm; margin: 2mm 0; }
+.remote .b { min-width: 9mm; height: 7mm; border-radius: 3.5mm; background: #3d2470; display: flex; align-items: center; justify-content: center; padding: 0 1.6mm; position: relative; }
+.remote .b.ok { width: 14mm; height: 14mm; border-radius: 50%; background: var(--lime); color: #111; font-weight: 700; font-size: 10pt; }
+.remote .pad { position: relative; width: 34mm; height: 34mm; margin: 3mm auto; border-radius: 50%; background: #2e1858; }
+.remote .pad span { position: absolute; color: #fff; font-size: 10pt; }
+.remote .pad .ok { position: absolute; left: 10mm; top: 10mm; }
+.remote .n { position: absolute; top: -2.4mm; right: -2.4mm; width: 4.4mm; height: 4.4mm; border-radius: 50%; background: var(--lime); color: #111; font-size: 6.6pt; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.legend { display: grid; grid-template-columns: 1fr; gap: 1.8mm; }
+.legend div { display: grid; grid-template-columns: 6mm 1fr; gap: 2mm; align-items: start; }
+.legend i { font-style: normal; width: 5.4mm; height: 5.4mm; border-radius: 50%; background: var(--lime); color: #111; font-weight: 700; font-size: 8pt; display: flex; align-items: center; justify-content: center; }
+
+/* wave terrain (render.mjs) and the horizon on every content page */
+.terrain { position: absolute; left: 0; bottom: 0; width: 210mm; display: block; z-index: 0; pointer-events: none; }
+.terrain.strip { opacity: .9; }
+/* a thin neon horizon at the top of every content page */
+.page:not(.cover):not(.divider)::before { content: ""; position: absolute; left: 15mm; right: 15mm; top: 9mm; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, rgba(60,232,255,0), rgba(60,232,255,.55) 20%, rgba(255,79,216,.75) 50%, rgba(60,232,255,.55) 80%, rgba(60,232,255,0)); }
+.page > .foot { background: linear-gradient(rgba(13,4,32,0), rgba(13,4,32,.85) 40%); border-top-color: rgba(255,79,216,.35); color: #c4b2e6; }
+.page > .foot { z-index: 2; }
+.divider .num, .divider h1 { z-index: 1; }
+/* galleries at the end: 2 × 2 large screens with name and description */
+.designs.gallery { gap: 5mm 6mm; margin-top: 2mm; }
+.designs.gallery figcaption { font-size: 8.8pt; line-height: 1.38; color: var(--muted); margin-top: 1.6mm; }
+.designs.gallery figcaption b { display: block; font-size: 10.5pt; color: var(--ink); margin-bottom: .6mm; }
+/* page content always paints above the terrain art */
+.page:not(.cover):not(.divider) > :not(.terrain):not(.foot) { position: relative; z-index: 1; }
