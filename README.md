@@ -71,8 +71,8 @@ Then:
 - add private trackers in Prowlarr (`ssh -L 9696:127.0.0.1:9696 your-server`, then <http://localhost:9696>).
 
 Non-interactive: `./install.sh --yes --domain tv.example.com --tmdb <token> --admin-user me`
-(add e.g. `--no-youtube --no-music --indexer jackett` for a lean install)
-(password from `CINEKO_ADMIN_PASSWORD`). `./install.sh --help` lists every option.
+(password from `CINEKO_ADMIN_PASSWORD`); add e.g. `--no-youtube --no-music --indexer jackett`
+for a lean install. `./install.sh --help` lists every option.
 
 Operate with `scripts/cineko.sh <compose args>` (e.g. `scripts/cineko.sh ps`, `logs -f api`), update with
 `scripts/update.sh`, back up with `scripts/backup.sh`. Private trackers, GPU transcoding, the VPN profile,
