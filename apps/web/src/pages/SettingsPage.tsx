@@ -36,6 +36,7 @@ import { KinopoiskImportCard } from "../imports/KinopoiskImportCard";
 import { TasteCard } from "../foryou/TasteCard";
 import { ServerDownloadIcon } from "../downloads/ui";
 import { VideoQualityRow } from "../video/VideoSettings";
+import { tabAvailable, useServerFeatures } from "../features";
 import { LOADING_STYLES, supportsLight, THEMES, type LoadingStyle, type Settings } from "../watch/settings";
 import { ArtOf, isArtStyle, type ArtStyleId } from "../player/art";
 import { HomagePreview, homageKeys } from "./HomagePreview";
@@ -144,6 +145,7 @@ function GuideCard() {
 
 function ProfileSettingsCard() {
   const { t } = useI18n();
+  const features = useServerFeatures();
   const cls = useDeviceClass();
   const { profile, profiles, switchTo } = useActiveProfile();
   const q = useProfileSettings();
@@ -286,6 +288,8 @@ function ProfileSettingsCard() {
               on={s.spoiler_free_episodes}
               onChange={(v) => set({ spoiler_free_episodes: v })}
             />
+            {features.video && (
+            <>
             <VideoQualityRow value={s.video_quality ?? 720} onChange={(q) => set({ video_quality: q })} />
             <Toggle
               testId="setting-video-hide-shorts"
@@ -300,6 +304,8 @@ function ProfileSettingsCard() {
               on={s.video_autoplay ?? true}
               onChange={(v) => set({ video_autoplay: v })}
             />
+            </>
+            )}
             <Toggle
               testId="setting-poster-wobble"
               label={t("wobble.title")}
@@ -567,7 +573,8 @@ type NavTab = NonNullable<Settings["hidden_tabs"]>[number];
 /** «Вкладки меню»: which tabs the header (and phone bar) shows for this profile. */
 function NavTabsSetting({ hidden, onChange }: { hidden: NavTab[]; onChange: (v: NavTab[]) => void }) {
   const { t } = useI18n();
-  const tabs: { id: NavTab; label: string }[] = [
+  const features = useServerFeatures();
+  const all: { id: NavTab; label: string }[] = [
     { id: "tv", label: t("iptv.title") },
     { id: "video", label: t("video.title") },
     { id: "explore", label: t("nav.explore") },
@@ -576,6 +583,8 @@ function NavTabsSetting({ hidden, onChange }: { hidden: NavTab[]; onChange: (v: 
     { id: "ask", label: t("nav.ask") },
     { id: "search", label: t("catalog.search") },
   ];
+  // Tabs the server doesn't have (no «Видео» without YouTube) aren't offered.
+  const tabs = all.filter((x) => tabAvailable(x.id, features));
   return (
     <div data-testid="setting-nav-tabs">
       <p className="text-sm text-muted">{t("nav.tabs_title")}</p>

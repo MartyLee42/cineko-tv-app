@@ -10,7 +10,7 @@ import { useCatalogConfig } from "../../catalog/queries";
 import { FRAMES, useDesign, useSkin } from "../../design/context";
 import { SkinBackground, SkinCompanion, useCalmMotion, useLook } from "../../design/skins";
 import { openWithPick } from "../../design/pick";
-import { useInbox, useWatchlist } from "../../design/data";
+import { useInbox, useServerFeatures, useWatchlist } from "../../design/data";
 import { KinozalRail, ProjectorBar, TerminalBar, TerminalTicker, type MenuId, type NavProps } from "../../design/shell";
 import { HomeCatalog } from "./HomeCatalog";
 import { TvIdleLayer } from "../../idle/IdleLayer";
@@ -57,6 +57,11 @@ let hintShown = false;
 /** How Details starts playback: the release picker, the best match (searched now), or a given release. */
 /** The picker, the best release, a release, or (resume) the source last watched with. */
 export type PlayHow = "pick" | "best" | Release | { source_id: string };
+
+/** «Видео» screens (YouTube): hidden when the server has no video. */
+export function isVideoRoute(route: Route): boolean {
+  return route.name === "video" || route.name === "video-search" || route.name === "video-channel";
+}
 
 function menuFor(route: Route): MenuId | null {
   switch (route.name) {
@@ -170,6 +175,7 @@ export function CatalogShell({
   const inbox = useInbox();
   const unread = inbox.data?.unread ?? 0;
   const watchlist = useWatchlist();
+  const features = useServerFeatures();
   const newEpisodes = useNewEpisodesUnseen();
 
   /** Opens Details; `from` names the row/section it was opened from (back hint, breadcrumb). */
@@ -200,7 +206,8 @@ export function CatalogShell({
   const topKey = top.key;
   const reportInfo = useCallback((info: DetailsInfo) => onDetailsInfo?.(topKey, info), [onDetailsInfo, topKey]);
 
-  const route = top.route;
+  // No YouTube on this server: a «Видео» route left in the stack shows Home.
+  const route: Route = !features.video && isVideoRoute(top.route) ? { name: "home" } : top.route;
   let screen: React.ReactNode;
   switch (route.name) {
     case "home":

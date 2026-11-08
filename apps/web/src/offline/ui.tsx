@@ -7,6 +7,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { MediaDetail, PlaybackSource } from "@martytv/contracts";
 import { episodeCode, imageUrl, type ImageConfig } from "@martytv/media-types";
 import { Logo, useI18n } from "@martytv/ui";
+import { useServerFeatures } from "../features";
 import { Button, Card } from "../components";
 import { formatBytes } from "../admin/format";
 import { TrashIcon, useNow } from "../downloads/ui";
@@ -349,6 +350,7 @@ export function DeviceCard() {
 
 /** Shown instead of the app when the server can't be reached. */
 export function OfflineScreen({ onRetry }: { onRetry: () => void }) {
+  const music = useServerFeatures().music;
   const { t } = useI18n();
   return (
     <div className="mx-auto flex min-h-full max-w-xl flex-col gap-4 px-4 pb-10 pt-[max(1.5rem,env(safe-area-inset-top))]" data-testid="offline-screen">
@@ -363,11 +365,13 @@ export function OfflineScreen({ onRetry }: { onRetry: () => void }) {
         </Button>
       </Card>
       {/* Full page load: /music is a separate app with its own offline cache. */}
-      <a href="/music/" className="flex items-center gap-3 rounded-2xl bg-accent p-4 font-bold text-on-accent" data-testid="offline-music">
-        <NoteIcon className="text-2xl" />
-        <span className="flex-1">{t("offline.music")}</span>
-        <span aria-hidden="true">→</span>
-      </a>
+      {music && (
+        <a href="/music/" className="flex items-center gap-3 rounded-2xl bg-accent p-4 font-bold text-on-accent" data-testid="offline-music">
+          <NoteIcon className="text-2xl" />
+          <span className="flex-1">{t("offline.music")}</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      )}
       <Card className="space-y-3">
         <p className="font-bold">{t("offline.device.title")}</p>
         <DeviceList />

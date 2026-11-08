@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { unwrap, type Schemas } from "@martytv/contracts";
 import { Spinner, StatusDot, useI18n, type MessageKey } from "@martytv/ui";
 import { api } from "../api";
+import { useServerFeatures } from "../features";
 import { Card, ErrorText } from "../components";
 import { HistoryChart } from "./HistoryChart";
 import { AdminVideoCard } from "../video/AdminVideoCard";
@@ -33,6 +34,7 @@ const HISTORY_MINUTES = 60;
  * and TorrServer stats. Polls every 5 s while mounted and the page is
  * visible (react-query pauses intervals in background tabs). */
 export function ServerTab() {
+  const features = useServerFeatures();
   const { t } = useI18n();
   const status = useQuery({
     queryKey: ["admin", "system"],
@@ -77,7 +79,7 @@ export function ServerTab() {
       <div className="grid gap-4 lg:grid-cols-2">
         <AppPanel app={s.app} />
         <TorrServerPanel ts={s.app.torrserver} />
-        <AdminVideoCard />
+        {features.video && <AdminVideoCard />}
       </div>
       {s.containers.length > 0 && <ContainersTable s={s} />}
       <ProcessesTable s={s} />

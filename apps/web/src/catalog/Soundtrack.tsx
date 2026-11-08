@@ -1,5 +1,6 @@
 import type { MediaDetail } from "@martytv/contracts";
 import { soundtrackUrl, useI18n } from "@martytv/ui";
+import { useServerFeatures } from "../features";
 import { EXTRA_CHIP } from "./Trivia";
 
 /**
@@ -8,6 +9,8 @@ import { EXTRA_CHIP } from "./Trivia";
  */
 export function SoundtrackButton({ m }: { m: Pick<MediaDetail, "id"> }) {
   const { t, locale } = useI18n();
+  // No Cineko Music on this server: nowhere to listen.
+  if (!useServerFeatures().music) return null;
   return (
     <a
       href={soundtrackUrl("", m.id, locale)}

@@ -20,6 +20,7 @@ import { FocusButton, rememberFocus } from "./focus";
 import { ActionMenu } from "./components/ActionMenu";
 import { initialStack, openDetails, openSection, pop, type StackEntry } from "./catalog/nav";
 import { queryClient } from "./catalog/queries";
+import { currentFeatures } from "./design/data";
 import { pickSeason } from "./catalog/seasons";
 import { CommandProcessor, type OpenRequest, type PlayerCommand, type PlayRequest, type Sender } from "./remote/commands";
 import { buildDeviceState, stateKey, type DetailsInfo } from "./remote/state";
@@ -653,6 +654,7 @@ export function App() {
       },
       // video.play: the TV keeps its own profile; the phone's position (if any) is where it starts.
       playVideo: (req, sender) => {
+        if (!currentFeatures().video) return "unsupported";
         if (screenRef.current.kind !== "home") return "failed";
         // The same video with a quality: switch in place (the phone's quality select).
         const inPlace = player.flow.phase === "idle" ? qualityInPlace(req, videoSession.get(), videoSession.controls()) : null;

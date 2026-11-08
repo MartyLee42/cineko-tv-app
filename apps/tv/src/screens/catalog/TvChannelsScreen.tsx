@@ -13,7 +13,8 @@ import { ErrorState, GridSkeleton } from "../../components/States";
 import { Brackets } from "../../design/cards";
 import { useDesign, useFrame, type Design } from "../../design/context";
 import { ScreenTitle } from "../../design/grid";
-import { TERMINAL_MENU } from "../../design/menuOrder";
+import { TERMINAL_MENU, visibleMenu } from "../../design/menuOrder";
+import { useServerFeatures } from "../../design/data";
 import { useReportDeep, useToTop } from "../../design/topJump";
 import { channelChips, epgProgress, filterGroup, hhmm, offlineLabel, type Chip } from "../../iptv/logic";
 import { ChannelLogo, EpgBar } from "../../iptv/ChannelLogo";
@@ -50,6 +51,7 @@ export function TvChannelsScreen({
   onDay?: (channel: IptvChannel) => void;
 }) {
   const { t } = useI18n();
+  const features = useServerFeatures();
   const design = useDesign();
   const frame = useFrame();
   const width = 1920 - frame.x - 72;
@@ -161,7 +163,7 @@ export function TvChannelsScreen({
         style={{ left: EDGE, transform: `translate3d(0,${-ty}px,0)` }}
       >
         <div className="flex h-[136px] items-end pb-6">
-          <ScreenTitle design={design} index={TERMINAL_MENU.indexOf("tv") + 1}>
+          <ScreenTitle design={design} index={visibleMenu(TERMINAL_MENU, features).indexOf("tv") + 1}>
             {t("iptv.title")}
           </ScreenTitle>
           {q.data && <span className="mb-1 ml-6 text-2xl text-muted">{t("iptv.tv.count", { n: items.length })}</span>}

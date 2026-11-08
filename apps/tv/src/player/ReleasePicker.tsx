@@ -22,6 +22,7 @@ import { player } from "./controller";
 import type { PlayContext } from "./session";
 import { playerKey } from "./keys";
 import { findDownload, useDownloadLabel, useMediaDownloads } from "./downloads";
+import { useServerFeatures } from "../design/data";
 import { HEAD_H, LIST_H, LIST_TOP, pickerScroll, ROW_GAP, ROW_H, type Sel } from "./pickerLayout";
 
 const LONG_PRESS_MS = 700;
@@ -29,6 +30,7 @@ const LONG_PRESS_MS = 700;
 /** Fullscreen release list: best match first and focused, OK plays. */
 export function ReleasePicker({ ctx, tried }: { ctx: PlayContext; tried: readonly string[] }) {
   const { t, locale } = useI18n();
+  const torrents = useServerFeatures().torrents;
   const cfg = useCatalogConfig();
   // «Показать все»: rank without this TV's playback profile.
   const [showAll, setShowAll] = useState(false);
@@ -232,7 +234,7 @@ export function ReleasePicker({ ctx, tried }: { ctx: PlayContext; tried: readonl
                   {err instanceof ApiError && err.code === "network_error" ? t("tv.offline") : err instanceof ApiError && err.status === 429 ? t("tv.refine.rate_limited") : t("catalog.tv.load_error")}
                 </p>
               ) : items.length === 0 ? (
-                <p className="pt-10 text-4xl">{t("player.no_releases")}</p>
+                <p className="pt-10 text-4xl">{torrents ? t("player.no_releases") : t("player.no_backend")}</p>
               ) : (
                 items.map((r, i) => (
                   <ReleaseRowView

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiError, unwrap, type MediaPage, type Schemas } from "@martytv/contracts";
 import { catalogLang } from "@martytv/media-types";
-import { useI18n } from "@martytv/ui";
+import { serverFeatures, useI18n, type ServerFeatures } from "@martytv/ui";
 import { api } from "../api";
 import { queryClient } from "../catalog/queries";
 import { useActiveProfileId } from "../profile/active";
@@ -21,6 +21,14 @@ export function useServerStatus() {
     retry: false,
   });
 }
+
+/** What this server has (GET /status features; all on until known). */
+export function useServerFeatures(): ServerFeatures {
+  return serverFeatures(useServerStatus().data);
+}
+
+/** The same, outside React (remote commands): the last /status answer. */
+export const currentFeatures = (): ServerFeatures => serverFeatures(queryClient.getQueryData(["service-status"]));
 
 /** The current time, re-rendered every 10 s (the clock shows minutes). */
 export function useClock(): Date {

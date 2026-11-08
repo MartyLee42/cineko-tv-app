@@ -15,6 +15,7 @@ import { ForYouSection } from "../foryou/ForYouSection";
 import { AskAiCard } from "../foryou/AskPage";
 import { TvCard } from "../iptv/TvCard";
 import { HomeVideoCard } from "../video/HomeVideoCard";
+import { useServerFeatures } from "../features";
 import { NewEpisodesLink } from "../newepisodes/NewEpisodesPage";
 import { QuizBanner } from "../tastequiz/TasteQuizPage";
 import { CvLeninCard } from "../catalog/CvLenin";
@@ -22,6 +23,7 @@ import { CvGoskino, CvNews, CvPlan } from "../catalog/CvExtras";
 
 export function HomePage() {
   const { t } = useI18n();
+  const features = useServerFeatures();
   const { data: session } = useSession();
   const name = session?.user.display_name || session?.user.username || "";
   const rows = useHomeRows();
@@ -42,7 +44,7 @@ export function HomePage() {
           <RecoRow />
           <AskAiCard />
           <TvCard />
-          <HomeVideoCard />
+          {features.video && <HomeVideoCard />}
           <ForYouSection />
           <RatePrompt />
           <WatchlistRow />

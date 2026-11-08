@@ -32,8 +32,13 @@ export const RAIL_FIRST = 134;
 /** 54 px items + 4 px (13 items still fit above settings). */
 export const RAIL_PITCH = 58;
 
+/** A menu list without the tabs this server doesn't have (no «Видео» without YouTube). */
+export function visibleMenu(list: readonly MenuId[], f: { video: boolean }): MenuId[] {
+  return f.video ? [...list] : list.filter((id) => id !== "video");
+}
+
 /** Top of the active-item indicator in Кинозал's rail (null when not in the top group). */
-export function railIndicatorTop(active: MenuId | null): number | null {
-  const i = active ? KINOZAL_MENU.indexOf(active) : -1;
+export function railIndicatorTop(active: MenuId | null, list: readonly MenuId[] = KINOZAL_MENU): number | null {
+  const i = active ? list.indexOf(active) : -1;
   return i < 0 ? null : RAIL_FIRST + i * RAIL_PITCH + 11;
 }

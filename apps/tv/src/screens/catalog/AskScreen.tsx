@@ -11,7 +11,8 @@ import { HRow } from "../../components/HRow";
 import { KEYBOARD_WIDTH, ScreenKeyboard } from "../../components/ScreenKeyboard";
 import { useDesign, useDevice, useFrame, type Design } from "../../design/context";
 import { GridCard, gridGeo, ScreenTitle } from "../../design/grid";
-import { TERMINAL_MENU } from "../../design/menuOrder";
+import { TERMINAL_MENU, visibleMenu } from "../../design/menuOrder";
+import { useServerFeatures } from "../../design/data";
 import { useToTop } from "../../design/topJump";
 import { playerKey } from "../../player/keys";
 import { claimKeys } from "../../remote/keyOwner";
@@ -51,6 +52,7 @@ type Overlay = "keyboard" | "phone" | null;
  */
 export function AskScreen({ mem, profileId, onOpen }: { mem: RouteMemory; profileId: string; onOpen: (item: MediaSummary, from?: string) => void }) {
   const { t } = useI18n();
+  const features = useServerFeatures();
   const design = useDesign();
   const frame = useFrame();
   const ask = useAsk();
@@ -164,7 +166,7 @@ export function AskScreen({ mem, profileId, onOpen }: { mem: RouteMemory; profil
     <div data-testid="ask" className="absolute overflow-hidden" style={{ left: frame.x - EDGE, right: 0, top: frame.top, bottom: 1080 - frame.bottom }}>
       <div className="absolute right-0 top-0" style={{ left: EDGE }}>
         <div className="flex h-[124px] items-end pb-5">
-          <ScreenTitle design={design} index={TERMINAL_MENU.indexOf("ask") + 1}>
+          <ScreenTitle design={design} index={visibleMenu(TERMINAL_MENU, features).indexOf("ask") + 1}>
             {t("ask.title")}
           </ScreenTitle>
           {!result && !ask.isPending && !ask.isError && <span className="mb-2 ml-6 min-w-0 truncate text-[24px] text-muted">{t("ask.subtitle")}</span>}
