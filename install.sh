@@ -81,7 +81,7 @@ Usage: ./install.sh [options]
 Optional parts (asked on the first run; later runs keep your choice):
   --no-youtube | --youtube
                          without/with the YouTube «Видео» tab (Invidious +
-                         companion, ~200 MB RAM). Off = no containers, no tab
+                         companion, ~300–650 MB RAM). Off = no containers, no tab
   --no-music | --music   without/with Cineko Music
   --indexer NAME         torrent search: prowlarr (default), jackett or none
   --prowlarr-url URL     use your own Prowlarr (no container), with
@@ -340,7 +340,7 @@ case "$YOUTUBE_OPT" in
   0) env_set VIDEO_ENABLED false ;;
   "")
     if [ -z "$(env_get VIDEO_ENABLED)" ]; then
-      if ask_parts && ! confirm "YouTube «Видео» tab (Invidious + companion, ~200 MB RAM)?" y; then env_set VIDEO_ENABLED false
+      if ask_parts && ! confirm "YouTube «Видео» tab (Invidious + companion: ~300 MB RAM idle, ~650 MB peak)?" y; then env_set VIDEO_ENABLED false
       else env_set VIDEO_ENABLED true; fi
     fi ;;
   *) die "CINEKO_YOUTUBE must be 1 or 0" ;;
@@ -409,6 +409,21 @@ part_on() {  # part_on SERVICE: is the bundled container wanted?
 PARTS=()
 for part in youtube music prowlarr jackett torrserver; do part_on "$part" && PARTS+=("$part"); done
 ok "parts: ${PARTS[*]:-none}$([ "$(env_get INDEXER)" = none ] && echo " (no torrent search)")"
+# RAM check (docs/deployment.md "Sizing"): the OS and Cineko's own peaks, plus
+# each bundled part's peak. Only a warning: the user knows their server.
+need=850
+part_on youtube && need=$((need + 650))
+part_on music && need=$((need + 10))
+{ part_on prowlarr || part_on jackett; } && need=$((need + 700))
+part_on torrserver && need=$((need + 350))
+have=$(awk '/^MemTotal:/{print int($2/1024)}' /proc/meminfo 2>/dev/null || echo 0)
+if [ "${have:-0}" -gt 0 ] && [ "$have" -lt "$need" ]; then
+  warn "this server has ${have} MB of RAM; these parts want about ${need} MB at their peaks."
+  warn "it will run but may swap. Lighter: --no-youtube (−650 MB), your own indexer / TorrServer, or a smaller TorrServer cache (--ts-cache-mb 64)."
+  note "RAM is tight for the chosen parts (${have} MB of ~${need} MB): see docs/deployment.md → Sizing."
+elif [ "${have:-0}" -gt 0 ]; then
+  ok "RAM: ${have} MB (these parts want about ${need} MB at their peaks)"
+fi
 [ "$(env_get INDEXER)" = prowlarr ] && ! part_on prowlarr && ok "torrent search: your Prowlarr at $(env_get PROWLARR_URL)"
 [ "$(env_get INDEXER)" = jackett ] && ! part_on jackett && ok "torrent search: your Jackett at $(env_get JACKETT_URL)"
 part_on torrserver || ok "TorrServer: yours at $(env_get TORRSERVER_URL)"

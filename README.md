@@ -44,10 +44,16 @@ Cineko comes in two editions:
 
 ## Install
 
-You need a Linux server (amd64 or arm64, 2+ cores, 4 GB RAM — 8 GB is comfortable; a current
-distribution such as Ubuntu 22.04+/Debian 12, on a KVM VPS or real hardware) with Docker and the
-compose plugin (`curl -fsSL https://get.docker.com | sh`). The full stack idles at ~850 MB of RAM;
-details in [docs/deployment.md → Sizing](docs/deployment.md#sizing).
+You need a Linux server (amd64 or arm64; a current distribution such as Ubuntu 22.04+/Debian 12, on a
+KVM VPS or real hardware) with Docker and the compose plugin (`curl -fsSL https://get.docker.com | sh`).
+
+| Setup | RAM (minimum / comfortable) | CPU | Disk for images |
+|---|---|---|---|
+| Everything (default) | 3 GB / 4–8 GB | 2+ cores | ~2.8 GB |
+| Lean: no YouTube, no Music (`--no-youtube --no-music`) | 2 GB / 3–4 GB | 1–2 cores | ~2.1 GB |
+| Minimal: your own indexer + TorrServer | 1 GB / 2 GB | 1 core | ~0.7 GB |
+
+Details per part: [docs/deployment.md → Sizing](docs/deployment.md#sizing).
 
 ```sh
 git clone https://github.com/MartyLee42/cineko-tv-app.git cineko

@@ -23,8 +23,9 @@ server's loopback interface only; you reach them through an SSH tunnel.
 
 ## Requirements
 
-- A 64-bit Linux server (amd64 or arm64) with **2+ CPU cores and 4 GB RAM**
-  (8 GB is comfortable). See [Sizing](#sizing) for what the stack really uses.
+- A 64-bit Linux server (amd64 or arm64). Everything: **2+ CPU cores and
+  4 GB RAM** (8 GB is comfortable). Without YouTube and with your own
+  services it runs on much less — see [Sizing](#sizing) for each setup.
 - A **current distribution**: Ubuntu 22.04 / 24.04, Debian 12 or newer
   (kernel 5.15+, cgroup v2). Older ones work but leak memory — see
   [Sizing](#sizing). On a VPS pick **KVM** (own kernel); container-based VPSes
@@ -43,29 +44,51 @@ server's loopback interface only; you reach them through an SSH tunnel.
 
 ## Sizing
 
-Measured on a household server (6 cores, 8 GB, Ubuntu 24.04, the full stack:
-Cineko, Prowlarr + FlareSolverr, TorrServer, Invidious + companion, plus a
-VPN container):
+### By setup
 
-| | Idle | Peaks |
-|---|---|---|
-| All containers together | ~850 MB | ~1.5–2 GB |
-| API | ~40 MB | ~200 MB during the nightly «Для вас» run |
-| Postgres (≈ 200 MB database) | ~85 MB | ~150 MB |
-| Prowlarr | ~130 MB | — |
-| FlareSolverr | ~230 MB | ~650 MB while solving a Cloudflare challenge |
-| Invidious + companion | ~200 MB | companion ~460 MB generating its PO token at start |
-| TorrServer | ~90 MB | + its RAM cache per playing torrent (128 MB by default) |
-| Transcoder | ~5 MB | ffmpeg per compatibility/re-encode job (≤ `TRANSCODER_MAX_JOBS`, capped by its 1.5 GB `mem_limit`) |
-| Whole server incl. the OS | ~1.7 GB used | — |
+Which [optional parts](#optional-parts) you install decides most of the
+size. RAM figures include the operating system (~350 MB); disk is the Docker
+images, before databases, caches and downloads.
 
-- **RAM**: 4 GB runs everything for a family; 8 GB leaves room for several
-  simultaneous streams and re-encodes. On 4 GB keep TorrServer's cache at
-  64–128 MB and `TRANSCODER_MAX_JOBS=1`.
+| Setup | Parts | RAM idle | RAM minimum / comfortable | CPU | Disk (images) |
+|---|---|---|---|---|---|
+| **Full** (default) | everything: YouTube, Music, Prowlarr + FlareSolverr, TorrServer | ~1.1 GB | **3 GB** / 4–8 GB | 2+ cores | ~2.8 GB |
+| **No YouTube** | Music, Prowlarr (or Jackett) + FlareSolverr, TorrServer | ~0.8 GB | **2 GB** / 4 GB | 2 cores | ~2.3 GB |
+| **Lean** | Jackett or Prowlarr + FlareSolverr, TorrServer (`--no-youtube --no-music`) | ~0.8 GB | **2 GB** / 3–4 GB | 1–2 cores | ~2.1 GB |
+| **Minimal** | Cineko only; your own indexer and TorrServer elsewhere | ~0.5 GB | **1 GB** / 2 GB | 1 core | ~0.7 GB |
+
+`install.sh` checks the server's RAM against the minimum for the parts you
+chose and warns (it never refuses). "Minimum" is enough for a household's
+idle and peak use with one or two streams; for more streams or 4K add RAM
+for TorrServer's cache (128 MB per playing torrent by default) and CPU for
+re-encodes (below).
+
+### By part
+
+Measured on a household server (Ubuntu 24.04, kernel 6.8):
+
+| Part | Containers | RAM idle | RAM peak | Image |
+|---|---|---|---|---|
+| Cineko core (always) | api, web, postgres, transcoder | ~150 MB | ~500 MB (nightly «Для вас» run, Postgres) + ffmpeg per re-encode | ~640 MB |
+| YouTube «Видео» | invidious, companion, invidious-db, restart-proxy | ~300 MB | ~650 MB (companion's PO token at start) | ~540 MB |
+| Cineko Music | music | ~5 MB | ~10 MB (+ ffmpeg for CUE images / odd formats) | ~160 MB |
+| Prowlarr + FlareSolverr | prowlarr, flaresolverr | ~180 MB | ~0.7 GB (a headless Chrome while solving a Cloudflare challenge) | ~1.3 GB |
+| Jackett + FlareSolverr | jackett, flaresolverr | ~130 MB | ~0.6 GB (same Chrome) | ~1.35 GB |
+| TorrServer | torrserver | ~90 MB | + its RAM cache per playing torrent (128 MB by default) | ~160 MB |
+| VPN (optional) | gluetun | ~20 MB | — | ~40 MB |
+
+The full stack measured ~850 MB for all containers at idle and ~1.9 GB used
+on the whole server, with 15 containers up. Container limits (`mem_limit`)
+are ceilings, not reservations.
+
+- **RAM**: on a small server keep TorrServer's cache at 64–128 MB
+  (`--ts-cache-mb`) and `TRANSCODER_MAX_JOBS=1`. FlareSolverr only starts a
+  browser for indexers behind Cloudflare; with none of those it stays at
+  ~40 MB.
 - **CPU**: idle is near 0 %. Direct play and remuxing are cheap; only
   re-encoding video (XviD / MPEG-2 / VC-1, see [GPU transcoding](#gpu-transcoding))
   needs real CPU — roughly one core per 1080p stream without a GPU.
-- **Disk**: ~4–5 GB of Docker images (old images pile up after updates:
+- **Disk**: the images above (old images pile up after updates:
   `docker image prune`), a few hundred MB of databases and caches for a
   household, plus TorrServer's disk cache if enabled and any
   [server downloads](#server-downloads-on-another-disk).
@@ -129,9 +152,9 @@ containers** and **no menu items** in the TV and web apps.
 
 | Part | Flag | What it needs | Off means |
 |---|---|---|---|
-| YouTube «Видео» | `--no-youtube` / `--youtube` | Invidious + companion, ~200 MB RAM | no «Видео» tab, no YouTube audio in Cineko Music |
+| YouTube «Видео» | `--no-youtube` / `--youtube` | Invidious + companion, ~300 MB idle, ~650 MB peak | no «Видео» tab, no YouTube audio in Cineko Music |
 | Cineko Music | `--no-music` / `--music` | one small container | no music app; `/music/` answers 404 |
-| Torrent search | `--indexer prowlarr` (default), `jackett`, `none` | Prowlarr or Jackett + FlareSolverr, ~350 MB | `none`: no torrent search (online sources still work) |
+| Torrent search | `--indexer prowlarr` (default), `jackett`, `none` | Prowlarr or Jackett + FlareSolverr, ~150 MB idle, ~0.7 GB peak | `none`: no torrent search (online sources still work) |
 | Your own Prowlarr | `--prowlarr-url URL --prowlarr-key KEY` | — | the bundled Prowlarr isn't created |
 | Your own Jackett | `--indexer jackett --jackett-url URL --jackett-key KEY` | — | the bundled Jackett isn't created |
 | Your own TorrServer | `--torrserver-url URL` | — | the bundled TorrServer isn't created |
