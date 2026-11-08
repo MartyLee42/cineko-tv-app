@@ -43,7 +43,7 @@ func finished(t *testing.T, env *testutil.Env, pid, media string, episode *strin
 // already migrated, so it is run by hand on the history written above).
 func runBackfill(t *testing.T, env *testutil.Env) {
 	t.Helper()
-	raw, err := os.ReadFile("../db/migrations/00037_keepsakes.sql")
+	raw, err := os.ReadFile("../db/migrations/00040_keepsakes.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
