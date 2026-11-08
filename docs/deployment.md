@@ -94,8 +94,10 @@ The installer:
 2. Asks for the **public address**. A domain (`tv.example.com`) gives
    automatic HTTPS from Let's Encrypt; an IP address (`192.168.1.20`) gives
    plain HTTP on the LAN (`SITE_ADDRESS=:80`, `COOKIE_SECURE=false`).
-3. Asks for a **TMDB token**, an optional **DeepSeek key** (AI picks) and an
-   optional **outbound proxy** (see [Blocked TMDB / YouTube](#blocked-tmdb--youtube-vpn-profile)).
+3. Asks for a **TMDB token**, an optional **DeepSeek key** (AI picks), an
+   optional **outbound proxy** (see [Blocked TMDB / YouTube](#blocked-tmdb--youtube-vpn-profile))
+   and which **[optional parts](#optional-parts)** to install: YouTube, Cineko
+   Music, Prowlarr or Jackett (or your own), TorrServer (or your own).
 4. Writes `.env` (mode 0600) and generates every secret: `APP_SESSION_SECRET`,
    `POSTGRES_PASSWORD`, `TRANSCODER_SECRET`, `INVIDIOUS_DB_PASSWORD`,
    `INVIDIOUS_HMAC_KEY`, `INVIDIOUS_COMPANION_KEY`, `METRICS_TOKEN`
@@ -103,7 +105,7 @@ The installer:
    Existing values are never replaced.
 5. Pulls the prebuilt images from GHCR (or builds them from the checkout when
    they aren't available, or with `--build`) and starts the stack.
-6. Waits for Prowlarr, copies its generated API key into `.env`
+6. Waits for Prowlarr (or Jackett), copies its generated API key into `.env`
    (`PROWLARR_API_KEY`), adds FlareSolverr as an indexer proxy (tag
    `flaresolverr`) and a few public indexers that need no account (RuTor,
    The Pirate Bay, 1337x via FlareSolverr, YTS, EZTV, LimeTorrents). An
@@ -116,7 +118,42 @@ The installer:
 
 Re-running `./install.sh` is safe: it keeps `.env`, adds only what's missing
 in Prowlarr and leaves existing accounts alone. Use it after changing the
-address (`--domain` / `--lan`) or to retry failed indexers.
+address (`--domain` / `--lan`), to switch optional parts on or off, or to
+retry failed indexers.
+
+### Optional parts
+
+Everything below is on unless you turn it off. The first run asks; later
+runs keep your answers (flags change them). A part that's off has **no
+containers** and **no menu items** in the TV and web apps.
+
+| Part | Flag | What it needs | Off means |
+|---|---|---|---|
+| YouTube «Видео» | `--no-youtube` / `--youtube` | Invidious + companion, ~200 MB RAM | no «Видео» tab, no YouTube audio in Cineko Music |
+| Cineko Music | `--no-music` / `--music` | one small container | no music app; `/music/` answers 404 |
+| Torrent search | `--indexer prowlarr` (default), `jackett`, `none` | Prowlarr or Jackett + FlareSolverr, ~350 MB | `none`: no torrent search (online sources still work) |
+| Your own Prowlarr | `--prowlarr-url URL --prowlarr-key KEY` | — | the bundled Prowlarr isn't created |
+| Your own Jackett | `--indexer jackett --jackett-url URL --jackett-key KEY` | — | the bundled Jackett isn't created |
+| Your own TorrServer | `--torrserver-url URL` | — | the bundled TorrServer isn't created |
+
+Something on the same machine but outside Docker: use
+`http://host.docker.internal:<port>` as its URL.
+
+```sh
+# A lean install: no YouTube, no music, Jackett instead of Prowlarr.
+./install.sh --no-youtube --no-music --indexer jackett
+# Reuse what's already on the server.
+./install.sh --prowlarr-url http://host.docker.internal:9696 --prowlarr-key KEY \
+  --torrserver-url http://host.docker.internal:8090
+```
+
+The choices live in `.env` (`VIDEO_ENABLED`, `MUSIC_ENABLED`, `INDEXER`,
+the `*_URL` settings) and become compose profiles in `COMPOSE_PROFILES`
+(`youtube`, `music`, `prowlarr`, `jackett`, `torrserver`, `vpn`). Switching a
+part off removes its containers but keeps its data volume, so switching it
+back on keeps its settings. Installs from before these options keep
+everything on: `scripts/cineko.sh` and `scripts/update.sh` fill in
+`COMPOSE_PROFILES` once.
 
 ### Non-interactive install
 
@@ -128,10 +165,12 @@ CINEKO_ADMIN_PASSWORD='a long password' ./install.sh --yes \
 ```
 
 `./install.sh --help` lists every option (`--proxy`, `--vpn`,
-`--deepseek-key`, `--indexers`, `--skip-prowlarr`, `--build`, `--pull`,
+`--deepseek-key`, `--indexers`, `--skip-prowlarr`, the
+[optional parts](#optional-parts), `--build`, `--pull`,
 `--admin-password-file`, `--no-start`). Each also has an environment variable
 (`CINEKO_DOMAIN`, `CINEKO_LAN=1`, `CINEKO_TMDB`, `CINEKO_PROXY`,
-`CINEKO_ADMIN_USER`, `CINEKO_ADMIN_PASSWORD`, `CINEKO_YES=1`, …).
+`CINEKO_ADMIN_USER`, `CINEKO_ADMIN_PASSWORD`, `CINEKO_YES=1`,
+`CINEKO_YOUTUBE=0`, `CINEKO_MUSIC=0`, `CINEKO_INDEXER=jackett`, …).
 
 ## Manual install
 
@@ -140,6 +179,8 @@ cp deployments/env.example .env && chmod 600 .env
 # Fill in PUBLIC_BASE_URL, SITE_ADDRESS and the secrets, e.g.
 #   openssl rand -base64 48 | tr -d '/+='      (APP_SESSION_SECRET, …)
 #   openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c 16   (INVIDIOUS_COMPANION_KEY)
+# and the parts to run (see "Optional parts"), e.g. everything:
+#   COMPOSE_PROFILES=youtube,music,prowlarr,torrserver  and  CINEKO_PARTS_VERSION=1
 scripts/cineko.sh pull           # prebuilt images…
 scripts/cineko.sh up -d          # …or: scripts/cineko.sh up -d --build  (make prod)
 ```
@@ -251,8 +292,25 @@ added automatically (definition names as in Prowlarr; `:fs` = through
 FlareSolverr). Cineko also queries the public **Jacred** index by default
 (`JACRED_URL`, Admin → Sources).
 
-Already running Prowlarr elsewhere? Set `PROWLARR_URL` / `PROWLARR_API_KEY`
-to it; the bundled one then just idles (or remove it in the override file).
+Already running Prowlarr elsewhere? `./install.sh --prowlarr-url URL
+--prowlarr-key KEY` uses it, and the bundled one isn't created.
+
+### Jackett instead of Prowlarr
+
+`./install.sh --indexer jackett` runs Jackett (plus FlareSolverr) instead.
+The installer copies Jackett's API key into `.env` (`JACKETT_API_KEY`), sets
+its FlareSolverr URL and adds the same public indexers (`--indexers`, the
+`:fs` suffix is ignored: Jackett sends Cloudflare sites through FlareSolverr
+itself). Its UI, for private trackers and an admin password:
+
+```sh
+ssh -L 9117:127.0.0.1:9117 you@your-server      # then http://localhost:9117
+```
+
+Cineko searches all configured Jackett indexers at once
+(`/api/v2.0/indexers/all/results`); a tracker that fails shows up as a
+warning, and **Admin → Sources** lists Jackett like Prowlarr. Your own
+Jackett: `--jackett-url URL --jackett-key KEY`.
 
 ## TorrServer
 

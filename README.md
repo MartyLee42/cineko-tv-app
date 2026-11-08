@@ -35,7 +35,7 @@ Cineko comes in two editions:
 - **Player:** voice-over / subtitle / quality switching, chapters on the seek bar, **skip intros, recaps and credits**, «next episode» with a countdown, sleep timer, resume everywhere (even when a TV engine restarts the stream from 0), a screensaver over a long pause; releases are ranked by what plays **smoothly** on that TV, with a lighter-release suggestion when it stutters.
 - **Watch companion:** «Ранее в сериале» recaps before an episode, «После титров» (the ending explained, why it matters, a spoiler chat), title quotes and facts, «Послушать саундтрек» as a Cineko Music playlist.
 - **PWA** for phones and computers: browse, search (incl. «Спросить ИИ»), manage household accounts and profiles, pair TVs by QR code and use the phone as a remote.
-- **Sources:** torrents through your own **Prowlarr** (+ FlareSolverr) streamed by **TorrServer**, online balancers, **IPTV** playlists with EPG, a **YouTube** tab through a private **Invidious** (autoplay of the next part).
+- **Sources:** torrents through your own **Prowlarr** or **Jackett** (+ FlareSolverr) streamed by **TorrServer**, online balancers, **IPTV** playlists with EPG, a **YouTube** tab through a private **Invidious** (autoplay of the next part).
 - **Recommendations:** «Для вас» rows, taste by themes, family picks, taste quiz, curated film lists (Sight & Sound, Ebert, Cahiers du cinéma…); optional AI via DeepSeek — daily collections, theme rubrics and picks with a personal reason.
 - **Cineko Music** at `/music`: Deezer catalog, YouTube / zaycev.net / lossless torrent audio, lyrics, tabs, AI playlists, offline downloads.
 - **Cozy extras:** Cineko the robot-cat mascot (with costumes), cozy mode, holiday animations, live posters.
@@ -59,9 +59,10 @@ The installer:
 
 1. asks for your address — a **domain** gets automatic HTTPS (ports 80/443 open, DNS pointing at the server); an **IP address** runs on your LAN over HTTP;
 2. asks for an optional [TMDB](https://www.themoviedb.org/signup) token (needed for the catalog), an optional DeepSeek key (AI picks) and an optional proxy / VPN (for regions where TMDB or YouTube are blocked);
-3. generates every secret into `.env` (mode 0600, never overwritten on re-runs);
-4. starts the whole stack: Cineko (API, transcoder, music, web), **Prowlarr + FlareSolverr** (preloaded with public indexers), **TorrServer** and **Invidious**;
-5. applies the TorrServer settings and creates your administrator account, then prints the addresses.
+3. asks which optional parts you want — YouTube «Видео» (Invidious), Cineko Music, **Prowlarr** or **Jackett** for torrent search (or your own), **TorrServer** (or your own); a part you skip gets no containers and no menu item ([details](docs/deployment.md#optional-parts));
+4. generates every secret into `.env` (mode 0600, never overwritten on re-runs);
+5. starts the stack: Cineko (API, transcoder, web) plus the parts you chose, with Prowlarr or Jackett preloaded with public indexers;
+6. applies the TorrServer settings and creates your administrator account, then prints the addresses.
 
 Then:
 
@@ -70,6 +71,7 @@ Then:
 - add private trackers in Prowlarr (`ssh -L 9696:127.0.0.1:9696 your-server`, then <http://localhost:9696>).
 
 Non-interactive: `./install.sh --yes --domain tv.example.com --tmdb <token> --admin-user me`
+(add e.g. `--no-youtube --no-music --indexer jackett` for a lean install)
 (password from `CINEKO_ADMIN_PASSWORD`). `./install.sh --help` lists every option.
 
 Operate with `scripts/cineko.sh <compose args>` (e.g. `scripts/cineko.sh ps`, `logs -f api`), update with
