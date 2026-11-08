@@ -245,13 +245,12 @@ function ChooserPanel({
       style={phone ? undefined : pos ? { position: "fixed", left: pos.left, top: pos.top, maxHeight: pos.max, transform: pos.up ? "translateY(-100%)" : undefined } : { position: "fixed", visibility: "hidden" }}
       className={
         phone
-          ? "relative max-h-[85vh] w-full overflow-y-auto overscroll-contain rounded-t-3xl border border-border bg-surface px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 shadow-2xl shadow-black/60"
+          ? "relative max-h-[85dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl border border-border bg-surface px-3 pb-3 pt-2 shadow-2xl shadow-black/60"
           : "z-50 max-h-[70vh] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-border bg-surface p-2 shadow-2xl shadow-black/50"
       }
     >
       {phone && (
         <>
-          <div className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-border" aria-hidden />
           <p className="truncate px-3 pb-1 pt-1 text-base font-bold">{label}</p>
         </>
       )}
@@ -345,7 +344,7 @@ function ChooserPanel({
 
   return createPortal(
     phone ? (
-      <div className="fixed inset-0 z-40 flex items-end">
+      <div className="fixed inset-0 z-40 flex items-center justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
         <div className="absolute inset-0 bg-black/60" onClick={() => onClose()} aria-hidden />
         {body}
       </div>

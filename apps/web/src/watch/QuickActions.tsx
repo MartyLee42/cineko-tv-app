@@ -141,7 +141,7 @@ export function QuickSheet({ item, anchor, onClose, onDismiss }: { item: MediaSu
         aria-label={item.title}
         data-testid="quick-sheet"
         style={pos ? { position: "fixed", left: pos.left, top: pos.top } : undefined}
-        className={`${pos ? "w-[20rem]" : "fixed inset-x-0 bottom-0 rounded-b-none pb-[max(1rem,env(safe-area-inset-bottom))]"} rounded-2xl border border-border bg-surface p-4 shadow-2xl shadow-black/40`}
+        className={`${pos ? "w-[20rem]" : "fixed left-1/2 top-1/2 max-h-[85dvh] w-[calc(100vw-1.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain"} rounded-2xl border border-border bg-surface p-4 shadow-2xl shadow-black/40`}
       >
         <div className="mb-3 flex items-start gap-2">
           <div className="min-w-0 flex-1">

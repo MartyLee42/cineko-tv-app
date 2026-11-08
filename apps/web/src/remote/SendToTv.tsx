@@ -177,7 +177,7 @@ export function Sheet({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center md:items-center md:p-6">
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] md:p-6">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
       <div
         ref={panel}
@@ -185,11 +185,10 @@ export function Sheet({
         aria-modal
         aria-label={title}
         data-testid={testId}
-        className={`relative max-h-[85vh] w-full overflow-y-auto overscroll-contain rounded-t-3xl border border-border bg-surface px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 shadow-2xl shadow-black/60 md:rounded-2xl md:pb-5 md:pt-4 ${
+        className={`relative max-h-[85dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl border border-border bg-surface px-4 pb-4 pt-2 shadow-2xl shadow-black/60 md:rounded-2xl md:pb-5 md:pt-4 ${
           wide ? "md:max-w-2xl md:px-5" : "md:max-w-md"
         }`}
       >
-        <div className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-border md:hidden" aria-hidden />
         <div className="mb-3 flex items-start gap-2">
           <div className="min-w-0 flex-1 pt-2">
             <h2 className="text-lg font-bold leading-tight">{title}</h2>
