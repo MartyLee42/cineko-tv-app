@@ -22,7 +22,7 @@ import { useSettings } from "../../profile/settings";
 import { useFilmTheme } from "../../filmtheme/load";
 import type { PlayHow } from "./CatalogShell";
 import { FRAMES, useDesign, type Design } from "../../design/context";
-import { useRecoInbox, useRecoSeen, useSettled, useToggleWatchlist } from "../../design/data";
+import { useRecoInbox, useRecoSeen, useServerFeatures, useSettled, useToggleWatchlist } from "../../design/data";
 import { RecoNote } from "../../design/reco";
 import { FamilyNote } from "../../family/Family";
 import { Brackets, PosterCard, WideCard } from "../../design/cards";
@@ -94,6 +94,7 @@ export function DetailsScreen({
   onPlay?: (media: MediaDetail, episode: Episode | null, how: PlayHow, startAt?: number) => void;
 }) {
   const { t, locale } = useI18n();
+  const features = useServerFeatures();
   const design = useDesign();
   const frame = FRAMES[design];
   const [trailer, setTrailer] = useState(false);
@@ -410,7 +411,7 @@ export function DetailsScreen({
         label: mp.movie?.completed ? `○  ${t("watch.mark_unwatched")}` : `✓  ${t("watch.mark_watched")}`,
         onPress: () => (setMenu(null), setWatched.mutate({ watched: !mp.movie?.completed })),
       });
-    actions.push({ key: "soundtrack", label: `♫  ${t("soundtrack.tv_menu")}`, onPress: () => (setMenu(null), setSoundtrackOpen(true)) });
+    if (features.music) actions.push({ key: "soundtrack", label: `♫  ${t("soundtrack.tv_menu")}`, onPress: () => (setMenu(null), setSoundtrackOpen(true)) });
     setMenu({ title: d.title, subtitle: t("tvd.more.title"), testId: "more-menu", actions });
   };
   const toggleWatch = () => {

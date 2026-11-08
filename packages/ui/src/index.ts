@@ -40,3 +40,4 @@ export * from "./loaderMatch";
 export * from "./companion";
 export * from "./videoAudio";
 export * from "./soundtrack";
+export * from "./serverFeatures";

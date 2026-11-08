@@ -7,7 +7,7 @@ import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-naviga
 import type { Profile } from "@martytv/contracts";
 import { cvMenuLabel, CvIcon, Mascot, ProfileAvatar, useAppliedDesign, useI18n } from "@martytv/ui";
 import { useDevice, usePlural, useSkin, RAIL_W } from "./context";
-import { useClock, useServerStatus } from "./data";
+import { useClock, useServerFeatures, useServerStatus } from "./data";
 import { clockText, tickerItems, tickerSeconds, torrState } from "./format";
 import { BookmarkIcon, ClockIcon, CompassIcon, DiceIcon, FilmIcon, HomeIcon, LiveTvIcon, MessageIcon, NewEpisodesIcon, PlayTileIcon, SearchIcon, SlidersIcon, SparkIcon, TvIcon } from "./icons";
 import {
@@ -26,7 +26,7 @@ import {
   WaveSlidersIcon,
   WaveVideoIcon,
 } from "./waveIcons";
-import { KINOZAL_MENU, PROJECTOR_ICONS, PROJECTOR_TEXT, railIndicatorTop, TERMINAL_MENU, type MenuId } from "./menuOrder";
+import { KINOZAL_MENU, PROJECTOR_ICONS, PROJECTOR_TEXT, railIndicatorTop, TERMINAL_MENU, visibleMenu, type MenuId } from "./menuOrder";
 
 export type { MenuId };
 
@@ -82,8 +82,9 @@ export function KinozalRail({ active, profile, unread, newEpisodes, attribution,
     mine: { label: t("tvd.nav.mine"), icon: <BookmarkIcon /> },
     messages: { label: t("tvd.nav.messages"), icon: <MessageIcon />, badge: unread },
   };
-  const top = KINOZAL_MENU.map((id) => ({ id, ...all[id]! }));
-  const indicator = railIndicatorTop(active);
+  const ids = visibleMenu(KINOZAL_MENU, useServerFeatures());
+  const top = ids.map((id) => ({ id, ...all[id]! }));
+  const indicator = railIndicatorTop(active, ids);
   const item = (it: { id: MenuId; label: string; icon: ReactNode; badge?: number; sub?: string }) => (
     <NavItem
       key={it.id}
@@ -202,7 +203,7 @@ export function TerminalBar({ active, profile, unread, mine, newEpisodes, onSele
   // «Конструктивизм» renames a few tabs (visible text only: data-menu / focus keys stay).
   const cvOn = useAppliedDesign() === "constructivism";
   const cv = cvOn && locale === "ru";
-  const tabs = TERMINAL_MENU.map((id) => ({ id, ...labels[id]!, label: cvMenuLabel(cv, id, labels[id]!.label) }));
+  const tabs = visibleMenu(TERMINAL_MENU, useServerFeatures()).map((id) => ({ id, ...labels[id]!, label: cvMenuLabel(cv, id, labels[id]!.label) }));
   const tab = (id: MenuId, children: ReactNode, extra = "") => (
     <NavItem
       key={id}
@@ -354,8 +355,9 @@ export function ProjectorBar({ active, profile, unread, newEpisodes, onSelect }:
   // A 3 px gap between tabs: without it, rounding on scaled screens could make
   // neighbours overlap by a pixel, and the focus engine (which only moves to a
   // tab starting after the current one ends) skipped «Видео» / «ТВ».
+  const features = useServerFeatures();
   const tabs: { id: MenuId; label: ReactNode; icon: boolean }[] = [
-    ...PROJECTOR_TEXT.map((id) => ({ id, label: labelOf(id), icon: false })),
+    ...visibleMenu(PROJECTOR_TEXT, features).map((id) => ({ id, label: labelOf(id), icon: false })),
     ...PROJECTOR_ICONS.map((id) => ({ id, label: icons[id], icon: true })),
   ];
   return (

@@ -52,6 +52,7 @@ export const playerKk: Record<keyof typeof playerEn, string> = {
   "player.filter_language": "Дыбыстау",
   "player.filter_all": "Барлығы",
   "player.no_releases_hint": "Кейінірек іздеп көріңіз — жаңа таратулар үнемі пайда болады.",
+  "player.no_backend": "Бұл серверде таратуларды іздеу бапталмаған. Әкімші Prowlarr немесе Jackett қоса алады.",
   "player.no_filtered": "Мұндай сүзгілермен таратулар жоқ.",
   "player.clear_filters": "Сүзгілерді тазарту",
   "player.current_source": "Қазір ойнап тұр",

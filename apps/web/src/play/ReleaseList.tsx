@@ -2,6 +2,7 @@ import { preferUnderRate } from "../player/logic";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Release } from "@martytv/contracts";
 import { Spinner, useI18n } from "@martytv/ui";
+import { useServerFeatures } from "../features";
 import { Button, ErrorText, timeAgo } from "../components";
 import { AlertIcon, ArrowDownIcon, ArrowUpIcon, CastIcon, DeviceIcon, PlayIcon, RefreshIcon, SearchIcon, TvIcon } from "../icons";
 import { isRefined, rememberedRefine, rememberRefine, type Refine } from "./refine";
@@ -161,6 +162,7 @@ function ReleaseListBody({
   onResetRefine,
 }: ListProps & { refine: Refine; onRefine: () => void; onResetRefine: () => void }) {
   const { t, locale } = useI18n();
+  const torrents = useServerFeatures().torrents;
   const [mode, setModeState] = useState<ReleaseMode>(() => (onWatchHere ? (budget ? "here" : readMode()) : "tv"));
   const here = !!onWatchHere && mode === "here";
   const setMode = (m: ReleaseMode) => {
@@ -393,7 +395,7 @@ function ReleaseListBody({
 
       {!items.length ? (
         <div className="space-y-2 rounded-2xl border border-dashed border-border px-4 py-8 text-center" data-testid="releases-empty">
-          <p className="font-semibold">{t("player.no_releases")}</p>
+          <p className="font-semibold">{torrents ? t("player.no_releases") : t("player.no_backend")}</p>
           <p className="text-sm text-muted">{isRefined(refine) ? t("player.refine.empty_hint") : t("player.no_releases_hint")}</p>
           <Button className="mt-2" onClick={onRefine} data-testid="releases-refine-empty">
             <SearchIcon />

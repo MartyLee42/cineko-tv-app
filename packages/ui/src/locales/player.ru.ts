@@ -52,6 +52,7 @@ export const playerRu: Record<keyof typeof playerEn, string> = {
   "player.filter_language": "Озвучка",
   "player.filter_all": "Все",
   "player.no_releases_hint": "Попробуйте поискать позже — новые раздачи появляются постоянно.",
+  "player.no_backend": "Поиск раздач на этом сервере не настроен. Администратор может включить Prowlarr или Jackett.",
   "player.no_filtered": "Нет раздач с такими фильтрами.",
   "player.clear_filters": "Сбросить фильтры",
   "player.current_source": "Сейчас играет",

@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isAdminRole } from "@martytv/contracts";
 import { Centered, cvMenuLabel, Logo, Spinner, useConstructivism, useI18n } from "@martytv/ui";
 import { api, realtime, setCsrfToken } from "./api";
+import { tabAvailable, useServerFeatures, VideoGate } from "./features";
 import { useSession } from "./session";
 import { Button, ErrorText } from "./components";
 import { LoginPage } from "./pages/LoginPage";
@@ -135,9 +136,9 @@ export function App() {
             <Route path="notes" element={<NotesPage />} />
             <Route path="downloads" element={<DownloadsPage />} />
             <Route path="tv-channels" element={<TvChannelsPage />} />
-            <Route path="video" element={<VideoPage />} />
-            <Route path="video/watch/:id" element={<WatchVideoPage />} />
-            <Route path="video/channel/:id" element={<VideoChannelPage />} />
+            <Route path="video" element={<VideoGate><VideoPage /></VideoGate>} />
+            <Route path="video/watch/:id" element={<VideoGate><WatchVideoPage /></VideoGate>} />
+            <Route path="video/channel/:id" element={<VideoGate><VideoChannelPage /></VideoGate>} />
             <Route path="admin" element={<AdminPage />} />
           </Route>
         </Route>
@@ -231,7 +232,9 @@ function Layout() {
   const cvl = (id: string, label: string) => ({ label: cvMenuLabel(cv, id, label), ...(cv && cvMenuLabel(cv, id, label) !== label ? { aria: label } : {}) });
   // Tabs the profile hid in Settings → «Вкладки меню».
   const hidden = new Set<string>(useSettings().hidden_tabs ?? []);
-  const shown = <T extends { tab?: NavTab }>(l: T) => !l.tab || !hidden.has(l.tab);
+  // …and what this server doesn't have (no «Видео» without YouTube).
+  const features = useServerFeatures();
+  const shown = <T extends { tab?: NavTab }>(l: T) => (!l.tab || !hidden.has(l.tab)) && tabAvailable(l.tab, features);
   // Desktop tabs: the main sections only. Search is an icon on the right;
   // Devices, Settings and Admin live in the avatar menu. Narrower screens
   // move the tail tabs into «Ещё» (`from` = the breakpoint they appear inline).
@@ -298,6 +301,7 @@ function Layout() {
             </NavLink>
             )}
             {/* Cineko Music: a separate app at /music (full page load, not a route). */}
+            {features.music && (
             <a
               href="/music/"
               aria-label={t("nav.music")}
@@ -308,6 +312,7 @@ function Layout() {
                 <path d="M9 17.5V6.2a1 1 0 0 1 .76-.97l9-2.25A1 1 0 0 1 20 3.95v11.3a3 3 0 1 1-2-2.83V7.03l-7 1.75v8.72A3 3 0 1 1 9 17.5z" />
               </svg>
             </a>
+            )}
             <RecoHeaderButton />
             <InboxButton />
             <ProfileMenu userName={session?.user.display_name || session?.user.username || ""} onLogout={logout} isAdmin={isAdmin} />

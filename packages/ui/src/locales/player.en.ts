@@ -52,6 +52,7 @@ export const playerEn = {
   "player.filter_language": "Audio",
   "player.filter_all": "All",
   "player.no_releases_hint": "Try searching again later — new releases appear all the time.",
+  "player.no_backend": "Torrent search isn't set up on this server. An administrator can enable Prowlarr or Jackett.",
   "player.no_filtered": "No releases match these filters.",
   "player.clear_filters": "Clear filters",
   "player.current_source": "Playing now",
