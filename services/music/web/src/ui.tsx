@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
-import { api, dzId, fmtTime, img, sized, type Track } from "./api";
+import { useQuery } from "@tanstack/react-query";
+import { api, fmtTime, img, sized, type Me, type Track } from "./api";
 import { toast } from "./toast";
 import { useLibrary } from "./library";
 import { usePlayer, type PlayContext } from "./player";
 import { HeartIcon, MoreIcon, PauseIcon, PlayIcon, BackIcon, DownloadIcon } from "./icons";
-import { openMatchPicker, openPlaylistPicker, openTrackTorrent } from "./dialogs";
+import { openPlaylistPicker } from "./dialogs";
+import { openSourcePicker } from "./sourcedialog";
+import { sourceMenu } from "./sources";
 import { download, isDownloaded, removeDownloads, useOffline } from "./offline";
 import { songsterrLink } from "./songsterr";
 
@@ -146,6 +149,7 @@ export function useTrackMenu() {
   const player = usePlayer();
   const lib = useLibrary();
   const navigate = useNavigate();
+  const me = useQuery({ queryKey: ["me"], queryFn: () => api.get<Me>("/me"), staleTime: 5 * 60_000 });
   return (e: MouseEvent, t: Track, extra: MenuItem[] = []) => {
     const items: MenuItem[] = [
       { label: "Играть следующим", onClick: () => player.playNext([t]) },
@@ -170,8 +174,8 @@ export function useTrackMenu() {
         ? { label: "Удалить с устройства", onClick: () => void removeDownloads([t.id]) }
         : { label: "Скачать на устройство", onClick: () => download([t]) },
     );
-    if (dzId(t) !== null) items.push({ label: "Не та запись? Выбрать другую", onClick: () => openMatchPicker(t) });
-    if (!t.src) items.push({ label: "Найти в торрентах (MP3 / FLAC)", onClick: () => openTrackTorrent(t) });
+    // Same for every track and list: any track can be looked up on every provider.
+    for (const m of sourceMenu(t, me.data?.features)) items.push({ label: m.label, onClick: () => openSourcePicker(t, m.tab) });
     items.push(...extra);
     openMenu(e, items, `${t.title} · ${t.artist}`);
   };
