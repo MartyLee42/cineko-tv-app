@@ -360,6 +360,8 @@ GET and `write` otherwise.
 | GET | `/profiles/{id}/continue-watching?lang=` | `{items: ContinueItem[]}`, newest first, max 30 |
 | GET | `/profiles/{id}/new-episodes?lang` | «Новые серии» from the nightly check: episodes of the profile's series (watched in the last year, watchlist/favorites, or ongoing Kinopoisk imports — only episodes aired after the import) that aired after what was watched. Unseen first, then seen ones from the last 30 days (max 100). Watching it or a later episode marks it seen |
 | POST | `/profiles/{id}/new-episodes/seen` | `{episode_ids?: uuid[] (≤ 200), all?: bool}` → 204: marks seen / hides |
+| GET | `/profiles/{id}/tickets?lang&cursor&limit` | Ticket stubs (one per finished film, newest number first; `limit` 1–100, default 24; `next_cursor`): number, media, finished_at + household `date`/`time`, hall/row/seat (stable hash), the profile's `rating`. Owner, its TVs, admins |
+| GET | `/profiles/{id}/achievements?lang` | Unlocked stickers (oldest first, with the title that earned each) + `secret` (still hidden). Recorded on read, silently |
 | GET | `/admin/new-episodes` | Admin: schedule (`NEW_EPISODES_AT` in `NEW_EPISODES_TZ`, default 04:00 UTC) and the last 10 runs |
 | POST | `/admin/new-episodes/run` | Admin: run the check now → 202; 409 while one runs |
 | GET | `/profiles/{id}/history?lang&cursor&limit` | `{items: HistoryItem[], next_cursor}`, newest first; bad cursor → 422 |

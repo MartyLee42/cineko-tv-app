@@ -41,6 +41,7 @@ installable.
 | `watch` | Phase 5: playback sessions, progress reports (ordering/staleness/completion), manual watched overrides, series next-up, continue watching, history, watchlist/favorites/ratings, the catalog `Personalizer` (`?profile_id`), admin activity/history |
 | `ratings` | Kinopoisk/IMDb ratings: TMDB → Kinopoisk id matching (keyed, budgeted queue), keyless rating refresh, catalog `RatingsSource`, `kinopoisk` integration status |
 | `awards` | Film awards & nominations from Wikidata (P166/P1411) through the `ratings` SPARQL client: curated award groups/tiers, `media_awards` (migration 00028), background backfill + 60-day re-check, `MediaDetail.awards`, poster `award_badge` added to the ratings annotation ([Awards](#awards-and-nominations-wikidata)) |
+| `keepsakes` | Ticket stubs and achievement stickers, derived from `watch_progress` on read (`GET /profiles/{id}/tickets`, `/achievements`; migration 00037). See «Keepsakes» under Watch sync |
 | `imports` | Rating imports: `POST /profiles/{id}/imports/kinopoisk` (Kinopoisk CSV, ≤ 5 MB, owner only) → background job (`import_jobs`/`import_job_items`, migration 00010; one active per profile, resumed on boot, 4 lines at a time). Lines match an existing `kp_id` or TMDB search (original then Russian title; exact → year ±1 → unique ±2 → word-overlap same year; ambiguous = no match); writes the rating with its KP date, `kp_id` + seeded `kp_rating`, and optionally a title-level completed `watch_progress` row (never resumable). `dry_run` matches only. Audited `imports.kinopoisk` (counts) |
 | `messages` | Admin → user messages: inbox, read state, live delivery over the hub |
 | `reco` | Recommendations between people («Посоветовать»): send, inbox/sent, reactions, live delivery over the hub |
@@ -1450,6 +1451,38 @@ series from TMDB and records those that aired after what the profile watched.
 - Clients: TV tab «Новые серии» with a count badge in every design + a Home
   row; web `/new-episodes` (desktop tab, phone Home card); admin card with
   the schedule, last runs and «Проверить сейчас».
+
+### Keepsakes: ticket stubs and stickers (`internal/keepsakes`)
+
+- **Ticket stubs** (`ticket_stubs`, migration 00037): one per finished *film*
+  (series never get stubs — a season stub could come later). A film counts once
+  it is `completed` in `watch_progress` (playback, «Просмотрено», Kinopoisk
+  import). Stubs are issued on read (`GET /profiles/{id}/tickets` inserts the
+  missing ones under a per-profile advisory lock; the migration backfilled the
+  existing history), numbered per profile in finish order, and are kept when a
+  film is later marked unwatched or rewatched. `finished_at` = first
+  `completed_at`. Hall 1–9 / row 1–20 / seat 1–30 are a SHA-256 of
+  (profile, film) — never stored, never change. The punched rating is the live
+  `ratings` row. Paged by stub number, newest first.
+- **Stickers** (`profile_achievements`): pure rules in `rules.go` evaluated on
+  `GET /profiles/{id}/achievements`; newly met ones are stored with the time
+  the history first met the rule (silent: no events, toasts or pushes). Never
+  taken back. Time-of-day rules ignore manual completions (a «Просмотрено»
+  press or an import is not watching):
+  «Марафонец» every aired episode (air date ≤ that Monday) of one season,
+  ≥ 3, finished within one Fri 18:00 – Mon 06:00 window; «Киноархеолог» a
+  film released before 1960; «Полиглот» finished titles (a film or any
+  episode) in 5 original languages; «Ночная сова» something finished
+  02:00–05:00. New rules: append to `Rules` (ids are stored).
+- **Household clock** (`config.Household`): `TZ` from `.env`, else
+  `NEW_EPISODES_TZ` (a UTC `TZ` loses to a real `NEW_EPISODES_TZ`), else
+  Europe/Moscow. Stub dates and the weekend/night rules use it.
+- Access: the profile's account (or its TV) and admins; others get 404.
+- Clients: shared art in `@martytv/ui/keepsakes` (paper ticket, perforation,
+  hole-punched rating, faint Cineko stamp; die-cut SVG stickers). TV: a
+  «Билеты» row + stickers above the watchlist in «Моё» (lazy chunk). Web:
+  `/tickets` (avatar menu, History chip), lazy. Only unlocked stickers are
+  shown, with «ещё N — секрет».
 
 ## Ratings (Kinopoisk/IMDb)
 

@@ -2000,6 +2000,32 @@ paths:
                 properties:
                   items: { type: array, items: { $ref: "#/components/schemas/HistoryItem" } }
                   next_cursor: { type: [string, "null"] }
+  /profiles/{id}/tickets:
+    parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/Lang" }]
+    get:
+      tags: [watch]
+      operationId: profileTickets
+      description: >-
+        Ticket stubs, newest (highest number) first. Missing stubs for finished films are issued on read.
+        The profile's own account (or its TV) and admins only.
+      parameters:
+        - { name: cursor, in: query, schema: { type: string }, description: next_cursor of the previous page. }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 24 } }
+      responses:
+        "200": { description: A page of stubs., content: { application/json: { schema: { $ref: "#/components/schemas/TicketPage" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+  /profiles/{id}/achievements:
+    parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/Lang" }]
+    get:
+      tags: [watch]
+      operationId: profileAchievements
+      description: >-
+        Unlocked stickers (silent: no events or notifications), recorded on read from the watch history.
+        The profile's own account (or its TV) and admins only.
+      responses:
+        "200": { description: Unlocked stickers., content: { application/json: { schema: { $ref: "#/components/schemas/AchievementList" } } } }
+        "404": { $ref: "#/components/responses/Error" }
   /media/{id}/progress:
     parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/Lang" }]
     get:
@@ -5668,6 +5694,53 @@ components:
       properties:
         media: { $ref: "#/components/schemas/MediaSummary" }
         progress: { $ref: "#/components/schemas/WatchProgress" }
+
+    # ------------------------------------------------------------ keepsakes: ticket stubs & stickers
+    TicketStub:
+      type: object
+      description: >-
+        A paper ticket stub for a finished film (issued once, the first time it counts as finished; kept when the
+        film is marked unwatched). Hall/row/seat are a stable hash of (profile, film).
+      required: [number, media, finished_at, date, time, hall, row, seat, rating]
+      properties:
+        number: { type: integer, minimum: 1, description: "The profile's running stub number." }
+        media: { $ref: "#/components/schemas/MediaSummary" }
+        finished_at: { type: string, format: date-time }
+        date: { type: string, format: date, description: finished_at on the household clock. }
+        time: { type: string, pattern: "^\\d{2}:\\d{2}$", description: "HH:MM on the household clock." }
+        hall: { type: integer, minimum: 1, maximum: 9 }
+        row: { type: integer, minimum: 1, maximum: 20 }
+        seat: { type: integer, minimum: 1, maximum: 30 }
+        rating: { type: [integer, "null"], minimum: 1, maximum: 10, description: "The profile's rating (punched holes)." }
+    TicketPage:
+      type: object
+      required: [items, next_cursor, total, cinema, timezone]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/TicketStub" } }
+        next_cursor: { type: [string, "null"] }
+        total: { type: integer }
+        cinema: { type: string, description: Name printed on the stubs («Cineko»). }
+        timezone: { type: string, description: "The household's IANA timezone (TZ, else NEW_EPISODES_TZ, else Europe/Moscow)." }
+    AchievementId:
+      type: string
+      description: Sticker id; clients ignore ids they don't know (new stickers may be added).
+      examples: [marathon, archaeologist, polyglot, night_owl]
+    Achievement:
+      type: object
+      required: [id, unlocked_at, date, media_id, media_title]
+      properties:
+        id: { $ref: "#/components/schemas/AchievementId" }
+        unlocked_at: { type: string, format: date-time, description: When the history first met the rule. }
+        date: { type: string, format: date, description: unlocked_at on the household clock. }
+        media_id: { type: [string, "null"], format: uuid, description: The title that earned it. }
+        media_title: { type: [string, "null"] }
+    AchievementList:
+      type: object
+      required: [items, secret, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Achievement" }, description: "Unlocked only, oldest first." }
+        secret: { type: integer, description: Stickers not unlocked yet (never listed). }
+        total: { type: integer }
 
     # ------------------------------------------------------------ admin activity & messages (Phase 5)
     ActivityItem:

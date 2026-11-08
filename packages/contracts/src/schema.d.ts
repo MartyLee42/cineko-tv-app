@@ -1735,6 +1735,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profiles/{id}/tickets": {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /** @description Ticket stubs, newest (highest number) first. Missing stubs for finished films are issued on read. The profile's own account (or its TV) and admins only. */
+        get: operations["profileTickets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profiles/{id}/achievements": {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /** @description Unlocked stickers (silent: no events or notifications), recorded on read from the watch history. The profile's own account (or its TV) and admins only. */
+        get: operations["profileAchievements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/media/{id}/progress": {
         parameters: {
             query?: {
@@ -5548,6 +5592,69 @@ export interface components {
         HistoryItem: {
             media: components["schemas"]["MediaSummary"];
             progress: components["schemas"]["WatchProgress"];
+        };
+        /** @description A paper ticket stub for a finished film (issued once, the first time it counts as finished; kept when the film is marked unwatched). Hall/row/seat are a stable hash of (profile, film). */
+        TicketStub: {
+            /** @description The profile's running stub number. */
+            number: number;
+            media: components["schemas"]["MediaSummary"];
+            /** Format: date-time */
+            finished_at: string;
+            /**
+             * Format: date
+             * @description finished_at on the household clock.
+             */
+            date: string;
+            /** @description HH:MM on the household clock. */
+            time: string;
+            hall: number;
+            row: number;
+            seat: number;
+            /** @description The profile's rating (punched holes). */
+            rating: number | null;
+        };
+        TicketPage: {
+            items: components["schemas"]["TicketStub"][];
+            next_cursor: string | null;
+            total: number;
+            /** @description Name printed on the stubs («Cineko»). */
+            cinema: string;
+            /** @description The household's IANA timezone (TZ, else NEW_EPISODES_TZ, else Europe/Moscow). */
+            timezone: string;
+        };
+        /**
+         * @description Sticker id; clients ignore ids they don't know (new stickers may be added).
+         * @example marathon
+         * @example archaeologist
+         * @example polyglot
+         * @example night_owl
+         */
+        AchievementId: string;
+        Achievement: {
+            id: components["schemas"]["AchievementId"];
+            /**
+             * Format: date-time
+             * @description When the history first met the rule.
+             */
+            unlocked_at: string;
+            /**
+             * Format: date
+             * @description unlocked_at on the household clock.
+             */
+            date: string;
+            /**
+             * Format: uuid
+             * @description The title that earned it.
+             */
+            media_id: string | null;
+            media_title: string | null;
+        };
+        AchievementList: {
+            /** @description Unlocked only, oldest first. */
+            items: components["schemas"]["Achievement"][];
+            /** @description Stickers not unlocked yet (never listed). */
+            secret: number;
+            total: number;
         };
         ActivityItem: {
             user: {
@@ -10198,6 +10305,62 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    profileTickets: {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+                /** @description next_cursor of the previous page. */
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of stubs. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketPage"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    profileAchievements: {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unlocked stickers. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AchievementList"];
+                };
+            };
+            404: components["responses"]["Error"];
         };
     };
     mediaProgress: {

@@ -34,6 +34,7 @@ import (
 	"martytv/api/internal/integrations/tmdb"
 	"martytv/api/internal/integrations/torrserver"
 	"martytv/api/internal/iptv"
+	"martytv/api/internal/keepsakes"
 	"martytv/api/internal/ivrestart"
 	"martytv/api/internal/messages"
 	"martytv/api/internal/metrics"
@@ -201,6 +202,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	watchSvc.SetNewEpisodes(cfg.NewEpisodes) // nightly «Новые серии» (main: Watch.RunNewEpisodes)
 	watchHandlers := watch.NewHandlers(watchSvc)
 	watchHandlers.Routes(api)
+	// Ticket stubs and achievement stickers (internal/keepsakes), from watch history.
+	keepsakes.New(keepsakes.Options{Pool: pool, Profiles: profileStore, Catalog: catalogSvc, Location: cfg.Household}).Routes(api)
 	msgHandlers := messages.NewHandlers(pool, hub, auditLog)
 	msgHandlers.Routes(api)
 	reco.NewHandlers(pool, catalogSvc, watchSvc, hub, auditLog).Routes(api)

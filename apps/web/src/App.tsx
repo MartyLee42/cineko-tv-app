@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigate, useNavigationType } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAdminRole } from "@martytv/contracts";
@@ -59,6 +59,16 @@ import { ClientPrefsAgent } from "./devprefs/ui";
 import { OfflinePlayerPage, OfflineScreen } from "./offline/ui";
 import { looksOffline } from "./offline/device";
 
+// «Билеты» (ticket wall + stickers): its own chunk with the shared art.
+const TicketsPage = lazy(() => import("./keepsakes/TicketsPage").then((m) => ({ default: m.TicketsPage })));
+function TicketsRoute() {
+  return (
+    <Suspense fallback={<Centered><Spinner /></Centered>}>
+      <TicketsPage />
+    </Suspense>
+  );
+}
+
 /**
  * A new page (a title, a person, another tab…) opens at the top instead of
  * at the previous page's scroll. Back/forward keep the browser's restored
@@ -109,6 +119,7 @@ export function App() {
             <Route path="account" element={<Navigate to="/settings#account" replace />} />
             <Route path="lists/:list" element={<ListPage />} />
             <Route path="history" element={<HistoryPage />} />
+            <Route path="tickets" element={<TicketsRoute />} />
             <Route path="new-episodes" element={<NewEpisodesPage />} />
             <Route path="recommendations" element={<RecommendationsPage />} />
             <Route path="explore" element={<ExplorePage />} />

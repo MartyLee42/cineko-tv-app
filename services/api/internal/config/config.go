@@ -64,6 +64,9 @@ type Config struct {
 	ForYou ForYouConfig
 	// NewEpisodes: the nightly «Новые серии» check (config/newepisodes.go).
 	NewEpisodes NewEpisodesConfig
+	// Household is the household's wall clock (config/household.go): ticket
+	// stubs and the time-of-day achievements (internal/keepsakes).
+	Household *time.Location
 
 	// MetricsToken enables GET /metrics (Prometheus); scrapes send it as a
 	// bearer token. Empty = /metrics answers 404.
@@ -321,6 +324,7 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 	c.Kinopoisk.ProxyURL = proxyURL("KINOPOISK_PROXY_URL", secret("KINOPOISK_PROXY_URL"), &errs)
 	c.ForYou = loadForYou(get, secret, &errs)
 	c.NewEpisodes = loadNewEpisodes(get, &errs)
+	c.Household = loadHouseholdTZ(get)
 	c.InvidiousRestart = loadInvidiousRestart(get, &errs)
 	c.Library = loadLibrary(get, &errs)
 	c.Transcoder = TranscoderConfig{URL: strings.TrimRight(get("TRANSCODER_URL", ""), "/"), Secret: secret("TRANSCODER_SECRET")}

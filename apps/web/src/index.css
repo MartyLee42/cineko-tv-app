@@ -510,3 +510,13 @@ html.design-redroom :focus-visible { outline: 2px solid rgb(240, 236, 228); outl
   .mt-page { -webkit-animation: none; animation: none; }
 }
 
+
+/* «Билеты»: a stub straightens and lifts under the pointer / keyboard focus. */
+@media (hover: hover) {
+  a:hover > .ks-hover {
+    transform: rotate(0deg) scale(1.02) !important;
+  }
+}
+a:focus-visible > .ks-hover {
+  transform: rotate(0deg) !important;
+}
