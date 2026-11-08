@@ -20,6 +20,7 @@ import {
   type SendTarget,
 } from "./logic";
 import { sendCommand, setLastUsedDevice, useDeviceStates, useLastUsedDevice, type LiveState } from "./state";
+import { useScrollLock } from "../scrollLock";
 
 interface SendCtx {
   flow: Flow;
@@ -161,6 +162,7 @@ export function Sheet({
   const { t } = useI18n();
   const panel = useRef<HTMLDivElement>(null);
   const close = useRef(onClose);
+  useScrollLock();
   useEffect(() => {
     close.current = onClose;
   }, [onClose]);
@@ -178,7 +180,7 @@ export function Sheet({
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] md:p-6">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 touch-none bg-black/60 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
       <div
         ref={panel}
         role={role}

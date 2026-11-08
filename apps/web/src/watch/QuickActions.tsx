@@ -13,6 +13,7 @@ import { useDismiss } from "../foryou/queries";
 import { useActiveProfile } from "./ActiveProfile";
 import { RatingScale } from "./RatingScale";
 import { useRate, useToggleList } from "./queries";
+import { useScrollLock } from "../scrollLock";
 
 const btn = "pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-[15px] text-white shadow-md transition hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
 
@@ -91,6 +92,8 @@ export function QuickSheet({ item, anchor, onClose, onDismiss }: { item: MediaSu
   const dismiss = useDismiss();
   const panel = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  // Centred card on phones: keep the page behind it still.
+  useScrollLock(!pos);
   const [saved, setSaved] = useState<string | null>(null);
   const fav = !!item.me?.favorite;
   const want = !!item.me?.in_watchlist;
