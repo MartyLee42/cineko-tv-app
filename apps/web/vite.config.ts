@@ -43,7 +43,7 @@ export default defineConfig({
         // Outage alerts as Web Push (admin «Уведомления о сбоях»): public/alerts-sw.js.
         importScripts: ["/offline-video-sw.js", "/alerts-sw.js"],
         // /music: Cineko Music, a separate app (services/music) on the same origin.
-        navigateFallbackDenylist: [/^\/docs\//, /^\/api\//, /^\/tv\//, /^\/demo_tv/, /^\/msx\//, /^\/music(\/|$)/, /^\/healthz/, /^\/readyz/],
+        navigateFallbackDenylist: [/^\/docs\//, /^\/downloads\//, /^\/api\//, /^\/tv\//, /^\/demo_tv/, /^\/msx\//, /^\/music(\/|$)/, /^\/healthz/, /^\/readyz/],
         runtimeCaching: [
           {
             // Per-profile responses (watch state in `me`, progress) must be

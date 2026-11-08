@@ -273,6 +273,8 @@ services:
       # Earlier releases' hashed /assets and /tv/assets for pages opened before
       # a deploy (TVs run one page for days); filled and pruned at start.
       - asset-archive:/srv/asset-archive
+      # Optional files at /downloads/ (Android APKs); see Settings → Android apps.
+      - ./downloads:/srv/downloads:ro
     depends_on: [api, music]
     mem_limit: 128m
     networks: [internal]
