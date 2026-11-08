@@ -2603,7 +2603,7 @@ paths:
                 profile_id: { type: string, format: uuid }
                 media_id: { type: string, format: uuid }
                 action: { $ref: "#/components/schemas/ForYouFeedbackAction" }
-                row_id: { type: string, maxLength: 80, description: "ForYouRow.id (or a surface like `surprise`, `collection:<id>`, `explore`)." }
+                row_id: { type: string, maxLength: 80, description: "ForYouRow.id (or a surface like `surprise`, `collection:<id>`, `explore`, `channel`)." }
                 events: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/ForYouFeedbackEvent" } }
       responses:
         "202":
@@ -2765,6 +2765,34 @@ paths:
       responses:
         "200": { description: The list., content: { application/json: { schema: { $ref: "#/components/schemas/CuratedList" } } } }
         "404": { $ref: "#/components/responses/Error" }
+  /profiles/{id}/channel:
+    get:
+      tags: [foryou]
+      operationId: getChannel
+      description: |
+        «Cineko TV»: a programme for the lean-back channel, built on request
+        (the TV calls it when the viewer tunes in; nothing is computed ahead).
+        Films from the profile's «Для вас» pool by score (with a little
+        randomness), never rated, started, finished or dismissed ones, anime
+        hidden when the profile hides it, and films whose recent torrent search
+        found nothing (with no online variant) left out; plus the next episode
+        of series in progress (at most a third of the slots, never two in a
+        row). Consecutive picks alternate genres. Runtimes are estimates when
+        `runtime_known` is false; the TV builds the clock from them. Plays
+        started on the channel are reported as feedback with `row_id: "channel"`.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: count, in: query, schema: { type: integer, minimum: 1, maximum: 20, default: 8 } }
+        - { name: exclude, in: query, description: "Comma-separated media ids already on the programme (≤ 200).", schema: { type: string } }
+        - { $ref: "#/components/parameters/Lang" }
+      responses:
+        "200":
+          description: The programme, in order.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChannelProgramme" }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
   /profiles/{id}/notes:
     get:
       tags: [foryou]
@@ -6317,6 +6345,32 @@ components:
           required: [exclude_ids]
           properties:
             exclude_ids: { type: array, items: { type: string, format: uuid }, description: "Send back as exclude_ids to get a different pick." }
+    ChannelItem:
+      type: object
+      required: [media, episode, runtime_minutes, runtime_known, resume_seconds, source, reason]
+      properties:
+        media: { $ref: "#/components/schemas/MediaSummary" }
+        episode:
+          oneOf:
+            - type: "null"
+            - type: object
+              required: [id, season_number, episode_number, name]
+              properties:
+                id: { type: string, format: uuid }
+                season_number: { type: integer }
+                episode_number: { type: integer }
+                name: { type: string }
+        runtime_minutes: { type: integer, description: "Estimated when runtime_known is false." }
+        runtime_known: { type: boolean }
+        resume_seconds: { type: number, description: "An episode left mid-way starts here (0 = the beginning)." }
+        source: { type: string, enum: [foryou, continue], description: "continue: the next episode of a series in progress." }
+        reason: { oneOf: [{ $ref: "#/components/schemas/ForYouReason" }, { type: "null" }] }
+    ChannelProgramme:
+      type: object
+      required: [items, pool_size]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/ChannelItem" } }
+        pool_size: { type: integer, description: "Candidates left after the exclusions." }
     ExploreTile:
       type: object
       required: [id, kind, title, subtitle, emoji, image_path, collection_id, discover]

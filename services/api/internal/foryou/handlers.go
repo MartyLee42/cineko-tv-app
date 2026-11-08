@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -38,6 +39,7 @@ func (s *Service) Routes(r fiber.Router) {
 	r.Get("/foryou/asks", caller, s.hAsks)
 	r.Get("/foryou/regenerate", caller, s.hRegenStatus)
 	r.Post("/foryou/regenerate", caller, s.hRegenerate)
+	r.Get("/profiles/:id/channel", caller, s.hChannel)
 	r.Get("/profiles/:id/notes", caller, s.hNotes)
 	r.Put("/profiles/:id/notes/:mediaId", caller, s.hPutNote)
 	r.Get("/profiles/:id/diary", auth.RequireUser(), s.hDiary)
@@ -339,6 +341,43 @@ func (s *Service) hSurprise(c fiber.Ctx) error {
 	}
 	req.ProfileID = pid
 	res, err := s.Surprise(c.Context(), req, lang)
+	if err != nil {
+		return fail(err)
+	}
+	return c.JSON(res)
+}
+
+// hChannel is GET /profiles/{id}/channel («Cineko TV»'s programme).
+func (s *Service) hChannel(c fiber.Ctx) error {
+	lang, err := langOf(c)
+	if err != nil {
+		return err
+	}
+	count := ChannelDefaultCount
+	if v := c.Query("count"); v != "" {
+		n, err := strconv.Atoi(v)
+		if err != nil || n < 1 || n > ChannelMaxCount {
+			return httpx.Validation(map[string]string{"count": "must be 1–20"})
+		}
+		count = n
+	}
+	var exclude []string
+	if v := c.Query("exclude"); v != "" {
+		exclude = strings.Split(v, ",")
+		if len(exclude) > 200 {
+			return httpx.Validation(map[string]string{"exclude": "at most 200"})
+		}
+		for _, id := range exclude {
+			if !isUUID(id) {
+				return httpx.Validation(map[string]string{"exclude": "must be UUIDs"})
+			}
+		}
+	}
+	pid, err := s.usable(c, c.Params("id"))
+	if err != nil {
+		return err
+	}
+	res, err := s.Channel(c.Context(), pid, lang, count, exclude)
 	if err != nil {
 		return fail(err)
 	}

@@ -26,7 +26,8 @@ import { CommandProcessor, type OpenRequest, type PlayerCommand, type PlayReques
 import { buildDeviceState, stateKey, type DetailsInfo } from "./remote/state";
 import { player } from "./player/controller";
 import { useFlow } from "./player/flow";
-import { LivePlayer, PlayerLayer, PlayerWait, VideoPlayer } from "./lazy";
+import { ChannelLayer, LivePlayer, PlayerLayer, PlayerWait, VideoPlayer } from "./lazy";
+import { channelState, useChannel } from "./channel/state";
 import { flowScreen, type PlayContext } from "./player/session";
 import { currentPlayers, defaultPlayerStore, resolvePlayer } from "./players/select";
 import { devicePrefs } from "./settings/devicePrefs";
@@ -208,6 +209,7 @@ export function App() {
   const flow = useFlow();
   const liveSession = useLive();
   const videoOn = useVideoSession();
+  const channelReq = useChannel();
   const tRef = useRef(t);
   const localeRef = useRef(locale);
   useEffect(() => {
@@ -375,6 +377,7 @@ export function App() {
     if (screen.kind !== "home" && player.flow.phase !== "idle") player.close();
     if (screen.kind !== "home") live.close();
     if (screen.kind !== "home") videoSession.close();
+    if (screen.kind !== "home") channelState.close();
   }, [screen.kind]);
 
   const onDetailsInfo = useCallback((key: number, info: DetailsInfo) => setDetails({ key, info }), []);
@@ -501,6 +504,15 @@ export function App() {
 
   /** Live TV: play a channel; Up/Down switch through `list`. */
   const startLive = useCallback((channel: IptvChannel, list: IptvChannel[]) => live.open(channel, list), []);
+
+  /** «Cineko TV»: tune in (the programme is built only now, on the server). */
+  const startChannel = useCallback(() => {
+    const s = screenRef.current;
+    if (s.kind !== "home") return;
+    live.close();
+    videoSession.close();
+    channelState.open({ profile_id: s.profile.id, lang: catalogLang(localeRef.current) });
+  }, []);
 
   /** «Видео»: play a YouTube video (start null = its resume position). */
   const startVideo = useCallback((video: VideoItem, start: number | null) => {
@@ -851,6 +863,7 @@ export function App() {
           onContinue={startContinue}
           onLive={startLive}
           onVideo={startVideo}
+          onChannel={startChannel}
           onSwitchProfile={() =>
             setScreen({ kind: "profiles", device: screen.device, profiles: screen.profiles, current: screen.profile })
           }
@@ -872,6 +885,13 @@ export function App() {
           <SkinBackground />
           <div className="relative h-full w-full">{body}</div>
         </>
+      )}
+      {screen.kind === "home" && channelReq && (
+        <ChunkBoundary onFail={() => channelState.close()}>
+          <Suspense fallback={null}>
+            <ChannelLayer req={channelReq} />
+          </Suspense>
+        </ChunkBoundary>
       )}
       {showConn && conn !== "open" && (
         <div className="absolute right-12 top-10 rounded-full bg-surface-2 px-6 py-3 text-2xl text-muted">

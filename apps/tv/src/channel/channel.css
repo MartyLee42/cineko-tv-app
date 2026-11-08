@@ -1,0 +1,32 @@
+/* «Cineko TV» OSD and tuning screen (lazy chunk). Own `cktv-` classes only;
+   colours from the design tokens. Old engines: no gap/inset/backdrop-filter,
+   animations on transform/opacity. */
+
+.cktv-tag { vertical-align: 0.08em; font-size: 0.72em; line-height: 1.25; letter-spacing: 0.02em; }
+
+.cktv-live { background-color: rgba(var(--mt-bg), 0.55); border: 2px solid rgba(var(--mt-text), 0.18); }
+.cktv-live-dot { background-color: rgb(var(--mt-danger)); animation: cktv-blink 1.6s ease-in-out infinite; }
+@keyframes cktv-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+.cktv-scrim-top { background: linear-gradient(180deg, rgba(var(--mt-bg), 0.88) 0%, rgba(var(--mt-bg), 0.5) 55%, rgba(var(--mt-bg), 0) 100%); }
+.cktv-scrim-bottom { background: linear-gradient(0deg, rgba(var(--mt-bg), 0.99) 0%, rgba(var(--mt-bg), 0.97) 58%, rgba(var(--mt-bg), 0.6) 80%, rgba(var(--mt-bg), 0) 100%); }
+
+.cktv-progress-fill { transition: transform 0.9s linear; }
+.cktv-note { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35); }
+
+/* The tuning screen: faint scan lines drifting down (one transform layer). */
+.cktv-tuning { overflow: hidden; }
+.cktv-snow {
+  opacity: 0.18;
+  background-image: repeating-linear-gradient(0deg, rgba(var(--mt-text), 0.35) 0, rgba(var(--mt-text), 0.35) 2px, transparent 2px, transparent 7px);
+  height: 120%;
+  animation: cktv-scan 6s linear infinite;
+}
+@keyframes cktv-scan {
+  from { transform: translate3d(0, -14px, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+.cktv-calm .cktv-snow, .cktv-calm .cktv-live-dot { animation: none; }

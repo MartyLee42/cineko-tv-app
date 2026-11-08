@@ -2465,6 +2465,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profiles/{id}/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description «Cineko TV»: a programme for the lean-back channel, built on request
+         *     (the TV calls it when the viewer tunes in; nothing is computed ahead).
+         *     Films from the profile's «Для вас» pool by score (with a little
+         *     randomness), never rated, started, finished or dismissed ones, anime
+         *     hidden when the profile hides it, and films whose recent torrent search
+         *     found nothing (with no online variant) left out; plus the next episode
+         *     of series in progress (at most a third of the slots, never two in a
+         *     row). Consecutive picks alternate genres. Runtimes are estimates when
+         *     `runtime_known` is false; the TV builds the clock from them. Plays
+         *     started on the channel are reported as feedback with `row_id: "channel"`.
+         */
+        get: operations["getChannel"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/profiles/{id}/notes": {
         parameters: {
             query?: never;
@@ -6315,6 +6343,32 @@ export interface components {
                 /** @description Send back as exclude_ids to get a different pick. */
                 exclude_ids: string[];
             };
+        };
+        ChannelItem: {
+            media: components["schemas"]["MediaSummary"];
+            episode: null | {
+                /** Format: uuid */
+                id: string;
+                season_number: number;
+                episode_number: number;
+                name: string;
+            };
+            /** @description Estimated when runtime_known is false. */
+            runtime_minutes: number;
+            runtime_known: boolean;
+            /** @description An episode left mid-way starts here (0 = the beginning). */
+            resume_seconds: number;
+            /**
+             * @description continue: the next episode of a series in progress.
+             * @enum {string}
+             */
+            source: "foryou" | "continue";
+            reason: components["schemas"]["ForYouReason"] | null;
+        };
+        ChannelProgramme: {
+            items: components["schemas"]["ChannelItem"][];
+            /** @description Candidates left after the exclusions. */
+            pool_size: number;
         };
         ExploreTile: {
             /**
@@ -11301,7 +11355,7 @@ export interface operations {
                     /** Format: uuid */
                     media_id?: string;
                     action?: components["schemas"]["ForYouFeedbackAction"];
-                    /** @description ForYouRow.id (or a surface like `surprise`, `collection:<id>`, `explore`). */
+                    /** @description ForYouRow.id (or a surface like `surprise`, `collection:<id>`, `explore`, `channel`). */
                     row_id?: string;
                     events?: components["schemas"]["ForYouFeedbackEvent"][];
                 };
@@ -11552,6 +11606,36 @@ export interface operations {
                 };
             };
             404: components["responses"]["Error"];
+        };
+    };
+    getChannel: {
+        parameters: {
+            query?: {
+                count?: number;
+                /** @description Comma-separated media ids already on the programme (≤ 200). */
+                exclude?: string;
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The programme, in order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelProgramme"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     listMediaNotes: {

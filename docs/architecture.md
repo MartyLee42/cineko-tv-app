@@ -2156,6 +2156,30 @@ filters (random page 1–3, ≥ 200 votes), position-weighted. Moods → genres:
 cozy 35/10751/10749/16 (not 27/53/80/10752), tense 53/80/9648/28, funny
 35, thoughtful 18/878/36/99, scary 27, romantic 10749, family 10751/16.
 
+**«Cineko TV»** (`channel.go`, TV `apps/tv/src/channel/`): a lean-back
+channel. Nothing is computed ahead — `GET /profiles/{id}/channel` runs when
+the viewer tunes in (the «Cineko TV» chip first in the «ТВ» screen's group
+row). The programme takes the cached pool's films (rank-scored 1 … 0.5)
+without anything rated, started, finished or dismissed, rewatch picks,
+hidden anime, or films whose torrent search in the last 24 h found nothing
+and that have no online variant (`release_search_cache` /
+`online_search_cache`, no new search); plus the next episode of series in
+progress (`watch.ContinueWatching`, score 0.9 − 0.05·i, resuming an episode
+left mid-way). `buildProgramme` picks greedily among the best 40 with a
+0–0.2 random nudge, −0.35 for the previous pick's main genre, −0.15 for any
+shared genre, −0.1 for the main genre two back; series episodes never follow
+each other and fill ≤ ⌈count/3⌉ slots. Unknown runtimes: 105 min (film) /
+45 min (episode). The TV (lazy chunk) builds the clock from the runtimes
+(the current pick from the player's position/duration once known), plays
+each pick with the normal player (best release) and moves on at the end —
+or at the credits with auto-skip — without an «Up next» prompt; CH±/▲▼/⏭⏮
+switch picks (fetching 8 more, `exclude`-ing the programme, when fewer than
+3 are left), OK opens the guide («Следующий», «Не то» = dismiss + skip,
+«Звук и субтитры», «Выйти»), Back leaves. The next pick's releases are
+fetched 45 s into the current one. Plays log feedback `impression` + `play`
+with `row_id: "channel"`; learning credits them with the title's cached row
+sources (no position).
+
 **Explore** sections: moods, decades, languages («Корейское кино»…),
 best by genre, 20 curated TMDB keyword themes (ids checked live; two thin
 ones — «Взрыв мозга», «Фильмы для хорошего настроения» — OR in related

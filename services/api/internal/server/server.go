@@ -229,7 +229,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	curatedSvc.Routes(api)
 	appSettings := appsettings.NewStore(pool, auditLog, log) // global switches: /admin/appearance, /status seasonal_effects, AI temperatures
 	forYouSvc := foryou.NewService(foryou.Deps{Pool: pool, Catalog: catalogSvc, Personal: watchSvc, Profiles: profileStore,
-		Ratings: ratingsSrc, Hub: hub, Family: familySvc, Curated: curatedSvc, Audit: auditLog, Config: cfg.ForYou, Log: log, Settings: appSettings})
+		Ratings: ratingsSrc, Hub: hub, Family: familySvc, Curated: curatedSvc, Continue: watchSvc, Audit: auditLog, Config: cfg.ForYou, Log: log, Settings: appSettings})
 	forYouSvc.Routes(api)
 	// «Цитаты» / «Факты» (internal/trivia): Wikiquote, Kinopoisk facts, DeepSeek stand-ins.
 	triviaSvc := trivia.New(trivia.Options{Pool: pool, KP: ratingsSvc, AI: forYouSvc, Log: log})
