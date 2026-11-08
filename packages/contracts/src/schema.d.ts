@@ -803,6 +803,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/playback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Server-wide playback switches (app_settings). instant_play = «Мгновенный старт» (POST /playback/warm; default true). */
+        get: operations["adminPlayback"];
+        put: operations["updateAdminPlayback"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/catalog/config": {
         parameters: {
             query?: never;
@@ -1258,6 +1275,33 @@ export interface paths {
          */
         post: operations["createPlaybackSource"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/playback/warm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * @description Instant play («Мгновенный старт»): a title page open for a couple of seconds names the
+         *     release its Play would start (the client's own ranking, as for Play). In the background
+         *     the server prepares it like POST /playback/sources (TorrServer, metadata, file), reads a
+         *     small head of the file (or of `start_seconds`) and keeps the torrent connected for a few
+         *     minutes. POST /playback/sources with the same media / episode / release then returns that
+         *     source at once (usually `ready`). One warm per profile (a newer one replaces it), two per
+         *     server; a warm nobody plays is dropped after `expires_at` (its torrent only when it was added
+         *     for it). Never creates playback sessions or history. Answers at once.
+         */
+        post: operations["warmPlayback"];
+        /** @description The viewer left the title page — the profile's warm stops (dropped after a few seconds unless Play takes it meanwhile). */
+        delete: operations["cancelPlaybackWarm"];
         options?: never;
         head?: never;
         patch?: never;
@@ -5437,6 +5481,24 @@ export interface components {
         AdminAppearance: {
             seasonal_effects: boolean;
         };
+        AdminPlayback: {
+            /** @description «Мгновенный старт»: title pages warm the release Play would start (POST /playback/warm). Default true. */
+            instant_play: boolean;
+        };
+        WarmResult: {
+            /** @enum {string} */
+            status: "warming" | "skipped";
+            /**
+             * @description Skipped: switched off by the admin, the server is busy (streams / transcoding), the server's warm limit, already downloaded to the server, an online variant, an unknown release, no TorrServer / release search.
+             * @enum {string|null}
+             */
+            reason: "disabled" | "busy" | "limit" | "local" | "online" | "no_release" | "unavailable" | null;
+            /**
+             * Format: date-time
+             * @description Warming: Play takes the prepared source until then.
+             */
+            expires_at: string | null;
+        };
         ImportJob: {
             /** Format: uuid */
             id: string;
@@ -8926,6 +8988,53 @@ export interface operations {
             422: components["responses"]["Error"];
         };
     };
+    adminPlayback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current switches. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPlayback"];
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    updateAdminPlayback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPlayback"];
+            };
+        };
+        responses: {
+            /** @description Saved (audited playback_settings.updated). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPlayback"];
+                };
+            };
+            403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
     catalogConfig: {
         parameters: {
             query?: never;
@@ -9635,6 +9744,68 @@ export interface operations {
             409: components["responses"]["Error"];
             422: components["responses"]["Error"];
             502: components["responses"]["Error"];
+        };
+    };
+    warmPlayback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    media_id: string;
+                    /**
+                     * Format: uuid
+                     * @description Series: the episode Play would start (resume / next up).
+                     */
+                    episode_id?: string;
+                    release_id?: string;
+                    /** Format: uuid */
+                    source_id?: string;
+                    /** Format: uuid */
+                    profile_id: string;
+                    /** @description The resume position Play will start at (0 = the start). */
+                    start_seconds?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Warming, or skipped with a reason. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WarmResult"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    cancelPlaybackWarm: {
+        parameters: {
+            query: {
+                profile_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancelled (or nothing to cancel). */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            422: components["responses"]["Error"];
         };
     };
     getPlaybackSource: {

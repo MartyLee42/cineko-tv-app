@@ -207,6 +207,10 @@ var activeStreams atomic.Int64
 // ActiveStreams is the number of video streams being proxied right now.
 func ActiveStreams() int64 { return activeStreams.Load() }
 
+// compatStreams counts open compat (transcoded MP4) streams: instant play
+// stays off meanwhile (warm.go).
+var compatStreams atomic.Int64
+
 // streamMeta describes a proxied stream for the "stream closed" log line.
 type streamMeta struct {
 	log        *slog.Logger // carries request_id / source_id; never the token
@@ -282,6 +286,9 @@ func newIdleReader(r io.ReadCloser, cancel context.CancelFunc, idle time.Duratio
 	if !ir.uncounted {
 		activeStreams.Add(1)
 	}
+	if meta.kind == "compat" {
+		compatStreams.Add(1)
+	}
 	return ir
 }
 
@@ -323,6 +330,9 @@ func (ir *idleReader) Close() error {
 	ir.once.Do(func() {
 		if !ir.uncounted {
 			activeStreams.Add(-1)
+		}
+		if ir.meta.kind == "compat" {
+			compatStreams.Add(-1)
 		}
 		ir.timer.Stop()
 		if ir.onClose != nil {

@@ -313,6 +313,49 @@ func (s *Store) AdminRoutes(admin fiber.Router) {
 	})
 }
 
+// InstantPlayEnabled: «Мгновенный старт» — title pages warm the release
+// Play would start (internal/playback/warm.go). Default true.
+func (s *Store) InstantPlayEnabled(ctx context.Context) bool {
+	return s.AIFeatureEnabled(ctx, featureInstantPlay)
+}
+
+// featureInstantPlay is stored like the AI feature switches
+// (key "ai_feature_instant_play"): one cached boolean.
+const featureInstantPlay = "instant_play"
+
+// PlaybackSettings is the admin view: GET/PUT /admin/playback.
+type PlaybackSettings struct {
+	InstantPlay *bool `json:"instant_play"`
+}
+
+// PlaybackAdminRoutes registers /admin/playback on the admin group.
+func (s *Store) PlaybackAdminRoutes(admin fiber.Router) {
+	admin.Get("/playback", func(c fiber.Ctx) error {
+		on := s.InstantPlayEnabled(c.Context())
+		return c.JSON(PlaybackSettings{InstantPlay: &on})
+	})
+	admin.Put("/playback", func(c fiber.Ctx) error {
+		var in PlaybackSettings
+		if err := httpx.BindJSON(c, &in); err != nil {
+			return err
+		}
+		if in.InstantPlay == nil {
+			return httpx.Validation(map[string]string{"instant_play": "required (true or false)"})
+		}
+		p := auth.PrincipalFrom(c)
+		if err := s.SetAIFeatureEnabled(c.Context(), featureInstantPlay, *in.InstantPlay, p.UserID); err != nil {
+			return err
+		}
+		if s.audit != nil {
+			s.audit.Record(c.Context(), audit.Event{UserID: p.UserID, Action: "playback_settings.updated", TargetType: "app_settings",
+				TargetID: "ai_feature_" + featureInstantPlay, IP: c.IP(), RequestID: httpx.RequestID(c),
+				Metadata: map[string]any{"instant_play": *in.InstantPlay}})
+		}
+		on := *in.InstantPlay
+		return c.JSON(PlaybackSettings{InstantPlay: &on})
+	})
+}
+
 // Creativity is the viewer's nudge on the admin's temperature
 // («Точнее / Обычно / Смелее»).
 var Creativity = map[string]float64{"precise": -0.4, "normal": 0, "bold": 0.4}

@@ -274,6 +274,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	releases.NewHandlers(releaseSvc).Routes(api)
 	playbackSvc := playback.NewService(pool, cfg, releaseSvc, log)
 	playback.NewHandlers(playbackSvc).Routes(app, api)
+	playbackSvc.SetInstantPlay(appSettings.InstantPlayEnabled) // «Мгновенный старт» (playback/warm.go, /admin/playback)
 	// Server downloads (internal/downloads): /downloads; local files replace TorrServer in the stream proxy.
 	downloadsSvc := downloads.NewService(downloads.Deps{Pool: pool, Playback: playbackSvc, Catalog: catalogSvc, Hub: hub, Audit: auditLog, Config: cfg.Library, Log: log})
 	playbackSvc.SetLibrary(downloadsSvc)
@@ -349,8 +350,9 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	clientLog.Routes(api)
 	clientLog.AdminRoutes(admin)
 	appSettings.AdminRoutes(admin)
-	deviceHandlers.AdminRoutes(admin) // super_admin: /admin/devices*
-	pairHandlers.AdminRoutes(admin)   // super_admin: /admin/pairing*
+	appSettings.PlaybackAdminRoutes(admin) // /admin/playback: «Мгновенный старт»
+	deviceHandlers.AdminRoutes(admin)      // super_admin: /admin/devices*
+	pairHandlers.AdminRoutes(admin)        // super_admin: /admin/pairing*
 	newStatusService(cfg.TorrServer, checker.Statuses).withSeasonal(appSettings.SeasonalEnabled).withCPU(sysmonSvc.CPUNow).withFeatures(FeaturesOf(cfg)).Routes(api)
 	newSpeedtestService().Routes(api) // GET /speedtest: background connection speed tests (TV + PWA)
 
@@ -360,6 +362,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	var refresher *metrics.Refresher
 	if prom.Enabled() {
 		prom.RegisterLive(pool, playback.ActiveStreams, hub.Counts)
+		prom.RegisterInstantPlay(playbackSvc.InstantPlayStats)
 		refresher = metrics.NewRefresher(log.With("module", "metrics"),
 			metrics.SystemSource(sysmonSvc.Status),
 			metrics.DBSource(pool),

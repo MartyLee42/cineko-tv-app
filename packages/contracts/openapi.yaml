@@ -974,6 +974,24 @@ paths:
         "200": { description: Saved (audited appearance.updated)., content: { application/json: { schema: { $ref: "#/components/schemas/AdminAppearance" } } } }
         "403": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
+  /admin/playback:
+    get:
+      tags: [admin]
+      operationId: adminPlayback
+      description: "Server-wide playback switches (app_settings). instant_play = «Мгновенный старт» (POST /playback/warm; default true)."
+      responses:
+        "200": { description: Current switches., content: { application/json: { schema: { $ref: "#/components/schemas/AdminPlayback" } } } }
+        "403": { $ref: "#/components/responses/Error" }
+    put:
+      tags: [admin]
+      operationId: updateAdminPlayback
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/AdminPlayback" } } }
+      responses:
+        "200": { description: Saved (audited playback_settings.updated)., content: { application/json: { schema: { $ref: "#/components/schemas/AdminPlayback" } } } }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
 
   # ---------------------------------------------------------------- catalog (Phase 2)
   /catalog/config:
@@ -1495,6 +1513,51 @@ paths:
         "409": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
         "502": { $ref: "#/components/responses/Error" }
+  /playback/warm:
+    post:
+      tags: [playback]
+      operationId: warmPlayback
+      description: |
+        Instant play («Мгновенный старт»): a title page open for a couple of seconds names the
+        release its Play would start (the client's own ranking, as for Play). In the background
+        the server prepares it like POST /playback/sources (TorrServer, metadata, file), reads a
+        small head of the file (or of `start_seconds`) and keeps the torrent connected for a few
+        minutes. POST /playback/sources with the same media / episode / release then returns that
+        source at once (usually `ready`). One warm per profile (a newer one replaces it), two per
+        server; a warm nobody plays is dropped after `expires_at` (its torrent only when it was added
+        for it). Never creates playback sessions or history. Answers at once.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [media_id, profile_id]
+              description: "release_id, or source_id when Play resumes the source the title was last watched with (WatchProgress.source_id; its release and episode are used, and its GET counts as Play)."
+              properties:
+                media_id: { type: string, format: uuid }
+                episode_id: { type: string, format: uuid, description: "Series: the episode Play would start (resume / next up)." }
+                release_id: { type: string, maxLength: 128 }
+                source_id: { type: string, format: uuid }
+                profile_id: { type: string, format: uuid }
+                start_seconds: { type: number, minimum: 0, description: "The resume position Play will start at (0 = the start)." }
+      responses:
+        "202":
+          description: Warming, or skipped with a reason.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WarmResult" }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [playback]
+      operationId: cancelPlaybackWarm
+      description: The viewer left the title page — the profile's warm stops (dropped after a few seconds unless Play takes it meanwhile).
+      parameters:
+        - { name: profile_id, in: query, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Cancelled (or nothing to cancel). }
+        "422": { $ref: "#/components/responses/Error" }
   /playback/sources/{id}:
     parameters: [{ $ref: "#/components/parameters/Id" }]
     get:
@@ -5560,6 +5623,21 @@ components:
       required: [seasonal_effects]
       properties:
         seasonal_effects: { type: boolean }
+    AdminPlayback:
+      type: object
+      required: [instant_play]
+      properties:
+        instant_play: { type: boolean, description: "«Мгновенный старт»: title pages warm the release Play would start (POST /playback/warm). Default true." }
+    WarmResult:
+      type: object
+      required: [status, reason, expires_at]
+      properties:
+        status: { type: string, enum: [warming, skipped] }
+        reason:
+          type: [string, "null"]
+          enum: [disabled, busy, limit, local, online, no_release, unavailable, null]
+          description: "Skipped: switched off by the admin, the server is busy (streams / transcoding), the server's warm limit, already downloaded to the server, an online variant, an unknown release, no TorrServer / release search."
+        expires_at: { type: [string, "null"], format: date-time, description: "Warming: Play takes the prepared source until then." }
     ImportJob:
       type: object
       required: [id, profile_id, source, status, overwrite, mark_watched, dry_run, total, processed, matched, rated, skipped, unmatched, error, created_at, started_at, finished_at]

@@ -16,6 +16,7 @@ import { isBusy } from "./flow";
 import { OnlinePicker, StreamIcon, useHasOnline } from "./OnlineWatch";
 import { usePlayOnTv, useWatchHere, type PlayTarget } from "./PlayOnTv";
 import { orderChooserTvs, preselectTarget, skipChooser, type ChooserKey } from "./chooser";
+import { useWebInstantPlay } from "./instantPlay";
 
 const PHONE = "(max-width: 639px)";
 
@@ -59,6 +60,8 @@ export function PlayChooser({ m, target, label, testId = "play-on-tv", resumeTim
   const mine = busy && "req" in flow && flow.req.media_id === target.media_id && flow.req.episode_id === target.episode_id;
   const own = tvs?.filter((d) => !isForeign(d));
   const { has: hasOnline, season } = useHasOnline(m);
+  // «Мгновенный старт»: only when Play plays here (no TV to choose, or «здесь» last time).
+  useWebInstantPlay(target, skipChooser(own, superAdmin || !!tvs?.some(isForeign)) || readWatchWhere() === "here");
 
   const close = useCallback((refocus = false) => {
     setOpen(false);
