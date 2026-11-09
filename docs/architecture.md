@@ -1510,6 +1510,12 @@ series from TMDB and records those that aired after what the profile watched.
   window (14 days, or back to two days before the previous completed check),
   so the first check doesn't flood the list. Recorded once per (profile, episode).
 - Seen = marked seen (or all), watched, or a later episode watched.
+- Muted series (`new_episode_mutes`, migration 00041; «Не уведомлять о
+  сериале»): not "mine" for the check — not refreshed unless another profile
+  has it, nothing recorded — and their existing items are hidden from the list
+  and the unseen count (back on unmute, so undo restores them). Web: the action
+  on each item with an undo toast, «Скрытые сериалы (N)» at the bottom of the
+  page, a bell toggle on the series page; TV: the item's long-press menu.
 - Clients: TV tab «Новые серии» with a count badge in every design + a Home
   row; web `/new-episodes` (desktop tab, phone Home card); admin card with
   the schedule, last runs and «Проверить сейчас».

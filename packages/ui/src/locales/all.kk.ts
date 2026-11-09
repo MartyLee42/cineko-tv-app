@@ -18,6 +18,7 @@ import { downloadsKk } from "./downloads.kk";
 import { iptvKk } from "./iptv.kk";
 import { videoKk } from "./video.kk";
 import { newEpisodesKk } from "./newepisodes.kk";
+import { newEpMuteKk } from "./newepmute.kk";
 import { seasonsKk } from "./seasons.kk";
 import { designsKk } from "./designs.kk";
 import { tvplayKk } from "./tvplay.kk";
@@ -65,4 +66,4 @@ import { ytaudioKk } from "./ytaudio.kk";
 import { channelKk } from "./channel.kk";
 import { instantPlayKk } from "./instantplay.kk";
 
-export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk, ...soundtrackKk, ...themesKk, ...smoothKk, ...chaptersKk, ...companionKk, ...devsettingsKk, ...loadersKk, ...loaders2Kk, ...filmthemeKk, ...multtarkovskyKk, ...andersonKk, ...westernKk, ...quickKk, ...demoKk, ...errorsUserKk, ...devicedlKk, ...titleActionsKk, ...appupdateKk, ...iptvplayKk, ...uilangKk, ...learnWeightsKk, ...alertsKk, ...keepsakesKk, ...ytaudioKk, ...channelKk, ...instantPlayKk };
+export const messagesKk: Record<MessageKey, string> = { ...coreKk, ...catalogKk, ...remoteKk, ...playerKk, ...settingsKk, ...adminKk, ...tvdesignKk, ...errorsKk, ...sourcesKk, ...importsKk, ...onlineKk, ...foryouKk, ...askKk, ...tasteKk, ...downloadsKk, ...iptvKk, ...designsKk, ...videoKk, ...seasonsKk, ...tvplayKk, ...playerStatsKk, ...devprefsKk, ...superplayKk, ...newEpisodesKk, ...newEpMuteKk, ...tasteQuizKk, ...cozyKk, ...martyKk, ...healthKk, ...curatedKk, ...awardsKk, ...idleKk, ...mascotKk, ...soundsKk, ...sleepKk, ...triviaKk, ...skipKk, ...pocketpetKk, ...surpriseKk, ...soundtrackKk, ...themesKk, ...smoothKk, ...chaptersKk, ...companionKk, ...devsettingsKk, ...loadersKk, ...loaders2Kk, ...filmthemeKk, ...multtarkovskyKk, ...andersonKk, ...westernKk, ...quickKk, ...demoKk, ...errorsUserKk, ...devicedlKk, ...titleActionsKk, ...appupdateKk, ...iptvplayKk, ...uilangKk, ...learnWeightsKk, ...alertsKk, ...keepsakesKk, ...ytaudioKk, ...channelKk, ...instantPlayKk };

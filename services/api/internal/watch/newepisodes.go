@@ -19,6 +19,11 @@ package watch
 //
 // An item counts as seen once the profile marks it (or all) seen, watches the
 // episode, or watches a later one.
+//
+// A profile can mute a series (new_episode_mutes): it's no longer "mine" for
+// the check (not refreshed unless another profile has it, nothing recorded)
+// and its existing items are hidden from the list and the unseen count; they
+// come back on unmute (so «undo» restores them).
 
 import (
 	"context"
@@ -55,6 +60,7 @@ const mineSQL = `
 	), mine AS (
 		SELECT s.profile_id, s.media_id, bool_and(s.kp) AS kp_only, min(s.imported) AS imported
 		FROM src s JOIN media m ON m.id = s.media_id AND m.kind = 'series'
+		WHERE NOT EXISTS (SELECT 1 FROM new_episode_mutes nm WHERE nm.profile_id = s.profile_id AND nm.media_id = s.media_id)
 		GROUP BY s.profile_id, s.media_id
 	)`
 
@@ -359,6 +365,7 @@ func (s *Service) NewEpisodes(ctx context.Context, profileID, lang string) (*New
 			WHERE wp.profile_id = ne.profile_id AND wp.media_id = ne.media_id
 		) f ON true
 		WHERE ne.profile_id = $1
+		  AND NOT EXISTS (SELECT 1 FROM new_episode_mutes nm WHERE nm.profile_id = ne.profile_id AND nm.media_id = ne.media_id)
 		ORDER BY seen, ne.air_date DESC, e.season_number DESC, e.episode_number DESC
 		LIMIT 500`, profileID)
 	if err != nil {
@@ -439,6 +446,75 @@ func (s *Service) MarkNewEpisodesSeen(ctx context.Context, profileID string, epi
 	_, err := s.pool.Exec(ctx, `UPDATE new_episodes SET seen_at = now() WHERE profile_id = $1 AND episode_id = ANY($2::uuid[]) AND seen_at IS NULL`,
 		profileID, episodeIDs)
 	return err
+}
+
+// ---- muted series ----
+
+// ErrNotSeries: only series can be muted.
+var ErrNotSeries = errors.New("watch: not a series")
+
+// MutedSeries is the contract's MutedSeries.
+type MutedSeries struct {
+	Media   catalog.MediaSummary `json:"media"`
+	MutedAt time.Time            `json:"muted_at"`
+}
+
+// MuteSeries stops «Новые серии» for a series on this profile (idempotent).
+func (s *Service) MuteSeries(ctx context.Context, profileID, mediaID string) error {
+	kind, err := s.mediaKind(ctx, mediaID)
+	if err != nil {
+		return err
+	}
+	if kind != "series" {
+		return ErrNotSeries
+	}
+	_, err = s.pool.Exec(ctx, `INSERT INTO new_episode_mutes (profile_id, media_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+		profileID, mediaID)
+	return err
+}
+
+// UnmuteSeries is idempotent.
+func (s *Service) UnmuteSeries(ctx context.Context, profileID, mediaID string) error {
+	_, err := s.pool.Exec(ctx, `DELETE FROM new_episode_mutes WHERE profile_id = $1 AND media_id = $2`, profileID, mediaID)
+	return err
+}
+
+// MutedSeriesList: the profile's muted series, newest first.
+func (s *Service) MutedSeriesList(ctx context.Context, profileID, lang string) ([]MutedSeries, error) {
+	rows, err := s.pool.Query(ctx, `SELECT media_id, created_at FROM new_episode_mutes WHERE profile_id = $1
+		ORDER BY created_at DESC, media_id LIMIT 500`, profileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []MutedSeries{}
+	var ids []string
+	for rows.Next() {
+		var it MutedSeries
+		if err := rows.Scan(&it.Media.ID, &it.MutedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, it)
+		ids = append(ids, it.Media.ID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(ids) == 0 {
+		return out, nil
+	}
+	sums, err := s.summaries(ctx, profileID, ids, lang)
+	if err != nil {
+		return nil, err
+	}
+	items := out[:0]
+	for _, it := range out {
+		if m, ok := sums[it.Media.ID]; ok {
+			it.Media = m
+			items = append(items, it)
+		}
+	}
+	return items, nil
 }
 
 // NewEpisodesStatus is the contract's NewEpisodesStatus (admin).

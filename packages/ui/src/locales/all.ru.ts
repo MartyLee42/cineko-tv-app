@@ -18,6 +18,7 @@ import { downloadsRu } from "./downloads.ru";
 import { iptvRu } from "./iptv.ru";
 import { videoRu } from "./video.ru";
 import { newEpisodesRu } from "./newepisodes.ru";
+import { newEpMuteRu } from "./newepmute.ru";
 import { seasonsRu } from "./seasons.ru";
 import { designsRu } from "./designs.ru";
 import { tvplayRu } from "./tvplay.ru";
@@ -65,4 +66,4 @@ import { ytaudioRu } from "./ytaudio.ru";
 import { channelRu } from "./channel.ru";
 import { instantPlayRu } from "./instantplay.ru";
 
-export const messagesRu: Record<MessageKey, string> = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu, ...skipRu, ...pocketpetRu, ...surpriseRu, ...soundtrackRu, ...themesRu, ...smoothRu, ...chaptersRu, ...companionRu, ...devsettingsRu, ...loadersRu, ...loaders2Ru, ...filmthemeRu, ...multtarkovskyRu, ...andersonRu, ...westernRu, ...quickRu, ...demoRu, ...errorsUserRu, ...devicedlRu, ...titleActionsRu, ...appupdateRu, ...iptvplayRu, ...uilangRu, ...learnWeightsRu, ...alertsRu, ...keepsakesRu, ...ytaudioRu, ...channelRu, ...instantPlayRu };
+export const messagesRu: Record<MessageKey, string> = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...newEpMuteRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu, ...skipRu, ...pocketpetRu, ...surpriseRu, ...soundtrackRu, ...themesRu, ...smoothRu, ...chaptersRu, ...companionRu, ...devsettingsRu, ...loadersRu, ...loaders2Ru, ...filmthemeRu, ...multtarkovskyRu, ...andersonRu, ...westernRu, ...quickRu, ...demoRu, ...errorsUserRu, ...devicedlRu, ...titleActionsRu, ...appupdateRu, ...iptvplayRu, ...uilangRu, ...learnWeightsRu, ...alertsRu, ...keepsakesRu, ...ytaudioRu, ...channelRu, ...instantPlayRu };

@@ -324,3 +324,64 @@ func TestNewEpisodesKinopoiskImport(t *testing.T) {
 		}
 	}
 }
+
+// A muted series is skipped by the check (and not refreshed when no other
+// profile has it), hidden from the list and the count; unmuting restores both.
+func TestNewEpisodesMute(t *testing.T) {
+	w, shows := newEpisodesEnv(t)
+	ctx := context.Background()
+	c := w.alice
+	svc := w.env.Server.Watch
+	base := "/api/v1/profiles/" + w.pid + "/new-episodes"
+
+	shows.set(9201, 1, -2)
+	loud := insertSeriesTMDB(t, w, 9201, "Loud")
+	shows.set(9202, 1, -3)
+	quiet := insertSeriesTMDB(t, w, 9202, "Quiet")
+	for _, m := range []string{loud, quiet} {
+		c.Do("PUT", "/api/v1/profiles/"+w.pid+"/lists/watchlist/"+m, nil).Expect(204)
+	}
+	if run, err := svc.CheckNewEpisodes(ctx, "manual"); err != nil || run.Found != 2 {
+		t.Fatalf("run %+v %v", run, err)
+	}
+
+	// Mute Quiet: its item is hidden; the list of muted series shows it.
+	c.Do("PUT", base+"/muted/"+quiet, nil).Expect(204)
+	c.Do("PUT", base+"/muted/"+quiet, nil).Expect(204) // idempotent
+	r := c.Do("GET", base, nil).Expect(200).JSON()
+	if got := codes(r["items"].([]any)); fmt.Sprint(got) != "[Loud S1E1 seen=false]" || num(r["unseen"]) != 1 {
+		t.Fatalf("muted list %v unseen %v", got, r["unseen"])
+	}
+	m := c.Do("GET", base+"/muted?lang=en", nil).Expect(200).JSON()["items"].([]any)
+	if len(m) != 1 || m[0].(map[string]any)["media"].(map[string]any)["id"] != quiet || m[0].(map[string]any)["muted_at"] == nil {
+		t.Fatalf("muted %v", m)
+	}
+
+	// A new Quiet episode airs: not refreshed (only Alice has it), not recorded.
+	shows.set(9202, 1, -3, 0)
+	run, err := svc.CheckNewEpisodes(ctx, "schedule")
+	if err != nil || run.SeriesChecked != 1 || run.Found != 0 {
+		t.Fatalf("while muted %+v %v", run, err)
+	}
+
+	// Validation and access.
+	movie := insertMovie(t, w.env, "A Movie")
+	c.Do("PUT", base+"/muted/"+movie, nil).Expect(422)
+	c.Do("PUT", base+"/muted/00000000-0000-4000-8000-000000000000", nil).Expect(404)
+	bob, _ := w.env.NewUserClient("bob", "user")
+	bob.Do("GET", base+"/muted", nil).Expect(404)
+	bob.Do("DELETE", base+"/muted/"+quiet, nil).Expect(404)
+
+	// Unmute: the old item is back and the next check finds E2.
+	c.Do("DELETE", base+"/muted/"+quiet, nil).Expect(204)
+	if m := c.Do("GET", base+"/muted", nil).Expect(200).JSON()["items"].([]any); len(m) != 0 {
+		t.Fatalf("still muted %v", m)
+	}
+	if run, _ = svc.CheckNewEpisodes(ctx, "schedule"); run.SeriesChecked != 2 || run.Found != 1 {
+		t.Fatalf("after unmute %+v", run)
+	}
+	r = c.Do("GET", base, nil).Expect(200).JSON()
+	if got := codes(r["items"].([]any)); fmt.Sprint(got) != "[Quiet S1E2 seen=false Loud S1E1 seen=false Quiet S1E1 seen=false]" || num(r["unseen"]) != 3 {
+		t.Fatalf("after unmute %v", got)
+	}
+}

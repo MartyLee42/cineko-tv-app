@@ -204,10 +204,11 @@ export const BookmarkIcon = ({ filled, ...p }: P & { filled?: boolean }) => (
     <path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4.5L5 21V4.5a1 1 0 0 1 1-1z" />
   </Svg>
 );
-export const BellIcon = (p: P) => (
+export const BellIcon = ({ off, ...p }: P & { off?: boolean }) => (
   <Svg {...p} cv="bell">
     <path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z" />
     <path d="M10 20a2.2 2.2 0 0 0 4 0" />
+    {off && <path d="M3 3l18 18" />}
   </Svg>
 );
 export const GearIcon = (p: P) => (

@@ -1758,6 +1758,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profiles/{id}/new-episodes/muted": {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /** @description Series the profile muted in «Новые серии» (newest first). */
+        get: operations["mutedSeries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profiles/{id}/new-episodes/muted/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * @description Stops «Новые серии» for the series on this profile: the nightly check skips it and its existing items are
+         *     hidden from the list and the unseen count (they come back on unmute). Idempotent.
+         */
+        put: operations["muteSeries"];
+        post?: never;
+        delete: operations["unmuteSeries"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/profiles/{id}/history": {
         parameters: {
             query?: {
@@ -5672,6 +5717,11 @@ export interface components {
             items: components["schemas"]["NewEpisodeItem"][];
             /** @description All unseen items (also beyond the list's limit). */
             unseen: number;
+        };
+        MutedSeries: {
+            media: components["schemas"]["MediaSummary"];
+            /** Format: date-time */
+            muted_at: string;
         };
         NewEpisodeRun: {
             id: number;
@@ -10520,6 +10570,79 @@ export interface operations {
             };
             404: components["responses"]["Error"];
             422: components["responses"]["Error"];
+        };
+    };
+    mutedSeries: {
+        parameters: {
+            query?: {
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["MutedSeries"][];
+                    };
+                };
+            };
+            404: components["responses"]["Error"];
+        };
+    };
+    muteSeries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Muted. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    unmuteSeries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unmuted (idempotent). */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["Error"];
         };
     };
     watchHistory: {

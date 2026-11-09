@@ -40,6 +40,9 @@ func (h *Handlers) Routes(r fiber.Router) {
 
 	r.Get("/profiles/:id/new-episodes", caller, h.newEpisodes)
 	r.Post("/profiles/:id/new-episodes/seen", caller, h.newEpisodesSeen)
+	r.Get("/profiles/:id/new-episodes/muted", caller, h.mutedSeries)
+	r.Put("/profiles/:id/new-episodes/muted/:mediaId", caller, h.muteSeries)
+	r.Delete("/profiles/:id/new-episodes/muted/:mediaId", caller, h.unmuteSeries)
 
 	r.Get("/media/:id/progress", caller, h.mediaProgress)
 	r.Put("/media/:id/watched", caller, h.setWatched)
@@ -53,6 +56,8 @@ func fail(err error) error {
 		return httpx.Validation(ve)
 	case errors.Is(err, ErrNotFound), errors.Is(err, catalog.ErrNotFound):
 		return httpx.NotFound()
+	case errors.Is(err, ErrNotSeries):
+		return httpx.Validation(map[string]string{"mediaId": "must be a series"})
 	case errors.Is(err, errBadToken):
 		return httpx.NewError(fiber.StatusUnauthorized, "invalid_token", "The report token is invalid or expired.")
 	case errors.Is(err, catalog.ErrUpstream):
@@ -381,6 +386,54 @@ func (h *Handlers) newEpisodesSeen(c fiber.Ctx) error {
 	}
 	if err := h.svc.MarkNewEpisodesSeen(c.Context(), id, in.EpisodeIDs, in.All); err != nil {
 		return err
+	}
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (h *Handlers) mutedSeries(c fiber.Ctx) error {
+	id, err := h.profileParam(c)
+	if err != nil {
+		return err
+	}
+	lang, err := langParam(c)
+	if err != nil {
+		return err
+	}
+	items, err := h.svc.MutedSeriesList(c.Context(), id, lang)
+	if err != nil {
+		return fail(err)
+	}
+	c.Set(fiber.HeaderCacheControl, "no-store")
+	return c.JSON(fiber.Map{"items": items})
+}
+
+func (h *Handlers) muteTarget(c fiber.Ctx) (string, string, error) {
+	pid, err := h.profileParam(c)
+	if err != nil {
+		return "", "", err
+	}
+	mid, err := httpx.ParamUUID(c, "mediaId")
+	return pid, mid, err
+}
+
+func (h *Handlers) muteSeries(c fiber.Ctx) error {
+	pid, mid, err := h.muteTarget(c)
+	if err != nil {
+		return err
+	}
+	if err := h.svc.MuteSeries(c.Context(), pid, mid); err != nil {
+		return fail(err)
+	}
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (h *Handlers) unmuteSeries(c fiber.Ctx) error {
+	pid, mid, err := h.muteTarget(c)
+	if err != nil {
+		return err
+	}
+	if err := h.svc.UnmuteSeries(c.Context(), pid, mid); err != nil {
+		return fail(err)
 	}
 	return c.SendStatus(fiber.StatusNoContent)
 }

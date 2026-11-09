@@ -2045,6 +2045,43 @@ paths:
         "204": { description: Done. }
         "404": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
+  /profiles/{id}/new-episodes/muted:
+    parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/Lang" }]
+    get:
+      tags: [watch]
+      operationId: mutedSeries
+      description: Series the profile muted in «Новые серии» (newest first).
+      responses:
+        "200":
+          description: List.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/MutedSeries" } }
+        "404": { $ref: "#/components/responses/Error" }
+  /profiles/{id}/new-episodes/muted/{mediaId}:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+      - { name: mediaId, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      tags: [watch]
+      operationId: muteSeries
+      description: |
+        Stops «Новые серии» for the series on this profile: the nightly check skips it and its existing items are
+        hidden from the list and the unseen count (they come back on unmute). Idempotent.
+      responses:
+        "204": { description: Muted. }
+        "404": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [watch]
+      operationId: unmuteSeries
+      responses:
+        "204": { description: Unmuted (idempotent). }
+        "404": { $ref: "#/components/responses/Error" }
   /profiles/{id}/history:
     parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/Lang" }]
     get:
@@ -5793,6 +5830,12 @@ components:
       properties:
         items: { type: array, items: { $ref: "#/components/schemas/NewEpisodeItem" } }
         unseen: { type: integer, description: All unseen items (also beyond the list's limit). }
+    MutedSeries:
+      type: object
+      required: [media, muted_at]
+      properties:
+        media: { $ref: "#/components/schemas/MediaSummary" }
+        muted_at: { type: string, format: date-time }
     NewEpisodeRun:
       type: object
       required: [id, trigger, status, started_at, finished_at, series_checked, refresh_errors, found, error]

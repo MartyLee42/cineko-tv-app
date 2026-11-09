@@ -2,7 +2,7 @@
 // marking them seen. One query feeds the tab badge, the Home row and the screen.
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { unwrap, type Schemas } from "@martytv/contracts";
-import { catalogLang } from "@martytv/media-types";
+import { catalogLang, withoutSeries } from "@martytv/media-types";
 import { useI18n } from "@martytv/ui";
 import { api } from "../api";
 import { queryClient } from "../catalog/queries";
@@ -35,6 +35,19 @@ export function useMarkNewSeen() {
   const profile = useActiveProfileId();
   return useMutation({
     mutationFn: (v: { episode_ids?: string[]; all?: boolean }) => unwrap(api.POST("/profiles/{id}/new-episodes/seen", { params: { path: { id: profile! } }, body: v })),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: newEpisodesKey(profile) }),
+  });
+}
+
+/** «Не уведомлять о сериале»: mutes the series for the profile; its items leave the list at once. */
+export function useMuteSeries() {
+  const profile = useActiveProfileId();
+  return useMutation({
+    mutationFn: (mediaId: string) =>
+      unwrap(api.PUT("/profiles/{id}/new-episodes/muted/{mediaId}", { params: { path: { id: profile!, mediaId } } })),
+    onMutate: (mediaId) => {
+      queryClient.setQueriesData<NewEpisodeList>({ queryKey: newEpisodesKey(profile) }, (l) => (l ? withoutSeries(l, mediaId) : l));
+    },
     onSettled: () => void queryClient.invalidateQueries({ queryKey: newEpisodesKey(profile) }),
   });
 }
