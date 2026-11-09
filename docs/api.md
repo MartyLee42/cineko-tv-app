@@ -470,13 +470,17 @@ sender's browser sockets when the recipient reacts or replies.
 Opt-in per profile: settings `share_with_family` (default `false`) exposes the
 profile's ratings, finished titles and favorites to the other profiles on the
 server (never progress, watchlist or notes); `show_family` (default `true`)
-shows the family to this profile. See
+shows the family to this profile. An admin can override who sees whom per
+pair («Кто видит чьи лайки», `/admin/family-visibility` below); every endpoint
+here returns only the profiles the viewer may see. See
 [architecture](architecture.md#family-sharing-семья-советует).
 
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/profiles/{id}/family?lang&limit` | `FamilyBlock {profile_id, enabled (show_family), sharing (share_with_family), members: [{profile_id, name, avatar, color, user_name, match (0–100 \| null), co_rated}], items: [{media: MediaSummary (with me), why: {people: FamilyEndorsement[], liked_by, text}, score}]}`; `FamilyEndorsement {profile_id, name, avatar, color, user_name, rating, completed, completed_at, favorite, liked}`. Titles the viewer rated/started/finished/dismissed (and anime with hide_anime) are excluded; ranked by taste similarity. `limit` ≤ 50 (default 20). The profile's account and its TVs; others 404 |
-| GET | `/profiles/{id}/family/media/{mediaId}` | `MediaFamily {enabled, people: FamilyEndorsement[]}` («Оценки семьи»; likers first). Empty when nobody shares it or `show_family` is off |
+| GET | `/profiles/{id}/family/media/{mediaId}` | `MediaFamily {enabled, people: FamilyEndorsement[]}` («Оценки семьи»; likers first). Empty when nobody visible to the viewer shares it or `show_family` is off |
+| GET | `/admin/family-visibility` | Admin. `FamilyVisibility {profiles: [{profile_id, name, avatar, color, user_id, user_name, share_with_family, show_family}], overrides: [{viewer_profile_id, sharer_profile_id, allowed}]}`: profiles of enabled accounts (grouped by account) and the cells an admin set. A pair is visible when its override says `allowed`, else when the sharer's `share_with_family` is on |
+| PUT | `/admin/family-visibility` | Admin. `{changes: [{viewer_profile_id, sharer_profile_id, allowed: true\|false\|null}]}` (1–2500; `null` clears the cell back to the default; viewer ≠ sharer; unknown profile → 422), atomic; returns the new matrix. Audited `family_visibility.updated` |
 
 `GET /foryou/rows` also includes this block as the row `kind: family`
 (`id: family`, second row) when it has items: items have `reason.type:

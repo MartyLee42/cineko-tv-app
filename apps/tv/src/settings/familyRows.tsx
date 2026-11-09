@@ -16,7 +16,7 @@ export function useFamilyRows(settings: Settings, set: (patch: Partial<Settings>
       kind: "choice",
       key: "share_with_family",
       label: t("family.share"),
-      hint: t("family.share_hint"),
+      hint: `${t("family.share_hint")} ${t("familyvis.settings_note")}`,
       choices: onOff,
       value: settings.share_with_family,
       onChange: (v) => set({ share_with_family: v as boolean }),

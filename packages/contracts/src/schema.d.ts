@@ -820,6 +820,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/family-visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description «Кто видит чьи лайки»: who sees whose likes in «Семья советует» (the
+         *     family row, who liked a title, taste match, «Оценки семьи»). Profiles
+         *     of enabled accounts (grouped by account) and the admin's per-pair
+         *     overrides. A pair (viewer, sharer) is visible when its override says
+         *     `allowed`; without an override, when the sharer has
+         *     `share_with_family` on (its column default). The viewer's own
+         *     `show_family` off still hides the whole feature for it.
+         */
+        get: operations["adminFamilyVisibility"];
+        /** @description Set (allowed true/false) or clear (allowed null = back to the sharer's default) cells, atomically. */
+        put: operations["updateAdminFamilyVisibility"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/catalog/config": {
         parameters: {
             query?: never;
@@ -2613,7 +2639,8 @@ export interface paths {
          *     this profile has not seen, ranked by taste similarity. Only profiles
          *     that opted in (`share_with_family`, default off) contribute, and only
          *     their ratings, finished titles and favorites — never in-progress
-         *     positions, the watchlist or notes; no admin override. Excludes what
+         *     positions, the watchlist or notes. An admin may override who sees whom
+         *     per pair (GET/PUT /admin/family-visibility). Excludes what
          *     this profile rated, started, finished or dismissed («Не интересно»),
          *     and anime when it hides anime. Score per title = Σ over sharers of
          *     weight(similarity) × signal (★8+ / favorite / finished in the last
@@ -2644,7 +2671,8 @@ export interface paths {
         /**
          * @description «Оценки семьи» for a title page: what sharing profiles did with it
          *     (rating, finished, favorite), members who liked it first. Empty when
-         *     nobody shares or the profile turned `show_family` off.
+         *     nobody this profile may see shares (share_with_family or the admin's
+         *     /admin/family-visibility) or the profile turned `show_family` off.
          */
         get: operations["getMediaFamily"];
         put?: never;
@@ -6392,6 +6420,46 @@ export interface components {
             members: components["schemas"]["FamilyMember"][];
             items: components["schemas"]["FamilyItem"][];
         };
+        FamilyVisibilityProfile: {
+            /** Format: uuid */
+            profile_id: string;
+            name: string;
+            avatar: string;
+            color: string;
+            /** Format: uuid */
+            user_id: string;
+            /** @description The account's display name. */
+            user_name: string;
+            /** @description The profile's own «Делиться с семьёй»: the default of its column. */
+            share_with_family: boolean;
+            /** @description false: the profile hid «Семья советует» itself; its row has no effect. */
+            show_family: boolean;
+        };
+        FamilyVisibilityCell: {
+            /** Format: uuid */
+            viewer_profile_id: string;
+            /** Format: uuid */
+            sharer_profile_id: string;
+            allowed: boolean;
+        };
+        FamilyVisibility: {
+            profiles: components["schemas"]["FamilyVisibilityProfile"][];
+            /** @description Only cells the admin set; the rest follow share_with_family. */
+            overrides: components["schemas"]["FamilyVisibilityCell"][];
+        };
+        FamilyVisibilityUpdate: {
+            changes: {
+                /** Format: uuid */
+                viewer_profile_id: string;
+                /**
+                 * Format: uuid
+                 * @description Must differ from the viewer.
+                 */
+                sharer_profile_id: string;
+                /** @description true / false override; null clears it (back to the default). */
+                allowed: boolean | null;
+            }[];
+        };
         MediaFamily: {
             enabled: boolean;
             people: components["schemas"]["FamilyEndorsement"][];
@@ -9089,6 +9157,55 @@ export interface operations {
                     "application/json": components["schemas"]["AdminPlayback"];
                 };
             };
+            403: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    adminFamilyVisibility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The matrix. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyVisibility"];
+                };
+            };
+            401: components["responses"]["Error"];
+            403: components["responses"]["Error"];
+        };
+    };
+    updateAdminFamilyVisibility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FamilyVisibilityUpdate"];
+            };
+        };
+        responses: {
+            /** @description Saved (audited family_visibility.updated); the new matrix. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyVisibility"];
+                };
+            };
+            401: components["responses"]["Error"];
             403: components["responses"]["Error"];
             422: components["responses"]["Error"];
         };

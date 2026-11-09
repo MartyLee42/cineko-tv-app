@@ -1954,8 +1954,8 @@ falls back to the account name.
 
 ## Family sharing («Семья советует»)
 
-`internal/family`; no tables of its own — the two switches live in
-`profile_settings` (no migration).
+`internal/family`; the two switches live in `profile_settings`, the admin's
+overrides in `family_visibility` (migration 00042).
 
 - **Privacy model (per profile):** `share_with_family` («Делиться с семьёй»,
   default **off**, opt-in) exposes that profile's ratings, finished titles
@@ -1964,12 +1964,22 @@ falls back to the account name.
   other accounts' and the same account's. Never in-progress positions or
   started-but-unfinished titles, never the watchlist (it shows intent, not
   taste), never notes, the diary or Taste DNA. Disabled accounts never
-  share. There is no admin override or admin view. Turning sharing off takes
-  effect on the next request (nothing is cached). PIN-protected profiles
-  follow the same rule: nothing leaves them unless they opt in from inside
-  the profile. `show_family` («Показывать, что смотрят другие», default
+  share. Turning sharing off takes effect on the next request (nothing is
+  cached). `show_family` («Показывать, что смотрят другие», default
   **on**) controls whether a profile *sees* the family (row + title-page
   line).
+- **Admin matrix («Кто видит чьи лайки», `visibility.go`):** Admin →
+  Overview shows a table, viewers as rows (grouped by account) and sharers
+  as columns. Each cell is either the default — the column profile's own
+  `share_with_family` — or an admin override (`family_visibility`
+  `(viewer, sharer, allowed)`: allow even with sharing off, deny even with
+  it on). No row = default, so installs without overrides behave as before;
+  «↺» clears a row's / column's overrides, «Сбросить всё» all of them. A
+  viewer with `show_family` off still sees nothing. Enforced in one place:
+  `sharers(viewer)` returns only the profiles the viewer may see, and the
+  family row, members (taste match), «who liked» and «Оценки семьи» are all
+  built from it. The profile's Settings hint says an admin can change who
+  sees its likes. `GET/PUT /admin/family-visibility`, audited.
 - **Ranking:** candidates = titles any sharing profile touched, minus what
   the viewer rated, started/finished or dismissed («Не интересно»), minus
   anime when the viewer hides anime. Per sharer and title a signal: ★8+ →

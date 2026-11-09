@@ -1,0 +1,26 @@
+// «Who sees whose likes» (Admin → Overview): the admin's visibility matrix for «Family picks».
+export const familyVisEn = {
+  "familyvis.title": "Who sees whose likes",
+  "familyvis.hint":
+    "Rows are viewers, columns are whose ratings, favorites and watched titles they see in «Family picks» and on title pages. Cells you haven't set follow the profile's «Share with family» setting.",
+  "familyvis.legend_default": "default (profile setting)",
+  "familyvis.legend_override": "set by an admin",
+  "familyvis.legend_shares": "shares",
+  "familyvis.legend_private": "doesn't share",
+  "familyvis.corner": "Who sees ↓ · whose →",
+  "familyvis.all": "all",
+  "familyvis.toggle_row": "Toggle the whole row: what {name} sees",
+  "familyvis.toggle_col": "Toggle the whole column: who sees {name}",
+  "familyvis.reset_row": "Back to defaults: what {name} sees",
+  "familyvis.reset_col": "Back to defaults: who sees {name}",
+  "familyvis.reset_all": "Reset all",
+  "familyvis.reset_all_confirm": "Return every cell to the profiles' own settings?",
+  "familyvis.overrides": "Set by an admin: {n}",
+  "familyvis.cell": "{viewer} sees the likes of {sharer}",
+  "familyvis.cell_default": "default",
+  "familyvis.cell_override": "set by an admin",
+  "familyvis.self": "Themselves — not applicable",
+  "familyvis.hidden": "hid «Family picks»",
+  "familyvis.empty": "Needs at least two profiles.",
+  "familyvis.settings_note": "An admin can change who exactly sees them.",
+} as const;
