@@ -15,7 +15,7 @@ const useLang = () => catalogLang(useI18n().locale);
 export function useAsk() {
   const lang = useLang();
   return useMutation({
-    mutationFn: (body: { profile_id: string; prompt: string; kind: AskKind }) =>
+    mutationFn: (body: { profile_id: string; prompt: string; kind: AskKind; include_watched?: boolean }) =>
       unwrap(api.POST("/foryou/ask", { params: { query: { lang } }, body: { include_watched: false, creativity: readAICreativity(), ...body, lang } })),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["foryou", "asks"] }),
   });

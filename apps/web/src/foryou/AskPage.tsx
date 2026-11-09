@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import type { MediaSummary } from "@martytv/contracts";
 import { imageUrl, placeholderColor, formatRating } from "@martytv/media-types";
 import { AI_CREATIVITY, CvIcon, Mascot, readAICreativity, translate, useConstructivism, useI18n, writeAICreativity, type AICreativity, type MascotMood, type MessageKey } from "@martytv/ui";
@@ -21,7 +21,9 @@ import {
   cleanPrompt,
   exampleLabel,
   examplePrompt,
-  withFollowup,
+  formOf,
+  newAskForm,
+  refinePrompt,
   type AskForm,
   type AskKind,
 } from "./ask";
@@ -45,22 +47,37 @@ export function AskPage() {
 function Ask() {
   const { t } = useI18n();
   const lang = useCatalogLang();
-  const { search } = useLocation();
+  const [params, setParams] = useSearchParams();
   const { profile, profiles, profileId: activeId } = useActiveProfile();
-  const target = askTarget(search, profiles.map((p) => p.id));
+  const target = askTarget(params.toString(), profiles.map((p) => p.id));
   const profileId = target.profileId ?? activeId;
   const history = useAskHistory(profileId);
   const ask = useAsk();
-  const [form, setForm] = useState<AskForm>({ prompt: "", kind: "any", includeWatched: false });
-  const [current, setCurrent] = useState<ForYouAsk | null>(null);
+  const [form, setForm] = useState<AskForm>(newAskForm);
+  const [picked, setPicked] = useState<ForYouAsk | null>(null);
   const [pending, setPending] = useState<string | null>(null);
-  const [failed, setFailed] = useState<{ prompt: string; error: unknown } | null>(null);
+  const [failed, setFailed] = useState<{ form: AskForm; error: unknown } | null>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const thread = useRef<HTMLDivElement>(null);
+  // The shown answer's id stays in the URL (?a=): Back from a title brings it back (as in search).
+  const shownId = params.get("a");
+  const current = picked ?? (pending || failed || !shownId ? null : (history.data?.items.find((a) => a.id === shownId) ?? null));
+  const setCurrent = (a: ForYouAsk | null) => {
+    setPicked(a);
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (a) next.set("a", a.id);
+        else next.delete("a");
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
-  const send = (text?: string) => {
+  const send = (f: AskForm = form) => {
     if (!profileId || ask.isPending) return;
-    const body = askBody({ ...form, prompt: text ?? form.prompt }, profileId, lang, target.deviceId);
+    const body = askBody(f, profileId, lang, target.deviceId);
     if (!body) {
       input.current?.focus();
       return;
@@ -68,13 +85,13 @@ function Ask() {
     setPending(body.prompt);
     setFailed(null);
     setCurrent(null);
-    setForm((f) => ({ ...f, prompt: "" }));
+    setForm((x) => ({ ...x, prompt: "" }));
     ask.mutate(body, {
       onSuccess: (r) => {
         setCurrent(r);
         r.items.forEach((it) => sendFeedback(profileId, it.media.id, "impression", ROW));
       },
-      onError: (error) => setFailed({ prompt: body.prompt, error }),
+      onError: (error) => setFailed({ form: f, error }),
       onSettled: () => setPending(null),
     });
   };
@@ -83,14 +100,15 @@ function Ask() {
     if (pending || current || failed) thread.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [pending, current, failed]);
 
+  // A follow-up refines the shown ask and asks at once (as in search and on the TV).
   const followup = (text: string) => {
-    setForm((f) => ({ ...f, prompt: withFollowup(f.prompt, current?.prompt ?? "", text) }));
-    requestAnimationFrame(() => {
-      const el = input.current;
-      if (!el) return;
-      el.focus();
-      el.setSelectionRange(el.value.length, el.value.length);
-    });
+    if (current) send({ ...form, prompt: refinePrompt(current.prompt, text) });
+  };
+  // A past ask: its answer, and the controls it was asked with.
+  const reopen = (a: ForYouAsk) => {
+    setCurrent(a);
+    setFailed(null);
+    setForm((f) => ({ ...formOf(a), prompt: f.prompt }));
   };
   const reset = () => {
     setCurrent(null);
@@ -137,9 +155,9 @@ function Ask() {
           )}
 
           <div ref={thread} className="scroll-mt-24 space-y-4" data-testid="ask-thread">
-            {(pending ?? current?.prompt ?? failed?.prompt) && <UserBubble text={(pending ?? current?.prompt ?? failed?.prompt)!} />}
+            {(pending ?? current?.prompt ?? failed?.form.prompt) && <UserBubble text={(pending ?? current?.prompt ?? failed?.form.prompt)!} />}
             {pending && <Thinking />}
-            {failed && <ErrorBubble kind={askErrorKind(failed.error)} onRetry={() => send(failed.prompt)} />}
+            {failed && <ErrorBubble kind={askErrorKind(failed.error)} onRetry={() => send(failed.form)} />}
             {current && <Answer ask={current} profileId={profileId} deviceId={target.deviceId} onFollowup={followup} />}
           </div>
 
@@ -150,12 +168,12 @@ function Ask() {
             busy={ask.isPending}
             disabled={aiOff}
             onSend={() => send()}
-            onExample={(text) => send(text)}
+            onExample={(text) => send({ ...form, prompt: text })}
             showExamples={empty || !!failed}
           />
         </div>
 
-        <History items={history.data?.items} loading={history.isPending} activeId={current?.id} onOpen={(a) => { setCurrent(a); setFailed(null); }} />
+        <AskHistory items={history.data?.items} loading={history.isPending} activeId={current?.id} onOpen={reopen} />
       </div>
     </CatalogPage>
   );
@@ -187,25 +205,7 @@ function Composer({
   const len = [...form.prompt].length;
   return (
     <div className="space-y-3">
-      {showExamples && (
-        <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">{t("ask.examples")}</p>
-          <div className="flex flex-wrap gap-2" data-testid="ask-examples">
-            {ASK_EXAMPLES.map((e) => (
-              <button
-                key={e}
-                type="button"
-                disabled={busy || disabled}
-                data-testid={`ask-example-${e}`}
-                onClick={() => onExample(t(examplePrompt(e)))}
-                className="min-h-[40px] rounded-full border border-border bg-surface px-4 text-sm font-medium transition hover:border-accent hover:bg-accent/10 disabled:opacity-50"
-              >
-                {t(exampleLabel(e))}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {showExamples && <AskExamples disabled={busy || disabled} onPick={onExample} />}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -246,16 +246,7 @@ function Composer({
               </button>
             ))}
           </div>
-          <label className="flex min-h-[36px] cursor-pointer items-center gap-2 px-1 text-xs text-muted sm:text-sm">
-            <input
-              type="checkbox"
-              checked={form.includeWatched}
-              onChange={(e) => setForm((f) => ({ ...f, includeWatched: e.target.checked }))}
-              className="h-4 w-4 accent-[rgb(var(--mt-accent))]"
-              data-testid="ask-watched"
-            />
-            {t("ask.include_watched")}
-          </label>
+          <IncludeWatched on={form.includeWatched} onChange={(v) => setForm((f) => ({ ...f, includeWatched: v }))} />
           <CreativityPicker />
           <span className="ml-auto flex items-center gap-2">
             {len > ASK_MAX - 100 && <span className="text-xs tabular-nums text-muted">{len}/{ASK_MAX}</span>}
@@ -271,6 +262,47 @@ function Composer({
         </div>
       </form>
     </div>
+  );
+}
+
+/** «Попробуйте»: example chips that ask at once (here and in the search's AI mode). */
+export function AskExamples({ disabled, onPick }: { disabled?: boolean; onPick: (prompt: string) => void }) {
+  const { t } = useI18n();
+  return (
+    <div>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">{t("ask.examples")}</p>
+      <div className="flex flex-wrap gap-2" data-testid="ask-examples">
+        {ASK_EXAMPLES.map((e) => (
+          <button
+            key={e}
+            type="button"
+            disabled={disabled}
+            data-testid={`ask-example-${e}`}
+            onClick={() => onPick(t(examplePrompt(e)))}
+            className="min-h-[40px] rounded-full border border-border bg-surface px-4 text-sm font-medium transition hover:border-accent hover:bg-accent/10 disabled:opacity-50"
+          >
+            {t(exampleLabel(e))}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** «Включая просмотренное»: off by default, as on the TV. */
+export function IncludeWatched({ on, onChange, className = "" }: { on: boolean; onChange: (v: boolean) => void; className?: string }) {
+  const { t } = useI18n();
+  return (
+    <label className={`flex min-h-[36px] cursor-pointer items-center gap-2 px-1 text-xs text-muted sm:text-sm ${className}`}>
+      <input
+        type="checkbox"
+        checked={on}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-4 w-4 accent-[rgb(var(--mt-accent))]"
+        data-testid="ask-watched"
+      />
+      {t("ask.include_watched")}
+    </label>
   );
 }
 
@@ -492,7 +524,8 @@ function AskCard({ m, why, profileId }: { m: MediaSummary; why: string; profileI
 
 // ---------------------------------------------------------------- history
 
-function History({ items, loading, activeId, onOpen }: { items: ForYouAsk[] | undefined; loading: boolean; activeId: string | undefined; onOpen: (a: ForYouAsk) => void }) {
+/** The profile's recent asks (reopened without a new call); also in the search's AI mode. */
+export function AskHistory({ items, loading, activeId, onOpen }: { items: ForYouAsk[] | undefined; loading: boolean; activeId: string | undefined; onOpen: (a: ForYouAsk) => void }) {
   const { t, locale } = useI18n();
   const now = new Date();
   return (

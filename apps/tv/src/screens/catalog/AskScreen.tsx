@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import QRCode from "qrcode";
 import type { MediaSummary } from "@martytv/contracts";
-import { AI_CREATIVITY, Mascot, readAICreativity, useI18n, writeAICreativity, type AICreativity, type MessageKey } from "@martytv/ui";
+import { AI_CREATIVITY, cleanPrompt, Mascot, readAICreativity, useI18n, writeAICreativity, type AICreativity, type MessageKey } from "@martytv/ui";
 import { FocusButton, FocusLine, FocusSection, setFocus, useInitialFocus } from "../../focus";
 import { cardKey } from "../../catalog/focusKeys";
 import { applyKey, physicalKey, type KeyAction, type Layout } from "../../catalog/keyboard";
@@ -28,6 +28,7 @@ import {
   exampleLabel,
   examplePrompt,
   phoneAskUrl,
+  refinePrompt,
   sentenceCase,
   tailText,
   useAsk,
@@ -84,15 +85,19 @@ export function AskScreen({ mem, profileId, onOpen }: { mem: RouteMemory; profil
   // Answers asked from the phone.
   useEffect(() => askInbox.subscribe((r) => show(r, true)));
 
-  const send = (text: string, k: AskKind = kind) => {
-    const p = text.trim();
-    if (!askValid(p)) return;
+  // The last ask's settings, for «Повторить».
+  const [lastAsk, setLastAsk] = useState<{ kind: AskKind; includeWatched: boolean }>({ kind, includeWatched: false });
+  // includeWatched: only a refinement of a phone's ask that ticked «Включая просмотренное» keeps it.
+  const send = (text: string, k: AskKind = kind, includeWatched = false) => {
+    const p = cleanPrompt(text);
+    if (!p) return;
     setPrompt(p);
     mem.set("prompt", p);
+    setLastAsk({ kind: k, includeWatched });
     setOverlay(null);
     setResult(null);
     mem.set("result", null);
-    ask.mutate({ profile_id: profileId, prompt: p, kind: k }, { onSuccess: (r) => show(r) });
+    ask.mutate({ profile_id: profileId, prompt: p, kind: k, include_watched: includeWatched }, { onSuccess: (r) => show(r) });
   };
   const reset = () => {
     ask.reset();
@@ -118,7 +123,7 @@ export function AskScreen({ mem, profileId, onOpen }: { mem: RouteMemory; profil
 
   let body: ReactNode;
   if (ask.isPending) body = <Thinking prompt={prompt} design={design} />;
-  else if (ask.isError) body = <AskError error={ask.error} design={design} onRetry={() => send(prompt)} onNew={reset} />;
+  else if (ask.isError) body = <AskError error={ask.error} design={design} onRetry={() => send(prompt, lastAsk.kind, lastAsk.includeWatched)} onNew={reset} />;
   else if (result)
     body = (
       <Answer
@@ -130,7 +135,8 @@ export function AskScreen({ mem, profileId, onOpen }: { mem: RouteMemory; profil
           track(m.id, "open", "ask");
           onOpen(m, t("nav.ask"));
         }}
-        onFollowup={(f) => send(f, (result.kind as AskKind) ?? kind)}
+        // A follow-up refines the shown ask (its words + the chip), as on the phone.
+        onFollowup={(f) => send(refinePrompt(result.prompt, f), (result.kind as AskKind) ?? kind, result.include_watched)}
         onNew={reset}
       />
     );

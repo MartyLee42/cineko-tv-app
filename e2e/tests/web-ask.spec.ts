@@ -99,10 +99,11 @@ test.describe("web «Спросить ИИ»", () => {
     await settle(page);
     await page.screenshot({ path: `${SHOTS}/web-desktop-ask.png`, fullPage: true });
 
-    // A follow-up pre-fills the input.
+    // A follow-up refines the ask at once: the first words + the chip, same kind (as in search and on the TV).
     await page.getByTestId("ask-followups").getByRole("button", { name: /Только комедии/ }).click();
-    await expect(page.getByTestId("ask-input")).toHaveValue("Только комедии");
-    await expect(page.getByTestId("ask-input")).toBeFocused();
+    await expect(page.getByTestId("ask-user")).toHaveText(/только комедии$/);
+    await expect(page.getByTestId("ask-card")).toHaveCount(6);
+    expect(asks[1]).toMatchObject({ prompt: "Что-нибудь лёгкое на вечер, не ужасы, до 2 часов, только комедии", kind: "movie", include_watched: false });
 
     // «Не интересно» + undo.
     const card = page.getByTestId("ask-card").nth(1);

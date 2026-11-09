@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { askBody, askErrorKind, askTarget, cleanPrompt, examplePrompt, withFollowup, ASK_EXAMPLES, ASK_ERROR } from "./ask";
+import { askBody, askErrorKind, askTarget, cleanPrompt, examplePrompt, formOf, newAskForm, refinePrompt, ASK_EXAMPLES, ASK_ERROR } from "./ask";
 
 const PID = "11111111-2222-3333-4444-555555555555";
 const DEV = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
@@ -36,11 +36,11 @@ describe("ask helpers", () => {
     expect(askTarget("", [PID])).toEqual({ deviceId: null, profileId: null });
   });
 
-  it("pre-fills follow-ups", () => {
-    expect(withFollowup("", "x", "Покороче")).toBe("Покороче");
-    expect(withFollowup("лёгкое на вечер", "лёгкое на вечер", "Покороче")).toBe("Покороче");
-    expect(withFollowup("Комедия на вечер.", "другое", "Без романтики")).toBe("Комедия на вечер, без романтики");
-    expect(withFollowup("комедия, без романтики", "x", "Без романтики")).toBe("комедия, без романтики");
+  it("refines with follow-ups and keeps a past ask's settings", () => {
+    expect(refinePrompt("Комедия на вечер.", "Без романтики")).toBe("Комедия на вечер, без романтики");
+    expect(newAskForm()).toEqual({ prompt: "", kind: "any", includeWatched: false });
+    expect(formOf({ prompt: "p", kind: "series", include_watched: true })).toEqual({ prompt: "p", kind: "series", includeWatched: true });
+    expect(formOf({ prompt: "p", kind: "", include_watched: false }).kind).toBe("any");
   });
 
   it("has a prompt key per example", () => {
