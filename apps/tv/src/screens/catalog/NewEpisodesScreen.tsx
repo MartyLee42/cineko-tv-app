@@ -3,7 +3,7 @@ import { unwrap } from "@martytv/contracts";
 import { airedKey, catalogLang, daysSinceAir, episodeCode, imageUrl, placeholderColor } from "@martytv/media-types";
 import { Spinner, useI18n, type MessageKey } from "@martytv/ui";
 import { api } from "../../api";
-import { FocusButton, FocusLine, useInitialFocus } from "../../focus";
+import { FocusButton, FocusLine, setFocus, useInitialFocus } from "../../focus";
 import type { RouteMemory } from "../../catalog/nav";
 import { useCatalogConfig } from "../../catalog/queries";
 import { ActionMenu, type MenuAction } from "../../components/ActionMenu";
@@ -15,7 +15,7 @@ import { ScreenTitle } from "../../design/grid";
 import { useReportDeep, useToTop } from "../../design/topJump";
 import { useActiveProfileId } from "../../profile/active";
 import { refreshWatchData } from "../../watch/api";
-import { useMarkNewSeen, useNewEpisodes, type NewEpisodeItem } from "../../newepisodes/data";
+import { useMarkNewSeen, useMuteSeries, useNewEpisodes, type NewEpisodeItem } from "../../newepisodes/data";
 
 const ITEM_H = 176;
 const ITEM_PITCH = ITEM_H + 20;
@@ -35,7 +35,8 @@ export function useAiredText() {
 /**
  * «Новые серии»: episodes of the profile's series that came out after what it
  * watched (the server checks every night). OK plays the episode; holding OK
- * offers «О сериале», «Отметить просмотренной» and «Скрыть».
+ * offers «О сериале», «Отметить просмотренной», «Скрыть» and «Не уведомлять
+ * о сериале» (unmuting lives in the PWA).
  */
 export function NewEpisodesScreen({
   mem,
@@ -54,6 +55,7 @@ export function NewEpisodesScreen({
   const cfg = useCatalogConfig();
   const q = useNewEpisodes();
   const mark = useMarkNewSeen();
+  const mute = useMuteSeries();
   const profile = useActiveProfileId();
   const aired = useAiredText();
   const items = q.data?.items ?? [];
@@ -94,6 +96,20 @@ export function NewEpisodesScreen({
       },
     ];
     if (!it.seen) actions.push({ key: "hide", label: t("newep.hide"), onPress: () => (close(), mark.mutate({ episode_ids: [it.episode.id] })) });
+    actions.push({
+      key: "mute",
+      label: t("newepmute.mute"),
+      onPress: () => {
+        close();
+        // The series' rows disappear: move the focus to the nearest row left
+        // (the one after it, else before), or Home when none is.
+        const at = items.indexOf(it);
+        const other = (x: NewEpisodeItem) => x.media.id !== it.media.id;
+        const next = items.slice(at + 1).find(other) ?? items.slice(0, at).reverse().find(other);
+        mute.mutate(it.media.id);
+        setTimeout(() => setFocus(next ? `ne-${next.episode.id}` : "ne-home"), 0);
+      },
+    });
     setMenu({ it, actions });
   };
 

@@ -28,3 +28,14 @@ export function pluralFormRu(n: number): 0 | 1 | 2 {
   if (b >= 2 && b <= 4) return 1;
   return 2;
 }
+
+/**
+ * The list without one series' items (optimistic «Не уведомлять о сериале»):
+ * the unseen count drops by that series' unseen items (never below 0).
+ */
+export function withoutSeries<T extends { media: { id: string }; seen: boolean }, L extends { items: T[]; unseen: number }>(list: L, mediaId: string): L {
+  const gone = list.items.filter((it) => it.media.id === mediaId);
+  if (gone.length === 0) return list;
+  const unseen = gone.filter((it) => !it.seen).length;
+  return { ...list, items: list.items.filter((it) => it.media.id !== mediaId), unseen: Math.max(0, list.unseen - unseen) };
+}

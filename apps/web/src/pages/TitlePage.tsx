@@ -4,7 +4,7 @@ import { Link, useParams, useSearchParams } from "react-router";
 import type { Episode, MediaDetail, Schemas, WatchProgress } from "@martytv/contracts";
 import { countryList, formatDate, formatRuntime, imageUrl, episodeCode, placeholderColor, formatRating } from "@martytv/media-types";
 import { GenreReaction, useI18n, type MessageKey, ratingTone } from "@martytv/ui";
-import { CheckIcon, PlayIcon } from "../icons";
+import { BellIcon, CheckIcon, PlayIcon } from "../icons";
 import { Backdrop, CatalogError, CatalogPage, Img, Poster, PosterRow } from "../catalog/components";
 import { isNotFound, useCatalogConfig, useMedia, useRelated, useSeason } from "../catalog/queries";
 import { defaultSeason, orderSeasons } from "../catalog/seasons";
@@ -28,6 +28,7 @@ import { Awards } from "../catalog/Awards";
 import { TriviaButtons } from "../catalog/Trivia";
 import { CompanionButtons } from "../catalog/Companion";
 import { SoundtrackButton } from "../catalog/Soundtrack";
+import { useMutedSeries, useMuteSeries } from "../newepisodes/queries";
 
 type Video = Schemas["Video"];
 type CastMember = Schemas["CastMember"];
@@ -290,8 +291,34 @@ function MyToolbar({ m }: { m: MediaDetail }) {
       {profileId && m.kind === "movie" && (
         <WatchedButton watched={!!movie?.completed} busy={setWatched.isPending} onToggle={() => setWatched.mutate({ watched: !movie?.completed })} />
       )}
+      {profileId && m.kind === "series" && <NewEpisodesToggle mediaId={m.id} />}
       <RecommendButton m={m} compact />
     </div>
+  );
+}
+
+/** Series: «Новые серии» on/off for this profile (muted series are skipped by the nightly check). */
+function NewEpisodesToggle({ mediaId }: { mediaId: string }) {
+  const { t } = useI18n();
+  const muted = useMutedSeries();
+  const mute = useMuteSeries();
+  if (!muted.data) return null;
+  const on = !muted.data.items.some((it) => it.media.id === mediaId);
+  const hint = on ? t("newepmute.toggle_on") : t("newepmute.toggle_off");
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      aria-label={hint}
+      title={hint}
+      disabled={mute.isPending}
+      onClick={() => mute.mutate({ mediaId, on })}
+      data-testid="toggle-new-episodes"
+      className={`${TOOL_BTN} disabled:opacity-60 ${on ? TOOL_OFF : "border-border bg-surface/70 text-muted line-through hover:border-accent"}`}
+    >
+      <BellIcon off={!on} className="text-lg" />
+      <span className={TOOL_LABEL}>{t("newepmute.toggle")}</span>
+    </button>
   );
 }
 
