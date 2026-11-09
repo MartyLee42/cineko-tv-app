@@ -65,7 +65,7 @@ func TestNewTVDesign(t *testing.T) {
 	}
 	// «Как в профиле» from a phone: follows the profile, the default doesn't come back.
 	bob.Do("PATCH", path, map[string]any{"profile_id": bobPID, "reset": []string{"design"}}).Expect(200)
-	if d := design(newTV, bobPID); d != "kinozal" {
+	if d := design(newTV, bobPID); d != "wireframe" {
 		t.Fatalf("after reset %v", d)
 	}
 	alice.Do("PATCH", path, map[string]any{"profile_id": alicePID, "reset": []string{"design"}}).Expect(200)
@@ -90,10 +90,10 @@ func TestSettingsClassLayers(t *testing.T) {
 	if got["design"] != "matrix" || got["autoplay_countdown"] != false || got["min_votes"] != float64(300) {
 		t.Fatalf("mobile answer %v", got)
 	}
-	if d := alice.Do("GET", desktop, nil).Expect(200).JSON(); d["design"] != "kinozal" || d["autoplay_countdown"] != true || d["min_votes"] != float64(300) {
+	if d := alice.Do("GET", desktop, nil).Expect(200).JSON(); d["design"] != "wireframe" || d["autoplay_countdown"] != true || d["min_votes"] != float64(300) {
 		t.Fatalf("desktop %v", d)
 	}
-	if b := alice.Do("GET", base, nil).Expect(200).JSON(); b["design"] != "kinozal" || b["min_votes"] != float64(300) {
+	if b := alice.Do("GET", base, nil).Expect(200).JSON(); b["design"] != "wireframe" || b["min_votes"] != float64(300) {
 		t.Fatalf("base %v", b)
 	}
 	// A legacy client (no class) writes the base: classes without their own value follow it.
@@ -134,10 +134,10 @@ func TestTvSettings(t *testing.T) {
 	if got := tv.Do("PUT", settings, map[string]any{"design": "retro80", "skip_segments": "auto", "hide_anime": true}).Expect(200).JSON(); got["design"] != "retro80" || got["hide_anime"] != true {
 		t.Fatalf("tv answer %v", got)
 	}
-	if got := tv2.Do("GET", settings, nil).Expect(200).JSON(); got["design"] != "kinozal" || got["skip_segments"] != "button" || got["hide_anime"] != true {
+	if got := tv2.Do("GET", settings, nil).Expect(200).JSON(); got["design"] != "wireframe" || got["skip_segments"] != "button" || got["hide_anime"] != true {
 		t.Fatalf("other tv %v", got)
 	}
-	if got := alice.Do("GET", settings+"?device_class=mobile", nil).Expect(200).JSON(); got["design"] != "kinozal" {
+	if got := alice.Do("GET", settings+"?device_class=mobile", nil).Expect(200).JSON(); got["design"] != "wireframe" {
 		t.Fatalf("phone %v", got)
 	}
 

@@ -15,8 +15,8 @@
       // light «Кинозал» doesn't flash dark while the bundle loads. ES5: old TVs.
       try {
         var d = localStorage.getItem("martytv.design"), t = localStorage.getItem("martytv.theme") || "dark";
-        // A fresh, unpaired TV starts in «Каркас» (src/design/newTv.ts: same rule, remembered by main.tsx).
-        if (!d) d = localStorage.getItem("martytv.device_credential") ? "kinozal" : "wireframe";
+        // Nothing cached: «Каркас», the default (src/design/newTv.ts startDesign).
+        if (!d) d = "wireframe";
         var m = { terminal: "#070708", projector: "#05090b", wireframe: "#0d0420", cyberpunk: "#06060a", deco: "#0b0a08", retro80: "#0b0e2a", retro90: "#006060", stickerbook: "#2a2438" };
         m.pocketpet = "#c4d0aa"; // «Тамагочи»: the LCD (light), dark ink
         m.noir = "#0c0c0d"; m.vague = "#0a0a0c";

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { ApiError, unwrap } from "@martytv/contracts";
@@ -7,6 +7,7 @@ import { api, setCsrfToken } from "../api";
 import { useSession } from "../session";
 import { Button, Card, ErrorText, Field, Input } from "../components";
 import { DesignDecor } from "../decor/DesignDecor";
+import { signInLook } from "../watch/settings";
 
 /** Only allow same-site relative redirects after login. */
 function safeNext(next: string | null): string {
@@ -24,6 +25,7 @@ export function LoginPage() {
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
   const next = safeNext(params.get("next"));
+  useEffect(() => signInLook(), []);
 
   if (session) return <Navigate to={next} replace />;
 
@@ -47,7 +49,7 @@ export function LoginPage() {
 
   return (
     <Centered>
-      {/* The design last used on this device (watch/settings.ts cachedDesign), with its scenery. */}
+      {/* Always «Каркас» with its sunset terrain (watch/settings.ts signInLook). */}
       <DesignDecor />
       <Logo className="mb-8 text-4xl" />
       <Card className="w-full max-w-sm text-left">

@@ -21,7 +21,7 @@ func TestSettingsDesigns(t *testing.T) {
 	if !strings.Contains(f["design"], "deco") {
 		t.Fatalf("unknown design: %v", f)
 	}
-	if st := (Settings{Design: ptr("vaporwave")}).withDefaults(); *st.Design != "kinozal" {
+	if st := (Settings{Design: ptr("vaporwave")}).withDefaults(); *st.Design != "wireframe" {
 		t.Fatalf("fallback %q", *st.Design)
 	}
 }

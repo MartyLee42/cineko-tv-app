@@ -7,7 +7,7 @@ import { unwrap, type ProfileSettings, type Schemas } from "@martytv/contracts";
 import { DESIGNS as UI_DESIGNS, effectiveDesign } from "@martytv/ui";
 import { api } from "../api";
 import { queryClient } from "../catalog/queries";
-import { credentialStore, storage } from "../platform";
+import { storage } from "../platform";
 import { DESIGN_KEY, SEEDED_KEY, startDesign } from "../design/newTv";
 import { activeProfile, useActiveProfileId } from "./active";
 
@@ -37,7 +37,7 @@ export const DEFAULT_SETTINGS: Settings = {
   spoiler_free_episodes: false,
   loading_style: "popcorn",
   onboarding_completed: false,
-  design: "kinozal",
+  design: "wireframe",
   design_surprise: "off",
   design_favorites: [],
   poster_rating: "kp",
@@ -109,8 +109,8 @@ export const themeCache = {
     } catch {
       /* garbled: the plain cache below */
     }
-    const v = startDesign(storage.get(DESIGN_KEY), !!credentialStore.get());
-    return (DESIGNS as readonly string[]).includes(v) ? (v as DesignSetting) : "kinozal";
+    const v = startDesign(storage.get(DESIGN_KEY));
+    return (DESIGNS as readonly string[]).includes(v) ? (v as DesignSetting) : "wireframe";
   },
   /** Remembers the shown design (index.html paints its background) and the surprise inputs behind it. */
   setDesign: (v: DesignSetting, s?: Settings, profileId?: string | null) => {

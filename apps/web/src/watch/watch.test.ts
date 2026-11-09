@@ -93,7 +93,7 @@ describe("settings", () => {
     expect(parseTheme("weird")).toBe("system");
     expect(parseTheme(null)).toBe("system");
     expect(parseDesign("terminal")).toBe("terminal");
-    expect(parseDesign("nope")).toBe("kinozal");
+    expect(parseDesign("nope")).toBe("wireframe");
     expect(supportsLight("kinozal")).toBe(true);
     expect(supportsLight("projector")).toBe(false);
     for (const d of ["wireframe", "cyberpunk", "deco"] as const) {
@@ -300,9 +300,9 @@ describe("the design before sign-in", () => {
   it("prefers the PWA's own last design over the key the TV app shares", () => {
     expect(cachedDesign(store({ "martytv.web_design": "noir", "martytv.design": "wireframe" }))).toBe("noir");
   });
-  it("falls back to the shared key (older installs), then Кинозал", () => {
+  it("falls back to the shared key (older installs), then «Каркас»", () => {
     expect(cachedDesign(store({ "martytv.design": "deco" }))).toBe("deco");
-    expect(cachedDesign(store({}))).toBe("kinozal");
-    expect(cachedDesign(store({ "martytv.web_design": "nope" }))).toBe("kinozal");
+    expect(cachedDesign(store({}))).toBe("wireframe");
+    expect(cachedDesign(store({ "martytv.web_design": "nope" }))).toBe("wireframe");
   });
 });

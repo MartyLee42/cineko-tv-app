@@ -21,7 +21,7 @@ func TestMergeLayers(t *testing.T) {
 	if *got.Design != "wireframe" || *got.PosterWobble || *got.LoadingStyle != "popcorn" {
 		t.Fatalf("later layer wins, invalid falls back: %+v", got)
 	}
-	if got := MergeLayers(nil); *got.Design != "kinozal" || *got.MinVotes != DefaultMinVotes {
+	if got := MergeLayers(nil); *got.Design != "wireframe" || *got.MinVotes != DefaultMinVotes {
 		t.Fatalf("defaults: %+v", got)
 	}
 	if got := MergeLayers([]byte(`garbage`), []byte(`{"design":"deco"}`)); *got.Design != "deco" {
