@@ -24,6 +24,7 @@ import { DevicesTab } from "../admin/DevicesTab";
 import { IncidentsTab, useIncidents } from "../admin/IncidentsTab";
 import { SeasonalAdminCard } from "../seasons/SeasonalSetting";
 import { NewEpisodesAdminCard } from "../newepisodes/AdminCard";
+import { FamilyVisibilityCard } from "../family/VisibilityCard";
 
 export function AdminPage() {
   const { t } = useI18n();
@@ -78,6 +79,7 @@ export function AdminPage() {
           <IntegrationsCard />
           <NewEpisodesAdminCard />
           <UsersCard selfId={session.user.id} selfRole={session.user.role} />
+          <FamilyVisibilityCard />
           <MessagesCard selfId={session.user.id} />
           <SeasonalAdminCard />
         </div>

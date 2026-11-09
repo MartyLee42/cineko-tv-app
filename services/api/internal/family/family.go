@@ -5,10 +5,16 @@
 // default on) get a ranked row of titles the family liked and they have
 // not seen, each with who liked it and how, plus per-member taste match.
 //
+// Admin override («Кто видит чьи лайки», visibility.go): per (viewer,
+// sharer) pair an admin may allow or deny regardless of share_with_family;
+// pairs without an override follow it. Every read of another profile's
+// signals goes through sharers(), so the row, «who liked», the taste match
+// and the title page's «Оценки семьи» all obey the matrix.
+//
 // Privacy: never in-progress positions, the watchlist, notes or the diary;
-// nothing at all from a profile with sharing off. There is no admin
-// override. Not to be confused with internal/reco (explicit «Посоветовать»)
-// or internal/foryou (personal recommendations; it embeds this row).
+// nothing from a profile the viewer may not see. Not to be confused with
+// internal/reco (explicit «Посоветовать») or internal/foryou (personal
+// recommendations; it embeds this row).
 package family
 
 import (
@@ -21,6 +27,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"martytv/api/internal/audit"
 	"martytv/api/internal/catalog"
 	"martytv/api/internal/profiles"
 )
@@ -101,6 +108,7 @@ type Deps struct {
 	Personal catalog.Personalizer
 	Profiles *profiles.Store
 	Ratings  catalog.RatingsSource // optional
+	Audit    *audit.Logger         // optional: audits admin matrix changes
 	Log      *slog.Logger
 }
 
@@ -110,6 +118,7 @@ type Service struct {
 	personal catalog.Personalizer
 	profiles *profiles.Store
 	ratings  catalog.RatingsSource
+	audit    *audit.Logger
 	log      *slog.Logger
 	now      func() time.Time
 }
@@ -119,19 +128,21 @@ func NewService(d Deps) *Service {
 	if log == nil {
 		log = slog.Default()
 	}
-	return &Service{pool: d.Pool, cat: d.Catalog, personal: d.Personal, profiles: d.Profiles, ratings: d.Ratings, log: log, now: time.Now}
+	return &Service{pool: d.Pool, cat: d.Catalog, personal: d.Personal, profiles: d.Profiles, ratings: d.Ratings, audit: d.Audit, log: log, now: time.Now}
 }
 
-// sharers lists the profiles (other than viewer) that share with the
-// family, of enabled accounts.
+// sharers lists the profiles (other than viewer, of enabled accounts) whose
+// likes the viewer may see: the admin's override for the pair
+// (family_visibility), else the profile's share_with_family.
 func (s *Service) sharers(ctx context.Context, viewer string) ([]Person, error) {
 	rows, err := s.pool.Query(ctx, `
 		SELECT p.id, p.name, p.avatar, p.color, COALESCE(NULLIF(u.display_name, ''), u.username)
 		FROM profiles p
-		JOIN profile_settings ps ON ps.profile_id = p.id
 		JOIN users u ON u.id = p.user_id
+		LEFT JOIN profile_settings ps ON ps.profile_id = p.id
+		LEFT JOIN family_visibility v ON v.viewer_profile_id = $1 AND v.sharer_profile_id = p.id
 		WHERE p.id <> $1 AND u.disabled_at IS NULL
-		  AND ps.settings -> 'share_with_family' = 'true'::jsonb
+		  AND COALESCE(v.allowed, ps.settings -> 'share_with_family' = 'true'::jsonb, false)
 		ORDER BY p.created_at`, viewer)
 	if err != nil {
 		return nil, err

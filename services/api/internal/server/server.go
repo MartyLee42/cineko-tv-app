@@ -221,7 +221,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	// «Семья советует» (internal/family): opt-in sharing between profiles;
 	// its row is embedded in /foryou/rows.
 	familySvc := family.NewService(family.Deps{Pool: pool, Catalog: catalogSvc, Personal: watchSvc, Profiles: profileStore,
-		Ratings: ratingsSrc, Log: log})
+		Ratings: ratingsSrc, Audit: auditLog, Log: log})
 	familySvc.Routes(api)
 	// «Подборки» (internal/curated): lists from books, directors, polls.
 	curatedSvc := curated.NewService(curated.Deps{Pool: pool, Catalog: catalogSvc, Personal: watchSvc, Profiles: profileStore,
@@ -323,6 +323,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	msgHandlers.AdminRoutes(admin)
 	srcHandlers.AdminRoutes(admin)
 	forYouSvc.AdminRoutes(admin)
+	familySvc.AdminRoutes(admin)    // /admin/family-visibility: «Кто видит чьи лайки»
 	downloadsSvc.AdminRoutes(admin) // /admin/storage, /admin/torrserver/torrents
 	iptvSvc.AdminRoutes(admin)      // /admin/iptv/*
 	videoSvc.AdminRoutes(admin)     // /admin/video/status

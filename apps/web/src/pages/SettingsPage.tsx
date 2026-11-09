@@ -375,7 +375,7 @@ function ProfileSettingsCard() {
               <Toggle
                 testId="setting-share-family"
                 label={t("family.share")}
-                hint={t("family.share_hint")}
+                hint={`${t("family.share_hint")} ${t("familyvis.settings_note")}`}
                 on={s.share_with_family ?? false}
                 onChange={(v) => set({ share_with_family: v })}
               />

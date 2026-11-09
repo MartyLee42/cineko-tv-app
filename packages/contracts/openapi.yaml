@@ -993,6 +993,35 @@ paths:
         "403": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/Error" }
 
+  /admin/family-visibility:
+    get:
+      tags: [admin]
+      operationId: adminFamilyVisibility
+      description: |
+        «Кто видит чьи лайки»: who sees whose likes in «Семья советует» (the
+        family row, who liked a title, taste match, «Оценки семьи»). Profiles
+        of enabled accounts (grouped by account) and the admin's per-pair
+        overrides. A pair (viewer, sharer) is visible when its override says
+        `allowed`; without an override, when the sharer has
+        `share_with_family` on (its column default). The viewer's own
+        `show_family` off still hides the whole feature for it.
+      responses:
+        "200": { description: The matrix., content: { application/json: { schema: { $ref: "#/components/schemas/FamilyVisibility" } } } }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+    put:
+      tags: [admin]
+      operationId: updateAdminFamilyVisibility
+      description: Set (allowed true/false) or clear (allowed null = back to the sharer's default) cells, atomically.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/FamilyVisibilityUpdate" } } }
+      responses:
+        "200": { description: "Saved (audited family_visibility.updated); the new matrix.", content: { application/json: { schema: { $ref: "#/components/schemas/FamilyVisibility" } } } }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+
   # ---------------------------------------------------------------- catalog (Phase 2)
   /catalog/config:
     get:
@@ -2926,7 +2955,8 @@ paths:
         this profile has not seen, ranked by taste similarity. Only profiles
         that opted in (`share_with_family`, default off) contribute, and only
         their ratings, finished titles and favorites — never in-progress
-        positions, the watchlist or notes; no admin override. Excludes what
+        positions, the watchlist or notes. An admin may override who sees whom
+        per pair (GET/PUT /admin/family-visibility). Excludes what
         this profile rated, started, finished or dismissed («Не интересно»),
         and anime when it hides anime. Score per title = Σ over sharers of
         weight(similarity) × signal (★8+ / favorite / finished in the last
@@ -2951,7 +2981,8 @@ paths:
       description: |
         «Оценки семьи» for a title page: what sharing profiles did with it
         (rating, finished, favorite), members who liked it first. Empty when
-        nobody shares or the profile turned `show_family` off.
+        nobody this profile may see shares (share_with_family or the admin's
+        /admin/family-visibility) or the profile turned `show_family` off.
       parameters:
         - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
         - { name: mediaId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -6412,6 +6443,46 @@ components:
         sharing: { type: boolean, description: "The profile itself shares (share_with_family)." }
         members: { type: array, items: { $ref: "#/components/schemas/FamilyMember" } }
         items: { type: array, items: { $ref: "#/components/schemas/FamilyItem" } }
+    FamilyVisibilityProfile:
+      type: object
+      required: [profile_id, name, avatar, color, user_id, user_name, share_with_family, show_family]
+      properties:
+        profile_id: { type: string, format: uuid }
+        name: { type: string }
+        avatar: { type: string }
+        color: { type: string }
+        user_id: { type: string, format: uuid }
+        user_name: { type: string, description: "The account's display name." }
+        share_with_family: { type: boolean, description: "The profile's own «Делиться с семьёй»: the default of its column." }
+        show_family: { type: boolean, description: "false: the profile hid «Семья советует» itself; its row has no effect." }
+    FamilyVisibilityCell:
+      type: object
+      required: [viewer_profile_id, sharer_profile_id, allowed]
+      properties:
+        viewer_profile_id: { type: string, format: uuid }
+        sharer_profile_id: { type: string, format: uuid }
+        allowed: { type: boolean }
+    FamilyVisibility:
+      type: object
+      required: [profiles, overrides]
+      properties:
+        profiles: { type: array, items: { $ref: "#/components/schemas/FamilyVisibilityProfile" } }
+        overrides: { type: array, items: { $ref: "#/components/schemas/FamilyVisibilityCell" }, description: "Only cells the admin set; the rest follow share_with_family." }
+    FamilyVisibilityUpdate:
+      type: object
+      required: [changes]
+      properties:
+        changes:
+          type: array
+          minItems: 1
+          maxItems: 2500
+          items:
+            type: object
+            required: [viewer_profile_id, sharer_profile_id, allowed]
+            properties:
+              viewer_profile_id: { type: string, format: uuid }
+              sharer_profile_id: { type: string, format: uuid, description: Must differ from the viewer. }
+              allowed: { type: [boolean, "null"], description: "true / false override; null clears it (back to the default)." }
     MediaFamily:
       type: object
       required: [enabled, people]
