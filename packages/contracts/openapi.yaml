@@ -2085,7 +2085,8 @@ paths:
       tags: [watch]
       operationId: profileAchievements
       description: >-
-        Unlocked stickers (silent: no events or notifications), recorded on read from the watch history.
+        Unlocked stickers (silent: no events or notifications), recorded on read from the watch history,
+        plus the progress of the next locked counter goals («37 / 50 films»); the rest stay secret.
         The profile's own account (or its TV) and admins only.
       responses:
         "200": { description: Unlocked stickers., content: { application/json: { schema: { $ref: "#/components/schemas/AchievementList" } } } }
@@ -5861,12 +5862,21 @@ components:
         date: { type: string, format: date, description: unlocked_at on the household clock. }
         media_id: { type: [string, "null"], format: uuid, description: The title that earned it. }
         media_title: { type: [string, "null"] }
+    AchievementProgress:
+      type: object
+      required: [id, have, need]
+      description: A locked counter sticker on its way (the next goal of a ladder such as films finished).
+      properties:
+        id: { $ref: "#/components/schemas/AchievementId" }
+        have: { type: integer, minimum: 1 }
+        need: { type: integer, minimum: 2 }
     AchievementList:
       type: object
-      required: [items, secret, total]
+      required: [items, progress, secret, total]
       properties:
         items: { type: array, items: { $ref: "#/components/schemas/Achievement" }, description: "Unlocked only, oldest first." }
-        secret: { type: integer, description: Stickers not unlocked yet (never listed). }
+        progress: { type: array, items: { $ref: "#/components/schemas/AchievementProgress" }, description: "Locked counter stickers already started, in display order." }
+        secret: { type: integer, description: Stickers neither unlocked nor in progress (never listed). }
         total: { type: integer }
 
     # ------------------------------------------------------------ admin activity & messages (Phase 5)

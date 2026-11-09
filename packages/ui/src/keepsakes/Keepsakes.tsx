@@ -3,7 +3,9 @@
 // Old TV engines: no gap / aspect-ratio / inset; transforms only.
 import type { ReactNode } from "react";
 import { useI18n } from "../i18n";
-import { paperFor, punchHoles, stickerKeys, stickerTilt, ticketDate, ticketSerial, tiltFor, type StickerId } from "./logic";
+import { paperFor, progressLabel, progressShare, punchHoles, stickerKeys, stickerTilt, ticketDate, ticketSerial, tiltFor, type StickerId } from "./logic";
+import { GLYPHS } from "./glyphs";
+import { metalFor, PALETTES, SHAPES, SPECS, type StickerSpec } from "./stickers";
 import "./keepsakes.css";
 
 export * from "./logic";
@@ -125,7 +127,9 @@ function DieCut({ children, shape = "circle" }: { children: ReactNode; shape?: "
   );
 }
 
-const ART: Record<StickerId, () => ReactNode> = {
+type Bespoke = "marathon" | "archaeologist" | "polyglot" | "night_owl";
+
+const ART: Record<Bespoke, () => ReactNode> = {
   // «Марафонец»: a film strip running to a chequered flag.
   marathon: () => (
     <DieCut>
@@ -225,43 +229,134 @@ const ART: Record<StickerId, () => ReactNode> = {
   ),
 };
 
+const DISPLAY = { fontFamily: "var(--mt-font-display), sans-serif" };
+
+/**
+ * The parametric sticker: a die-cut shape in its palette, a glyph (or big
+ * digits), and for counter tiers a metal ring with the goal on a ribbon.
+ */
+function Parametric({ spec }: { spec: StickerSpec }) {
+  const p = PALETTES[spec.hue];
+  const paths = SHAPES[spec.shape];
+  const metal = spec.tier ? metalFor(spec.tier) : null;
+  const ribbon = metal && spec.ribbon ? spec.ribbon : null;
+  const cut = (fill: string) => paths.map((d, i) => <path key={i} d={d} fill={fill} stroke={fill} strokeWidth="13" strokeLinejoin="round" />);
+  const s = spec.shape === "star" ? 0.95 : ribbon ? 1.1 : 1.3;
+  const cy = ribbon ? 53 : spec.shape === "bubble" ? 56 : 60;
+  return (
+    <>
+      <g transform="translate(2 4)" opacity="0.22">
+        {cut("#000")}
+      </g>
+      {cut("#fff")}
+      {paths.map((d, i) => (
+        <path key={i} d={d} fill={p.bg} />
+      ))}
+      <g transform="translate(60 60) scale(0.8) translate(-64 -66)" opacity="0.45">
+        {paths.map((d, i) => (
+          <path key={i} d={d} fill={p.hi} />
+        ))}
+      </g>
+      {spec.shape === "frame" &&
+        [0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <g key={i} fill="#fff" opacity="0.8">
+            <rect x={22 + i * 9} y="21" width="5" height="4" rx="1" />
+            <rect x={22 + i * 9} y="95" width="5" height="4" rx="1" />
+          </g>
+        ))}
+      {metal && (
+        <>
+          <circle cx="60" cy="60" r="42" fill="none" stroke={metal.fill} strokeWidth="4" />
+          <circle cx="60" cy="60" r="39.5" fill="none" stroke={metal.dark} strokeWidth="1" opacity="0.45" />
+        </>
+      )}
+      {spec.glyph ? (
+        <g transform={`translate(${60 - 24 * s} ${cy - 24 * s}) scale(${s})`}>{GLYPHS[spec.glyph](p)}</g>
+      ) : spec.over ? (
+        <>
+          <text x="60" y="46" textAnchor="middle" fontSize="15" fontWeight="800" fill={p.light} opacity="0.85" style={DISPLAY}>
+            {spec.over}
+          </text>
+          <text x="60" y="80" textAnchor="middle" fontSize="38" fontWeight="900" fill={p.light} stroke={p.ink} strokeWidth="3" paintOrder="stroke" style={DISPLAY}>
+            {spec.text}
+          </text>
+        </>
+      ) : (
+        <text x="60" y={spec.shape === "star" ? 71 : 75} textAnchor="middle" fontSize={spec.shape === "star" ? 30 : 42} fontWeight="900" fill={p.light} stroke={p.ink} strokeWidth="3" paintOrder="stroke" style={DISPLAY}>
+          {spec.text}
+        </text>
+      )}
+      {ribbon && metal && (
+        <>
+          <path d="M24 84 H96 L91 92 L96 100 H24 L29 92 Z" fill={metal.fill} stroke={metal.dark} strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M31 86.5 H89" stroke={metal.hi} strokeWidth="1.5" strokeLinecap="round" opacity="0.9" />
+          <text x="60" y="96.5" textAnchor="middle" fontSize="12" fontWeight="900" fill={metal.dark} letterSpacing="0.5" style={DISPLAY}>
+            {ribbon}
+          </text>
+        </>
+      )}
+      <path d="M27 40 A36 36 0 0 1 44 23" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity="0.3" />
+    </>
+  );
+}
+
 /** The sticker art alone (an SVG that fills its box). */
 export function StickerArt({ id, className = "" }: { id: StickerId; className?: string }) {
+  const spec: StickerSpec = SPECS[id];
   return (
     <svg className={`ks-sticker-art ${className}`} viewBox="0 0 120 120" aria-hidden>
-      {ART[id]()}
+      {spec.bespoke ? ART[id as Bespoke]() : <Parametric spec={spec} />}
     </svg>
   );
 }
 
-/** An unlocked sticker with its name and the date it was earned. */
+/**
+ * An unlocked sticker with its name and the date it was earned, or (with
+ * `progress`) a locked counter sticker, faded, with «37 / 50» under a bar.
+ */
 export function StickerCard({
   id,
   date,
   title,
+  progress,
   focused = false,
   showDesc = true,
 }: {
   id: StickerId;
-  date: string;
+  date?: string;
   /** The title that earned it. */
   title?: string | null;
+  progress?: { have: number; need: number } | null;
   focused?: boolean;
   showDesc?: boolean;
 }) {
   const { t } = useI18n();
   const k = stickerKeys(id);
   return (
-    <div data-testid="sticker" data-sticker={id} className={`ks-sticker ${focused ? "ks-focused" : ""}`} title={t(k.desc)}>
-      <div className="ks-sticker-pic" style={{ transform: `rotate(${focused ? 0 : stickerTilt(id)}deg)` }}>
+    <div
+      data-testid={progress ? "sticker-progress" : "sticker"}
+      data-sticker={id}
+      className={`ks-sticker ${progress ? "ks-locked" : ""} ${focused ? "ks-focused" : ""}`}
+      title={t(k.desc)}
+    >
+      <div className="ks-sticker-pic" style={{ transform: `rotate(${focused || progress ? 0 : stickerTilt(id)}deg)` }}>
         <StickerArt id={id} />
       </div>
       <div className="ks-sticker-name">{t(k.name)}</div>
       {showDesc && <div className="ks-sticker-desc">{t(k.desc)}</div>}
-      <div className="ks-sticker-date">
-        {ticketDate(date)}
-        {title ? ` · ${title}` : ""}
-      </div>
+      {progress ? (
+        <>
+          <div className="ks-bar" aria-hidden>
+            <span style={{ transform: `scaleX(${progressShare(progress.have, progress.need)})` }} />
+          </div>
+          <div className="ks-sticker-date">{progressLabel(progress.have, progress.need)}</div>
+        </>
+      ) : (
+        <div className="ks-sticker-date">
+          {date ? ticketDate(date) : ""}
+          {title ? ` · ${title}` : ""}
+        </div>
+      )}
     </div>
   );
 }

@@ -39,7 +39,7 @@ export function MineScreen({ mem, onOpen, onHome }: { mem: RouteMemory; onOpen: 
   const g = gridGeo(design, width);
   const [ty, setTy] = useState(() => mem.get<number>("ty") ?? 0);
   const firstTicket = tickets.data?.items[0];
-  const hasStickers = !!ach.data?.items.some((a) => isSticker(a.id));
+  const hasStickers = !!ach.data && [...ach.data.items, ...(ach.data.progress ?? [])].some((a) => isSticker(a.id));
   const keepH = keepHeight(!!firstTicket, hasStickers);
   const gridTop = GRID_TOP + keepH;
   // Keepsakes that fail to load just stay hidden; wait for them so the grid doesn't jump.
@@ -94,7 +94,7 @@ export function MineScreen({ mem, onOpen, onHome }: { mem: RouteMemory; onOpen: 
       />
     );
 
-  const lineKeys = [...(firstTicket ? ["m-tickets"] : []), items.length > 0 ? "m-grid" : list.isError ? "mine-retry" : "mine-home"];
+  const lineKeys = [...(firstTicket ? ["m-tickets"] : []), ...(hasStickers ? ["m-stickers"] : []), items.length > 0 ? "m-grid" : list.isError ? "mine-retry" : "mine-home"];
   return (
     <div data-testid="mine" className="absolute overflow-hidden" style={{ left: frame.x - EDGE, right: 0, top: frame.top, bottom: 1080 - frame.bottom }}>
       <FocusLine focusKey="m-page" keys={lineKeys} className="tv-track absolute right-0 top-0" style={{ left: EDGE, transform: `translate3d(0,${-ty}px,0)` }}>
@@ -114,6 +114,12 @@ export function MineScreen({ mem, onOpen, onHome }: { mem: RouteMemory; onOpen: 
                 initialIndex={mem.get<number>("tidx") ?? 0}
                 onIndexChange={(i) => {
                   mem.set("tidx", i);
+                  setTy(0);
+                  mem.set("ty", 0);
+                }}
+                stickerIndex={mem.get<number>("sidx") ?? 0}
+                onStickerIndexChange={(i) => {
+                  mem.set("sidx", i);
                   setTy(0);
                   mem.set("ty", 0);
                 }}

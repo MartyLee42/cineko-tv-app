@@ -3,10 +3,13 @@
 import type { AchievementList, MediaSummary, TicketPage } from "@martytv/contracts";
 import { imageUrl } from "@martytv/media-types";
 import { useI18n } from "@martytv/ui";
-import { countKey, knownStickers, secretKey, StickerCard, TicketCard } from "@martytv/ui/keepsakes";
+import { countKey, knownStickers, secretKey, StickerCard, TicketCard, type StickerId } from "@martytv/ui/keepsakes";
 import { HRow } from "../components/HRow";
 import { useCatalogConfig } from "../catalog/queries";
-import { KEEP_LABEL, KEEP_STICKERS, TICKET_FONT, TICKET_H, TICKET_W } from "./data";
+import { KEEP_LABEL, KEEP_STICKERS, STICKER_FONT, STICKER_H, STICKER_W, TICKET_FONT, TICKET_H, TICKET_W } from "./data";
+
+/** A sticker in the row: earned, or a counter sticker on its way. */
+type StickerItem = { id: StickerId; date?: string; title?: string | null; progress?: { have: number; need: number } };
 
 export function TicketRail({
   page,
@@ -14,6 +17,8 @@ export function TicketRail({
   viewport,
   initialIndex,
   onIndexChange,
+  stickerIndex,
+  onStickerIndexChange,
   onOpen,
 }: {
   page: TicketPage | undefined;
@@ -21,12 +26,18 @@ export function TicketRail({
   viewport: number;
   initialIndex: number;
   onIndexChange: (i: number) => void;
+  stickerIndex: number;
+  onStickerIndexChange: (i: number) => void;
   onOpen: (m: MediaSummary) => void;
 }) {
   const { t, locale } = useI18n();
   const cfg = useCatalogConfig();
   const tickets = page?.items ?? [];
-  const stickers = knownStickers(achievements?.items ?? []);
+  const stickers: StickerItem[] = [
+    ...knownStickers(achievements?.items ?? []).map((a) => ({ id: a.id, date: a.date, title: a.media_title })),
+    ...knownStickers(achievements?.progress ?? []).map((p) => ({ id: p.id, progress: p })),
+  ];
+  const next = achievements ? knownStickers(achievements.progress ?? []).length : 0;
   const more = page ? page.total - tickets.length : 0;
   const secret = achievements ? secretKey(locale, achievements.secret) : null;
   return (
@@ -67,14 +78,28 @@ export function TicketRail({
         <div style={{ height: KEEP_STICKERS, paddingTop: 14 }} data-testid="mine-stickers">
           <div className="flex items-baseline">
             <h2 className="text-[28px] font-bold leading-none">{t("keepsakes.stickers")}</h2>
-            <span className="ml-5 text-[22px] text-muted">{secret ? t(secret, { n: achievements!.secret }) : t("keepsakes.all_found")}</span>
+            <span className="ml-5 text-[22px] text-muted">
+              {secret ? t(secret, { n: achievements!.secret }) : next ? t("keepsakes.next") : t("keepsakes.all_found")}
+            </span>
           </div>
-          <div className="mt-3 whitespace-nowrap" style={{ fontSize: 21 }}>
-            {stickers.map((a) => (
-              <div key={a.id} className="inline-block align-top" style={{ marginRight: 28 }}>
-                <StickerCard id={a.id} date={a.date} title={a.media_title} />
-              </div>
-            ))}
+          <div className="mt-1">
+            <HRow
+              focusKey="m-stickers"
+              items={stickers}
+              itemKey={(a) => `ms-${a.id}`}
+              itemWidth={STICKER_W}
+              itemHeight={STICKER_H}
+              gap={20}
+              viewport={viewport}
+              initialIndex={stickerIndex}
+              onIndexChange={(i) => onStickerIndexChange(i)}
+              renderItem={(a, focused) => (
+                <div style={{ fontSize: STICKER_FONT }}>
+                  <StickerCard id={a.id} date={a.date} title={a.title} progress={a.progress} focused={focused} />
+                </div>
+              )}
+              tail={<span />}
+            />
           </div>
         </div>
       )}

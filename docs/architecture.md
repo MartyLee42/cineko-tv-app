@@ -1529,22 +1529,52 @@ series from TMDB and records those that aired after what the profile watched.
 - **Stickers** (`profile_achievements`): pure rules in `rules.go` evaluated on
   `GET /profiles/{id}/achievements`; newly met ones are stored with the time
   the history first met the rule (silent: no events, toasts or pushes). Never
-  taken back. Time-of-day rules ignore manual completions (a «Просмотрено»
-  press or an import is not watching):
-  «Марафонец» every aired episode (air date ≤ that Monday) of one season,
-  ≥ 3, finished within one Fri 18:00 – Mon 06:00 window; «Киноархеолог» a
-  film released before 1960; «Полиглот» finished titles (a film or any
-  episode) in 5 original languages; «Ночная сова» something finished
-  02:00–05:00. New rules: append to `Rules` (ids are stored).
+  taken back. ~100 rules (`stickers.go`), all derived from data the DB has:
+  `watch_progress` + `episodes` (time, season/episode, air date, runtime),
+  `media` (release date, original language, countries, TMDB votes, status,
+  number_of_episodes), `media_genres` (movie and tv genre ids folded into
+  one key set), `media_awards` (an Oscar win), `ratings` (the profile's own)
+  and `playback_sessions` (rewatches: a session started after the first
+  finish that reached 90 %; sessions are kept 30 days). «What» rules count
+  manual completions («Просмотрено», imports); «when» rules ignore them.
+  Families: counters (films 1/10/50/100/250/500, episodes 10–1000, whole
+  ended series 1/5/20, hours of runtime 24/100/500, streaks 7/30, languages
+  5/10/20, countries 10/25, ratings 10/50, stickers collected 10/25/50);
+  time (early bird 05–09, weekday lunch, every weekday, fixed dates on the
+  household clock: New Year's night, 14 Feb, comedy on 1 Apr, horror on
+  31 Oct, Friday 13th, 29 Feb, 28 Dec; 4 films a weekend, 8 episodes a day,
+  2/3 films an evening 17:00–06:00, 9 films in 7 days); content (a film of
+  each decade 1920s–2020s and all of them, pre-1927, genres with per-genre
+  goals, some languages/countries, anime, ≥ 3 h / < 40 min, premiere ≤ 14
+  days after release, an episode on its air day, TMDB ≥ 8.4 / < 4.5 /
+  hidden gem, an Oscar winner, 100 episodes of one show, 10 pilots,
+  rewatches, a 10 / a 1 given). «Days» (streaks, a day's binge, rewatches)
+  are watch days: 06:00–06:00. The originals: «Марафонец» every aired
+  episode (air date ≤ that Monday) of one season, ≥ 3, finished within one
+  Fri 18:00 – Mon 06:00 window; «Киноархеолог» a film released before 1960;
+  «Полиглот» titles in 5 original languages; «Ночная сова» finished
+  02:00–05:00.
+  Evaluation (`Assess`) sorts the history once and memoizes *ladders*
+  (time-ordered steps: the k-th distinct film, hour, streak day…); a
+  counter rule is the Goal-th step of its ladder. The lowest locked goal of
+  each ladder with `Progress` is returned as `progress` («37 / 50») once
+  something counts; everything else locked stays a secret. «Stickers
+  collected» also count stored stickers whose history is gone. New rules:
+  append to `Rules` (ids are stored, never rename) and add art + strings.
 - **Household clock** (`config.Household`): `TZ` from `.env`, else
   `NEW_EPISODES_TZ` (a UTC `TZ` loses to a real `NEW_EPISODES_TZ`), else
   Europe/Moscow. Stub dates and the weekend/night rules use it.
 - Access: the profile's account (or its TV) and admins; others get 404.
 - Clients: shared art in `@martytv/ui/keepsakes` (paper ticket, perforation,
-  hole-punched rating, faint Cineko stamp; die-cut SVG stickers). TV: a
-  «Билеты» row + stickers above the watchlist in «Моё» (lazy chunk). Web:
-  `/tickets` (avatar menu, History chip), lazy. Only unlocked stickers are
-  shown, with «ещё N — секрет».
+  hole-punched rating, faint Cineko stamp; die-cut SVG stickers). The four
+  originals are hand-drawn; the rest are parametric (`stickers.ts`: a
+  shape, a palette, a glyph from `glyphs.tsx` or big digits; counter tiers
+  get a metal ring and a ribbon with the goal, bronze → silver → gold →
+  platinum → ruby → diamond). A Go test checks `stickers.ts` has every
+  rule id. TV: a «Билеты» row + a remote-navigable sticker row above the
+  watchlist in «Моё» (lazy chunk). Web: `/tickets` (avatar menu, History
+  chip), lazy. Unlocked stickers, then «На подходе» (faded, with a bar and
+  «37 / 50»), then «ещё N — секрет».
 
 ## Ratings (Kinopoisk/IMDb)
 

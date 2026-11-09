@@ -239,7 +239,13 @@ func TestEvaluateIDs(t *testing.T) {
 	}
 	h := History{Completions: []Completion{{MediaID: "m", Kind: "movie", At: at("2026-11-07 03:00"), Released: date(1950), Lang: "fr"}}}
 	got := Evaluate(h, moscow)
-	if len(got) != 2 || got[0].ID != Archaeologist || got[1].ID != NightOwl {
-		t.Fatalf("%+v", got)
+	var ids []string
+	for _, u := range got {
+		ids = append(ids, u.ID)
+	}
+	// In Rules order; one 1950 French film at 3 am.
+	want := []string{Archaeologist, NightOwl, "films_1", "decade_1950s", "lang_french"}
+	if fmt.Sprint(ids) != fmt.Sprint(want) {
+		t.Fatalf("%v", ids)
 	}
 }

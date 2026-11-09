@@ -164,8 +164,9 @@ func TestKeepsakesAchievements(t *testing.T) {
 	w := newWatchEnv(t)
 	ctx := context.Background()
 	u := "/api/v1/profiles/" + w.pid + "/achievements?lang=en"
+	total := float64(len(keepsakes.Rules))
 	res := w.alice.Do("GET", u, nil).Expect(200).JSON()
-	if len(res["items"].([]any)) != 0 || res["secret"] != 4.0 || res["total"] != 4.0 {
+	if len(res["items"].([]any)) != 0 || len(res["progress"].([]any)) != 0 || res["secret"] != total || res["total"] != total {
 		t.Fatalf("empty %v", res)
 	}
 
@@ -182,10 +183,43 @@ func TestKeepsakesAchievements(t *testing.T) {
 		e := eps[fmt.Sprintf("S1E%d", i+1)]
 		finished(t, w.env, w.pid, show, &e, at, false)
 	}
+	// Casablanca's genres, countries and an Oscar come from the catalog tables.
+	if _, err := w.env.Pool.Exec(ctx, `UPDATE media SET countries = '{US}', runtime = 102 WHERE id = $1`, casablanca); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.env.Pool.Exec(ctx, `INSERT INTO media_genres (media_id, genre_id) VALUES ($1, 18), ($1, 10749)`, casablanca); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.env.Pool.Exec(ctx, `INSERT INTO media_awards (media_id, award_qid, group_key, won, tier) VALUES ($1, 'Q102427', 'oscar', true, 1)`, casablanca); err != nil {
+		t.Fatal(err)
+	}
 	res = w.alice.Do("GET", u, nil).Expect(200).JSON()
 	got := achievementIDs(t, res)
-	if len(got) != 3 || res["secret"] != 1.0 || got["polyglot"] != nil {
+	for _, id := range []string{"marathon", "archaeologist", "night_owl", "films_1", "decade_1940s", "oscar"} {
+		if got[id] == nil {
+			t.Fatalf("no %s in %v", id, res)
+		}
+	}
+	if got["polyglot"] != nil || got["early_bird"] != nil {
 		t.Fatalf("unlocked %v", res)
+	}
+	// Counter stickers on their way: 1 language of 5, 1 film of 10, 3 episodes of 10.
+	progress := map[string]map[string]any{}
+	for _, it := range res["progress"].([]any) {
+		m := it.(map[string]any)
+		progress[m["id"].(string)] = m
+	}
+	if p := progress["polyglot"]; p == nil || p["have"] != 1.0 || p["need"] != 5.0 {
+		t.Fatalf("progress %v", res["progress"])
+	}
+	if p := progress["films_10"]; p == nil || p["have"] != 1.0 {
+		t.Fatalf("progress %v", res["progress"])
+	}
+	if p := progress["episodes_10"]; p == nil || p["have"] != 3.0 {
+		t.Fatalf("progress %v", res["progress"])
+	}
+	if res["secret"] != total-float64(len(got))-float64(len(progress)) {
+		t.Fatalf("secret %v", res)
 	}
 	if a := got["archaeologist"]; a["media_id"] != casablanca || a["media_title"] != "Casablanca" || a["unlocked_at"] != "2026-03-01T00:10:00Z" || a["date"] != "2026-03-01" {
 		t.Fatalf("archaeologist %v", a)
@@ -208,16 +242,24 @@ func TestKeepsakesAchievements(t *testing.T) {
 	}
 	res = w.alice.Do("GET", u, nil).Expect(200).JSON()
 	got = achievementIDs(t, res)
-	if p := got["polyglot"]; p == nil || p["unlocked_at"] != "2026-06-04T18:00:00Z" || p["media_title"] != "Film ru" || res["secret"] != 0.0 {
+	if p := got["polyglot"]; p == nil || p["unlocked_at"] != "2026-06-04T18:00:00Z" || p["media_title"] != "Film ru" {
 		t.Fatalf("polyglot %v", res)
 	}
+	// The profile's own ratings: a 10.
+	w.alice.Do("PUT", "/api/v1/profiles/"+w.pid+"/ratings/"+casablanca, map[string]any{"rating": 10}).Expect(204)
+	res = w.alice.Do("GET", u, nil).Expect(200).JSON()
+	got = achievementIDs(t, res)
+	if p := got["perfect_10"]; p == nil || p["media_id"] != casablanca {
+		t.Fatalf("perfect_10 %v", res)
+	}
+	earned := len(got)
 
 	// Stickers stay when the history goes away.
 	if _, err := w.env.Pool.Exec(ctx, `DELETE FROM watch_progress WHERE profile_id = $1`, w.pid); err != nil {
 		t.Fatal(err)
 	}
 	res = w.alice.Do("GET", u, nil).Expect(200).JSON()
-	if len(res["items"].([]any)) != 4 {
+	if len(res["items"].([]any)) != earned {
 		t.Fatalf("after clearing history %v", res)
 	}
 	// Another profile of the same account starts from scratch.

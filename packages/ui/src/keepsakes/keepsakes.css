@@ -252,3 +252,29 @@
   opacity: 0.6;
   font-variant-numeric: tabular-nums;
 }
+
+/* A locked counter sticker: faded art and a progress bar. */
+.ks-locked .ks-sticker-pic {
+  opacity: 0.5;
+  -webkit-filter: grayscale(0.85);
+  filter: grayscale(0.85);
+}
+.ks-bar {
+  position: relative;
+  overflow: hidden;
+  width: 62%;
+  height: 0.3em;
+  margin: 0.4em auto 0;
+  border-radius: 0.15em;
+  background: rgba(128, 128, 128, 0.3);
+}
+.ks-bar span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgb(var(--mt-accent));
+  -webkit-transform-origin: 0 50%;
+  transform-origin: 0 50%;
+}

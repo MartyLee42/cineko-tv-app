@@ -159,30 +159,44 @@ type Achievement struct {
 	MediaTitle *string   `json:"media_title"`
 }
 
+// AchievementProgress: a locked counter sticker on its way (have of need).
+type AchievementProgress struct {
+	ID   string `json:"id"`
+	Have int    `json:"have"`
+	Need int    `json:"need"`
+}
+
 type AchievementList struct {
 	Items []Achievement `json:"items"`
-	// Secret: how many stickers are still hidden.
+	// Progress: the next locked goal of each counter ladder already started.
+	Progress []AchievementProgress `json:"progress"`
+	// Secret: how many stickers are still hidden (neither earned nor in progress).
 	Secret int `json:"secret"`
 	Total  int `json:"total"`
 }
 
-// LoadHistory reads the facts the rules need for one profile.
+// LoadHistory reads the facts the rules need for one profile (Earned is
+// left to the caller).
 func (s *Service) LoadHistory(ctx context.Context, profileID string) (History, error) {
 	h := History{Seasons: map[SeasonKey][]Episode{}}
 	rows, err := s.pool.Query(ctx, `
-		SELECT wp.media_id, m.kind, wp.episode_id, COALESCE(e.season_number, 0),
-		       COALESCE(wp.completed_at, wp.updated_at), wp.manual, m.original_language, m.release_date
+		SELECT wp.media_id, m.kind, wp.episode_id, COALESCE(e.season_number, 0), COALESCE(e.episode_number, 0),
+		       COALESCE(to_char(e.air_date, 'YYYY-MM-DD'), ''), COALESCE(wp.completed_at, wp.updated_at), wp.manual,
+		       m.original_language, m.release_date,
+		       CASE WHEN wp.episode_id IS NULL THEN COALESCE(m.runtime, 0) ELSE COALESCE(e.runtime, m.runtime, 0) END
 		FROM watch_progress wp JOIN media m ON m.id = wp.media_id LEFT JOIN episodes e ON e.id = wp.episode_id
 		WHERE wp.profile_id = $1 AND wp.completed`, profileID)
 	if err != nil {
 		return h, err
 	}
-	var series []string
+	var series, media []string
 	seen := map[string]bool{}
+	seenMedia := map[string]bool{}
 	for rows.Next() {
 		var c Completion
 		var ep *string
-		if err := rows.Scan(&c.MediaID, &c.Kind, &ep, &c.Season, &c.At, &c.Manual, &c.Lang, &c.Released); err != nil {
+		if err := rows.Scan(&c.MediaID, &c.Kind, &ep, &c.Season, &c.EpisodeNumber, &c.AirDate, &c.At, &c.Manual,
+			&c.Lang, &c.Released, &c.Runtime); err != nil {
 			rows.Close()
 			return h, err
 		}
@@ -193,10 +207,20 @@ func (s *Service) LoadHistory(ctx context.Context, profileID string) (History, e
 				series = append(series, c.MediaID)
 			}
 		}
+		if !seenMedia[c.MediaID] {
+			seenMedia[c.MediaID] = true
+			media = append(media, c.MediaID)
+		}
 		h.Completions = append(h.Completions, c)
 	}
 	rows.Close()
 	if err := rows.Err(); err != nil {
+		return h, err
+	}
+	if err := s.loadTitleFacts(ctx, &h, media); err != nil {
+		return h, err
+	}
+	if err := s.loadRewatchesAndRatings(ctx, &h, profileID); err != nil {
 		return h, err
 	}
 	if len(series) == 0 {
@@ -220,21 +244,117 @@ func (s *Service) LoadHistory(ctx context.Context, profileID string) (History, e
 	return h, rows.Err()
 }
 
+// titleFacts: what a title is (shared by all its completions).
+type titleFacts struct {
+	genres    []int
+	countries []string
+	vote      float64
+	votes     int
+	oscar     bool
+	status    string
+	episodes  int
+}
+
+// loadTitleFacts fills genres, countries, TMDB votes, Oscars and series
+// status in one query for every finished title.
+func (s *Service) loadTitleFacts(ctx context.Context, h *History, media []string) error {
+	if len(media) == 0 {
+		return nil
+	}
+	rows, err := s.pool.Query(ctx, `
+		SELECT m.id, m.countries, m.vote_average, m.vote_count, m.status, COALESCE(m.number_of_episodes, 0),
+		       COALESCE((SELECT array_agg(g.genre_id ORDER BY g.genre_id) FROM media_genres g WHERE g.media_id = m.id), '{}'),
+		       EXISTS (SELECT 1 FROM media_awards a WHERE a.media_id = m.id AND a.group_key = 'oscar' AND a.won)
+		FROM media m WHERE m.id = ANY($1::uuid[])`, media)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	byID := map[string]*titleFacts{}
+	for rows.Next() {
+		var id string
+		var t titleFacts
+		var genres []int32
+		if err := rows.Scan(&id, &t.countries, &t.vote, &t.votes, &t.status, &t.episodes, &genres, &t.oscar); err != nil {
+			return err
+		}
+		for _, g := range genres {
+			t.genres = append(t.genres, int(g))
+		}
+		byID[id] = &t
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	for i := range h.Completions {
+		c := &h.Completions[i]
+		if t := byID[c.MediaID]; t != nil {
+			c.Genres, c.Countries, c.Vote, c.Votes, c.Oscar, c.Status, c.TotalEpisodes =
+				t.genres, t.countries, t.vote, t.votes, t.oscar, t.status, t.episodes
+		}
+	}
+	return nil
+}
+
+// loadRewatchesAndRatings: films played to the end again (sessions started
+// after the first finish that reached 90 %; sessions are kept 30 days) and
+// the profile's own ratings.
+func (s *Service) loadRewatchesAndRatings(ctx context.Context, h *History, profileID string) error {
+	rows, err := s.pool.Query(ctx, `
+		SELECT ps.media_id, ps.updated_at FROM playback_sessions ps
+		JOIN watch_progress wp ON wp.profile_id = ps.profile_id AND wp.media_id = ps.media_id AND wp.episode_id IS NULL
+		WHERE ps.profile_id = $1 AND ps.episode_id IS NULL AND wp.completed AND wp.completed_at IS NOT NULL
+		  AND ps.started_at > wp.completed_at AND ps.last_duration > 0 AND ps.last_position >= 0.9 * ps.last_duration`, profileID)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		var r Rewatch
+		if err := rows.Scan(&r.MediaID, &r.At); err != nil {
+			rows.Close()
+			return err
+		}
+		h.Rewatches = append(h.Rewatches, r)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	rows, err = s.pool.Query(ctx, `SELECT media_id, rating, created_at, updated_at FROM ratings WHERE profile_id = $1`, profileID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var r Rating
+		if err := rows.Scan(&r.MediaID, &r.Value, &r.Created, &r.Updated); err != nil {
+			return err
+		}
+		h.Ratings = append(h.Ratings, r)
+	}
+	return rows.Err()
+}
+
 // Achievements records newly earned stickers (silently: no events) and
-// lists the profile's unlocked ones.
+// lists the profile's unlocked ones, plus the progress of the next counter
+// goals.
 func (s *Service) Achievements(ctx context.Context, profileID, lang string) (*AchievementList, error) {
-	have := map[string]bool{}
-	if err := s.scanUnlocked(ctx, profileID, func(id string) { have[id] = true }); err != nil {
+	have := map[string]time.Time{}
+	if err := s.scanUnlocked(ctx, profileID, func(id string, at time.Time) { have[id] = at }); err != nil {
 		return nil, err
 	}
+	var next []Progress
 	if len(have) < len(Rules) {
 		h, err := s.LoadHistory(ctx, profileID)
 		if err != nil {
 			return nil, err
 		}
+		h.Earned = have
+		unlocks, progress := Assess(h, s.loc)
+		next = progress
 		var fresh []Unlock
-		for _, u := range Evaluate(h, s.loc) {
-			if !have[u.ID] {
+		for _, u := range unlocks {
+			if _, ok := have[u.ID]; !ok {
 				fresh = append(fresh, u)
 			}
 		}
@@ -272,7 +392,7 @@ func (s *Service) Achievements(ctx context.Context, profileID, lang string) (*Ac
 	if err != nil {
 		return nil, err
 	}
-	out := &AchievementList{Items: []Achievement{}, Total: len(Rules)}
+	out := &AchievementList{Items: []Achievement{}, Progress: []AchievementProgress{}, Total: len(Rules)}
 	var ids []string
 	for rows.Next() {
 		var a Achievement
@@ -293,7 +413,10 @@ func (s *Service) Achievements(ctx context.Context, profileID, lang string) (*Ac
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-	out.Secret = len(Rules) - len(out.Items)
+	for _, p := range next {
+		out.Progress = append(out.Progress, AchievementProgress{ID: p.ID, Have: p.Have, Need: p.Need})
+	}
+	out.Secret = max(0, len(Rules)-len(out.Items)-len(out.Progress))
 	media, err := s.catalog.SummariesByID(ctx, ids, lang)
 	if err != nil {
 		return nil, err
@@ -310,18 +433,19 @@ func (s *Service) Achievements(ctx context.Context, profileID, lang string) (*Ac
 	return out, nil
 }
 
-func (s *Service) scanUnlocked(ctx context.Context, profileID string, f func(id string)) error {
-	rows, err := s.pool.Query(ctx, `SELECT achievement_id FROM profile_achievements WHERE profile_id = $1`, profileID)
+func (s *Service) scanUnlocked(ctx context.Context, profileID string, f func(id string, at time.Time)) error {
+	rows, err := s.pool.Query(ctx, `SELECT achievement_id, unlocked_at FROM profile_achievements WHERE profile_id = $1`, profileID)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var id string
-		if err := rows.Scan(&id); err != nil {
+		var at time.Time
+		if err := rows.Scan(&id, &at); err != nil {
 			return err
 		}
-		f(id)
+		f(id, at)
 	}
 	return rows.Err()
 }

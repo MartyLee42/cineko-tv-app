@@ -82,25 +82,44 @@ export function TicketsPage() {
   );
 }
 
-/** The earned stickers on a sheet; nothing at all until the first one. */
+/** The earned stickers on a sheet, then the counter stickers on their way; nothing at all until there is one. */
 function StickerSheet({ list }: { list: AchievementList }) {
   const { t, locale } = useI18n();
   const items = knownStickers(list.items);
-  if (!items.length) return null;
+  const next = knownStickers(list.progress ?? []);
+  if (!items.length && !next.length) return null;
   const secret = secretKey(locale, list.secret);
   return (
     <section className="ks-sheet mb-7 rounded-2xl border border-border bg-surface px-3 pb-4 pt-3 sm:px-5" data-testid="sticker-sheet">
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted">{t("keepsakes.stickers")}</h2>
-      <div className="-mx-1 flex flex-wrap text-[12px] sm:text-[15px]">
-        {items.map((a) => (
-          <div key={a.id} className="px-1 py-1">
-            <StickerCard id={a.id} date={a.date} title={a.media_title} />
+      {items.length > 0 && (
+        <>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted">{t("keepsakes.stickers")}</h2>
+          <div className="-mx-1 flex flex-wrap text-[12px] sm:text-[15px]">
+            {items.map((a) => (
+              <div key={a.id} className="px-1 py-1">
+                <StickerCard id={a.id} date={a.date} title={a.media_title} />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <p className="mt-2 text-xs text-muted" data-testid="sticker-secret">
-        {secret ? t(secret, { n: list.secret }) : t("keepsakes.all_found")}
-      </p>
+        </>
+      )}
+      {next.length > 0 && (
+        <>
+          <h2 className={`mb-2 text-sm font-semibold uppercase tracking-wider text-muted ${items.length ? "mt-4" : ""}`}>{t("keepsakes.next")}</h2>
+          <div className="-mx-1 flex flex-wrap text-[12px] sm:text-[15px]" data-testid="sticker-next">
+            {next.map((p) => (
+              <div key={p.id} className="px-1 py-1">
+                <StickerCard id={p.id} progress={p} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {(secret || !next.length) && (
+        <p className="mt-2 text-xs text-muted" data-testid="sticker-secret">
+          {secret ? t(secret, { n: list.secret }) : t("keepsakes.all_found")}
+        </p>
+      )}
     </section>
   );
 }

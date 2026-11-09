@@ -1,6 +1,7 @@
 // Pure helpers for ticket stubs and achievement stickers (TV «Моё», PWA «Билеты»).
 import type { MessageKey } from "../i18n";
 import { pluralForm } from "../deviceHealth";
+import { STICKERS, type StickerId } from "./stickers";
 
 /** Holes on a stub: one per rating point. */
 export const HOLES = 10;
@@ -41,9 +42,8 @@ export function tiltFor(number: number): number {
   return Math.round((f * 4 - 2) * 10) / 10;
 }
 
-/** Sticker ids with art, in display order (the API may add more later: unknown ids are skipped). */
-export const STICKERS = ["marathon", "archaeologist", "polyglot", "night_owl"] as const;
-export type StickerId = (typeof STICKERS)[number];
+
+export { STICKERS, type StickerId };
 
 export function isSticker(id: string): id is StickerId {
   return (STICKERS as readonly string[]).indexOf(id) >= 0;
@@ -75,4 +75,16 @@ export function countKey(locale: string, n: number): MessageKey {
 /** Only stickers the client can draw, in the API's (unlock) order. */
 export function knownStickers<T extends { id: string }>(items: readonly T[]): (T & { id: StickerId })[] {
   return items.filter((a): a is T & { id: StickerId } => isSticker(a.id));
+}
+
+/** A progress bar's fill, 0…1 («37 / 50»). */
+export function progressShare(have: number, need: number): number {
+  if (!(need > 0) || !Number.isFinite(have)) return 0;
+  return Math.max(0, Math.min(1, have / need));
+}
+
+/** «37 / 50» (thousands split by a thin space: «740 / 1 000»). */
+export function progressLabel(have: number, need: number): string {
+  const n = (x: number) => String(Math.max(0, Math.floor(x))).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009");
+  return `${n(have)} / ${n(need)}`;
 }
