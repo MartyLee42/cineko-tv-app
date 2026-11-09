@@ -160,6 +160,17 @@ describe("assessForBrowser — decision table", () => {
     expect(assessForBrowser({ mime_type: "video/mp4", media_info: info({ container: "mp4", audio: audio("eac3") }) }, EDGE_WIN, edgeWin).verdict).toBe("playable");
   });
 
+  it("…but not inside MKV: the probe's yes is the platform's MP4 path (played silent)", () => {
+    const mkv = assessForBrowser({ mime_type: "video/x-matroska", media_info: info({ audio: audio("eac3") }) }, EDGE_WIN, edgeWin);
+    expect(mkv).toMatchObject({ verdict: "maybe", noAudio: true });
+    expect(mkv.reasons[0]).toMatchObject({ code: "no_audio", label: "E-AC3" });
+    // Before ffprobe: the container from the title, the codec from the release.
+    expect(assessRelease(rel({ title: "Film.2024.1080p.mkv", audio_codecs: ["eac3"] }), EDGE_WIN, edgeWin).noAudio).toBe(true);
+    // Safari decodes Dolby itself (it can't open MKV anyway: compat).
+    const safariMp4 = assessForBrowser({ mime_type: "video/mp4", media_info: info({ container: "mp4", audio: audio("ac3") }) }, SAFARI, detectBrowser("Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"));
+    expect(safariMp4.noAudio).toBe(false);
+  });
+
   it("HEVC: only with decoder support", () => {
     const hevc = { mime_type: "video/mp4", media_info: info({ container: "mp4", video_codec: "hevc" }) };
     const noHw = assessForBrowser(hevc, CHROME, chrome);

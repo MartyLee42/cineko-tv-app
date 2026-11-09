@@ -7,7 +7,10 @@ import { Button, ErrorText, timeAgo } from "../components";
 import { AlertIcon, ArrowDownIcon, ArrowUpIcon, CastIcon, DeviceIcon, PlayIcon, RefreshIcon, SearchIcon, TvIcon } from "../icons";
 import { isRefined, rememberedRefine, rememberRefine, type Refine } from "./refine";
 import { RefineSheet, useRefineTitle } from "./RefineSheet";
-import { assessHere, bestForBrowser, rankForBrowser, reasonTexts, verdictLabel, type BrowserSupport } from "./browserSupport";
+import { assessHere, bestForBrowser, rankForBrowser, reasonTexts, thisBrowser, verdictLabel, type BrowserSupport } from "./browserSupport";
+import { canPlayVideoHere, initialReleaseMode, isDesktop, type ReleaseMode } from "./releaseMode";
+import { readWatchWhere } from "../player/session";
+import { OnTvAction, WatchHereAction } from "./WatchActions";
 import { useReleases, useRefreshReleases } from "./queries";
 import { OnlineGroup } from "./OnlineGroup";
 import { capsFromAuto, constraintText, fitCoveredWarnings, fitInput, hintThroughput, judgeFit, networkHint, networkHintText, type Constraint, type Fit, releaseFormat, releaseFormatText } from "@martytv/media-types";
@@ -77,15 +80,20 @@ function Searching() {
   );
 }
 
-export type ReleaseMode = "tv" | "here";
 const MODE_KEY = "martytv.release_mode";
 
-function readMode(): ReleaseMode {
+function storedMode(): ReleaseMode | null {
   try {
-    return localStorage.getItem(MODE_KEY) === "here" ? "here" : "tv";
+    const v = localStorage.getItem(MODE_KEY);
+    return v === "here" || v === "tv" ? v : null;
   } catch {
-    return "tv";
+    return null;
   }
+}
+
+/** The switch's position on open (see initialReleaseMode). */
+function readMode(): ReleaseMode {
+  return initialReleaseMode({ stored: storedMode(), lastWhere: readWatchWhere(), desktop: isDesktop(), canPlayHere: canPlayVideoHere(thisBrowser().probe) });
 }
 
 function writeMode(m: ReleaseMode) {
@@ -421,10 +429,10 @@ function ReleaseListBody({
                 fit={fits?.get(r.id)}
                 capBps={capBps}
                 onPick={here ? () => onWatchHere!(r) : () => onPick(r)}
-                onPickWith={here ? () => onPick(r) : onPickWith && (() => onPickWith(r))}
-                pickWithTv={here}
+                onPickWith={!here && onPickWith ? () => onPickWith(r) : undefined}
+                onTv={onWatchHere ? () => onPick(r) : undefined}
                 onPlayHere={onPlayHere && (() => onPlayHere(r))}
-                onWatchHere={!here && onWatchHere ? () => onWatchHere(r) : undefined}
+                onWatchHere={onWatchHere ? () => onWatchHere(r) : undefined}
                 onDownload={onDownload && isTorrentRelease(r) ? () => onDownload(r) : undefined}
                 onSaveDevice={onSaveDevice && isTorrentRelease(r) ? () => onSaveDevice(r) : undefined}
               />
@@ -533,7 +541,7 @@ export function ReleaseRow({
   capBps = null,
   onPick,
   onPickWith,
-  pickWithTv,
+  onTv,
   onPlayHere,
   onWatchHere,
   onDownload,
@@ -549,11 +557,12 @@ export function ReleaseRow({
   /** The device profile's bitrate cap (bits/s): heavier releases get «тяжёлая: N Мбит/с». */
   capBps?: number | null;
   onPick: () => void;
+  /** «Открыть в…»: pick the TV player (TV mode). */
   onPickWith?: () => void;
-  /** The secondary action is "Play on TV" (browser mode) instead of "Play with…". */
-  pickWithTv?: boolean;
+  /** «Смотреть на ТВ» next to «Смотреть здесь». */
+  onTv?: () => void;
   onPlayHere?: () => void;
-  /** TV mode: watch this one in the browser. */
+  /** «Смотреть здесь»: watch this one in the browser (the primary action). */
   onWatchHere?: () => void;
   /** «Скачать на сервер (для медленных раздач)». */
   onDownload?: () => void;
@@ -580,7 +589,7 @@ export function ReleaseRow({
   ];
   const pct = confidencePct(r.confidence);
 
-  const actions = !current && (onPickWith || onPlayHere || onWatchHere);
+  const actions = !current && (onPickWith || onPlayHere || onWatchHere || onTv);
   const slow = r.seeders < 5;
   const why = support && support.verdict !== "playable" ? reasonTexts(support, t)[0] : null;
   return (
@@ -701,40 +710,34 @@ export function ReleaseRow({
       </p>
     </button>
     {actions && (
-      <div className="flex justify-end gap-1 border-t border-border/70 px-1.5 py-1">
-        {onWatchHere && (
-          <button
-            type="button"
-            onClick={onWatchHere}
-            data-testid="release-watch-here"
-            className="mr-auto flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-accent hover:bg-surface-2"
-          >
-            <PlayIcon className="text-sm" />
-            {t("player.web.watch_here")}
-          </button>
-        )}
-        {onPlayHere && (
-          <button
-            type="button"
-            onClick={onPlayHere}
-            data-testid="release-play-here"
-            className="flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-text/80 hover:bg-surface-2 hover:text-text"
-          >
-            <DeviceIcon className="text-base" />
-            {t("player.play_here")}
-          </button>
-        )}
-        {onPickWith && (
-          <button
-            type="button"
-            onClick={onPickWith}
-            data-testid="release-play-with"
-            className="flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-text/80 hover:bg-surface-2 hover:text-text"
-          >
-            <CastIcon className="text-base" />
-            {pickWithTv ? t("player.play_on_tv") : t("player.play_with")}
-          </button>
-        )}
+      <div className="flex flex-wrap items-center gap-1 border-t border-border/70 px-1.5 py-1.5">
+        {/* Both destinations, whatever the switch says: a click on the row used to only offer the TV. */}
+        {onWatchHere && <WatchHereAction onClick={onWatchHere} testId="release-watch-here" />}
+        {onTv && <OnTvAction onClick={onTv} testId="release-on-tv" />}
+        <span className="ml-auto flex flex-wrap justify-end gap-1">
+          {onPlayHere && (
+            <button
+              type="button"
+              onClick={onPlayHere}
+              data-testid="release-play-here"
+              className="flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-text/80 hover:bg-surface-2 hover:text-text"
+            >
+              <DeviceIcon className="text-base" />
+              {t("player.play_here")}
+            </button>
+          )}
+          {onPickWith && (
+            <button
+              type="button"
+              onClick={onPickWith}
+              data-testid="release-play-with"
+              className="flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-text/80 hover:bg-surface-2 hover:text-text"
+            >
+              <CastIcon className="text-base" />
+              {t("player.play_with")}
+            </button>
+          )}
+        </span>
       </div>
     )}
     {(onDownload || onSaveDevice) && !current && (

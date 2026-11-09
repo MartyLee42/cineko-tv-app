@@ -8,6 +8,7 @@ import { Spinner, useI18n } from "@martytv/ui";
 import { AlertIcon, CastIcon, PlayIcon, StarIcon } from "../icons";
 import { assessOnlineHere } from "./browserSupport";
 import { BrowserBadge } from "./ReleaseList";
+import { OnTvAction, WatchHereAction } from "./WatchActions";
 import type { ReleaseTarget } from "./releases";
 import { useOnline, type OnlineVariant } from "./sourcesApi";
 
@@ -77,8 +78,9 @@ export function OnlineGroup({
                         here={here}
                         episode={target.episode_number}
                         onPick={() => (here && onWatchHere ? onWatchHere(r) : onPick(r))}
-                        onSecondary={here ? () => onPick(r) : onPickWith && (() => onPickWith(r))}
-                        onWatchHere={!here && onWatchHere ? () => onWatchHere(r) : undefined}
+                        onSecondary={!here && onPickWith ? () => onPickWith(r) : undefined}
+                        onTv={onWatchHere ? () => onPick(r) : undefined}
+                        onWatchHere={onWatchHere ? () => onWatchHere(r) : undefined}
                       />
                     </li>
                   );
@@ -103,6 +105,7 @@ function VariantRow({
   episode,
   onPick,
   onSecondary,
+  onTv,
   onWatchHere,
 }: {
   v: OnlineVariant;
@@ -111,7 +114,9 @@ function VariantRow({
   here: boolean;
   episode: number | undefined;
   onPick: () => void;
+  /** «Открыть в…» (TV mode). */
   onSecondary?: () => void;
+  onTv?: () => void;
   onWatchHere?: () => void;
 }) {
   const { t } = useI18n();
@@ -170,28 +175,19 @@ function VariantRow({
         </span>
         <span className="hidden shrink-0 text-right text-xs text-muted sm:block">{t("sources.variant.online")}</span>
       </button>
-      {!disabled && (onSecondary || onWatchHere) && (
-        <div className="flex justify-end gap-1 border-t border-border/70 px-1.5 py-1">
-          {onWatchHere && (
-            <button
-              type="button"
-              onClick={onWatchHere}
-              data-testid="online-watch-here"
-              className="mr-auto flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-accent hover:bg-surface-2"
-            >
-              <PlayIcon className="text-sm" />
-              {t("player.web.watch_here")}
-            </button>
-          )}
+      {!disabled && (onSecondary || onWatchHere || onTv) && (
+        <div className="flex flex-wrap items-center gap-1 border-t border-border/70 px-1.5 py-1.5">
+          {onWatchHere && <WatchHereAction onClick={onWatchHere} testId="online-watch-here" />}
+          {onTv && <OnTvAction onClick={onTv} testId="online-on-tv" />}
           {onSecondary && (
             <button
               type="button"
               onClick={onSecondary}
               data-testid="online-secondary"
-              className="flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-text/80 hover:bg-surface-2 hover:text-text"
+              className="ml-auto flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-text/80 hover:bg-surface-2 hover:text-text"
             >
               <CastIcon className="text-base" />
-              {here ? t("player.play_on_tv") : t("player.play_with")}
+              {t("player.play_with")}
             </button>
           )}
         </div>

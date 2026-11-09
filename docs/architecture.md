@@ -1130,8 +1130,26 @@ browser ─GET compat.mp4?audio=&start=─▶ API (token, checks) ─POST /v1/re
   from «Перекодировать звук и смотреть здесь» on the fallback screen, or via
   «Совместимый режим (перекодировать звук)» in the audio menu (remembered per
   browser: `martytv.compat` on/off). The audio menu lists `media_info` tracks;
-  the first track matches the profile's `preferred_voiceovers` (then
-  languages, then the default). Badges read «Играет (звук перекодируется)».
+  the first track is the one picked for this title before (`martytv.audio_choice`,
+  by name / language, newest 200 titles), else the profile's
+  `preferred_voiceovers`, then languages (else the UI language), then the
+  default (`player/audioChoice.ts`). Engines without `audioTracks` (Chrome,
+  Firefox) play another track of the original stream through compat: picking
+  it in the menu switches, and a preferred voice that isn't the file's
+  default starts in compat (before the first frame only). Safari enables the
+  preferred track natively. Fresh torrents: ffprobe runs in the background
+  (≤ 45 s per try, one per 2 min), so the page refetches the source with a
+  back-off (2.5 s … 1 min, ~6 min in all) until `media_info` is there; until
+  then the no-sound detector assumes the file has audio, the compat timeline
+  uses the TMDB runtime as its length (seeking restarts with `start=`), and
+  when the tracks arrive while compat plays the server's default, the menu
+  marks it (or switches to the preferred voice). Dolby / DTS inside MKV count
+  as undecodable on Chromium / Firefox whatever the probe says (its "yes" is
+  the platform MP4 path). Badges read «Играет (звук перекодируется)».
+- **Release sheet:** every row has «Смотреть здесь» (primary) and «Смотреть на
+  ТВ»; the «TV | This browser» switch only decides what a click on the row
+  does — on a computer it starts at «здесь» (else where the user last
+  watched), on phones at «ТВ», unless the user set it.
 - **TV** (`apps/tv/src/player/compat.ts`, controller): compat when the
   main audio isn't decodable by the engine (`codecs.ts` probe:
   AC3/E-AC3/DTS/TrueHD on many Android WebViews), when the no-sound detector

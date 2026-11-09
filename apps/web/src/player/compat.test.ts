@@ -7,7 +7,9 @@ import {
   compatSeek,
   compatSrc,
   compatStatus,
+  expectsAudio,
   fetchStreamStart,
+  fileDuration,
   hlsLocalRanges,
   inBuffered,
   pickCompatAudio,
@@ -126,6 +128,44 @@ describe("compat seeking", () => {
     expect(compatSeek(620, 600, buffered)).toEqual({ kind: "local", at: 20 });
     expect(compatSeek(900, 600, buffered)).toEqual({ kind: "reload", at: 900 });
     expect(compatSeek(590, 600, buffered)).toEqual({ kind: "reload", at: 590 }); // before the stream's start
+  });
+});
+
+describe("fresh torrent: no ffprobe info yet", () => {
+  it("the timeline's length: ffprobe, else the provider's, else the TMDB runtime", () => {
+    expect(fileDuration({ media_info: info, duration_seconds: 10 }, 60)).toBe(5400);
+    expect(fileDuration({ media_info: null, duration_seconds: 3000 }, 60)).toBe(3000);
+    expect(fileDuration({ media_info: null }, 7080)).toBe(7080);
+    expect(fileDuration({ media_info: { ...info, duration_seconds: null } }, 7080)).toBe(7080);
+    expect(fileDuration({ media_info: null }, null)).toBeNull();
+    expect(fileDuration({ media_info: null }, 0)).toBeNull();
+  });
+
+  it("seeking a restarted stream keeps absolute time (offset + element time)", () => {
+    // Started at the keyframe 1795.5 for start=1800; the element is 12 s in.
+    const off = 1795.5;
+    expect(off + 12).toBe(1807.5);
+    // A seek bar jump to 1:00:00 is far outside the buffer: restart there.
+    expect(compatSeek(3600, off, [[0, 30]])).toEqual({ kind: "reload", at: 3600 });
+    // A small step back within what's buffered stays local (relative time).
+    expect(compatSeek(1800, off, [[0, 30]])).toEqual({ kind: "local", at: 4.5 });
+  });
+
+  it("the no-sound detector runs unless ffprobe says there is no audio", () => {
+    expect(expectsAudio({ media_info: null })).toBe(true);
+    expect(expectsAudio({ media_info: info })).toBe(true);
+    expect(expectsAudio({ media_info: { ...info, audio: [] } })).toBe(false);
+  });
+
+  it("wantCompat: a preferred voice the browser can't switch to", () => {
+    const fine = { verdict: "playable" as const, noAudio: false, reasons: [] };
+    expect(wantCompat({ compatUrl: "/c", pref: null, support: fine, audioSwitch: true })).toBe(true);
+    expect(wantCompat({ compatUrl: "/c", pref: "off", support: fine, audioSwitch: true })).toBe(false);
+    expect(wantCompat({ compatUrl: null, pref: null, support: fine, audioSwitch: true })).toBe(false);
+  });
+
+  it("the remembered track is picked for compat", () => {
+    expect(pickCompatAudio(info, { languages: ["ru"] }, { language: "eng", title: null })).toBe(3);
   });
 });
 

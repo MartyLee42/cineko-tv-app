@@ -314,6 +314,18 @@ export function silentPlayback(p: AudioProbe): boolean | null {
   return null;
 }
 
+/**
+ * ffprobe runs in the background once a torrent source is ready and takes
+ * long on a fresh torrent (TorrServer fetches the headers first; one try per
+ * 2 min, ≤ 45 s each). Delay before refetching the source for the n-th time
+ * (0-based) while it has no media_info; null = give up (~6 min).
+ */
+const INFO_REFETCH_MS = [2500, 4000, 6000, 10_000, 15_000, 20_000, 30_000, 30_000, 30_000, 45_000, 60_000, 60_000, 60_000];
+
+export function infoRefetchDelay(n: number): number | null {
+  return INFO_REFETCH_MS[n] ?? null;
+}
+
 // ---------------------------------------------------------------- errors
 
 export type ErrorKind = "unsupported" | "decode" | "network" | "aborted";

@@ -237,9 +237,19 @@ function checkVideo(name: string | null | undefined, probe: Probe): Reason | nul
   return { code: "video", severity: "unlikely", label: spec?.label ?? key.toUpperCase() };
 }
 
-function audioOk(key: string, probe: Probe): boolean | null {
+/**
+ * Dolby / DTS: a "yes" from the probe means the platform's MP4 / MSE path
+ * (Edge and Chrome on Windows / macOS). A Matroska file opened directly goes
+ * through Chromium's or Firefox's own demuxer and decoders, which lack
+ * them: such files played silent although the probe said yes.
+ */
+const PLATFORM_AUDIO = new Set(["ac3", "eac3", "dts", "truehd"]);
+
+function audioOk(key: string, probe: Probe, env?: BrowserEnv, container?: ContainerKey | null): boolean | null {
   const spec = AUDIO[key];
-  return spec ? yes(probe, spec.types) : null;
+  if (!spec) return null;
+  if (PLATFORM_AUDIO.has(key) && container === "matroska" && env && env.engine !== "safari") return false;
+  return yes(probe, spec.types);
 }
 
 function audioLabel(key: string): string {
@@ -295,19 +305,19 @@ export function assessForBrowser(src: AssessInput, probe: Probe, env: BrowserEnv
   if (info && info.audio.length > 0) {
     const main = info.audio.find((a) => a.default) ?? info.audio[0]!;
     const mk = codecKey(main.codec);
-    if (mk && audioOk(mk, probe) === false) {
+    if (mk && audioOk(mk, probe, env, ck) === false) {
       noAudio = true;
       avoid.push(mk);
       reasons.push({ code: "no_audio", severity: "maybe", label: audioLabel(mk) });
     } else {
-      const others = [...new Set(info.audio.map((a) => codecKey(a.codec)).filter((k): k is string => !!k && audioOk(k, probe) === false))];
+      const others = [...new Set(info.audio.map((a) => codecKey(a.codec)).filter((k): k is string => !!k && audioOk(k, probe, env, ck) === false))];
       if (others.length) reasons.push({ code: "some_audio", severity: "info", label: others.map(audioLabel).join(", ") });
     }
   } else if (!info && rel && rel.audio_codecs.length > 0) {
     // Parsed from the title: which track is the default is unknown. All bad →
     // silent; some bad → the main (usually first-listed) track may be one of them.
     const keys = [...new Set(rel.audio_codecs.map(codecKey).filter((k): k is string => !!k))];
-    const bad = keys.filter((k) => audioOk(k, probe) === false);
+    const bad = keys.filter((k) => audioOk(k, probe, env, ck) === false);
     if (bad.length && bad.length === keys.length) {
       noAudio = true;
       avoid.push(...bad);
