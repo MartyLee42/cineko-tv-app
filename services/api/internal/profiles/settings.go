@@ -202,7 +202,7 @@ var (
 
 // DefaultSettings returns a fully populated default settings object.
 func DefaultSettings() Settings {
-	t, l, ds := "system", "popcorn", "kinozal"
+	t, l, ds := "system", "popcorn", "wireframe" // «Каркас» by default
 	f, tr := false, true
 	return Settings{Theme: &t, HideAnime: &f, HideWatched: ptr(f), AutoplayNextEpisode: &tr, AutoplayCountdown: &tr, SkipSegments: ptr("button"),
 		SpoilerFreeEpisodes: ptr(f), LoadingStyle: &l, OnboardingCompleted: ptr(f), Design: &ds, DesignSurprise: ptr("off"), DesignFavorites: &[]string{}, PosterRating: ptr("kp"),

@@ -9,7 +9,7 @@ export type LoadingStyle = Settings["loading_style"];
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: "system",
-  design: "kinozal",
+  design: "wireframe",
   design_surprise: "off",
   design_favorites: [],
   hide_anime: false,
@@ -72,7 +72,7 @@ export function parseTheme(v: string | null | undefined): ThemeSetting {
   return v === "dark" || v === "light" || v === "system" ? v : "system";
 }
 export function parseDesign(v: string | null | undefined): DesignSetting {
-  return DESIGNS.includes(v as DesignSetting) ? (v as DesignSetting) : "kinozal";
+  return DESIGNS.includes(v as DesignSetting) ? (v as DesignSetting) : "wireframe";
 }
 /** Only Кинозал has a light variant; every other design is dark-only. */
 export function supportsLight(design: DesignSetting): boolean {
@@ -91,7 +91,7 @@ export interface Look {
  */
 const WEB_DESIGN_KEY = "martytv.web_design";
 
-/** Signed out (sign-in page, first paint) and before a profile's settings: the last design shown here, else Кинозал. */
+/** First paint and before a profile's settings: the last design shown here, else «Каркас» (the sign-in page always wears «Каркас»: signInLook). */
 export function cachedDesign(get: (key: string) => string | null): DesignSetting {
   return parseDesign(get(WEB_DESIGN_KEY) ?? get(DESIGN_KEY));
 }
@@ -100,7 +100,7 @@ export function readCachedLook(): Look {
   try {
     return { theme: parseTheme(localStorage.getItem(THEME_KEY)), design: cachedDesign((k) => localStorage.getItem(k)) };
   } catch {
-    return { theme: "system", design: "kinozal" };
+    return { theme: "system", design: "wireframe" };
   }
 }
 
@@ -129,6 +129,13 @@ export function setLook(patch: Partial<Look>) {
     cleanup?.();
     cleanup = applyTheme(look.theme);
   }
+}
+
+/** The sign-in page wears «Каркас» whatever this browser showed last; the returned undo puts the remembered look back. */
+export const SIGN_IN_DESIGN: DesignSetting = "wireframe";
+export function signInLook(): () => void {
+  applyDesign(SIGN_IN_DESIGN);
+  return () => applyDesign((current ?? readCachedLook()).design);
 }
 
 /**

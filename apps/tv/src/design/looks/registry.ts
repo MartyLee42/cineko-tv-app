@@ -68,7 +68,7 @@ export function subscribeLooks(l: () => void): () => void {
 export function preloadSavedLook(): void {
   let id = "kinozal";
   try {
-    id = startDesign(localStorage.getItem(DESIGN_KEY), !!localStorage.getItem("martytv.device_credential"));
+    id = startDesign(localStorage.getItem(DESIGN_KEY));
   } catch {
     /* private mode */
   }

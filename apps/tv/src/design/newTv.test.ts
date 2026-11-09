@@ -20,11 +20,9 @@ function firstFrame(init: Record<string, string>): string {
 }
 
 describe("a new TV starts in «Каркас»", () => {
-  it("picks the cached design, else «Каркас» unpaired, else «Кинозал»", () => {
-    expect(startDesign("deco", false)).toBe("deco");
-    expect(startDesign("deco", true)).toBe("deco");
-    expect(startDesign(null, false)).toBe("wireframe");
-    expect(startDesign(null, true)).toBe("kinozal");
+  it("picks the cached design, else «Каркас»", () => {
+    expect(startDesign("deco")).toBe("deco");
+    expect(startDesign(null)).toBe("wireframe");
   });
 
   it("remembers «Каркас» only on a fresh, unpaired TV", () => {
@@ -53,7 +51,7 @@ describe("a new TV starts in «Каркас»", () => {
     expect(adoptServerNewTvDesign("deco", fresh)).toBe(false); // nothing changed
     // The default switched off on the server: the plain default.
     expect(adoptServerNewTvDesign("", fresh)).toBe(true);
-    expect(fresh.m.get("martytv.design")).toBe("kinozal");
+    expect(fresh.m.get("martytv.design")).toBe("wireframe");
     // A TV that has shown a profile keeps its design.
     const own = kv({ "martytv.design": "noir" });
     expect(adoptServerNewTvDesign("wireframe", own)).toBe(false);
@@ -68,7 +66,7 @@ describe("a new TV starts in «Каркас»", () => {
 
   it("index.html paints the same first frame", () => {
     expect(firstFrame({})).toContain("design-wireframe");
-    expect(firstFrame({ "martytv.device_credential": "dev_x" })).toContain("design-kinozal");
+    expect(firstFrame({ "martytv.device_credential": "dev_x" })).toContain("design-wireframe");
     expect(firstFrame({ "martytv.design": "deco" })).toContain("design-deco");
     expect(firstFrame({ "martytv.design": "kinozal", "martytv.device_credential": "dev_x" })).toContain("design-kinozal");
   });

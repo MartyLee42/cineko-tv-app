@@ -483,7 +483,7 @@ func TestWatchListsRatingsAndSettings(t *testing.T) {
 	// Settings: defaults, partial merge, validation.
 	st := c.Do("GET", base+"/settings", nil).Expect(200).JSON()
 	want := map[string]any{"theme": "system", "hide_anime": false, "hide_watched": false, "autoplay_next_episode": true, "skip_segments": "button", "autoplay_countdown": true, "video_autoplay": true,
-		"spoiler_free_episodes": false, "loading_style": "popcorn", "onboarding_completed": false, "design": "kinozal", "poster_rating": "kp"}
+		"spoiler_free_episodes": false, "loading_style": "popcorn", "onboarding_completed": false, "design": "wireframe", "poster_rating": "kp"}
 	for k, v := range want {
 		if st[k] != v {
 			t.Fatalf("default %s = %v", k, st[k])

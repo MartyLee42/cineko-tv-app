@@ -54,7 +54,7 @@ export function ownDesign(): DesignId | "" {
 
 export function tvDesign(): DesignId {
   const v = read(TV_KEY);
-  return valid(v) ? v : "kinozal";
+  return valid(v) ? v : "wireframe";
 }
 
 export function currentDesign(): DesignId {
