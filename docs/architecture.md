@@ -344,8 +344,13 @@ token bucket (4 req/s, burst 6), singleflight, errors without URLs.
 movies: `"<original> <year>"`, `"<ru> <year>"`, `"<ru>"` (ExKinoRay doesn't
 match "title year"), `"<en> <year>"` when the original isn't English;
 series: `"<ru>"`, `"<original>"`, and with a season `"<ru> N сезон"` and
-`"<original> S0N"`. Titles come from the catalog in `ru` and `en`; non-Latin/
-Cyrillic originals (Japanese anime) are skipped.
+`"<original> S0N"`. Titles come from the catalog in `ru` and `en`; a non-Latin/
+Cyrillic original (Korean/Japanese/Chinese) is replaced by the English title,
+and then (cap raised to 6) up to two romanized TMDB alternative titles are
+searched after the usual queries — type "Romanization"/"romaji"/… first, then
+Latin titles from KR/JP/CN/TW/HK/TH, minus those equal to ru/en: movies
+`"<name> <year>"`, series `"<name>"` then `"<name> S0N"` — and, for
+ko/ja/zh/th originals, the native title last ("Dokkaebi" for 도깨비).
 
 **Parser** (`Parse`, pure): splits RuTracker (`Ru / En / S8E1-6 of 6 [2019,
 США, …, BDRemux 1080p] Dub`), RuTor (`Ru / En [S01-08] (2011-2019) BDRip

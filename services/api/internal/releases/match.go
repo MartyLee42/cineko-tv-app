@@ -23,9 +23,12 @@ type Target struct {
 	Kind      string   // movie | series
 	Titles    []string // original, ru and en titles
 	AltTitles []string // TMDB alternative titles (Latin/Cyrillic only)
-	Year      int      // movie release year / series first air year
-	LastYear  int      // series: last air year (0 = ongoing)
-	IMDbID    string   // tt0133093
+	// SearchNames are romanized alternative titles (also in AltTitles),
+	// searched when the original title isn't Latin/Cyrillic ("Dokkaebi").
+	SearchNames []string
+	Year        int    // movie release year / series first air year
+	LastYear    int    // series: last air year (0 = ongoing)
+	IMDbID      string // tt0133093
 	// OriginalLanguage replaces the parser's "orig" language placeholder.
 	OriginalLanguage string
 	Countries        []string // origin countries, ISO 3166-1
