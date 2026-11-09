@@ -170,6 +170,12 @@ var (
 		return &Target{Kind: "series", Titles: []string{"The Office", "Офис", "The Office"}, Year: 2005, LastYear: 2013,
 			OriginalLanguage: "en", Countries: []string{"US"}, Season: intp(season), SeasonCount: 9}
 	}
+	goblin = func() *Target {
+		return &Target{Kind: "series", Titles: []string{"쓸쓸하고 찬란하神-도깨비", "Гоблин", "Guardian: The Lonely and Great God"},
+			Year: 2016, LastYear: 2017, OriginalLanguage: "ko", Countries: []string{"KR"}, Season: intp(1), SeasonCount: 1,
+			SeasonEpisodes: 16, AltTitles: []string{"Sseulsseulhago Chanlanhasin: Dokkaebi", "Dokkaebi", "Goblin"},
+			SearchNames: []string{"Sseulsseulhago Chanlanhasin: Dokkaebi", "Dokkaebi"}}
+	}
 	officeUK = func(season int) *Target {
 		return &Target{Kind: "series", Titles: []string{"The Office", "Офис", "The Office"}, Year: 2001, LastYear: 2003,
 			OriginalLanguage: "en", Countries: []string{"GB"}, Season: intp(season), SeasonCount: 2}
@@ -227,6 +233,10 @@ func TestMatchCases(t *testing.T) {
 		{"office uk", officeUK(1), "Офис / The Office [S01] (2001) DVDRip-AVC | Ozz", true, "season_pack", nil},
 		{"office uk vs us", officeUK(1), "Офис / The Office / S1E1-6 of 6 [2005, США, Комедия, WEB-DL 1080p]", false, "year_mismatch", nil},
 		{"us marker on uk", officeUK(1), "Офис / The Office [S01] (2005) WEB-DL | D | американская версия / US", false, "version_mismatch", nil},
+		{"dorama ru / native / romanized", goblin(), "Гоблин / 도깨비 / Dokkaebi [S01] (2016) WEB-DL 1080p", true, "season_pack", nil},
+		{"dorama romanized only", goblin(), "Dokkaebi S01 1080p WEB-DL", true, "title_alt", nil},
+		{"dorama full romanization", goblin(), "Sseulsseulhago.Chanlanhasin.Dokkaebi.S01.1080p.WEB-DL", true, "title_alt", nil},
+		{"dorama native original", goblin(), "쓸쓸하고 찬란하神-도깨비 S01 1080p", true, "title_exact", nil},
 		{"series without season info", got(1, 3), "Игра престолов / Game of Thrones (2011) WEB-DL 1080p", false, "season_unknown", nil},
 	}
 	for _, c := range cases {

@@ -114,6 +114,7 @@ type Service struct {
 
 type altEntry struct {
 	titles []string
+	search []string // romanization candidates, best first (searchCandidates)
 	at     time.Time
 }
 
@@ -229,7 +230,9 @@ func (s *Service) loadTarget(ctx context.Context, mediaID string, season, episod
 	if season != nil && len(d.Seasons) > 0 && !known {
 		return nil, &FieldError{"season", "this series has no such season"}
 	}
-	t.AltTitles = s.altTitles(ctx, d.Kind, d.TMDBID)
+	var cands []string
+	t.AltTitles, cands = s.altTitles(ctx, d.Kind, d.TMDBID)
+	t.SearchNames = pickSearchNames(cands, info.orig, info.ru, info.en)
 	info.target = t
 	return info, nil
 }
@@ -245,24 +248,25 @@ func nonEmpty(vals ...string) []string {
 }
 
 // altTitles returns TMDB alternative titles in Latin or Cyrillic script
-// (the only scripts RU trackers use), cached in memory for a day.
-func (s *Service) altTitles(ctx context.Context, kind string, tmdbID int) []string {
+// (the only scripts RU trackers use) and the romanization candidates among
+// them (searchCandidates), cached in memory for a day.
+func (s *Service) altTitles(ctx context.Context, kind string, tmdbID int) (titles, search []string) {
 	if !s.tmdb.Configured() || tmdbID == 0 {
-		return nil
+		return nil, nil
 	}
 	key := kind + ":" + strconv.Itoa(tmdbID)
 	s.mu.Lock()
 	e, ok := s.alt[key]
 	s.mu.Unlock()
 	if ok && s.now().Sub(e.at) < 24*time.Hour {
-		return e.titles
+		return e.titles, e.search
 	}
 	ctx, cancel := context.WithTimeout(ctx, 8*time.Second)
 	defer cancel()
 	alts, err := s.tmdb.AlternativeTitles(ctx, kind, tmdbID)
 	if err != nil {
 		s.log.Warn("tmdb alternative titles failed", "tmdb_id", tmdbID, "err", err)
-		return nil
+		return nil, nil
 	}
 	var out []string
 	for _, a := range alts {
@@ -270,12 +274,67 @@ func (s *Service) altTitles(ctx context.Context, kind string, tmdbID int) []stri
 			out = append(out, a.Title)
 		}
 	}
+	search = searchCandidates(alts)
 	s.mu.Lock()
 	if len(s.alt) > 2000 {
 		s.alt = map[string]altEntry{}
 	}
-	s.alt[key] = altEntry{titles: out, at: s.now()}
+	s.alt[key] = altEntry{titles: out, search: search, at: s.now()}
 	s.mu.Unlock()
+	return out, search
+}
+
+// romanizedRegions: TMDB's Latin alternative titles from these countries
+// are mostly romanizations ("Dokkaebi") or local English names.
+var romanizedRegions = map[string]bool{"KR": true, "JP": true, "CN": true, "TW": true, "HK": true, "TH": true}
+
+// searchCandidates picks the Latin-script alternative titles worth
+// searching when the original isn't Latin/Cyrillic (도깨비 → "Dokkaebi"):
+// those typed as a romanization first, then those of East/South-East Asian
+// countries. At most 6, in that order.
+func searchCandidates(alts []tmdb.AlternativeTitle) []string {
+	var roman, regional []string
+	for _, a := range alts {
+		if script(a.Title) != "lat" {
+			continue
+		}
+		ty := strings.ToLower(a.Type)
+		switch {
+		case strings.Contains(ty, "roman") || strings.Contains(ty, "pinyin"):
+			roman = append(roman, a.Title)
+		case romanizedRegions[strings.ToUpper(a.Country)]:
+			regional = append(regional, a.Title)
+		}
+	}
+	var out []string
+	for _, t := range append(roman, regional...) {
+		if !slices.Contains(out, t) && len(out) < 6 {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// maxSearchNames caps the romanized names searched per title.
+const maxSearchNames = 2
+
+// pickSearchNames returns up to maxSearchNames candidates that differ
+// (ignoring case and punctuation) from the known titles and each other.
+func pickSearchNames(cands []string, known ...string) []string {
+	key := func(s string) string { return strings.Join(normTokens(s), "") }
+	seen := map[string]bool{}
+	for _, k := range known {
+		seen[key(k)] = true
+	}
+	var out []string
+	for _, c := range cands {
+		k := key(c)
+		if k == "" || seen[k] || len(out) >= maxSearchNames {
+			continue
+		}
+		seen[k] = true
+		out = append(out, c)
+	}
 	return out
 }
 

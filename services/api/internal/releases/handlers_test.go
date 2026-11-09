@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -63,6 +64,22 @@ func newMockTMDB(t *testing.T) *httptest.Server {
 			body = map[string]any{"id": 438631, "titles": []any{}}
 		case "/tv/1399/alternative_titles":
 			body = map[string]any{"id": 1399, "results": []any{}}
+		case "/tv/67915":
+			name := "Guardian: The Lonely and Great God"
+			if ru {
+				name = "Гоблин"
+			}
+			body = map[string]any{"id": 67915, "name": name, "original_name": "쓸쓸하고 찬란하神-도깨비", "original_language": "ko",
+				"first_air_date": "2016-12-02", "last_air_date": "2017-01-21", "origin_country": []string{"KR"},
+				"number_of_seasons": 1, "external_ids": map[string]any{},
+				"seasons": []map[string]any{{"season_number": 1, "air_date": "2016-12-02", "episode_count": 16, "name": "Season 1"}}}
+		case "/tv/67915/alternative_titles":
+			body = map[string]any{"id": 67915, "results": []map[string]any{
+				{"iso_3166_1": "KR", "title": "도깨비", "type": ""},
+				{"iso_3166_1": "KR", "title": "Dokkaebi", "type": ""},
+				{"iso_3166_1": "KR", "title": "Sseulsseulhago Chanlanhasin: Dokkaebi", "type": "Romanization"},
+				{"iso_3166_1": "US", "title": "Goblin", "type": ""},
+			}}
 		default:
 			http.NotFound(w, r)
 			return
@@ -115,6 +132,14 @@ var duneResults = []rel{
 	{"Дюна / Dune (2021) WEB-DL 1080p | MVO (LostFilm)", "RuTor", 2, 40, 8 << 30, "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"},
 }
 
+// Found only by the romanized names of 도깨비 (the ru/en queries return
+// nothing for it in the mock).
+var goblinResults = []rel{
+	{"Гоблин / 도깨비 / Dokkaebi [S01] (2016) WEB-DL 1080p", "RuTor", 2, 25, 20 << 30, "6666666666666666666666666666666666666666"},
+	{"Dokkaebi S01 1080p WEB-DL", "NoNaMe Club", 5, 10, 18 << 30, "7777777777777777777777777777777777777777"},
+	{"Hotel del Luna S01 1080p WEB-DL", "NoNaMe Club", 5, 10, 18 << 30, "8888888888888888888888888888888888888888"},
+}
+
 // Returned for the user's own «Уточнить» query "Neo": a differently titled
 // upload of the film, a wrong-year copy, a sequel and a soundtrack.
 var neoResults = []rel{
@@ -162,6 +187,8 @@ func newMockProwlarr(t *testing.T) *mockProwlarr {
 				list = gotResults
 			case strings.Contains(q, "Dune") || strings.Contains(q, "Дюна"):
 				list = duneResults
+			case strings.Contains(q, "Dokkaebi"):
+				list = goblinResults
 			}
 			var out []map[string]any
 			for i, x := range list {
@@ -363,11 +390,45 @@ func TestReleasesSeriesEpisode(t *testing.T) {
 	if !strings.Contains(qs, "Игра престолов 1 сезон") || !strings.Contains(qs, "Game of Thrones S01") {
 		t.Fatalf("season queries missing: %s", qs)
 	}
+	// A Latin original: no romanized/native extras.
+	pm.mu.Lock()
+	sorted := slices.Sorted(slices.Values(pm.queries))
+	pm.mu.Unlock()
+	if want := []string{"Game of Thrones", "Game of Thrones S01", "Игра престолов", "Игра престолов 1 сезон"}; !slices.Equal(sorted, want) {
+		t.Fatalf("queries %q, want %q", sorted, want)
+	}
 	// Different episode → separate cache entry.
 	before := pm.searches.Load()
 	c.Do("GET", "/api/v1/media/"+id+"/releases?season=1&episode=4", nil).Expect(200)
 	if pm.searches.Load() == before {
 		t.Fatalf("episode cache key collision")
+	}
+}
+
+func TestReleasesDoramaRomanizedSearch(t *testing.T) {
+	tm, pm := newMockTMDB(t), newMockProwlarr(t)
+	env := testutil.New(t, configure(tm.URL, pm))
+	c, _ := env.NewUserClient("alice", "user")
+	id := insertMedia(t, env, "series", 67915)
+
+	l := decode(t, c.Do("GET", "/api/v1/media/"+id+"/releases?season=1&lang=ru", nil).Expect(200))
+	pm.mu.Lock()
+	sorted := slices.Sorted(slices.Values(pm.queries))
+	pm.mu.Unlock()
+	// Romanization-typed name first, then the KR one; 6 queries at most.
+	want := []string{"Dokkaebi", "Guardian The Lonely and Great God", "Guardian The Lonely and Great God S01",
+		"Sseulsseulhago Chanlanhasin Dokkaebi", "Гоблин", "Гоблин 1 сезон"}
+	if !slices.Equal(sorted, want) {
+		t.Fatalf("queries %q, want %q", sorted, want)
+	}
+	got := titles(l)
+	for _, w := range []string{goblinResults[0].title, goblinResults[1].title} {
+		if !slices.Contains(got, w) {
+			t.Errorf("missing %q in %q", w, got)
+		}
+	}
+	if slices.Contains(got, goblinResults[2].title) {
+		t.Errorf("unrelated dorama kept: %q", got)
 	}
 }
 
