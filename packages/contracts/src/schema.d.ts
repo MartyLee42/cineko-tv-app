@@ -1858,7 +1858,7 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** @description Unlocked stickers (silent: no events or notifications), recorded on read from the watch history. The profile's own account (or its TV) and admins only. */
+        /** @description Unlocked stickers (silent: no events or notifications), recorded on read from the watch history, plus the progress of the next locked counter goals («37 / 50 films»); the rest stay secret. The profile's own account (or its TV) and admins only. */
         get: operations["profileAchievements"];
         put?: never;
         post?: never;
@@ -5807,10 +5807,18 @@ export interface components {
             media_id: string | null;
             media_title: string | null;
         };
+        /** @description A locked counter sticker on its way (the next goal of a ladder such as films finished). */
+        AchievementProgress: {
+            id: components["schemas"]["AchievementId"];
+            have: number;
+            need: number;
+        };
         AchievementList: {
             /** @description Unlocked only, oldest first. */
             items: components["schemas"]["Achievement"][];
-            /** @description Stickers not unlocked yet (never listed). */
+            /** @description Locked counter stickers already started, in display order. */
+            progress: components["schemas"]["AchievementProgress"][];
+            /** @description Stickers neither unlocked nor in progress (never listed). */
             secret: number;
             total: number;
         };

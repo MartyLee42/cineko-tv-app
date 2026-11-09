@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { countKey, HOLES, knownStickers, paperFor, PAPERS, punchHoles, secretKey, stickerKeys, STICKERS, ticketDate, ticketSerial, tiltFor } from "./logic";
+import { countKey, HOLES, knownStickers, paperFor, PAPERS, progressLabel, progressShare, punchHoles, secretKey, stickerKeys, STICKERS, ticketDate, ticketSerial, tiltFor } from "./logic";
+import { GLYPHS } from "./glyphs";
+import { metalFor, METALS, PALETTES, SHAPES, SPECS, type StickerSpec } from "./stickers";
 import { keepsakesEn } from "../locales/keepsakes.en";
+import { keepsakesKk } from "../locales/keepsakes.kk";
 import { keepsakesRu } from "../locales/keepsakes.ru";
 
 describe("punchHoles", () => {
@@ -66,8 +69,79 @@ describe("stickers", () => {
   it("has a name and description for every sticker", () => {
     for (const id of STICKERS) {
       const k = stickerKeys(id);
-      expect(keepsakesRu[k.name as keyof typeof keepsakesRu]).toBeTruthy();
-      expect(keepsakesEn[k.desc as keyof typeof keepsakesEn]).toBeTruthy();
+      for (const m of [keepsakesRu, keepsakesEn, keepsakesKk] as Record<string, string>[]) {
+        expect(m[k.name], `${id} name`).toBeTruthy();
+        expect(m[k.desc], `${id} desc`).toBeTruthy();
+      }
     }
+  });
+  it("has no strings for stickers that don't exist", () => {
+    const ids = new Set<string>(STICKERS);
+    for (const key of Object.keys(keepsakesRu)) {
+      const m = /^keepsakes\.ach\.([a-z0-9_]+?)(\.desc)?$/.exec(key);
+      if (m) expect(ids.has(m[1]!), key).toBe(true);
+    }
+  });
+  it("keeps the first four (stored ids, hand-drawn art)", () => {
+    expect(STICKERS.slice(0, 4)).toEqual(["marathon", "archaeologist", "polyglot", "night_owl"]);
+    expect(STICKERS.length).toBeGreaterThanOrEqual(75);
+  });
+});
+
+describe("sticker art", () => {
+  const specs = Object.entries(SPECS) as [string, StickerSpec][];
+  it("gives every parametric sticker a palette, a shape and a glyph or digits", () => {
+    for (const [id, s] of specs) {
+      if (s.bespoke) continue;
+      expect(PALETTES[s.hue], id).toBeTruthy();
+      expect(SHAPES[s.shape], id).toBeTruthy();
+      expect(!!s.glyph !== !!s.text, `${id}: a glyph or text`).toBe(true);
+      if (s.glyph) expect(GLYPHS[s.glyph](PALETTES[s.hue]), id).toBeTruthy();
+      if (s.ribbon) expect(s.tier, `${id}: a ribbon needs a tier`).toBeGreaterThan(0);
+    }
+    expect(specs.filter(([, s]) => s.bespoke).map(([id]) => id)).toEqual(["marathon", "archaeologist", "polyglot", "night_owl"]);
+  });
+  it("climbs the metals within a ladder", () => {
+    const ladders = new Map<string, { tier: number; goal: number }[]>();
+    for (const [id, s] of specs) {
+      const m = /^(.+)_(\d+)$/.exec(id);
+      if (!m || !s.tier || !s.ribbon) continue;
+      ladders.set(m[1]!, [...(ladders.get(m[1]!) ?? []), { tier: s.tier, goal: Number(m[2]) }]);
+    }
+    expect(ladders.get("films")?.map((x) => x.tier)).toEqual([1, 2, 3, 4, 5, 6]);
+    for (const [name, steps] of ladders) {
+      for (let i = 1; i < steps.length; i++) {
+        expect(steps[i]!.tier, name).toBeGreaterThan(steps[i - 1]!.tier);
+        expect(steps[i]!.goal, name).toBeGreaterThan(steps[i - 1]!.goal);
+      }
+    }
+    expect(metalFor(0)).toBe(METALS[0]);
+    expect(metalFor(99)).toBe(METALS[METALS.length - 1]);
+  });
+  it("draws shapes inside the box", () => {
+    for (const [name, paths] of Object.entries(SHAPES)) {
+      for (const d of paths) {
+        const nums = (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+        expect(nums.length, name).toBeGreaterThan(6);
+        for (const n of nums) expect(Number.isFinite(n) && n >= 0 && n <= 120, `${name}: ${n}`).toBe(true);
+      }
+    }
+  });
+});
+
+describe("progress", () => {
+  it("fills the bar", () => {
+    expect(progressShare(37, 50)).toBeCloseTo(0.74);
+    expect(progressShare(0, 50)).toBe(0);
+    expect(progressShare(80, 50)).toBe(1);
+    expect(progressShare(3, 0)).toBe(0);
+    expect(progressShare(Number.NaN, 5)).toBe(0);
+  });
+  it("labels it", () => {
+    expect(progressLabel(37, 50)).toBe("37 / 50");
+    expect(progressLabel(740, 1000)).toBe("740 / 1\u2009000");
+  });
+  it("only keeps progress the client can draw", () => {
+    expect(knownStickers([{ id: "films_50", have: 37, need: 50 }, { id: "films_9000", have: 1, need: 9000 }]).map((p) => p.id)).toEqual(["films_50"]);
   });
 });

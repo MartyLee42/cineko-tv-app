@@ -35,6 +35,7 @@ export type TicketStub = Schemas["TicketStub"];
 export type TicketPage = Schemas["TicketPage"];
 export type Achievement = Schemas["Achievement"];
 export type AchievementList = Schemas["AchievementList"];
+export type AchievementProgress = Schemas["AchievementProgress"];
 export type NextUp = Schemas["NextUp"];
 export type ActivityItem = Schemas["ActivityItem"];
 export type AdminHistoryItem = Schemas["AdminHistoryItem"];

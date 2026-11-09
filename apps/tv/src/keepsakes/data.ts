@@ -30,7 +30,12 @@ export const TICKET_H = Math.round(8.6 * TICKET_FONT);
 export const KEEP_LABEL = 58;
 /** HRow pads its cards by 24 px on each side. */
 export const KEEP_RAIL = TICKET_H + 48;
-export const KEEP_STICKERS = 280;
+/** Stickers: a remote-navigable row of StickerCards (.ks-sticker is 8.6em wide). */
+export const STICKER_FONT = 21;
+export const STICKER_W = Math.round(8.6 * STICKER_FONT);
+export const STICKER_H = 270;
+/** Heading + the row (HRow pads its cards by 24 px on each side). */
+export const KEEP_STICKERS = 54 + STICKER_H + 48;
 export const KEEP_GAP = 36;
 
 /** Height of the block above the watchlist grid (0 = nothing to show). */

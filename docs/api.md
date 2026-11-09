@@ -363,7 +363,7 @@ GET and `write` otherwise.
 | GET | `/profiles/{id}/new-episodes/muted?lang` | Muted series `{items: [{media, muted_at}]}`, newest first |
 | PUT / DELETE | `/profiles/{id}/new-episodes/muted/{mediaId}` | Mute / unmute a series → 204 (idempotent; 422 for a movie). Muted: skipped by the check, items hidden until unmuted |
 | GET | `/profiles/{id}/tickets?lang&cursor&limit` | Ticket stubs (one per finished film, newest number first; `limit` 1–100, default 24; `next_cursor`): number, media, finished_at + household `date`/`time`, hall/row/seat (stable hash), the profile's `rating`. Owner, its TVs, admins |
-| GET | `/profiles/{id}/achievements?lang` | Unlocked stickers (oldest first, with the title that earned each) + `secret` (still hidden). Recorded on read, silently |
+| GET | `/profiles/{id}/achievements?lang` | Unlocked stickers (oldest first, with the title that earned each), `progress` (the next locked goal of each started counter ladder: `{id, have, need}`) and `secret` (the rest, still hidden). Recorded on read, silently |
 | GET | `/admin/new-episodes` | Admin: schedule (`NEW_EPISODES_AT` in `NEW_EPISODES_TZ`, default 04:00 UTC) and the last 10 runs |
 | POST | `/admin/new-episodes/run` | Admin: run the check now → 202; 409 while one runs |
 | GET | `/profiles/{id}/history?lang&cursor&limit` | `{items: HistoryItem[], next_cursor}`, newest first; bad cursor → 422 |
