@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import html from "../../index.html?raw";
-import { seedNewTvDesign, startDesign } from "./newTv";
+import { adoptServerNewTvDesign, seedNewTvDesign, startDesign } from "./newTv";
 
 function kv(init: Record<string, string>) {
   const m = new Map(Object.entries(init));
@@ -37,6 +37,33 @@ describe("a new TV starts in «Каркас»", () => {
     const paired = kv({ "martytv.device_credential": "dev_x" });
     seedNewTvDesign(paired);
     expect(paired.m.has("martytv.design")).toBe(false);
+  });
+
+  it("marks the fresh-TV guess as seeded", () => {
+    const fresh = kv({});
+    seedNewTvDesign(fresh);
+    expect(fresh.m.get("martytv.design_seeded")).toBe("1");
+  });
+
+  it("takes the server's design for new TVs only while on the guess", () => {
+    const fresh = kv({});
+    seedNewTvDesign(fresh);
+    expect(adoptServerNewTvDesign("deco", fresh)).toBe(true);
+    expect(fresh.m.get("martytv.design")).toBe("deco");
+    expect(adoptServerNewTvDesign("deco", fresh)).toBe(false); // nothing changed
+    // The default switched off on the server: the plain default.
+    expect(adoptServerNewTvDesign("", fresh)).toBe(true);
+    expect(fresh.m.get("martytv.design")).toBe("kinozal");
+    // A TV that has shown a profile keeps its design.
+    const own = kv({ "martytv.design": "noir" });
+    expect(adoptServerNewTvDesign("wireframe", own)).toBe(false);
+    expect(own.m.get("martytv.design")).toBe("noir");
+    // Nothing cached at all (storage wiped while paired): the server's default.
+    const wiped = kv({});
+    expect(adoptServerNewTvDesign("western", wiped)).toBe(true);
+    expect(wiped.m.get("martytv.design")).toBe("western");
+    // Older servers say nothing.
+    expect(adoptServerNewTvDesign(undefined, kv({}))).toBe(false);
   });
 
   it("index.html paints the same first frame", () => {

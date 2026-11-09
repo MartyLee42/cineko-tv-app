@@ -1,0 +1,71 @@
+/* «Стикербук» scenery (stickerbook.tsx). */
+.sb-scene {
+  background-color: rgb(42, 36, 56);
+  background-image: radial-gradient(ellipse 80% 55% at 75% -6%, rgba(255, 111, 165, 0.1), rgba(255, 111, 165, 0)),
+    radial-gradient(ellipse 70% 50% at -4% 104%, rgba(95, 211, 196, 0.09), rgba(95, 211, 196, 0)),
+    radial-gradient(circle, rgba(255, 248, 239, 0.085) 0px, rgba(255, 248, 239, 0.085) 1.3px, rgba(255, 248, 239, 0) 1.9px);
+  background-size: 100% 100%, 100% 100%, 26px 26px;
+}
+.sb-doodle {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  opacity: 0.28;
+  overflow: visible;
+}
+@media (max-width: 767px) {
+  .sb-doodle { width: 40px; height: 40px; }
+}
+.sb-stickers {
+  position: absolute;
+  right: 12px;
+  bottom: 14px;
+  width: clamp(90px, 10vw, 150px);
+  height: auto;
+}
+@media (max-width: 767px) {
+  .sb-stickers { bottom: auto; top: 64px; right: 4px; width: 74px; opacity: 0.85; }
+}
+/* Washi tape (same patterns as the TV). */
+.sb-tape {
+  position: absolute;
+  display: block;
+  height: 26px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+}
+.sb-tape-pink {
+  background-color: rgba(255, 111, 165, 0.8);
+  background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.34) 0px, rgba(255, 255, 255, 0.34) 5px, rgba(255, 255, 255, 0) 5px, rgba(255, 255, 255, 0) 11px);
+}
+.sb-tape-mint {
+  background-color: rgba(95, 211, 196, 0.82);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.55) 0px, rgba(255, 255, 255, 0.55) 2.4px, rgba(255, 255, 255, 0) 3px);
+  background-size: 12px 12px;
+}
+.sb-hero-tape-a { left: 8%; top: -6px; width: clamp(100px, 18%, 200px); transform: rotate(-4deg); }
+.sb-hero-tape-b { right: 10%; top: -5px; width: clamp(80px, 14%, 150px); transform: rotate(5deg); }
+
+/* The page: handwritten-feel section titles with a highlighter swipe, sticker buttons. */
+html.design-stickerbook main h2 {
+  display: inline;
+  background-image: linear-gradient(transparent 58%, rgba(255, 111, 165, 0.35) 58%, rgba(255, 111, 165, 0.35) 92%, transparent 92%);
+}
+html.design-stickerbook .home-hero {
+  border: 5px solid #fffaf0;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  transform: rotate(-0.4deg);
+  overflow: visible;
+}
+html.design-stickerbook .home-hero .wd-hero {
+  overflow: visible;
+}
+html.design-stickerbook .home-hero > div.absolute {
+  border-radius: 13px;
+  overflow: hidden;
+}
+html.design-stickerbook a.bg-accent,
+html.design-stickerbook button.bg-accent {
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px #fffaf0, 0 4px 8px rgba(0, 0, 0, 0.35);
+}

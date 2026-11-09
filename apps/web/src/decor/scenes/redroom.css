@@ -1,0 +1,61 @@
+/* «Красная комната» scenery (redroom.tsx). */
+.rr-scene {
+  background-color: rgb(14, 5, 6);
+  background-image: linear-gradient(180deg, rgba(14, 5, 6, 0) 40%, rgba(14, 5, 6, 0.85) 100%),
+    repeating-linear-gradient(90deg, rgba(120, 8, 14, 0.34) 0px, rgba(150, 14, 22, 0.42) 18px, rgba(60, 2, 6, 0.36) 40px, rgba(120, 8, 14, 0.34) 60px);
+}
+/* The wide curtains and props live in the margins beside the page column (≥ 1280 px). */
+.rr-wide {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .rr-wide { display: block; }
+}
+.rr-curtain {
+  position: absolute;
+  top: 0;
+  width: clamp(60px, calc((100vw - 72rem) / 2 - 24px), 120px);
+  height: 100%;
+}
+.rr-curtain-l { left: 0; }
+.rr-curtain-r { right: 0; transform: scaleX(-1); }
+.rr-valance {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 74px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40'%3E%3Cpath d='M0 0 L120 0 L120 14 Q60 46 0 14 Z' fill='%23a8121c'/%3E%3Cpath d='M0 14 Q60 46 120 14' fill='none' stroke='%234a0306' stroke-width='3'/%3E%3C/svg%3E");
+  background-size: 120px 40px;
+  background-repeat: repeat-x;
+  background-position: 50% 34px;
+}
+.rr-prop {
+  position: absolute;
+  bottom: 18px;
+  height: auto;
+}
+.rr-pie { left: 18px; width: 84px; }
+.rr-coffee { right: 22px; width: 80px; }
+.rr-vignette {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse 80% 75% at 50% 44%, rgba(60, 0, 4, 0) 55%, rgba(60, 0, 4, 0.45) 100%);
+}
+/* The page: ivory serif capitals for section titles, the hero hung in a red frame, buttons glowing red. */
+html.design-redroom main h2 {
+  font-family: var(--mt-font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+html.design-redroom .home-hero {
+  box-shadow: 0 0 0 2px rgba(210, 31, 42, 0.8), 0 0 30px rgba(210, 31, 42, 0.25);
+}
+html.design-redroom a.bg-accent,
+html.design-redroom button.bg-accent {
+  box-shadow: 0 0 16px rgba(226, 44, 52, 0.45);
+  letter-spacing: 0.05em;
+}

@@ -1,0 +1,68 @@
+/* «Ретро 90-е» scenery (retro90.tsx). */
+.r9-scene {
+  background-color: rgb(0, 96, 96);
+  background-image: repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.035) 0px, rgba(0, 0, 0, 0.035) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 4px);
+}
+.r9-icons {
+  position: absolute;
+  left: 18px;
+  top: 90px;
+  width: 64px;
+  height: 300px;
+  opacity: 0.85;
+}
+@media (max-width: 1279px) {
+  .r9-icons { display: none; }
+}
+.r9-titlebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 0 8px;
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  color: #fff;
+  font: 700 13px/1 Tahoma, "MS Sans Serif", Verdana, sans-serif;
+}
+.r9-tb-btns {
+  display: flex;
+}
+.r9-tb-btns > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 16px;
+  margin-left: 2px;
+  background: #c0c0c0;
+  color: #000;
+  font-size: 11px;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #404040;
+}
+
+/* The page: Home's hero as a window, raised buttons, Tahoma section titles. */
+html.design-retro90 .home-hero {
+  border-radius: 0;
+  box-shadow: inset 2px 2px 0 #fff, inset -2px -2px 0 #404040, 0 0 0 2px #c0c0c0;
+}
+html.design-retro90 .home-hero > div.relative {
+  padding-top: 7rem;
+}
+html.design-retro90 main h2 {
+  font-family: Tahoma, "MS Sans Serif", Verdana, sans-serif;
+}
+html.design-retro90 a.bg-accent,
+html.design-retro90 button.bg-accent {
+  border-radius: 0;
+  box-shadow: inset 2px 2px 0 #fffbd0, inset -2px -2px 0 #8a7a00;
+}
+/* Every panel square, with the raised Win95 bevel. */
+html.design-retro90 main .rounded-2xl.border {
+  border-radius: 0;
+  border-color: #c0c0c0;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.5), inset -2px -2px 0 rgba(0, 0, 0, 0.45);
+}

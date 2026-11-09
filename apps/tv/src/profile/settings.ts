@@ -8,7 +8,7 @@ import { DESIGNS as UI_DESIGNS, effectiveDesign } from "@martytv/ui";
 import { api } from "../api";
 import { queryClient } from "../catalog/queries";
 import { credentialStore, storage } from "../platform";
-import { DESIGN_KEY, startDesign } from "../design/newTv";
+import { DESIGN_KEY, SEEDED_KEY, startDesign } from "../design/newTv";
 import { activeProfile, useActiveProfileId } from "./active";
 
 export { activeProfile, useActiveProfileId };
@@ -115,6 +115,7 @@ export const themeCache = {
   /** Remembers the shown design (index.html paints its background) and the surprise inputs behind it. */
   setDesign: (v: DesignSetting, s?: Settings, profileId?: string | null) => {
     storage.set(DESIGN_KEY, v);
+    storage.remove(SEEDED_KEY); // a profile's own design from now on
     if (s && profileId && s.design_surprise !== "off") {
       const c: CachedSurprise = { p: profileId, d: s.design, m: s.design_surprise, f: s.design_favorites };
       storage.set(SURPRISE_KEY, JSON.stringify(c));

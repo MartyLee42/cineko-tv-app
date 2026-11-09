@@ -178,6 +178,8 @@ async function loadScreen(retried = false): Promise<Screen> {
 export function App() {
   const [screen, setScreen] = useState<Screen>(() => (credentialStore.get() || DEMO ? { kind: "boot" } : { kind: "pairing" }));
   const [conn, setConn] = useState<ConnectionState>("closed");
+  /** Bumped when the pairing screen adopts the server's design for new TVs (themeCache.design() changed). */
+  const [, setDesignHint] = useState(0);
   const [toast, setToast] = useState<Toast | null>(null);
   /** Home's Back at the root asks «Выйти из Cineko?» — never a silent exit / reload. */
   const [exitAsk, setExitAsk] = useState(false);
@@ -808,7 +810,7 @@ export function App() {
       );
       break;
     case "pairing":
-      body = <PairingScreen onPaired={paired} onManual={() => setScreen({ kind: "token" })} />;
+      body = <PairingScreen onPaired={paired} onManual={() => setScreen({ kind: "token" })} onDesign={() => setDesignHint((n) => n + 1)} />;
       break;
     case "demo_signin":
       // «Демо TV» without a PWA session in this browser: sign in, then back here.

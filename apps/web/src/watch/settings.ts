@@ -84,9 +84,21 @@ export interface Look {
   design: DesignSetting;
 }
 
+/**
+ * The PWA's own record of the last design it showed. DESIGN_KEY is shared with the TV app
+ * (/tv/, same origin: its demo or a PC browser seeds «Каркас» there) and Cineko Music, so
+ * the sign-in page reads this one first and the shared key only for installs from before it.
+ */
+const WEB_DESIGN_KEY = "martytv.web_design";
+
+/** Signed out (sign-in page, first paint) and before a profile's settings: the last design shown here, else Кинозал. */
+export function cachedDesign(get: (key: string) => string | null): DesignSetting {
+  return parseDesign(get(WEB_DESIGN_KEY) ?? get(DESIGN_KEY));
+}
+
 export function readCachedLook(): Look {
   try {
-    return { theme: parseTheme(localStorage.getItem(THEME_KEY)), design: parseDesign(localStorage.getItem(DESIGN_KEY)) };
+    return { theme: parseTheme(localStorage.getItem(THEME_KEY)), design: cachedDesign((k) => localStorage.getItem(k)) };
   } catch {
     return { theme: "system", design: "kinozal" };
   }
@@ -95,7 +107,8 @@ export function readCachedLook(): Look {
 function cacheLook(look: Look) {
   try {
     localStorage.setItem(THEME_KEY, look.theme);
-    localStorage.setItem(DESIGN_KEY, look.design);
+    localStorage.setItem(WEB_DESIGN_KEY, look.design);
+    localStorage.setItem(DESIGN_KEY, look.design); // Cineko Music follows it
   } catch {
     // private mode
   }

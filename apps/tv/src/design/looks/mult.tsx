@@ -6,6 +6,7 @@ import "./mult.css";
 import type { ReactNode } from "react";
 import { useI18n } from "@martytv/ui";
 import type { Look } from "./types";
+import { hillPath } from "@martytv/ui/decor";
 import { layer } from "./common";
 
 // Gouache paper colours (mult.css uses the same ones).
@@ -19,16 +20,7 @@ const TRUNK = "#8c6b4f";
 const PAPER = "#fffaf0";
 const SHADE = "rgba(96,64,40,.12)";
 
-/** A wavy hill silhouette from x=0 to 1920 over `base` (amplitudes and phases hand-tuned), closed at the bottom. */
-function hill(base: number, waves: [number, number, number][]): string {
-  let d = `M0 1080 L0 ${base}`;
-  for (let x = 0; x <= 1920; x += 40) {
-    let y = base;
-    for (const [amp, len, ph] of waves) y += amp * Math.sin((x / len) * Math.PI * 2 + ph);
-    d += ` L${x} ${y.toFixed(1)}`;
-  }
-  return `${d} L1920 1080 Z`;
-}
+const hill = (base: number, waves: [number, number, number][]) => hillPath(base, waves);
 
 const HILLS: [string, string][] = [
   [hill(938, [[18, 900, 0.4], [9, 380, 1.7]]), HILL_FAR],

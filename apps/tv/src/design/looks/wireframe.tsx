@@ -2,40 +2,15 @@
 import "./wireframe.css";
 import { FLOOR_R } from "../registry";
 import type { Look } from "./types";
-import { layer, rand } from "./common";
+import { floorLines, starField, sunGaps, wireRidge } from "@martytv/ui/decor";
+import { layer } from "./common";
 
 const HORIZON = 600;
 
-const STARS = (() => {
-  const r = rand(7);
-  return Array.from({ length: 46 }, () => ({ x: Math.round(r() * 1920), y: Math.round(r() * (HORIZON - 120)), s: r() < 0.2 ? 2.2 : 1.3, o: 0.35 + r() * 0.5 }));
-})();
-
-/** A ridge of wireframe mountains between x0 and x1 (peaks up to `peak` px above the horizon). */
-function ridge(x0: number, x1: number, peak: number, seed: number) {
-  const r = rand(seed);
-  const pts: [number, number][] = [[x0, HORIZON]];
-  const n = 7;
-  for (let i = 1; i < n; i++) {
-    const x = x0 + ((x1 - x0) * i) / n + (r() - 0.5) * 40;
-    const up = i % 2 === 1 ? peak * (0.55 + r() * 0.45) : peak * (0.15 + r() * 0.3);
-    pts.push([Math.round(x), Math.round(HORIZON - up)]);
-  }
-  pts.push([x1, HORIZON]);
-  // Wire mesh: each peak to the horizon midpoints around it.
-  const wires: [number, number, number, number][] = [];
-  for (let i = 1; i < pts.length - 1; i++) {
-    const [x, y] = pts[i]!;
-    const mid = (pts[i - 1]![0] + x) / 2;
-    const mid2 = (x + pts[i + 1]![0]) / 2;
-    wires.push([x, y, mid, HORIZON], [x, y, mid2, HORIZON], [x, y, x, HORIZON]);
-  }
-  return { poly: pts.map((p) => p.join(",")).join(" "), wires };
-}
-
-const RIDGES = [ridge(-40, 760, 230, 3), ridge(1460, 1960, 190, 11), ridge(620, 1180, 110, 5)];
+const STARS = starField(46, 7, 1920, HORIZON - 120);
+const RIDGES = [wireRidge(-40, 760, 230, 3, HORIZON), wireRidge(1460, 1960, 190, 11, HORIZON), wireRidge(620, 1180, 110, 5, HORIZON)];
 /** Sun stripes: gaps growing towards the horizon. */
-const SUN_GAPS = [0, 1, 2, 3, 4, 5, 6].map((i) => ({ y: 470 + i * 21 + i * i * 1.5, h: 3 + i * 2.2 }));
+const SUN_GAPS = sunGaps(7, 470, 21, 1.5, 3, 2.2);
 
 /** Static sky, striped sun and wireframe mountains (one SVG, painted once). */
 function SynthwaveSky({ sun = true }: { sun?: boolean }) {
@@ -65,7 +40,7 @@ function SynthwaveSky({ sun = true }: { sun?: boolean }) {
       </defs>
       <rect x="0" y="0" width="1920" height={HORIZON} fill="url(#sw-sky)" />
       {STARS.map((s, i) => (
-        <circle key={i} cx={s.x} cy={s.y} r={s.s} fill="#fff" opacity={s.o} />
+        <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#fff" opacity={s.o} />
       ))}
       {sun && (
         <>
@@ -89,7 +64,7 @@ function SynthwaveSky({ sun = true }: { sun?: boolean }) {
 
 /** Floor lines: geometric spacing (FLOOR_R) below the horizon, so scaling the layer by 1/R about the horizon maps each line onto the next one. */
 const FLOOR_H = 1080 - HORIZON;
-const FLOOR_LINES = Array.from({ length: 22 }, (_, i) => 760 * Math.pow(FLOOR_R, i - 1)).filter((y) => y > 3);
+const FLOOR_LINES = floorLines(760, FLOOR_R, 22);
 
 /**
  * The neon floor. Converging lines are static; the cross lines are one

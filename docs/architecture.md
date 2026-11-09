@@ -1388,7 +1388,20 @@ phone, on the computer and on each TV of the household. Migration
   a fresh install (no `martytv.design`, no credential) paints the first
   frame in «Каркас» (`index.html`) and `main.tsx` caches it
   (`src/design/newTv.ts`), so pairing and the profile picker stay in it; a
-  paired TV without a cache still falls back to «Кинозал».
+  paired TV without a cache still falls back to «Кинозал». That cache is only
+  a guess (`martytv.design_seeded`) until a profile's design is shown: the
+  pairing start reply carries the server's `new_tv_design` (`""` = off), and a
+  TV still on the guess switches to it (off → «Кинозал») right on the pairing
+  screen. Signed out, the PWA's sign-in page wears the design last shown in
+  this browser (`martytv.web_design`, then the shared `martytv.design` that
+  the TV app at `/tv/` also writes, then «Кинозал»), scenery included.
+- **PWA scenery.** Each later design has a scene for the PWA
+  (`apps/web/src/decor/scenes/<id>.tsx` + `.css`, its own lazy chunk): the
+  TV look's background redrawn for any window (a fixed layer behind the page,
+  CSS/SVG, transform/opacity motion only, stopped by reduced motion and
+  paused while a video plays, hidden in cozy mode), extras over Home's hero,
+  and header / heading / button touches. The geometry both apps draw from is
+  `@martytv/ui/decor`.
 - **A TV's own options** (`devices.settings`, all profiles): `screensaver`,
   `ui_sounds`, `startup_intro`, `calm_motion`, `language`, `health_report`,
   `slow_hint`, `show_prebuffer`, `speedtest`. They were localStorage-only; the

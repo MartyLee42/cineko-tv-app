@@ -1,0 +1,44 @@
+/* «Тамагочи» scenery (pocketpet.tsx). */
+.pp-scene {
+  background-color: rgb(196, 208, 170);
+  background-image: linear-gradient(rgba(24, 32, 18, 0.045) 1px, rgba(0, 0, 0, 0) 1px), linear-gradient(90deg, rgba(24, 32, 18, 0.045) 1px, rgba(0, 0, 0, 0) 1px);
+  background-size: 5px 5px;
+}
+.pp-glare {
+  background: linear-gradient(118deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.07) 22%, rgba(255, 255, 255, 0) 23%, rgba(255, 255, 255, 0) 100%);
+}
+/* Unlit menu icons: the LCD's segments that aren't on. */
+.pp-bar {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  padding: 0 12%;
+  opacity: 0.1;
+}
+.pp-bar svg {
+  width: 32px;
+  height: 32px;
+}
+.pp-bar-top {
+  top: 68px;
+}
+.pp-bar-bottom {
+  bottom: 22px;
+}
+@media (max-width: 767px) {
+  .pp-bar { padding: 0 6%; }
+  .pp-bar svg { width: 24px; height: 24px; }
+  .pp-bar-bottom { bottom: 84px; }
+}
+/* The page: chunky pixel-shadowed buttons. */
+html.design-pocketpet a.bg-accent,
+html.design-pocketpet button.bg-accent {
+  border-radius: 0;
+  box-shadow: 0 -3px 0 0 rgb(24, 32, 18), 0 3px 0 0 rgb(24, 32, 18), -3px 0 0 0 rgb(24, 32, 18), 3px 0 0 0 rgb(24, 32, 18), 4px 4px 0 3px rgba(24, 32, 18, 0.25);
+}
+html.design-pocketpet .home-hero {
+  border-radius: 0;
+  box-shadow: 0 0 0 3px rgb(24, 32, 18), 6px 6px 0 3px rgba(24, 32, 18, 0.2);
+}

@@ -6,6 +6,7 @@ import { Centered, Logo, useI18n } from "@martytv/ui";
 import { api, setCsrfToken } from "../api";
 import { useSession } from "../session";
 import { Button, Card, ErrorText, Field, Input } from "../components";
+import { DesignDecor } from "../decor/DesignDecor";
 
 /** Only allow same-site relative redirects after login. */
 function safeNext(next: string | null): string {
@@ -46,6 +47,8 @@ export function LoginPage() {
 
   return (
     <Centered>
+      {/* The design last used on this device (watch/settings.ts cachedDesign), with its scenery. */}
+      <DesignDecor />
       <Logo className="mb-8 text-4xl" />
       <Card className="w-full max-w-sm text-left">
         <form onSubmit={submit} className="space-y-4">

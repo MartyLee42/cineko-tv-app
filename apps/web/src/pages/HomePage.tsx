@@ -20,6 +20,7 @@ import { NewEpisodesLink } from "../newepisodes/NewEpisodesPage";
 import { QuizBanner } from "../tastequiz/TasteQuizPage";
 import { CvLeninCard } from "../catalog/CvLenin";
 import { CvGoskino, CvNews, CvPlan } from "../catalog/CvExtras";
+import { DesignHeroEdges } from "../decor/DesignDecor";
 
 export function HomePage() {
   const { t } = useI18n();
@@ -94,6 +95,7 @@ function Hero({ item }: { item: MediaSummary }) {
   return (
     <section className="home-hero relative -mx-4 overflow-hidden sm:mx-0 sm:rounded-3xl" aria-labelledby="hero-title">
       <Backdrop path={item.backdrop_path} title={item.title} eager />
+      <DesignHeroEdges />
       <div className="relative flex min-h-[440px] flex-col justify-end gap-3 px-5 pb-6 pt-24 sm:min-h-[460px] sm:max-w-2xl sm:px-10 sm:pb-10">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{t("catalog.row.trending")}</p>
         <h2 id="hero-title" className="text-3xl font-extrabold leading-tight drop-shadow sm:text-5xl">

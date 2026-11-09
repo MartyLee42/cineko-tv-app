@@ -14,6 +14,7 @@
     "./themes/*": "./src/themes/*",
     "./locale-preload": "./src/localePreload.ts",
     "./chunk-reload": "./src/chunkReload.ts",
+    "./decor": "./src/decor/geometry.ts",
     "./season-layer": "./src/SeasonLayer.tsx",
     "./cozy-layer": "./src/CozyLayer.tsx",
     "./popcorn": "./src/PopcornLoader.tsx",

@@ -1,0 +1,60 @@
+/* «Нуар» scenery (noir.tsx). */
+.nr-scene {
+  background-color: rgb(12, 12, 13);
+}
+.nr-streak {
+  position: absolute;
+  display: block;
+  width: 2px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, rgba(242, 239, 230, 0) 0%, rgba(242, 239, 230, 0.55) 85%, rgba(242, 239, 230, 0.9) 100%);
+  transform: rotate(8deg);
+}
+.nr-run {
+  will-change: transform;
+  animation: nr-run 14s linear infinite;
+}
+@keyframes nr-run {
+  from { transform: translate3d(0, 0, 0) rotate(8deg); }
+  to { transform: translate3d(-40px, 60vh, 0) rotate(8deg); }
+}
+.nr-vignette {
+  background: radial-gradient(ellipse 75% 70% at 50% 50%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.75) 100%);
+}
+/* A ceiling fan's shadow: three soft blades turning very slowly over the artwork. */
+.nr-fan {
+  position: absolute;
+  right: -18%;
+  top: -40%;
+  width: 70%;
+  padding-bottom: 70%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(0, 0, 0, 0.32) 0deg, rgba(0, 0, 0, 0) 28deg, rgba(0, 0, 0, 0) 120deg, rgba(0, 0, 0, 0.32) 120deg, rgba(0, 0, 0, 0) 148deg, rgba(0, 0, 0, 0) 240deg, rgba(0, 0, 0, 0.32) 240deg, rgba(0, 0, 0, 0) 268deg, rgba(0, 0, 0, 0) 360deg);
+  will-change: transform;
+  animation: nr-spin 24s linear infinite;
+}
+@keyframes nr-spin {
+  to { transform: rotate(360deg); }
+}
+/* The page: typewriter section titles, the hero in a hard black-and-white frame, square capital buttons. */
+html.design-noir main h2 {
+  font-family: var(--mt-font-display);
+  letter-spacing: 0.04em;
+}
+html.design-noir .home-hero {
+  border-radius: 0;
+  box-shadow: 0 0 0 1px rgba(242, 239, 230, 0.4), 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+html.design-noir .home-hero img {
+  -webkit-filter: grayscale(1) contrast(1.15);
+  filter: grayscale(1) contrast(1.15);
+}
+html.design-noir a.bg-accent,
+html.design-noir button.bg-accent {
+  border-radius: 0;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+html.design-noir main .rounded-2xl.border {
+  border-radius: 0;
+}

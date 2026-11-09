@@ -1,0 +1,81 @@
+/* «Немое кино» scenery (silent.tsx). */
+.sl-scene {
+  background-color: #0a0a0a;
+}
+/* Grain: a noise tile on a layer a tile larger than the window, nudged to a new spot 8× a second (steps: no tweening, no flicker). */
+.sl-grain {
+  position: absolute;
+  left: -220px;
+  top: -220px;
+  width: calc(100% + 440px);
+  height: calc(100% + 440px);
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.6 0 0 0 -.62'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  will-change: transform;
+  animation: sl-grain 1s steps(1, end) infinite;
+}
+@keyframes sl-grain {
+  0% { transform: translate3d(0, 0, 0); }
+  12.5% { transform: translate3d(-63px, 41px, 0); }
+  25% { transform: translate3d(97px, -28px, 0); }
+  37.5% { transform: translate3d(-12px, -91px, 0); }
+  50% { transform: translate3d(44px, 77px, 0); }
+  62.5% { transform: translate3d(-101px, 13px, 0); }
+  75% { transform: translate3d(71px, 58px, 0); }
+  87.5% { transform: translate3d(-35px, -66px, 0); }
+}
+/* One hairline scratch that jumps across the frame now and then. */
+.sl-scratch {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.22) 20%, rgba(255, 255, 255, 0.12) 70%, rgba(255, 255, 255, 0) 100%);
+  will-change: transform, opacity;
+  animation: sl-scratch 7s steps(1, end) infinite;
+}
+@keyframes sl-scratch {
+  0% { transform: translate3d(23vw, 0, 0); opacity: 0.9; }
+  9% { transform: translate3d(24vw, 0, 0); opacity: 0.6; }
+  14% { opacity: 0; }
+  40% { transform: translate3d(71vw, 0, 0); opacity: 0.7; }
+  46% { transform: translate3d(70vw, 0, 0); opacity: 0.4; }
+  52% { opacity: 0; }
+  80% { transform: translate3d(46vw, 0, 0); opacity: 0.5; }
+  86% { opacity: 0; }
+}
+/* Film perforations down the edges of wide windows (outside the page column). */
+.sl-sprockets {
+  position: absolute;
+  top: 0;
+  width: 26px;
+  height: 100%;
+  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 9px, rgba(244, 244, 244, 0.13) 9px, rgba(244, 244, 244, 0.13) 25px, rgba(0, 0, 0, 0) 25px);
+  background-size: 14px 34px;
+  background-repeat: repeat-y;
+  background-position: 6px 0;
+}
+.sl-sprockets-l { left: 6px; box-shadow: 1px 0 0 rgba(244, 244, 244, 0.12); }
+.sl-sprockets-r { right: 6px; box-shadow: -1px 0 0 rgba(244, 244, 244, 0.12); }
+@media (max-width: 1279px) {
+  .sl-sprockets { display: none; }
+}
+.sl-vignette {
+  background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 52%, rgba(0, 0, 0, 0.55) 88%, rgba(0, 0, 0, 0.85) 100%);
+}
+/* The page: display-face section titles, the hero in a rounded film gate with a double rule, framed buttons. */
+html.design-silent main h2 {
+  font-family: var(--mt-font-display);
+  letter-spacing: 0.03em;
+}
+html.design-silent .home-hero {
+  border-radius: 28px;
+  box-shadow: 0 0 0 2px #f2f2f2, 0 0 0 6px #0a0a0a, 0 0 0 7px rgba(242, 242, 242, 0.5);
+}
+html.design-silent a.bg-accent,
+html.design-silent button.bg-accent {
+  border-radius: 2px;
+  box-shadow: 0 0 0 3px #0a0a0a, 0 0 0 4px #f2f2f2;
+}

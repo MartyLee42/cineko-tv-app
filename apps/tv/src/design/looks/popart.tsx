@@ -2,19 +2,8 @@
 import "./popart.css";
 import { useI18n } from "@martytv/ui";
 import type { Look } from "./types";
-import { layer, rand } from "./common";
-
-/** A comic starburst outline: `n` spikes alternating between radii r1 (inner) and r2 (outer), slightly irregular. */
-function burstPoints(cx: number, cy: number, r1: number, r2: number, n = 14, seed = 5): string {
-  const r = rand(seed);
-  const pts: string[] = [];
-  for (let i = 0; i < n * 2; i++) {
-    const a = (i / (n * 2)) * Math.PI * 2 - Math.PI / 2;
-    const rad = i % 2 ? r1 * (0.92 + r() * 0.12) : r2 * (0.86 + r() * 0.2);
-    pts.push(`${(cx + Math.cos(a) * rad * 1.18).toFixed(1)},${(cy + Math.sin(a) * rad).toFixed(1)}`);
-  }
-  return pts.join(" ");
-}
+import { burstPoints } from "@martytv/ui/decor";
+import { layer } from "./common";
 
 const BURST_PTS = burstPoints(150, 108, 66, 98, 13, 9);
 

@@ -1,0 +1,105 @@
+/* «Поп-арт» scenery (popart.tsx). */
+.pa-scene {
+  background-color: rgb(20, 58, 150);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.13) 0px, rgba(255, 255, 255, 0.13) 2.6px, rgba(255, 255, 255, 0) 3.2px),
+    linear-gradient(160deg, rgba(10, 30, 90, 0) 55%, rgba(10, 30, 90, 0.55) 100%);
+  background-size: 18px 18px, 100% 100%;
+}
+.pa-bg-burst {
+  position: absolute;
+  right: calc(clamp(260px, 42vw, 640px) * -0.28);
+  top: calc(clamp(260px, 42vw, 640px) * -0.3);
+  width: clamp(260px, 42vw, 640px);
+  height: clamp(225px, 36.4vw, 555px);
+  opacity: 0.13;
+}
+.pa-wedge {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: min(60vw, 560px);
+  height: min(22vh, 170px);
+  background: rgba(255, 45, 60, 0.22);
+  -webkit-clip-path: polygon(0 0, 100% 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+/* Comic speed lines from the right edge. */
+.pa-speed {
+  position: absolute;
+  right: 0;
+  top: 30%;
+  width: 30vw;
+  height: 40%;
+  background-image: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0) 0px, rgba(255, 255, 255, 0) 16px, rgba(255, 255, 255, 0.07) 16px, rgba(255, 255, 255, 0.07) 19px);
+  -webkit-mask-image: linear-gradient(270deg, #000 0%, rgba(0, 0, 0, 0) 100%);
+  mask-image: linear-gradient(270deg, #000 0%, rgba(0, 0, 0, 0) 100%);
+}
+.pa-dots {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.42) 0px, rgba(0, 0, 0, 0.42) 3px, rgba(0, 0, 0, 0) 3.6px);
+  background-size: 14px 14px;
+  -webkit-mask-image: linear-gradient(35deg, #000 0%, rgba(0, 0, 0, 0.6) 30%, rgba(0, 0, 0, 0) 62%);
+  mask-image: linear-gradient(35deg, #000 0%, rgba(0, 0, 0, 0.6) 30%, rgba(0, 0, 0, 0) 62%);
+}
+.pa-dots-red {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle, rgba(255, 45, 60, 0.55) 0px, rgba(255, 45, 60, 0.55) 3.4px, rgba(255, 45, 60, 0) 4px);
+  background-size: 16px 16px;
+  -webkit-mask-image: linear-gradient(200deg, #000 0%, rgba(0, 0, 0, 0) 46%);
+  mask-image: linear-gradient(200deg, #000 0%, rgba(0, 0, 0, 0) 46%);
+}
+.pa-burst {
+  position: absolute;
+  right: 5%;
+  top: 9%;
+  width: clamp(120px, 22%, 260px);
+  height: auto;
+  transform: rotate(-9deg);
+  animation: pa-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) 0.25s both;
+}
+@keyframes pa-pop {
+  0% { transform: scale(0) rotate(-24deg); }
+  60% { transform: scale(1.12) rotate(-6deg); }
+  100% { transform: scale(1) rotate(-9deg); }
+}
+
+/* The page: comic lettering on section titles (yellow, black ink, red drop), ink-bordered buttons, a halftone header. */
+html.design-popart header.sticky {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.1) 1.6px, rgba(255, 255, 255, 0) 2px);
+  background-size: 8px 8px;
+}
+html.design-popart main h2 {
+  color: rgb(255, 214, 0);
+  text-shadow: 1.5px 0 #000, -1.5px 0 #000, 0 1.5px #000, 0 -1.5px #000, 3px 3px 0 rgb(255, 45, 60);
+  letter-spacing: 0.02em;
+}
+html.design-popart .home-hero {
+  border-radius: 0;
+  border: 4px solid #000;
+  box-shadow: 8px 8px 0 #000;
+}
+html.design-popart a.bg-accent,
+html.design-popart button.bg-accent {
+  border: 3px solid #000;
+  box-shadow: 4px 4px 0 #000;
+  text-transform: uppercase;
+}
+html.design-popart a.bg-accent:active,
+html.design-popart button.bg-accent:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #000;
+}
+/* Panels as comic frames: black ink and a hard offset shadow. */
+html.design-popart main .rounded-2xl.border {
+  border-radius: 6px;
+  border: 3px solid #000;
+  box-shadow: 5px 5px 0 #000;
+}

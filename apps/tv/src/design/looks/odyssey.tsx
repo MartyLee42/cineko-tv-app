@@ -2,6 +2,7 @@
 // symmetric wall panels and ribs, lit ceiling panels, a grey floor with a centre line, a black
 // door at the far end. Static (one SVG, painted once).
 import "./odyssey.css";
+import { corridorFrames, type Frame } from "@martytv/ui/decor";
 import type { Look } from "./types";
 import { layer } from "./common";
 
@@ -11,9 +12,7 @@ const HALF = { w: 1300, h: 760 };
 /** Depths of the ribs (scale of each frame), near → far. */
 const DEPTHS = [1, 0.74, 0.55, 0.41, 0.305, 0.228, 0.17, 0.127];
 
-type Frame = { l: number; r: number; t: number; b: number };
-const frame = (s: number): Frame => ({ l: VP.x - HALF.w * s, r: VP.x + HALF.w * s, t: VP.y - HALF.h * s, b: VP.y + HALF.h * s });
-const FRAMES = DEPTHS.map(frame);
+const FRAMES = corridorFrames(VP, HALF, DEPTHS);
 const FAR = FRAMES[FRAMES.length - 1]!;
 
 const pts = (p: [number, number][]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");

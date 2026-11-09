@@ -1,0 +1,81 @@
+/* «Новая волна» scenery (vague.tsx). */
+.nv-scene {
+  background-color: rgb(10, 10, 12);
+}
+.nv-card {
+  position: absolute;
+  left: 0;
+  width: 54px;
+}
+.nv-red { top: 16%; height: 38%; background: #e6281e; }
+.nv-blue { top: 54%; height: 40%; background: #345cde; }
+.nv-side {
+  position: absolute;
+  left: 27px;
+  top: 50%;
+  white-space: nowrap;
+  font-family: "Unbounded", "Onest", sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #fff;
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+.nv-note {
+  font-family: "Caveat", "Onest", sans-serif;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0;
+}
+/* Wide windows only have room for the cards left of the page column. */
+@media (max-width: 1279px) {
+  .nv-card { width: 8px; }
+  .nv-side { display: none; }
+}
+.nv-white {
+  position: absolute;
+  right: 0;
+  bottom: 12%;
+  width: 40px;
+  height: 22%;
+  background: #fafaf8;
+}
+@media (max-width: 1279px) {
+  .nv-white { width: 8px; }
+}
+.nv-hero-red {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 34%;
+  height: 8px;
+  background: #e6281e;
+}
+.nv-hero-blue {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 8px;
+  height: 46%;
+  background: #345cde;
+}
+/* The page: the hero square-cut with a hard red offset; buttons square with a white frame. */
+html.design-vague .home-hero {
+  border-radius: 0;
+  box-shadow: 10px 10px 0 #e6281e;
+}
+html.design-vague .home-hero #hero-title {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+html.design-vague a.bg-accent,
+html.design-vague button.bg-accent {
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 4px 4px 0 #345cde;
+}
+html.design-vague main .rounded-2xl.border {
+  border-radius: 0;
+}
