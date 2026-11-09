@@ -56,6 +56,7 @@ import { TasteQuizPage } from "./tastequiz/TasteQuizPage";
 import { useDownloadsRealtime } from "./downloads/queries";
 import { WebSeasonLayer } from "./seasons/SeasonalLayer";
 import { WebCozyLayer } from "./cozy/WebCozyLayer";
+import { DesignDecor } from "./decor/DesignDecor";
 import { ClientPrefsAgent } from "./devprefs/ui";
 import { OfflinePlayerPage, OfflineScreen } from "./offline/ui";
 import { looksOffline } from "./offline/device";
@@ -266,6 +267,7 @@ function Layout() {
 
   return (
     <div className="flex min-h-full flex-col">
+      <DesignDecor />
       <header className="sticky top-0 z-10 border-b border-border bg-bg/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
           <NavLink to="/" className="shrink-0 text-xl">

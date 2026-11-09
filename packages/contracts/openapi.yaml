@@ -4621,6 +4621,7 @@ components:
         verification_url: { type: string }
         verification_url_complete: { type: string, description: Encode this in the QR code. Contains no secret. }
         poll_interval_seconds: { type: integer }
+        new_tv_design: { type: string, description: "The design a TV paired now shows (server NEW_TV_DESIGN); empty when that default is off. A TV with no design of its own yet wears it on the pairing screen. Absent on older servers." }
     PairingPending:
       type: object
       required: [pairing_id, user_code, device_name, platform, ip, created_at, expires_at]

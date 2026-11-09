@@ -1,0 +1,161 @@
+/* «Каркас» scenery (wireframe.tsx). --wf-h: the horizon, from the top of the window. */
+.wf-scene {
+  --wf-h: 64%;
+  --wf-sun: clamp(210px, 27vw, 430px);
+  --wf-mh: clamp(110px, 22vh, 230px);
+  background: linear-gradient(180deg, #0d0420 0%, #24073f calc(var(--wf-h) * 0.62), #4c0f63 var(--wf-h), #0d0420 var(--wf-h));
+}
+@media (max-width: 767px) {
+  .wf-scene {
+    --wf-h: 60%;
+    --wf-sun: 64vw;
+    --wf-mh: 21vh;
+  }
+}
+.wf-stars {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(var(--wf-h) - 40px);
+}
+.wf-sunbox {
+  position: absolute;
+  right: 11vw;
+  top: calc(var(--wf-h) - var(--wf-sun) * 0.8);
+  width: var(--wf-sun);
+  height: var(--wf-sun);
+}
+@media (max-width: 767px) {
+  .wf-sunbox {
+    right: 50%;
+    margin-right: calc(var(--wf-sun) / -2);
+  }
+}
+.wf-sun {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+.wf-glow {
+  position: absolute;
+  left: -40%;
+  top: -40%;
+  width: 180%;
+  height: 180%;
+  background: radial-gradient(circle, rgba(255, 79, 216, 0.42) 0%, rgba(255, 79, 216, 0.16) 38%, rgba(255, 79, 216, 0) 68%);
+  animation: wf-breathe 6s ease-in-out infinite alternate;
+}
+@keyframes wf-breathe {
+  from { opacity: 0.75; }
+  to { opacity: 1; }
+}
+.wf-mtn {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: calc(var(--wf-h) - var(--wf-mh));
+  height: var(--wf-mh);
+}
+.wf-horizon {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: calc(var(--wf-h) - 2px);
+  height: 4px;
+  background: #ff4fd8;
+  box-shadow: 0 0 14px 3px rgba(255, 79, 216, 0.75);
+}
+.wf-floor {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: var(--wf-h);
+  bottom: 0;
+  overflow: hidden;
+  background: #0d0420;
+}
+/* Cross lines at geometric spacing: scaling the layer by 1/R about the horizon moves each line onto the next (seamless). */
+.wf-lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 166.67%;
+  transform-origin: 50% 0;
+  will-change: transform;
+  animation: wf-run 2.4s linear infinite;
+}
+@keyframes wf-run {
+  from { transform: scale3d(1, 1, 1); }
+  to { transform: scale3d(1, 1.2821, 1); }
+}
+.wf-floor-fade {
+  background: linear-gradient(180deg, #0d0420 0%, rgba(13, 4, 32, 0.55) 14%, rgba(13, 4, 32, 0) 46%), linear-gradient(0deg, rgba(13, 4, 32, 0.5) 0%, rgba(13, 4, 32, 0) 30%);
+}
+/* Calms what sits under the page's text: a light veil over everything, a little stronger on the floor. */
+.wf-veil {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(13, 4, 32, 0.2) 0%, rgba(13, 4, 32, 0.1) 40%, rgba(13, 4, 32, 0.38) 70%, rgba(13, 4, 32, 0.6) 100%);
+}
+
+/* Home's hero: the grid on the artwork's lower part, kept off the text column. */
+.wf-hero-grid {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 42%;
+  opacity: 0.6;
+  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 30%, #000 72%);
+  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 30%, #000 72%);
+}
+@media (max-width: 639px) {
+  .wf-hero-grid {
+    bottom: auto;
+    top: 0;
+    height: 34%;
+    opacity: 0.4;
+    transform: scaleY(-1);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/* The page in this design: a translucent night-glass header with a neon rule, neon section titles,
+   glowing pink buttons, panels as dark glass so the scenery shows around them. */
+html.design-wireframe header.sticky {
+  background-color: rgba(13, 4, 32, 0.72);
+  border-bottom-color: rgba(255, 79, 216, 0.55);
+  box-shadow: 0 1px 0 rgba(255, 79, 216, 0.35), 0 0 22px rgba(255, 79, 216, 0.18);
+}
+html.design-wireframe main h2 {
+  text-shadow: 0 0 1px #fff, 3px 3px 0 rgba(255, 79, 216, 0.85), 0 0 16px rgba(60, 232, 255, 0.55);
+}
+html.design-wireframe .home-hero #hero-title {
+  font-family: var(--mt-font-display);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 1px #fff, 4px 4px 0 rgba(255, 79, 216, 0.95), 0 0 18px rgba(60, 232, 255, 0.7);
+}
+html.design-wireframe .home-hero {
+  box-shadow: 0 0 0 2px rgba(255, 79, 216, 0.6), 0 0 28px rgba(255, 79, 216, 0.3);
+}
+html.design-wireframe a.bg-accent,
+html.design-wireframe button.bg-accent {
+  box-shadow: 0 0 18px rgba(255, 79, 216, 0.55);
+}
+html.design-wireframe section.rounded-2xl.border,
+html.design-wireframe main .bg-surface {
+  background-color: rgba(26, 11, 56, 0.94);
+}
+html.design-wireframe nav.fixed.bottom-0 {
+  background-color: rgba(13, 4, 32, 0.9);
+  border-top-color: rgba(255, 79, 216, 0.55);
+  box-shadow: 0 -1px 0 rgba(255, 79, 216, 0.35), 0 -6px 18px rgba(255, 79, 216, 0.15);
+}

@@ -4301,6 +4301,8 @@ export interface components {
             /** @description Encode this in the QR code. Contains no secret. */
             verification_url_complete: string;
             poll_interval_seconds: number;
+            /** @description The design a TV paired now shows (server NEW_TV_DESIGN); empty when that default is off. A TV with no design of its own yet wears it on the pairing screen. Absent on older servers. */
+            new_tv_design?: string;
         };
         PairingPending: {
             /** Format: uuid */

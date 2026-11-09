@@ -1,0 +1,82 @@
+/* «Мультфильм» scenery (mult.tsx). */
+.mu-scene {
+  background-color: rgb(243, 233, 214);
+  background-image: radial-gradient(circle, rgba(96, 64, 40, 0.035) 0px, rgba(96, 64, 40, 0.035) 1px, rgba(96, 64, 40, 0) 1.6px),
+    radial-gradient(ellipse 50% 40% at 80% 0%, rgba(244, 206, 170, 0.6), rgba(244, 206, 170, 0)),
+    radial-gradient(ellipse 50% 40% at 0% 30%, rgba(200, 220, 228, 0.45), rgba(200, 220, 228, 0));
+  background-size: 6px 6px, 100% 100%, 100% 100%;
+}
+.mu-sun {
+  position: absolute;
+  right: 6vw;
+  top: 72px;
+  width: clamp(90px, 11vw, 170px);
+  height: clamp(90px, 11vw, 170px);
+}
+.mu-cloud {
+  position: absolute;
+  width: clamp(110px, 12vw, 190px);
+  height: auto;
+  will-change: transform;
+}
+.mu-cloud-a {
+  right: 14vw;
+  top: calc(72px + clamp(60px, 8vw, 120px));
+  animation: mu-sway 70s ease-in-out infinite alternate;
+}
+.mu-cloud-b {
+  right: 34vw;
+  top: 110px;
+  width: clamp(80px, 9vw, 140px);
+  animation: mu-sway 90s ease-in-out -30s infinite alternate-reverse;
+}
+@media (max-width: 767px) {
+  .mu-cloud-b { right: 58vw; top: 150px; }
+}
+@keyframes mu-sway {
+  from { transform: translate3d(-6vw, 0, 0); }
+  to { transform: translate3d(6vw, 0, 0); }
+}
+.mu-hills {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: clamp(140px, 24vh, 260px);
+}
+/* The fog: a doubled band of soft ellipses slid one width to the left (transform only). */
+.mu-fog {
+  position: absolute;
+  left: 0;
+  bottom: clamp(60px, 10vh, 120px);
+  width: 200%;
+  height: 120px;
+  opacity: 0.8;
+  background-image: radial-gradient(ellipse 14% 30% at 8% 50%, rgba(255, 252, 246, 0.9), rgba(255, 252, 246, 0)),
+    radial-gradient(ellipse 18% 38% at 28% 70%, rgba(255, 252, 246, 0.85), rgba(255, 252, 246, 0)),
+    radial-gradient(ellipse 12% 26% at 42% 40%, rgba(255, 252, 246, 0.75), rgba(255, 252, 246, 0));
+  background-size: 50% 100%;
+  background-repeat: repeat-x;
+  will-change: transform;
+  animation: mu-drift 150s linear infinite;
+}
+@keyframes mu-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.mu-hero-cloud {
+  position: absolute;
+  height: auto;
+}
+.mu-hero-cloud-a { left: 22%; top: -26px; width: clamp(100px, 16%, 170px); }
+.mu-hero-cloud-b { right: 8%; top: -18px; width: clamp(80px, 11%, 130px); }
+
+/* The page: the hero and buttons as paper cut-outs (a cream die-cut edge, a soft lift). */
+html.design-mult .home-hero {
+  border: 5px solid #fffaf0;
+  box-shadow: 0 4px 0 rgba(96, 64, 40, 0.12), 0 12px 26px rgba(96, 64, 40, 0.2);
+}
+html.design-mult a.bg-accent,
+html.design-mult button.bg-accent {
+  box-shadow: 0 0 0 3px #fffaf0, 0 4px 0 3px rgba(96, 64, 40, 0.18);
+}

@@ -1,0 +1,25 @@
+/* «Одиссея» scenery (odyssey.tsx). */
+.od-scene {
+  background-color: rgb(238, 241, 244);
+}
+.od-veil {
+  background: radial-gradient(ellipse 70% 60% at 50% 46%, rgba(238, 241, 244, 0.25) 0%, rgba(238, 241, 244, 0.55) 100%);
+}
+/* The page: wide spaced capitals for section titles, black slab buttons, the hero as a viewport in a white bulkhead. */
+html.design-odyssey main h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+html.design-odyssey a.bg-accent,
+html.design-odyssey button.bg-accent {
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+html.design-odyssey .home-hero {
+  border-radius: 2px;
+  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.95), 0 0 0 11px rgba(16, 19, 24, 0.16), 0 14px 30px rgba(16, 19, 24, 0.12);
+}
+html.design-odyssey header.sticky {
+  background-color: rgba(255, 255, 255, 0.92);
+}

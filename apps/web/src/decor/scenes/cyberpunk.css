@@ -1,0 +1,78 @@
+/* «Киберпанк» scenery (cyberpunk.tsx). */
+.cp-scene {
+  background-color: rgb(6, 6, 10);
+  background-image: radial-gradient(ellipse 70% 45% at 92% 0%, rgba(255, 46, 136, 0.22), rgba(255, 46, 136, 0)),
+    radial-gradient(ellipse 65% 45% at 0% 100%, rgba(0, 240, 255, 0.14), rgba(0, 240, 255, 0)),
+    linear-gradient(rgba(0, 240, 255, 0.05) 1px, rgba(0, 240, 255, 0) 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, rgba(0, 240, 255, 0) 1px);
+  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+}
+.cp-skyline {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: clamp(170px, 36vh, 380px);
+  opacity: 0.6;
+}
+.cp-flicker {
+  animation: cp-flicker 5.2s steps(1, end) infinite;
+}
+@keyframes cp-flicker {
+  0%, 100% { opacity: 0.85; }
+  12% { opacity: 0.1; }
+  14% { opacity: 0.85; }
+  57% { opacity: 0.2; }
+  60% { opacity: 0.9; }
+}
+.cp-scan {
+  background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0px, rgba(0, 0, 0, 0.22) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 3px);
+}
+.cp-hero-scan {
+  background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0px, rgba(0, 0, 0, 0.18) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 3px);
+}
+/* A magenta / cyan split along the artwork's top and right edges. */
+.cp-hero-edge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  box-shadow: inset 0 3px 0 rgba(255, 46, 136, 0.85), inset -3px 0 0 rgba(0, 240, 255, 0.8);
+}
+
+/* The page: a neon-ruled header, glitchy capital section titles, notched yellow buttons. */
+html.design-cyberpunk header.sticky {
+  background-color: rgba(6, 6, 10, 0.86);
+  border-bottom-color: rgba(0, 240, 255, 0.55);
+  box-shadow: 0 1px 0 rgba(255, 46, 136, 0.5), 0 6px 20px rgba(0, 240, 255, 0.08);
+}
+html.design-cyberpunk main h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: 1.5px 0 rgba(255, 46, 136, 0.75), -1.5px 0 rgba(0, 240, 255, 0.7);
+}
+html.design-cyberpunk .home-hero #hero-title {
+  text-transform: uppercase;
+  text-shadow: 3px 0 rgba(255, 46, 136, 0.85), -3px 0 rgba(0, 240, 255, 0.8);
+}
+html.design-cyberpunk .home-hero {
+  border-radius: 0;
+}
+html.design-cyberpunk a.bg-accent,
+html.design-cyberpunk button.bg-accent {
+  border-radius: 0;
+  -webkit-clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+html.design-cyberpunk nav.fixed.bottom-0 {
+  border-top-color: rgba(0, 240, 255, 0.55);
+  box-shadow: 0 -1px 0 rgba(255, 46, 136, 0.45);
+}
+html.design-cyberpunk main .rounded-2xl.border {
+  border-radius: 0;
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: inset 3px 0 0 rgba(255, 46, 136, 0.7);
+}

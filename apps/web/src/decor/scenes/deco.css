@@ -1,0 +1,77 @@
+/* «Ар-деко» scenery (deco.tsx). */
+.dc-scene {
+  background-color: rgb(11, 10, 8);
+  background-image: radial-gradient(ellipse 80% 45% at 60% -8%, rgba(201, 165, 76, 0.14), rgba(201, 165, 76, 0)),
+    repeating-linear-gradient(90deg, rgba(201, 165, 76, 0.035) 0px, rgba(201, 165, 76, 0.035) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 48px);
+}
+.dc-fan {
+  position: absolute;
+  width: clamp(170px, 24vw, 330px);
+  height: clamp(170px, 24vw, 330px);
+  opacity: 0.3;
+}
+.dc-fan-tr { right: 0; top: 0; transform: scaleX(-1); }
+.dc-fan-br { right: 0; bottom: 0; transform: scale(-1, -1); opacity: 0.2; }
+.dc-fan-bl { left: 0; bottom: 0; transform: scaleY(-1); opacity: 0.22; }
+/* A thin double gold rule around the window. */
+.dc-frame {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  right: 10px;
+  bottom: 10px;
+  border: 1px solid rgba(201, 165, 76, 0.28);
+  box-shadow: inset 0 0 0 4px rgb(11, 10, 8), inset 0 0 0 5px rgba(201, 165, 76, 0.14);
+}
+@media (max-width: 767px) {
+  .dc-frame { left: 5px; top: 5px; right: 5px; bottom: 5px; }
+}
+.dc-curtain {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: clamp(70px, 14%, 170px);
+  height: 100%;
+  background-image: linear-gradient(90deg, rgba(11, 10, 8, 0) 0%, rgba(11, 10, 8, 0.35) 40%, rgba(11, 10, 8, 0) 100%),
+    repeating-linear-gradient(90deg, rgba(92, 14, 22, 0) 0px, rgba(92, 14, 22, 0.85) 14px, rgba(40, 4, 8, 0.95) 28px, rgba(92, 14, 22, 0.85) 42px, rgba(92, 14, 22, 0) 56px);
+  box-shadow: inset 3px 0 0 rgba(201, 165, 76, 0.5);
+  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, #000 45%);
+  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, #000 45%);
+}
+.dc-valance {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40'%3E%3Cpath d='M0 0 Q60 46 120 0Z' fill='%23400810'/%3E%3Cpath d='M0 0 Q60 30 120 0Z' fill='%23571019'/%3E%3Cpath d='M0 0 Q60 46 120 0' fill='none' stroke='%23c9a54c' stroke-width='2'/%3E%3C/svg%3E");
+  background-size: 90px 30px;
+  background-repeat: repeat-x;
+}
+
+/* The page: gold hairlines, spaced capitals, a gold-ruled header, buttons as gold plaques. */
+html.design-deco header.sticky {
+  border-bottom-color: rgba(201, 165, 76, 0.55);
+  box-shadow: 0 3px 0 rgb(11, 10, 8), 0 4px 0 rgba(201, 165, 76, 0.3);
+}
+html.design-deco main h2 {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(232, 207, 138);
+}
+html.design-deco .home-hero {
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(201, 165, 76, 0.7), 0 0 0 5px rgb(11, 10, 8), 0 0 0 6px rgba(201, 165, 76, 0.35);
+}
+html.design-deco .home-hero #hero-title {
+  letter-spacing: 0.05em;
+  color: rgb(243, 234, 214);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6), 0 0 24px rgba(201, 165, 76, 0.35);
+}
+html.design-deco a.bg-accent,
+html.design-deco button.bg-accent {
+  border-radius: 2px;
+  background-image: linear-gradient(180deg, #e8cf8a 0%, #c9a54c 55%, #a8862f 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 244, 210, 0.5), 0 0 0 1px rgba(201, 165, 76, 0.6);
+  letter-spacing: 0.06em;
+}

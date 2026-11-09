@@ -12,10 +12,11 @@
     <script>
       // Apply the cached design + theme before first paint (see src/watch/settings.ts).
       try {
-        var d = localStorage.getItem("martytv.design");
-        if (d !== "terminal" && d !== "projector") d = "kinozal";
+        // The PWA's own key first (the shared one may hold the TV app's design: watch/settings.ts cachedDesign).
+        var d = localStorage.getItem("martytv.web_design") || localStorage.getItem("martytv.design");
+        if (!/^(kinozal|terminal|projector|wireframe|cyberpunk|deco|retro80|retro90|popart|constructivism|matrix|stickerbook|pocketpet|odyssey|mult|tarkovsky|silent|anderson|noir|vague|western|redroom)$/.test(d || "")) d = "kinozal";
         var t = localStorage.getItem("martytv.theme");
-        var light = t === "light" || (t !== "dark" && window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches);
+        var light = d === "kinozal" && (t === "light" || (t !== "dark" && window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches));
         document.documentElement.classList.add("design-" + d, light ? "theme-light" : "theme-dark");
       } catch (e) {}
     </script>

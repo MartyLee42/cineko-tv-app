@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ContinueItem, HistoryItem, MediaProgress, MediaSummary, WatchProgress } from "@martytv/contracts";
 import { needsPin, resolveActiveProfile } from "./profile";
-import { affectsCatalog, affectsForYou, DEFAULT_SETTINGS, mergeSettings, parseDesign, parseTheme, supportsLight } from "./settings";
+import { affectsCatalog, affectsForYou, cachedDesign, DEFAULT_SETTINGS, mergeSettings, parseDesign, parseTheme, supportsLight } from "./settings";
 import { applyWatchedLocally, continueInfo, episodeProgressMap, formatClock, formatLeft, resumeState, seasonProgress } from "./format";
 import { pendingRatings } from "./rate";
 import { buildSavePlan, installHint, nextStep, prevStep, shouldShowOnboarding, STEPS, stepNumber } from "./onboarding";
@@ -292,5 +292,17 @@ describe("voice-overs", () => {
     expect(addVoiceover(Array.from({ length: 10 }, (_, i) => `s${i}`), "x")).toHaveLength(10);
     expect(moveItem(["a", "b", "c"], 2, -1)).toEqual(["a", "c", "b"]);
     expect(moveItem(["a", "b"], 0, -1)).toEqual(["a", "b"]);
+  });
+});
+
+describe("the design before sign-in", () => {
+  const store = (m: Record<string, string>) => (k: string) => m[k] ?? null;
+  it("prefers the PWA's own last design over the key the TV app shares", () => {
+    expect(cachedDesign(store({ "martytv.web_design": "noir", "martytv.design": "wireframe" }))).toBe("noir");
+  });
+  it("falls back to the shared key (older installs), then Кинозал", () => {
+    expect(cachedDesign(store({ "martytv.design": "deco" }))).toBe("deco");
+    expect(cachedDesign(store({}))).toBe("kinozal");
+    expect(cachedDesign(store({ "martytv.web_design": "nope" }))).toBe("kinozal");
   });
 });

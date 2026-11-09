@@ -91,6 +91,8 @@ func (h *Handlers) create(c fiber.Ctx) error {
 		// The QR code carries only the public user code, never the poll secret.
 		"verification_url_complete": h.publicBase + "/pair?code=" + FormatCode(r.UserCode),
 		"poll_interval_seconds":     2,
+		// The design this TV will show once paired (NEW_TV_DESIGN; "" = off): the pairing screen wears it already.
+		"new_tv_design": h.svc.NewTVDesign,
 	})
 }
 

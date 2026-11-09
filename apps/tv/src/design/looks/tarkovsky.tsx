@@ -4,16 +4,11 @@
 // (tarkovsky.css: an opacity fade of a colour-blend veil).
 import "./tarkovsky.css";
 import type { Look } from "./types";
-import { layer, rand } from "./common";
+import { rainStreaks } from "@martytv/ui/decor";
+import { layer } from "./common";
 
 /** Rain streaks, fixed once: x, y, length, opacity. Slightly slanted, thin, faint. */
-function streaks(n: number, seed: number, w: number, h: number): [number, number, number, number][] {
-  const r = rand(seed);
-  const out: [number, number, number, number][] = [];
-  for (let i = 0; i < n; i++) out.push([Math.round(r() * w), Math.round(r() * h), Math.round(40 + r() * 90), +(0.05 + r() * 0.11).toFixed(3)]);
-  return out;
-}
-
+const streaks = rainStreaks;
 const RAIN = streaks(150, 1972, 1960, 1000);
 const GLASS = streaks(46, 1979, 1320, 690);
 const SLANT = 0.12;

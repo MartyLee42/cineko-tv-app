@@ -1,0 +1,84 @@
+/* «Вестерн» scenery (western.tsx). */
+.ww-scene {
+  background-color: rgb(236, 220, 188);
+  background-image: linear-gradient(180deg, #f6eedb 0%, #f1e4c6 40%, #ecd6aa 72%, #e2bf86 100%);
+}
+.ww-sun {
+  position: absolute;
+  right: 4vw;
+  top: 2vh;
+  width: clamp(220px, 30vw, 460px);
+  height: clamp(220px, 30vw, 460px);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffaf0 0%, #fff4dc 42%, rgba(251, 233, 196, 0.55) 50%, rgba(244, 223, 182, 0) 100%);
+}
+.ww-birds {
+  position: absolute;
+  right: 22vw;
+  top: 14vh;
+  width: 120px;
+  height: 80px;
+  overflow: visible;
+  fill: none;
+  stroke: #5a3a22;
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.45;
+}
+@media (max-width: 767px) {
+  .ww-birds { right: 30vw; top: 120px; width: 80px; }
+}
+/* Circling: each bird swings round its own small orbit (transform only). */
+.ww-bird-a {
+  animation: ww-circle 18s linear infinite;
+}
+.ww-bird-b {
+  animation: ww-circle 24s linear -9s infinite reverse;
+}
+@keyframes ww-circle {
+  from { transform: rotate(0deg) translateX(22px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(22px) rotate(-360deg); }
+}
+.ww-land {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: clamp(170px, 34vh, 380px);
+}
+.ww-sunwash {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(200deg, rgba(255, 236, 190, 0.34) 0%, rgba(255, 226, 170, 0.12) 40%, rgba(214, 150, 70, 0.1) 100%);
+}
+.ww-bar {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 22px;
+  background: #0b0806;
+}
+.ww-bar-top { top: 0; }
+.ww-bar-bottom { bottom: 0; }
+/* The page: slab capital section titles, the hero framed like an old print, branded-leather buttons. */
+html.design-western main h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+html.design-western .home-hero {
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px #f1dfb8, 0 0 0 6px rgba(96, 60, 30, 0.45), 0 10px 22px rgba(70, 40, 15, 0.25);
+}
+html.design-western .home-hero > div.relative {
+  padding-bottom: calc(1.5rem + 22px);
+}
+html.design-western a.bg-accent,
+html.design-western button.bg-accent {
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: inset 0 0 0 2px rgba(255, 236, 200, 0.35), 0 3px 0 rgba(70, 30, 10, 0.5);
+}

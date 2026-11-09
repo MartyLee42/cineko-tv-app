@@ -3,21 +3,12 @@
 import "./stickerbook.css";
 import type { ReactNode } from "react";
 import type { Look } from "./types";
+import { starPath } from "@martytv/ui/decor";
 import { layer } from "./common";
 
 const CHALK = ["#ff6fa5", "#5fd3c4", "#ffd166", "#b296ff", "#fff8ef"];
 
-/** A five-point star path around (0,0). */
-function star(r: number): string {
-  const pts: string[] = [];
-  for (let i = 0; i < 10; i++) {
-    const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-    const k = i % 2 ? r * 0.45 : r;
-    pts.push(`${(Math.cos(a) * k).toFixed(1)},${(Math.sin(a) * k).toFixed(1)}`);
-  }
-  return `M${pts.join("L")}Z`;
-}
-
+const star = starPath;
 const HEART = "M0 10 C -14 0 -14 -12 -6 -14 C -2 -15 0 -12 0 -9 C 0 -12 2 -15 6 -14 C 14 -12 14 0 0 10 Z";
 const SWIRL = "M0 0 C 10 -14 30 -10 28 4 C 26 16 8 16 8 6 C 8 -2 20 -2 20 4";
 

@@ -5,6 +5,7 @@ import { Logo, Spinner, useI18n } from "@martytv/ui";
 import { api } from "../api";
 import { FocusButton } from "../focus";
 import { defaultDeviceName, detectPlatform } from "../platform";
+import { adoptServerNewTvDesign } from "../design/newTv";
 
 type Start = Schemas["PairingStart"];
 
@@ -12,7 +13,7 @@ type Start = Schemas["PairingStart"];
  * Shows a QR code + short code, polls for approval, then exchanges the
  * request for this TV's credential. Restarts automatically on expiry/denial.
  */
-export function PairingScreen({ onPaired, onManual }: { onPaired: (credential: string) => void; onManual: () => void }) {
+export function PairingScreen({ onPaired, onManual, onDesign }: { onPaired: (credential: string) => void; onManual: () => void; onDesign?: () => void }) {
   const { t } = useI18n();
   const [req, setReq] = useState<Start | null>(null);
   const [qr, setQr] = useState<string>("");
@@ -33,6 +34,8 @@ export function PairingScreen({ onPaired, onManual }: { onPaired: (credential: s
         api.POST("/pairing", { body: { device_name: defaultDeviceName(), platform: detectPlatform() } }),
       );
       if (gen !== generation.current) return;
+      // A TV with no design of its own yet wears the server's design for new TVs right away.
+      if (adoptServerNewTvDesign(r.new_tv_design)) onDesign?.();
       setReq(r);
       setError("");
       setNote("");
