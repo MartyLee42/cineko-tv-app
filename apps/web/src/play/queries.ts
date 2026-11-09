@@ -63,6 +63,11 @@ export function createSource(body: { media_id: string; release_id: string; episo
   return unwrap(api.POST("/playback/sources", { body }));
 }
 
+/** The viewer gave up on a source while it loaded: the server stops preparing it (best effort). */
+export function cancelSource(id: string): void {
+  void api.DELETE("/playback/sources/{id}", { params: { path: { id } } }).catch(() => undefined);
+}
+
 export const sourceKey = (id: string) => ["playback-source", id] as const;
 
 /** Polls a source about once a second while it is preparing. */

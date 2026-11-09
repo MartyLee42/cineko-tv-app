@@ -19,7 +19,7 @@ import { useCatalogConfig, useCatalogLang, useMedia, useSeason } from "../catalo
 import { SendToTvProvider } from "../remote/SendToTv";
 import { PlayOnTvProvider, releaseSummary, usePlayOnTv } from "../play/PlayOnTv";
 import { SlowTorrentBanner, useLiveTorrent, useSlowSource } from "./torrentLive";
-import { apiErrorCode, createSource, releasesQuery, sourceKey, usePlaybackSource, useReleases } from "../play/queries";
+import { apiErrorCode, cancelSource, createSource, releasesQuery, sourceKey, usePlaybackSource, useReleases } from "../play/queries";
 import { sourceErrorMessage, type ReleaseTarget } from "../play/releases";
 import { assessHere, assessSource, bestForBrowser, reasonTexts, thisBrowser, type BrowserSupport } from "../play/browserSupport";
 import { useActiveProfile } from "../watch/ActiveProfile";
@@ -35,6 +35,7 @@ import { decideStart, infoRefetchDelay, nextEpisode, packCovers, prevEpisode, pa
 import { audioLanguages, audioNeedsSwitch, chooseAudio, readAudioChoice } from "./audioChoice";
 import { exitFullscreen, nativeAudioTracks } from "./media";
 import { rememberedRefine } from "../play/refine";
+import { createLatest, createLeaveGuard, loadingSourceId } from "../play/abandon";
 import { compatFixes, noteCompatServer, readCompatPref, wantCompat, writeCompatPref, type CompatPref } from "./compat";
 
 /** Releases already tried per title/episode in this tab ("Try another release" skips them). */
@@ -123,17 +124,33 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
 
   const [prep, setPrep] = useState<{ step: "resolving" | "creating" } | { step: "error"; code: string } | null>(null);
   const prepFor = useRef<string | null>(null);
+  // The search and the source creation take seconds: leaving meanwhile (Back,
+  // another title) abandons the run — it must not navigate back to the
+  // player afterwards, and a source it created is cancelled on the server.
+  const [prepRuns] = useState(createLatest);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      prepRuns.cancel();
+      // StrictMode's dev remount starts the preparation again.
+      prepFor.current = null;
+    };
+  }, [prepRuns]);
   useEffect(() => {
     if (sourceId !== "new" || !mediaId) return;
     const runKey = location.key;
     if (prepFor.current === runKey) return;
     prepFor.current = runKey;
+    const run = prepRuns.begin();
     void (async () => {
       let releaseId = releaseParam;
       try {
         if (!releaseId) {
           setPrep({ step: "resolving" });
           const list = await qc.fetchQuery(releasesQuery(target, profileId, lang, rememberedRefine(mediaId), { client_id: clientId() }));
+          if (!run.live()) return;
           const best = bestForBrowser(list.items, assessHere, { tried: [...triedFor(triedKey)] }) ?? list.items[0] ?? null;
           if (!best) return setPrep({ step: "error", code: "no_releases" });
           releaseId = best.id;
@@ -145,13 +162,18 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
           ...(episodeId && { episode_id: episodeId }),
           ...(profileId && { profile_id: profileId }),
         });
+        if (!run.live()) {
+          // Left for good (not a newer run on this page, which gets the same source back).
+          if (!mounted.current) cancelSource(src.id);
+          return;
+        }
         qc.setQueryData(sourceKey(src.id), src);
         navigate(watchUrl(target, { sourceId: src.id, t: tParam, attempt }), { replace: true });
       } catch (err) {
-        setPrep({ step: "error", code: apiErrorCode(err) });
+        if (run.live()) setPrep({ step: "error", code: apiErrorCode(err) });
       }
     })();
-  }, [sourceId, mediaId, episodeId, releaseParam, location.key, qc, target, profileId, lang, triedKey, navigate, tParam, attempt]);
+  }, [sourceId, mediaId, episodeId, releaseParam, location.key, qc, target, profileId, lang, triedKey, navigate, tParam, attempt, prepRuns]);
 
   // ------------------------------------------------------------ source
 
@@ -345,7 +367,8 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
           void fetchOnline(target, profileId, lang)
             .then((l) => nextOnlineVariant(l.items, prevRelease, hlsMode(document.createElement("video"), hasMediaSource()))?.id)
             .catch(() => undefined)
-            .then((id) => navigate(watchUrl(target, { release: id, t: 0 }), { replace: true }));
+            // Left the page meanwhile: stay where the viewer went.
+            .then((id) => mounted.current && navigate(watchUrl(target, { release: id, t: 0 }), { replace: true }));
           return;
         }
         navigate(watchUrl(target, { release: keep, t: 0 }), { replace: true });
@@ -377,7 +400,8 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
           void fetchOnline(target, profileId, lang)
             .then((l) => nextOnlineVariant(l.items, prevRelease, hlsMode(document.createElement("video"), hasMediaSource()))?.id)
             .catch(() => undefined)
-            .then((id) => navigate(watchUrl(target, { release: id, t: 0 }), { replace: true }));
+            // Left the page meanwhile: stay where the viewer went.
+            .then((id) => mounted.current && navigate(watchUrl(target, { release: id, t: 0 }), { replace: true }));
           return;
         }
         navigate(watchUrl(target, { release: keep, t: 0 }), { replace: true });
@@ -386,6 +410,19 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
   }, [m, s, e, season, prevSeason, ready, navigate, mediaId, profileId, lang]);
 
   // ------------------------------------------------------------ leaving
+
+  // Leaving while it still loads: the server stops preparing the source too
+  // (like the TV's Back on its loading screen).
+  const loadingId = loadingSourceId(source, covered, !!fallback);
+  const loadingRef = useRef<string | null>(null);
+  useEffect(() => {
+    loadingRef.current = loadingId;
+  }, [loadingId]);
+  const [leaveGuard] = useState(() => createLeaveGuard(cancelSource));
+  useEffect(() => {
+    leaveGuard.enter();
+    return () => leaveGuard.leave(loadingRef.current);
+  }, [leaveGuard]);
 
   const back = useCallback(() => {
     if (location.key !== "default") navigate(-1);

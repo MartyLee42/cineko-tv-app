@@ -4,7 +4,7 @@
 // opens — has non-anime variants. It opens a compact picker grouped by
 // source: voice-over chips (preferred first), quality, season/episode for
 // series; «Смотреть здесь» / «На телевизоре» use the existing play flows.
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { MediaDetail } from "@martytv/contracts";
@@ -22,6 +22,7 @@ import { assessOnlineHere } from "./browserSupport";
 import { BrowserBadge } from "./ReleaseList";
 import { usePlayOnTv, type PlayTarget } from "./PlayOnTv";
 import { createSource, sourceKey } from "./queries";
+import { createLatest } from "./abandon";
 import { defaultEpisode, defaultVariant, groupBySource, onlineOnly, sortedQualities, variantEpisodes } from "./onlineWatch";
 import { useOnline, type OnlineVariant } from "./sourcesApi";
 
@@ -103,8 +104,12 @@ export function OnlinePicker({ m, initialSeason, onClose }: { m: MediaDetail; in
   const { play } = usePlayOnTv();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  // Closing the picker (or leaving the page) while the source is created: don't open the player afterwards.
+  const [runs] = useState(createLatest);
+  useEffect(() => () => runs.cancel(), [runs]);
   const watchHere = async () => {
     if (!variant || !target) return;
+    const run = runs.begin();
     setBusy(true);
     setFailed(false);
     try {
@@ -115,10 +120,12 @@ export function OnlinePicker({ m, initialSeason, onClose }: { m: MediaDetail; in
         ...(profileId && { profile_id: profileId }),
         ...(q2 != null && { quality: q2 }),
       });
+      if (!run.live()) return;
       qc.setQueryData(sourceKey(src.id), src);
       writeWatchWhere("here");
       navigate(watchUrl(target, { sourceId: src.id }));
     } catch {
+      if (!run.live()) return;
       setFailed(true);
       setBusy(false);
     }

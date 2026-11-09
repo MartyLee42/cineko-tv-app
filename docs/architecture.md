@@ -936,6 +936,14 @@ before), nothing streams it, no other source or download uses the hash, and
 no session of it got past 30 s. Anything that was already in TorrServer
 (e.g. Lampa's torrents) is never removed.
 
+The PWA does the same (`apps/web/src/play/abandon.ts`): leaving `/watch`
+before the first frame cancels the source (deferred a tick, so StrictMode's
+dev remount doesn't), and `/watch/new`'s search → create run is
+"latest wins": once the page is gone it never navigates back to the player,
+and a source it created afterwards is cancelled. The phone's «Смотреть на
+ТВ» toast offers «Отменить» (`media.stop`) while the TV reports that title
+searching / loading.
+
 ### Instant play («Мгновенный старт», `warm.go`)
 
 A title page that stays on one target for 2 s (TV Details; the PWA title

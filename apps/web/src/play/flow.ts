@@ -199,6 +199,14 @@ export function tvProgress(req: Pick<PlayRequest, "media_id" | "episode_id">, st
   return seen ? { kind: "gone" } : { kind: "opening" };
 }
 
+/**
+ * «Отменить» on the toast: only while the TV reports *this* title still
+ * searching / loading — media.stop then can't hit something else it plays.
+ */
+export function canStopOnTv(p: TvProgress): boolean {
+  return p.kind === "searching" || p.kind === "loading";
+}
+
 /** The most the phone has shown for one play request (see holdTvProgress). */
 export interface TvPeak {
   pct: number;
