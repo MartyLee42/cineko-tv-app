@@ -31,8 +31,9 @@ import { Loader } from "./Loader";
 import { useLoadProgress } from "./Loader";
 import { Player, type NextUpInfo } from "./Player";
 import { usePlaybackBusy } from "../devprefs/speedtest";
-import { decideStart, nextEpisode, packCovers, prevEpisode, parseT, stageOf, watchUrl, type ErrorKind, type LoadStage, type StartDecision } from "./logic";
-import { exitFullscreen } from "./media";
+import { decideStart, infoRefetchDelay, nextEpisode, packCovers, prevEpisode, parseT, stageOf, watchUrl, type ErrorKind, type LoadStage, type StartDecision } from "./logic";
+import { audioLanguages, audioNeedsSwitch, chooseAudio, readAudioChoice } from "./audioChoice";
+import { exitFullscreen, nativeAudioTracks } from "./media";
 import { rememberedRefine } from "../play/refine";
 import { compatFixes, noteCompatServer, readCompatPref, wantCompat, writeCompatPref, type CompatPref } from "./compat";
 
@@ -108,6 +109,8 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
   const title = m?.title ?? "";
   const subtitle = code ? [code, ep?.name].filter(Boolean).join(" · ") : null;
   const label = code ? `${title} · ${code}` : title;
+  // TMDB minutes: the compat timeline's length until ffprobe reports the file's.
+  const runtimeMin = (code ? ep?.runtime : null) ?? m?.runtime ?? null;
 
   useEffect(() => {
     if (title) document.title = `${label} — Cineko`;
@@ -157,14 +160,27 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
   const ready = source?.status === "ready" && source.stream_url ? source : null;
 
   // ffprobe info is computed in the background after the source turns ready:
-  // fetch it once more shortly after (audio track names, duration).
-  const infoRefetched = useRef(false);
+  // keep fetching it (backing off) until it's there: the audio codec decides
+  // compat up front, and the tracks / duration feed the menu and the timeline.
+  // A fresh torrent often needs a minute or more (one refetch at 2.5 s used to
+  // give up: no sound, no tracks, no length in compat).
+  const infoTries = useRef(0);
+  const readyId = ready?.id ?? null;
+  const hasInfo = !!ready?.media_info;
+  const isTorrent = (ready?.kind ?? "torrent") === "torrent";
+  const [infoTick, setInfoTick] = useState(0);
+  // Stable (unlike the query result, which would restart the timer on every change).
+  const refetchSource = sourceQ.refetch;
   useEffect(() => {
-    if (!ready || ready.media_info || infoRefetched.current) return;
-    infoRefetched.current = true;
-    const id = setTimeout(() => void sourceQ.refetch(), 2500);
+    if (!readyId || hasInfo || !isTorrent) return;
+    const delay = infoRefetchDelay(infoTries.current);
+    if (delay == null) return;
+    const id = setTimeout(() => {
+      infoTries.current += 1;
+      void refetchSource().finally(() => setInfoTick((n) => n + 1));
+    }, delay);
     return () => clearTimeout(id);
-  }, [ready, sourceQ]);
+  }, [readyId, hasInfo, isTorrent, infoTick, refetchSource]);
 
   const support: BrowserSupport | null = useMemo(() => {
     if (!ready) return null;
@@ -172,6 +188,8 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
     return assessSource(ready, probe, env);
   }, [ready]);
   const [forced, setForced] = useState(false);
+  /** The loader still covers the video (no first frame yet). */
+  const [covered, setCovered] = useState(true);
 
   // ------------------------------------------------------------ compat stream
 
@@ -179,10 +197,6 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
   const [compatPref, setCompatPref] = useState<CompatPref>(readCompatPref);
   // null = automatic; true/false = the user's or the page's decision for this source.
   const [compatForced, setCompatForced] = useState<boolean | null>(null);
-  const compatAuto = useMemo(() => wantCompat({ compatUrl: ready?.compat_url, pref: compatPref, support }), [ready, compatPref, support]);
-  // Once on, stay on (ffprobe info arriving later must not flip it back).
-  if (compatAuto && compatForced == null) setCompatForced(true);
-  const compat = !!ready?.compat_url && (compatForced ?? compatAuto);
   /** Restart position after a fallback («Перекодировать звук…»). */
   const [resumeAt, setResumeAt] = useState<number | null>(null);
   const prefsQ = useQuery({
@@ -191,10 +205,28 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
     enabled: !!profileId,
     staleTime: 5 * 60_000,
   });
+  // Voice: the profile's studios / languages, else the UI (= profile) language.
   const audioPrefs = useMemo(
-    () => ({ voiceovers: prefsQ.data?.preferred_voiceovers ?? [], languages: prefsQ.data?.preferred_audio_languages ?? [] }),
-    [prefsQ.data],
+    () => ({ voiceovers: prefsQ.data?.preferred_voiceovers ?? [], languages: audioLanguages(prefsQ.data?.preferred_audio_languages, locale) }),
+    [prefsQ.data, locale],
   );
+  // The preferred voice isn't the file's default and this browser can't switch
+  // tracks: compat plays it. Only before the first frame — once watching, a
+  // late ffprobe answer doesn't change the voice under the viewer.
+  const audioSwitch = useMemo(
+    () =>
+      covered &&
+      !!ready?.media_info &&
+      audioNeedsSwitch(ready.media_info, chooseAudio(ready.media_info, audioPrefs, readAudioChoice(mediaId)), nativeAudioTracks()),
+    [covered, ready, audioPrefs, mediaId],
+  );
+  const compatAuto = useMemo(
+    () => wantCompat({ compatUrl: ready?.compat_url, pref: compatPref, support, audioSwitch }),
+    [ready, compatPref, support, audioSwitch],
+  );
+  // Once on, stay on (ffprobe info arriving later must not flip it back).
+  if (compatAuto && compatForced == null) setCompatForced(true);
+  const compat = !!ready?.compat_url && (compatForced ?? compatAuto);
 
   // ------------------------------------------------------------ resume decision
 
@@ -210,7 +242,6 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
   // ------------------------------------------------------------ loader
 
   const [metadata, setMetadata] = useState(false);
-  const [covered, setCovered] = useState(true);
   const stage: LoadStage =
     sourceId === "new"
       ? prep?.step === "creating"
@@ -426,6 +457,14 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
             setCompatForced(on);
           }}
           audioPrefs={audioPrefs}
+          audioKey={mediaId}
+          onCompatAudio={() => {
+            // A track the original stream can't switch to: compat for this source only.
+            if (!ready?.compat_url || compat) return;
+            setForced(true);
+            setCompatForced(true);
+          }}
+          runtimeSeconds={runtimeMin ? runtimeMin * 60 : null}
           onLighter={(rate) =>
             chooseRelease({
               ...target,

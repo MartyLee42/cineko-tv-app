@@ -7,6 +7,7 @@
 // at K, so absolute time = K + currentTime. Seeking outside what is buffered
 // reloads the stream with a new start; switching audio does the same.
 import type { MediaInfo, PlaybackSource } from "@martytv/contracts";
+import { chooseAudio, type AudioPrefs, type RememberedAudio } from "./audioChoice";
 
 type MediaStream = MediaInfo["audio"][number];
 
@@ -76,14 +77,15 @@ export function compatFixes(s: SupportLike): boolean {
 
 /**
  * Start in compat mode? Needs a compat URL; the user's explicit choice wins;
- * otherwise only when the support check expects no sound / an unplayable
- * container that compat fixes.
+ * otherwise when the support check expects no sound / an unplayable
+ * container that compat fixes, or when the preferred voice isn't the file's
+ * default and this browser can't switch tracks itself (`audioSwitch`).
  */
-export function wantCompat(o: { compatUrl: string | null | undefined; pref: CompatPref; support: SupportLike | null }): boolean {
+export function wantCompat(o: { compatUrl: string | null | undefined; pref: CompatPref; support: SupportLike | null; audioSwitch?: boolean }): boolean {
   if (!o.compatUrl) return false;
   if (o.pref === "on") return true;
   if (o.pref === "off") return false;
-  return !!o.support && compatFixes(o.support);
+  return (!!o.support && compatFixes(o.support)) || !!o.audioSwitch;
 }
 
 // ---------------------------------------------------------------- flavour
@@ -177,38 +179,32 @@ export function textSubtitles(info: MediaInfo | null | undefined): MediaStream[]
   return (info?.subtitles ?? []).filter((s) => TEXT_SUBS.has(s.codec.toLowerCase()));
 }
 
-/** ISO 639-2 → 639-1 for the languages users pick. */
-const ISO3: Record<string, string> = {
-  rus: "ru", eng: "en", ukr: "uk", bel: "be", ger: "de", deu: "de", fre: "fr", fra: "fr", spa: "es", ita: "it", jpn: "ja", kor: "ko", chi: "zh", zho: "zh",
-};
-const norm = (l: string | null | undefined) => {
-  const s = (l ?? "").trim().toLowerCase().split(/[-_]/)[0] ?? "";
-  return !s || s === "und" ? null : (ISO3[s] ?? s);
-};
+/**
+ * The compat audio track (global stream index): the track picked for this
+ * title before, else the first preferred voice-over studio found in a track
+ * title (profile order), else a track in a preferred language, else the
+ * file's default (audioChoice.ts).
+ */
+export function pickCompatAudio(info: MediaInfo | null | undefined, prefs: AudioPrefs = {}, remembered?: RememberedAudio | null): number | null {
+  return chooseAudio(info, prefs, remembered)?.index ?? null;
+}
 
 /**
- * The compat audio track (global stream index): the first preferred
- * voice-over studio found in a track title (profile order), else the first
- * track in a preferred language, else the file's default, else the first.
+ * The file's length for the compat timeline (the element only knows the
+ * stream from its start): ffprobe's, the provider's, else the TMDB runtime
+ * (an estimate until ffprobe reports).
  */
-export function pickCompatAudio(
-  info: MediaInfo | null | undefined,
-  prefs: { voiceovers?: readonly string[] | null; languages?: readonly string[] | null } = {},
-): number | null {
-  const audio = info?.audio ?? [];
-  if (!audio.length) return null;
-  for (const studio of prefs.voiceovers ?? []) {
-    const s = studio.trim().toLowerCase();
-    if (!s) continue;
-    const hit = audio.find((a) => (a.title ?? "").toLowerCase().includes(s));
-    if (hit) return hit.index;
-  }
-  for (const lang of prefs.languages ?? []) {
-    const l = norm(lang);
-    const hit = l ? audio.find((a) => norm(a.language) === l) : undefined;
-    if (hit) return hit.index;
-  }
-  return (audio.find((a) => a.default) ?? audio[0]!).index;
+export function fileDuration(s: { media_info?: MediaInfo | null; duration_seconds?: number | null }, runtimeSeconds?: number | null): number | null {
+  const d = s.media_info?.duration_seconds ?? s.duration_seconds ?? runtimeSeconds ?? null;
+  return d != null && d > 0 ? d : null;
+}
+
+/**
+ * Does the file have sound to miss? Without ffprobe info: assume so (the
+ * release title rarely names the codec, and films without audio are rare).
+ */
+export function expectsAudio(s: { media_info?: MediaInfo | null }): boolean {
+  return s.media_info ? s.media_info.audio.length > 0 : true;
 }
 
 // ---------------------------------------------------------------- seeking

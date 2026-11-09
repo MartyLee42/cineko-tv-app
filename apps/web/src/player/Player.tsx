@@ -91,7 +91,9 @@ import {
   compatSeek,
   compatSrc,
   compatStatus,
+  expectsAudio,
   fetchStreamStart,
+  fileDuration,
   HLS_RESUME_RELOAD_MS,
   hlsLocalRanges,
   pickCompatAudio,
@@ -100,8 +102,24 @@ import {
   type CompatFormat,
 } from "./compat";
 import { thisBrowser } from "../play/browserSupport";
+import { audioPosition, chooseAudio, defaultAudioIndex, readAudioChoice, writeAudioChoice } from "./audioChoice";
 
 type MediaStream = MediaInfo["audio"][number];
+
+/**
+ * Engines with `audioTracks` (Safari): enable the preferred / remembered
+ * track of the original stream. The element lists the file's audio streams
+ * in ffprobe's order; a count mismatch means the mapping is unknown.
+ */
+function pickNativeAudio(v: HTMLVideoElement, info: MediaInfo | null | undefined, prefs: PlayerProps["audioPrefs"], key: string | null | undefined) {
+  const list = audioTracks(v);
+  if (!list || !info || list.length < 2 || list.length !== info.audio.length) return;
+  const choice = chooseAudio(info, prefs ?? {}, readAudioChoice(key));
+  if (!choice || choice.reason === "default") return;
+  const pos = audioPosition(info, choice.index);
+  if (pos < 0 || list[pos]!.enabled) return;
+  for (let j = 0; j < list.length; j++) list[j]!.enabled = j === pos;
+}
 
 export interface NextUpInfo {
   code: string;
@@ -153,6 +171,12 @@ export interface PlayerProps {
   onCompatToggle?: (on: boolean) => void;
   /** Profile preferences for the compat audio track (voice-over studios, languages). */
   audioPrefs?: { voiceovers?: readonly string[] | null; languages?: readonly string[] | null };
+  /** Per-title memory of the picked audio track (the media id). */
+  audioKey?: string | null;
+  /** A track the original stream can't switch to was picked: play through compat (no «always» preference). */
+  onCompatAudio?: () => void;
+  /** TMDB runtime: the compat timeline's length until ffprobe reports the file's. */
+  runtimeSeconds?: number | null;
   /** «Выбрать раздачу полегче»: the connection is slower than this release needs. */
   onLighter?: (rateBps: number) => void;
 }
@@ -329,6 +353,8 @@ export function Player(props: PlayerProps) {
   const cmpWait = useRef<number | null>(null);
   const [cmp, setCmp] = useState<CompatLoad | null>(null);
   const [cmpSub, setCmpSub] = useState<{ index: number; burst: number } | null>(null);
+  /** A track picked in the menu while the original stream plays: compat starts with it. */
+  const audioWant = useRef<number | null>(null);
   const seekAbs = useRef<(abs: number) => void>(() => undefined);
   // Rebuffering to a threshold (logic.ts "rebuffering") and bandwidth.
   const rebuf = useRef<Rebuffer | null>(null);
@@ -373,7 +399,7 @@ export function Player(props: PlayerProps) {
       const o = off.current;
       s.time += o;
       s.buffered = s.buffered.map(([a, b]) => [a + o, b + o]);
-      s.duration = P.current.source.media_info?.duration_seconds ?? 0;
+      s.duration = fileDuration(P.current.source, P.current.runtimeSeconds) ?? 0;
       if (cmpWait.current !== null) s.time = cmpWait.current;
     }
     setVs(s);
@@ -570,10 +596,30 @@ export function Player(props: PlayerProps) {
     if (cmpRef.current) return;
     const at = started.current ? P.current.positionRef.current : P.current.startAt;
     if (at == null) return; // resume prompt still open: load once decided
-    const audio = pickCompatAudio(P.current.source.media_info, P.current.audioPrefs ?? {});
+    const want = audioWant.current;
+    audioWant.current = null;
+    const audio = want ?? pickCompatAudio(P.current.source.media_info, P.current.audioPrefs ?? {}, readAudioChoice(P.current.audioKey));
     if (started.current) setToast(t("player.web.compat.on"));
     void loadCompat(at, audio, started.current ? !!v && !v.paused && !v.ended : null);
   }, [compatOn, props.startAt, loadCompat, t]);
+
+  // ffprobe info arrived while compat plays the server's default track
+  // (fresh torrent): the menu marks that one, and a preferred voice that
+  // isn't it is switched to.
+  const info0 = source.media_info;
+  useEffect(() => {
+    const c = cmpRef.current;
+    const v = video.current;
+    if (!c || c.audio != null || !info0 || !info0.audio.length) return;
+    const def = defaultAudioIndex(info0);
+    const choice = chooseAudio(info0, P.current.audioPrefs ?? {}, readAudioChoice(P.current.audioKey));
+    if (choice && choice.reason !== "default" && choice.index !== def && v) {
+      void loadCompat(P.current.positionRef.current, choice.index, started.current ? !v.paused && !v.ended : null);
+    } else {
+      c.audio = def;
+      setCmp((cur) => (cur ? { ...cur, audio: def } : cur));
+    }
+  }, [info0, loadCompat]);
 
   const held = useRef(false);
   useEffect(() => {
@@ -599,6 +645,7 @@ export function Player(props: PlayerProps) {
     const on: Record<string, () => void> = {
       loadedmetadata: () => {
         P.current.onMetadata();
+        if (!cmpRef.current) pickNativeAudio(v, P.current.source.media_info, P.current.audioPrefs, P.current.audioKey);
         const r = reload.current;
         if (r) {
           reload.current = null;
@@ -623,9 +670,8 @@ export function Player(props: PlayerProps) {
               silentChecked.current = false;
               return;
             }
-            const s = P.current.source;
-            const hasAudio = (s.media_info?.audio.length ?? 0) > 0 || s.release.audio_codecs.length > 0;
-            if (hasAudio && !cmpRef.current && silentPlayback(audioProbe(v)) === true) P.current.onSilent(absTime(v));
+            // No ffprobe info yet (fresh torrent): assume there is sound to miss.
+            if (expectsAudio(P.current.source) && !cmpRef.current && silentPlayback(audioProbe(v)) === true) P.current.onSilent(absTime(v));
           }, 4000);
         }
         setCountdown(null);
@@ -868,7 +914,7 @@ export function Player(props: PlayerProps) {
       const c = cmpRef.current;
       if (c) {
         // Compat: within the buffer, else restart the stream there.
-        const dur = P.current.source.media_info?.duration_seconds ?? null;
+        const dur = fileDuration(P.current.source, P.current.runtimeSeconds);
         // HLS: Safari seeks within the generated segments itself.
         const ranges = compatFmt === "hls" ? hlsLocalRanges(seekableRanges(v), v.currentTime) : bufferedRanges(v);
         // A restart still on its way: always restart again (the old stream's
@@ -897,7 +943,7 @@ export function Player(props: PlayerProps) {
     (delta: number) => {
       const v = video.current;
       if (!v) return;
-      const dur = cmpRef.current ? (P.current.source.media_info?.duration_seconds ?? null) : Number.isFinite(v.duration) ? v.duration : null;
+      const dur = cmpRef.current ? fileDuration(P.current.source, P.current.runtimeSeconds) : Number.isFinite(v.duration) ? v.duration : null;
       seek(seekBy(absTime(v), delta, dur));
     },
     [seek],
@@ -907,7 +953,14 @@ export function Player(props: PlayerProps) {
   const switchCompatAudio = useCallback(
     (index: number) => {
       const v = video.current;
-      if (!v || !cmpRef.current) return;
+      if (!v) return;
+      writeAudioChoice(P.current.audioKey, P.current.source.media_info?.audio.find((a) => a.index === index));
+      if (!cmpRef.current) {
+        // The original stream can't switch (no audioTracks): compat with that track.
+        audioWant.current = index;
+        P.current.onCompatAudio?.();
+        return;
+      }
       void loadCompat(P.current.positionRef.current, index, started.current ? !v.paused && !v.ended : null);
     },
     [loadCompat],
@@ -1392,11 +1445,14 @@ export function Player(props: PlayerProps) {
             compat={{
               available: compatAvailable,
               on: !!cmp,
-              audio: cmp ? (cmp.audio ?? pickCompatAudio(info)) : null,
+              // No audio= (ffprobe info came later): the server plays the file's default.
+              audio: cmp ? (cmp.audio ?? defaultAudioIndex(info)) : null,
               subs: cmpSub?.index ?? null,
               textSubs: compatSubs,
+              canSwitch: compatAvailable && !!props.onCompatAudio,
               onToggle: () => props.onCompatToggle?.(!cmp),
               onAudio: switchCompatAudio,
+              onRemember: (tr) => writeAudioChoice(props.audioKey, tr),
               onSubs: (i) => {
                 const v = video.current;
                 setCmpSub(i == null ? null : { index: i, burst: (v?.currentTime ?? 0) + 60 });
@@ -1697,6 +1753,7 @@ function MenuPanel({
         pick: a.index === compat.audio ? undefined : () => compat.onAudio(a.index),
       }));
       if (items.length > 1) note = t("player.web.compat.audio_hint");
+      else if (!info) note = t("pcplay.audio_reading");
     } else if (list && list.length > 0) {
       for (let i = 0; i < list.length; i++) {
         const tr = list[i]!;
@@ -1707,13 +1764,22 @@ function MenuPanel({
           on: tr.enabled,
           pick: () => {
             for (let j = 0; j < list.length; j++) list[j]!.enabled = j === i;
+            compat.onRemember(mi ?? { language: tr.language || null, title: tr.label || null });
           },
         });
       }
     } else {
+      // The browser can't switch tracks of the original stream: another
+      // track plays through the server (compat), like in compat mode.
       const main = info?.audio.find((a) => a.default) ?? info?.audio[0];
-      items = (info?.audio ?? []).map((a, i) => ({ key: String(i), label: trackLabel(a, locale), on: a === main }));
-      if (items.length > 1) note = compat.available ? null : t("player.web.audio_locked");
+      items = (info?.audio ?? []).map((a, i) => ({
+        key: String(i),
+        label: trackLabel(a, locale),
+        on: a === main,
+        pick: a === main || !compat.canSwitch ? undefined : () => compat.onAudio(a.index),
+      }));
+      if (items.length > 1) note = compat.canSwitch ? t("player.web.compat.audio_hint") : compat.available ? null : t("player.web.audio_locked");
+      else if (!info) note = t("pcplay.audio_reading");
     }
     if (compat.available) items.push({ key: "compat", label: t("player.web.compat.toggle"), on: compat.on, pick: compat.onToggle });
   } else {
@@ -1778,8 +1844,12 @@ interface CompatMenu {
   audio: number | null;
   subs: number | null;
   textSubs: MediaStream[];
+  /** Off: picking a track of the original stream switches to compat with it. */
+  canSwitch: boolean;
   onToggle: () => void;
   onAudio: (index: number) => void;
+  /** Remember a natively switched track for this title. */
+  onRemember: (track: { language: string | null; title: string | null }) => void;
   onSubs: (index: number | null) => void;
 }
 

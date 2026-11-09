@@ -128,6 +128,11 @@ export function audioTracks(video: HTMLVideoElement | null): AudioTrackListLike 
   return list && typeof list.length === "number" ? list : null;
 }
 
+/** Can this engine switch the original stream's audio track (Safari)? Chrome / Firefox: no. */
+export function nativeAudioTracks(): boolean {
+  return typeof HTMLMediaElement !== "undefined" && "audioTracks" in HTMLMediaElement.prototype;
+}
+
 export function audioProbe(video: HTMLVideoElement): AudioProbe {
   const v = w(video);
   const p: AudioProbe = {};

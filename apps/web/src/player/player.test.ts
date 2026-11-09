@@ -18,6 +18,7 @@ import {
   preloadTarget,
   rawProgress,
   seekBy,
+  infoRefetchDelay,
   silentPlayback,
   stageOf,
   streamExpired,
@@ -331,6 +332,17 @@ describe("errors and silent playback", () => {
     expect(silentPlayback({ audioTracks: 0 })).toBe(true);
     expect(silentPlayback({ audioTracks: 2 })).toBe(false);
     expect(silentPlayback({})).toBeNull();
+  });
+
+  it("keeps asking for ffprobe info, backing off, for several minutes", () => {
+    const delays: number[] = [];
+    for (let n = 0; infoRefetchDelay(n) != null; n++) delays.push(infoRefetchDelay(n)!);
+    expect(delays[0]).toBe(2500);
+    expect(delays.every((d, i) => i === 0 || d >= delays[i - 1]!)).toBe(true);
+    const total = delays.reduce((a, b) => a + b, 0);
+    // ffprobe is retried by the server every 2 min (≤ 45 s each): cover a few tries.
+    expect(total).toBeGreaterThan(4 * 60_000);
+    expect(total).toBeLessThan(10 * 60_000);
   });
 
   it("knows when a stream token expires", () => {
