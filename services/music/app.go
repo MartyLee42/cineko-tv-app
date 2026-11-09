@@ -295,6 +295,7 @@ func (a *App) routes() http.Handler {
 	api("GET /music/api/search", a.hSearch)
 	api("GET /music/api/artist/{id}", a.hArtist)
 	api("GET /music/api/artist/{id}/radio", a.hArtistRadio)
+	api("GET /music/api/artist/{id}/tracks", a.hArtistTracks)
 	api("GET /music/api/album/{id}", a.hAlbum)
 	api("GET /music/api/playlist/{id}", a.hDzPlaylist)
 	api("GET /music/api/track/{id}/candidates", a.hCandidates)
@@ -491,6 +492,19 @@ func (a *App) hArtist(w http.ResponseWriter, r *http.Request, u *User) error {
 		return err
 	}
 	writeJSON(w, 200, p)
+	return nil
+}
+
+func (a *App) hArtistTracks(w http.ResponseWriter, r *http.Request, u *User) error {
+	id, err := pathInt(r, "id")
+	if err != nil {
+		return err
+	}
+	ts, err := a.dz.ArtistTracks(r.Context(), id)
+	if err != nil {
+		return err
+	}
+	writeJSON(w, 200, ts)
 	return nil
 }
 

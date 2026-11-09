@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -530,6 +531,69 @@ func (d *Deezer) Artist(ctx context.Context, id int64) (*ArtistPage, error) {
 		}
 	}()
 	wg.Wait()
+	return out, nil
+}
+
+// ArtistTracks is everything the artist released: albums, then singles and
+// EPs (newest first, album order inside), each song once. Compilations are
+// left out (mostly other artists).
+func (d *Deezer) ArtistTracks(ctx context.Context, id int64) ([]Track, error) {
+	ids := strconv.FormatInt(id, 10)
+	var r dzList[dzAlbum]
+	if err := d.get(ctx, "/artist/"+ids+"/albums", url.Values{"limit": {"100"}}, ttlLong, &r); err != nil {
+		return nil, err
+	}
+	var list []dzAlbum
+	for _, a := range r.Data {
+		if a.RecordType != "compile" {
+			list = append(list, a)
+		}
+	}
+	rank := func(t string) int {
+		if t == "album" || t == "" {
+			return 0
+		}
+		return 1
+	}
+	sort.SliceStable(list, func(i, j int) bool {
+		if ri, rj := rank(list[i].RecordType), rank(list[j].RecordType); ri != rj {
+			return ri < rj
+		}
+		return list[i].ReleaseDate > list[j].ReleaseDate
+	})
+	if len(list) > 60 {
+		list = list[:60]
+	}
+	albums := make([]*Album, len(list))
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 6)
+	for i, a := range list {
+		wg.Add(1)
+		go func(i int, aid int64) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			if al, err := d.Album(ctx, aid); err == nil {
+				albums[i] = al
+			}
+		}(i, a.ID)
+	}
+	wg.Wait()
+	out := []Track{}
+	seen := map[string]bool{}
+	for _, al := range albums {
+		if al == nil {
+			continue
+		}
+		for _, t := range al.Tracks {
+			k := normalize(t.Title + " " + t.Version)
+			if k == "" || seen[k] {
+				continue
+			}
+			seen[k] = true
+			out = append(out, t)
+		}
+	}
 	return out, nil
 }
 

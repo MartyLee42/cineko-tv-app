@@ -11,7 +11,7 @@ import { NowPlaying, PlayerBar, SidePanel, type Panel } from "./playerui";
 import { Toasts } from "./toast";
 import { PulsarBackdrop, WireBackdrop } from "./backdrop";
 import { Cover, EqBars, Loading, MenuHost, openMenu } from "./ui";
-import { AlbumPage, ArtistPage, ChartPage, DzPlaylistPage, GenrePage } from "./pages/Catalog";
+import { AlbumPage, ArtistPage, ArtistTracksPage, ChartPage, DzPlaylistPage, GenrePage } from "./pages/Catalog";
 import { HomePage, useFlow } from "./pages/Home";
 import { DownloadsPage, HistoryPage, LibraryPage, LikedPage, MyPlaylistPage } from "./pages/Mine";
 import { SearchPage } from "./pages/Search";
@@ -100,6 +100,7 @@ function Shell({ me, offline }: { me: Me; offline?: boolean }) {
           <Route path="/chart" element={<ChartPage />} />
           <Route path="/genre/:id" element={<GenrePage />} />
           <Route path="/artist/:id" element={<ArtistPage />} />
+          <Route path="/artist/:id/tracks" element={<ArtistTracksPage />} />
           <Route path="/album/:id" element={<AlbumPage />} />
           <Route path="/playlist/:id" element={<DzPlaylistPage />} />
           <Route path="/my/:id" element={<MyPlaylistPage />} />
