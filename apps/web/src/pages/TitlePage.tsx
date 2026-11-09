@@ -217,6 +217,11 @@ function SeriesActions({ m }: { m: MediaDetail }) {
   const epProgress = next ? episodeProgressMap(progress).get(next.episode_id) : undefined;
   const rs = resumeState(epProgress);
   const code = next ? episodeCode(next.season_number, next.episode_number) : "";
+  // Never started: offer the first episode (torrents, online, TV) instead of
+  // only «Смотреть онлайн».
+  const firstSeason = next ? null : firstRegularSeason(m.seasons);
+  const first = useSeason(m.id, firstSeason).data?.episodes?.find((e) => e.season_number === firstSeason) ?? null;
+  const firstCode = first ? episodeCode(first.season_number, first.episode_number) : "";
   return (
     <div className="space-y-3 pt-2">
       {next ? (
@@ -235,6 +240,23 @@ function SeriesActions({ m }: { m: MediaDetail }) {
           }}
           label={rs.kind === "resume" ? `${code} · ${t("watch.resume_at", { time: formatClock(rs.position) })}` : t("watch.next_up", { code })}
           resumeTime={rs.kind === "resume" ? formatClock(rs.position) : undefined}
+          releases
+        />
+      ) : first ? (
+        <PlayChooser
+          m={m}
+          testId="play-first"
+          className="w-full sm:w-auto"
+          target={{
+            media_id: m.id,
+            season_number: first.season_number,
+            episode_number: first.episode_number,
+            episode_id: first.id,
+            label: `${m.title} · ${firstCode}`,
+            detail: first.name,
+          }}
+          label={`${t("player.play")} · ${firstCode}`}
+          releases
         />
       ) : (
         // Nothing to continue: episodes play from the list below; online / open on TV stay here.
@@ -246,6 +268,13 @@ function SeriesActions({ m }: { m: MediaDetail }) {
       <StatusLine mediaId={m.id} />
     </div>
   );
+}
+
+/** The first regular season with episodes (season 1 for most shows), else specials. */
+function firstRegularSeason(seasons: MediaDetail["seasons"]): number | null {
+  const list = seasons ?? [];
+  const regular = list.filter((x) => x.season_number > 0 && x.episode_count > 0).sort((a, b) => a.season_number - b.season_number);
+  return regular[0]?.season_number ?? list.find((x) => x.episode_count > 0)?.season_number ?? null;
 }
 
 /** Personal marks, small: «Буду смотреть», ♥, ★ rating, «Посоветовать», «Просмотрено» (movies). */

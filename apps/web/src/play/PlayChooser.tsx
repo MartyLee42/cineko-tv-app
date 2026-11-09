@@ -42,7 +42,7 @@ export interface PlayChooserProps {
   testId?: string;
   /** Resuming: the menu offers «From 32:36 / From the start». */
   resumeTime?: string;
-  /** Movie: «Choose a release» and «Download to this device». */
+  /** «Choose a release» (movies and series episodes); «Download to this device» comes with `save`. */
   releases?: boolean;
   save?: SaveTarget;
   className?: string;
