@@ -192,6 +192,12 @@ func (s *Service) SetRand(f func() float64) {
 	s.rndMu.Unlock()
 }
 
+// SetNow replaces the clock (tests): daily rotations such as «Что-то другое»
+// otherwise pick a different genre each day. Call before any requests.
+func (s *Service) SetNow(f func() time.Time) {
+	s.now = f
+}
+
 func (s *Service) random() float64 {
 	s.rndMu.Lock()
 	defer s.rndMu.Unlock()
