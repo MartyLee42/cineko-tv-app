@@ -28,6 +28,9 @@ export function ArtistPage() {
   const playAlbum = usePlayAlbum();
   const playPl = usePlayDzPlaylist();
   const [more, setMore] = useState(false);
+  const likes = useQuery({ queryKey: ["likes"], queryFn: () => api.get<Track[]>("/likes") });
+  const liked = useMemo(() => (likes.data ?? []).filter((t) => lib.isLiked(t.id) && byArtist(t, id)), [likes.data, lib, id]);
+  const [moreLiked, setMoreLiked] = useState(false);
   if (q.isLoading) return <Loading />;
   if (q.error) return <ErrorBox error={q.error} retry={() => void q.refetch()} />;
   const d = q.data!;
@@ -53,9 +56,25 @@ export function ArtistPage() {
           {followed ? "Вы подписаны" : "Подписаться"}
         </button>
       </div>
+      {liked.length > 0 && (
+        <section className="shelf">
+          <h2>Вам нравится · {liked.length}</h2>
+          <TrackList tracks={liked.slice(0, moreLiked ? liked.length : 5)} context={{ ...ctx, name: `${a.name} · вам нравится` }} playable={liked} />
+          {liked.length > 5 && (
+            <button className="link more-btn" onClick={() => setMoreLiked(!moreLiked)}>
+              {moreLiked ? "Свернуть" : "Все"}
+            </button>
+          )}
+        </section>
+      )}
       {d.top.length > 0 && (
         <section className="shelf">
-          <h2>Популярные треки</h2>
+          <div className="shelf-head">
+            <h2>Популярные треки</h2>
+            <Link to={`/artist/${a.id}/tracks`} className="shelf-more" data-testid="artist-all-tracks">
+              Все треки
+            </Link>
+          </div>
           <TrackList tracks={d.top.slice(0, more ? 20 : 5)} context={ctx} playable={d.top} />
           {d.top.length > 5 && (
             <button className="link more-btn" onClick={() => setMore(!more)}>
@@ -81,6 +100,43 @@ export function ArtistPage() {
           ))}
         </Shelf>
       )}
+    </div>
+  );
+}
+
+/** The artist's track (main or featured). */
+function byArtist(t: Track, id: number) {
+  return t.artistId === id || !!t.artists?.some((x) => x.id === id);
+}
+
+/** Everything the artist released (albums, singles, EPs), each song once. */
+export function ArtistTracksPage() {
+  const id = Number(useParams().id);
+  const artist = useQuery({ queryKey: ["artist", id], queryFn: () => api.get<ArtistData>(`/artist/${id}`), staleTime: 10 * 60_000 });
+  const q = useQuery({ queryKey: ["artist-tracks", id], queryFn: () => api.get<Track[]>(`/artist/${id}/tracks`), staleTime: 30 * 60_000 });
+  const player = usePlayer();
+  if (q.isLoading || artist.isLoading) return <Loading />;
+  if (q.error) return <ErrorBox error={q.error} retry={() => void q.refetch()} />;
+  const a = artist.data?.artist;
+  const tracks = q.data ?? [];
+  const name = a?.name ?? "Исполнитель";
+  const ctx = { type: "artist" as const, id, name: `${name} · все треки`, href: `/artist/${id}/tracks` };
+  const playing = player.playing && player.context?.href === ctx.href;
+  const dur = tracks.reduce((s, t) => s + (t.duration || 0), 0);
+  return (
+    <div className="page">
+      <Hero cover={a?.pictureBig ?? a?.picture} round kind="Все треки" title={name} meta={<>{tracksWord(tracks.length)}{dur > 0 && `, ${fmtTotal(dur)}`}</>} />
+      <div className="actions">
+        <BigPlay playing={playing} onClick={() => (playing ? player.toggle() : player.playList(tracks, 0, ctx))} disabled={!tracks.length} />
+        <button className="icon-btn big" title="Перемешать" onClick={() => player.playList([...tracks].sort(() => Math.random() - 0.5), 0, ctx)} disabled={!tracks.length}>
+          <ShuffleIcon size={24} />
+        </button>
+        <DownloadButton tracks={tracks} />
+        <Link to={`/artist/${id}`} className="btn ghost">
+          К исполнителю
+        </Link>
+      </div>
+      <TrackList tracks={tracks} context={ctx} showAlbum />
     </div>
   );
 }
