@@ -434,6 +434,8 @@ export class PlayerController {
   choosePlayer(c: PlayerChoice) {
     const then = this.pendingChoice;
     this.pendingChoice = null;
+    // Left the chooser meanwhile (Back, Stop, another title): nothing starts.
+    if (this.flow.phase !== "choose") return;
     then?.(c);
   }
 
@@ -564,6 +566,7 @@ export class PlayerController {
   /** Back inside the flow (preparing/failed → picker, else exits). */
   back() {
     this.cancelLoading();
+    this.pendingChoice = null;
     this.gen++;
     this.loadSeq++;
     loadTracker.forget();
@@ -573,6 +576,7 @@ export class PlayerController {
   /** Exits to Details, stopping any playback. */
   close() {
     this.cancelLoading();
+    this.pendingChoice = null;
     this.gen++;
     this.loadSeq++;
     loadTracker.forget();

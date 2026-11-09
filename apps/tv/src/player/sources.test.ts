@@ -111,6 +111,7 @@ vi.mock("./data", async (orig) => {
     createSource: vi.fn(async () => online()),
     getSource: vi.fn(async () => online()),
     patchQuality: vi.fn(async () => online({ quality: mocks.quality, stream_url: "/api/v1/stream/tok2/index.m3u8" })),
+    cancelSource: vi.fn(),
   };
 });
 
@@ -488,5 +489,40 @@ describe("first load stuck before a frame", () => {
       vi.mocked(data.getSource).mockImplementation(async () => online());
       c.close();
     }
+  });
+});
+
+describe("cancelled while preparing", () => {
+  const ctx = { media_id: MOVIE, kind: "movie" as const, title: "T", poster_path: null, backdrop_path: null, season: null, episode: null, episode_id: null, episode_name: null, profile_id: "p", lang: "en" as const, player: "builtin" as const, app: null };
+  const transport = { start: async () => ({ id: "sess", resume_position_seconds: null, progress: null, report_token: null }), report: async () => null, beacon: () => undefined };
+
+  it("never starts a source that turns ready after Back / Stop, and cancels it on the server", async () => {
+    const data = await import("./data");
+    const { PlayerController } = await import("./controller");
+    for (const leave of ["back", "close"] as const) {
+      let ready!: (s: PlaybackSource) => void;
+      vi.mocked(data.createSource).mockImplementationOnce(() => new Promise((r) => (ready = r)));
+      vi.mocked(data.cancelSource).mockClear();
+      const c = new PlayerController(Date.now, transport as never);
+      c.playRelease(ctx, variantRelease(variant) as Release);
+      expect(c.flow.phase).toBe("preparing");
+      c[leave]();
+      ready(online({ id: "late" }));
+      await new Promise((r) => setTimeout(r, 0));
+      expect(c.flow.phase).toBe("idle");
+      expect(data.cancelSource).toHaveBeenCalledWith("late");
+      c.close();
+    }
+  });
+
+  it("ignores a player picked in a chooser that was already left", async () => {
+    const { PlayerController } = await import("./controller");
+    const c = new PlayerController(Date.now, transport as never);
+    c.playWith({ ...ctx, player: null }, variantRelease(variant) as Release);
+    expect(c.flow.phase).toBe("choose");
+    c.close();
+    c.choosePlayer({ player: "builtin" });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(c.flow.phase).toBe("idle");
   });
 });

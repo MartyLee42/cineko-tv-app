@@ -11,7 +11,7 @@ import { useActiveProfile } from "../watch/ActiveProfile";
 import { chooseDevice, errorMessage, errorOutcome, ackOutcome, focusDevice } from "../remote/logic";
 import { sendCommand, setLastUsedDevice, useDeviceStates, useLastUsedDevice, type LiveState } from "../remote/state";
 import { BusyDialog, DevicePicker, Sheet } from "../remote/SendToTv";
-import { createPlayController, holdTvProgress, isBusy, PLAY_IDLE, playPayload, tvProgress, type PlayFlow, type PlayRequest, type TvPeak } from "./flow";
+import { canStopOnTv, createPlayController, holdTvProgress, isBusy, PLAY_IDLE, playPayload, tvProgress, type PlayFlow, type PlayRequest, type TvPeak } from "./flow";
 import { usePlaybackSource } from "./queries";
 import { ReleaseList } from "./ReleaseList";
 import { PlayerPicker } from "./PlayerPicker";
@@ -216,6 +216,11 @@ export function PlayOnTvProvider({ children }: { children: ReactNode }) {
           tv={nameOf("deviceId" in flow ? flow.deviceId : null)}
           live={"deviceId" in flow ? states[flow.deviceId] : undefined}
           onDismiss={() => dispatch({ type: "dismiss" })}
+          onStop={(deviceId) => {
+            // The TV drops the load (and cancels its source on the server).
+            void sendCommand(qc, deviceId, "media.stop", undefined).catch(() => undefined);
+            dispatch({ type: "dismiss" });
+          }}
           onAnother={(target) => {
             dispatch({ type: "dismiss" });
             setSheet(target);
@@ -455,12 +460,15 @@ function PlayToast({
   tv,
   live,
   onDismiss,
+  onStop,
   onAnother,
 }: {
   flow: Exclude<PlayFlow, { step: "idle" | "picking" | "player" | "confirm" }>;
   tv: string;
   live: LiveState | undefined;
   onDismiss: () => void;
+  /** «Отменить»: stop the load on the TV. */
+  onStop: (deviceId: string) => void;
   onAnother: (target: PlayTarget) => void;
 }) {
   const { t } = useI18n();
@@ -570,6 +578,17 @@ function PlayToast({
               >
                 <ListIcon />
                 {t("player.another_release")}
+              </button>
+            )}
+            {sent && !offline && canStopOnTv(progress) && (
+              <button
+                type="button"
+                onClick={() => onStop(flow.deviceId)}
+                data-testid="play-stop"
+                className="flex min-h-[40px] items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-text hover:bg-surface-2"
+              >
+                <CloseIcon />
+                {t("cancelpreload.stop_on_tv")}
               </button>
             )}
             {done && (
