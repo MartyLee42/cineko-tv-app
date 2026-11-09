@@ -27,7 +27,8 @@ describe("ask helpers", () => {
     expect(sentenceCase("")).toBe("");
     expect(askValid("ab")).toBe(false);
     expect(askValid(" abc ")).toBe(true);
-    expect(askValid("x".repeat(501))).toBe(false);
+    expect(askValid("x".repeat(501))).toBe(true); // cut to the limit, as on the phone
+    expect(askValid("  a  ")).toBe(false);
     expect(tailText("abcdefgh", 5)).toBe("…efgh");
     expect(tailText("abc", 5)).toBe("abc");
   });

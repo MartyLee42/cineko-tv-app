@@ -1,11 +1,14 @@
 // «Спросить ИИ» on the TV (pure, unit-tested in ask.test.ts): examples, the
-// phone link, error mapping and the inbox for answers asked from a phone
-// (realtime `foryou.ask`). Queries live in ask.ts.
-import { ApiError, type Schemas } from "@martytv/contracts";
-import type { MessageKey } from "@martytv/ui";
+// phone link and the inbox for answers asked from a phone (realtime
+// `foryou.ask`). Queries live in ask.ts. The core shared with the PWA's /ask
+// and search (prompt bounds, refinement, errors) is in @martytv/ui (aiAsk.ts).
+import type { Schemas } from "@martytv/contracts";
+import { ASK_ERROR, cleanPrompt, type MessageKey } from "@martytv/ui";
+
+export { askErrorKind, refinePrompt } from "@martytv/ui";
+export type { AskErrorKind, AskKind } from "@martytv/ui";
 
 export type AskResult = Schemas["ForYouAsk"];
-export type AskKind = "any" | "movie" | "series";
 
 /** Big example tiles: label key + the prompt sent at once. */
 export const ASK_EXAMPLES = [
@@ -32,26 +35,8 @@ export function displayUrl(url: string): string {
   return url.replace(/^https?:\/\//, "").replace(/\?.*$/, "");
 }
 
-export type AskErrorKind = "disabled" | "limit" | "budget" | "failed" | "generic";
-
 /** API error → what the screen says (and whether retrying makes sense). */
-export function askErrorKind(e: unknown): AskErrorKind {
-  if (!(e instanceof ApiError)) return "generic";
-  if (e.code === "ai_disabled" || e.status === 503) return "disabled";
-  if (e.code === "ask_limit") return "limit";
-  if (e.code === "ai_budget") return "budget";
-  if (e.status === 429) return "limit";
-  if (e.code === "ai_failed" || e.status === 502 || e.status === 504) return "failed";
-  return "generic";
-}
-
-export const askErrorText: Record<AskErrorKind, { title?: MessageKey; text: MessageKey; retry: boolean }> = {
-  disabled: { title: "ask.err.disabled_title", text: "ask.err.disabled", retry: false },
-  limit: { title: "ask.err.limit_title", text: "ask.err.limit", retry: false },
-  budget: { title: "ask.err.limit_title", text: "ask.err.budget", retry: false },
-  failed: { text: "ask.err.failed", retry: true },
-  generic: { text: "ask.err.generic", retry: true },
-};
+export const askErrorText = ASK_ERROR;
 
 /** Long text fitted to the input line: the tail stays visible while typing. */
 export function tailText(text: string, max: number): string {
@@ -64,10 +49,9 @@ export function sentenceCase(text: string): string {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-/** Prompt length the server accepts (3–500, trimmed). */
+/** Long enough to ask (longer text is cut to the limit, as on the phone). */
 export function askValid(text: string): boolean {
-  const n = text.trim().length;
-  return n >= 3 && n <= 500;
+  return cleanPrompt(text) !== null;
 }
 
 // ---------------------------------------------------------------- phone inbox

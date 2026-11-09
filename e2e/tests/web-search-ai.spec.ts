@@ -12,7 +12,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 test("web search: ask AI from the search box", async ({ page }) => {
   const { profileId } = await login(page, "ru");
   const items = await realItems(page, "ru");
-  const asked: { prompt: string; kind: string; include_watched: boolean }[] = [];
+  const asked: { prompt: string; kind: string; include_watched: boolean; creativity?: string }[] = [];
   const history: unknown[] = [];
   await page.route(/\/api\/v1\/foryou\/asks/, (route) => json(route, { items: history, ai_enabled: true, daily_limit: 30 }));
   await page.route(/\/api\/v1\/foryou\/ask(\?|$)/, async (route) => {
@@ -48,8 +48,12 @@ test("web search: ask AI from the search box", async ({ page }) => {
   await expect(page.getByTestId("ask-thinking")).toBeVisible();
   await expect(page.getByTestId("ask-answer-text")).toHaveText(`Ответ на «${q}».`);
   await expect(page.getByTestId("ask-card")).toHaveCount(4);
-  expect(asked[0]).toMatchObject({ prompt: q, kind: "any" });
+  // The same ask as «Спросить ИИ»: watched titles left out unless ticked, the same controls.
+  expect(asked[0]).toMatchObject({ prompt: q, kind: "any", include_watched: false, creativity: "normal" });
   await expect(page.getByTestId("search-ai-toggle")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("ask-watched")).not.toBeChecked();
+  await expect(page.getByTestId("ask-creativity")).toBeVisible();
+  await expect(page.getByTestId("ask-why").first()).toHaveText("Потому что подходит.");
 
   // Typing doesn't send; Enter does, with the kind tab.
   await page.getByRole("tab", { name: "Фильмы" }).click();

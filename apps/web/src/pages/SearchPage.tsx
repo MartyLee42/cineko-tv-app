@@ -4,8 +4,6 @@ import { useI18n } from "@martytv/ui";
 import { SearchIcon, CloseIcon } from "../icons";
 import { CatalogPage, InfinitePosterGrid, Tabs } from "../catalog/components";
 import { useSearch } from "../catalog/queries";
-import { HideWatchedToggle } from "../watch/components";
-import { useHideWatched } from "../watch/queries";
 import type { ListKind } from "../catalog/filters";
 import { ASK_MAX } from "../foryou/ask";
 import { SparkIcon } from "../foryou/AskPage";
@@ -58,17 +56,21 @@ export function SearchPage() {
 
   // AI mode doesn't run the title search: the words are a description.
   const query = useSearch(ai ? "" : q, kind);
-  const hideWatched = useHideWatched();
   const input = useRef<HTMLInputElement>(null);
-  const askKind = kind === "all" ? "any" : kind;
-  const aiSearch = useAiSearch(setText, ai ? q : "");
+  // AI mode is «Спросить ИИ» in the search box: the same ask, answer and refinement (search/AiSearch.tsx).
+  const aiSearch = useAiSearch({
+    kind: kind === "all" ? "any" : kind,
+    onPrompt: setText,
+    onKind: (k) => setKind(k === "any" ? "all" : k),
+    restore: ai ? q : "",
+  });
   const askAi = (prompt = text) => {
     if (!prompt.trim()) {
       input.current?.focus();
       return;
     }
     input.current?.blur(); // closes the phone keyboard so the answer is visible
-    aiSearch.send(prompt, askKind, !hideWatched);
+    aiSearch.send(prompt);
   };
   const setAi = (on: boolean) => {
     setParams(
@@ -159,8 +161,8 @@ export function SearchPage() {
               <SparkIcon /> {t("catalog.ai.mode")}
             </button>
           )}
-          {/* Title search always shows watched titles (✓); the toggle only steers AI picks. */}
-          {ai && <HideWatchedToggle className="ml-auto" />}
+          {/* Title search always shows watched titles (✓); these steer AI picks only, as on /ask. */}
+          {ai && aiSearch.controls}
         </div>
       </div>
 

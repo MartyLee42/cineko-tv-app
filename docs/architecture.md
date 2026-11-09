@@ -2522,18 +2522,34 @@ dismiss.
 `device_id` (must be a TV the account owns) and the answer is also pushed
 to that TV as `foryou.ask` (`Hub.NotifyDevice`).
 
+**One ask everywhere.** The web `/ask` page, the search's «✦ ИИ» mode and
+the TV screen are the same feature: one call (`POST /foryou/ask`), one
+answer view per app and one shared core in `packages/ui/src/aiAsk.ts`
+(prompt bounds 3–500, `refinePrompt`, error → message mapping, the default
+`include_watched: false`). The device's creativity goes with every ask. A
+follow-up chip **asks at once with the previous prompt + the chip**
+(«Комедия на вечер, только комедии»; the server keeps no conversation, so
+the words carry the context; the oldest words go past 500 characters) and
+keeps the refined ask's kind and include_watched. Only the input differs on
+purpose: a chat composer with a user bubble on `/ask`, the one-line search
+box in search, tiles/keyboard/phone QR on the TV.
+
 **In search («✦ ИИ»).** Web search (`apps/web/src/pages/SearchPage.tsx` +
 `search/AiSearch.tsx`) has a «✦ ИИ» toggle next to the kind tabs: the search
 box then sends its words to `POST /foryou/ask` — only on Enter or the ↑
 button, never while typing, since each ask counts towards the daily limit.
-The answer, the titles (with «Смотреть», «На ТВ», «Не интересно»)
-and the follow-up chips show inline; a chip re-asks with the refined prompt
-and puts it in the box. Все / Фильмы / Сериалы map to the ask `kind`; the
-mode lives in `?ai=1`, so Back from a title restores the answer (from
-`GET /foryou/asks`). In regular mode, results start with a card «Спросить
-ИИ: «…»» that switches to the AI mode and asks at once. Both are hidden
-without an active profile or when the server has no AI. E2E:
-`web-search-ai.spec.ts`.
+Next to the kind tabs: «Включая просмотренное» (off, as on `/ask`) and
+«Точнее / Обычно / Смелее». The answer, the titles with «почему» (and
+«Смотреть», «На ТВ», «Не интересно») and the follow-up chips show inline
+(the `/ask` components); a chip refines and puts the prompt in the box.
+Before the first ask: the example chips and the last 5 asks (reopened
+without a call, restoring their kind and watched setting). Все / Фильмы /
+Сериалы map to the ask `kind`; the mode lives in `?ai=1`, so Back from a
+title restores the answer (from `GET /foryou/asks`); `/ask` keeps the shown
+answer as `?a=<id>` for the same reason. In regular mode, results start with
+a card «Спросить ИИ: «…»» that switches to the AI mode and asks at once.
+Both are hidden without an active profile or when the server has no AI.
+E2E: `web-search-ai.spec.ts`, `web-ask.spec.ts`.
 
 ### Taste quiz («Давайте определим ваш вкус»)
 
