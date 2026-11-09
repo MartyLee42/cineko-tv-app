@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Taste by themes + the AI themes/picks calls, end to end: keywords come
@@ -14,6 +15,7 @@ import (
 // Russian names.
 func TestForYouThemesAndPicks(t *testing.T) {
 	f := newFyEnv(t)
+	f.pinDay(time.Date(2026, 11, 7, 12, 0, 0, 0, time.UTC))
 	a := f.sciFiProfile(t, f.alice, "Sci")
 	rowsOf(t, f.alice, a) // remember the language (en) and build the first cache
 

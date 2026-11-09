@@ -550,6 +550,14 @@ type fyEnv struct {
 	ids   map[int]string // tmdb movie id → media id
 }
 
+// pinDay runs the For You clock from a fixed day (still ticking), so the
+// daily «Что-то другое» genre and with it the candidate pool don't depend on
+// the date the tests run.
+func (f *fyEnv) pinDay(day time.Time) {
+	start := time.Now()
+	f.env.Server.ForYou.SetNow(func() time.Time { return day.Add(time.Since(start)) })
+}
+
 func newFyEnv(t *testing.T, opts ...testutil.Options) *fyEnv {
 	t.Helper()
 	tm := newFyTMDB(t)
@@ -977,6 +985,7 @@ func TestForYouExploreAndBrowse(t *testing.T) {
 
 func TestForYouAICollectionsAndAdminRerun(t *testing.T) {
 	f := newFyEnv(t)
+	f.pinDay(time.Date(2026, 11, 7, 12, 0, 0, 0, time.UTC))
 	a := f.sciFiProfile(t, f.alice, "Sci")
 	good := aiJSON(
 		[]string{"Cerebral sci-fi", "Solaris|1972", "Stalker|1979", "Moon|2009", "Primer|2005", "Gattaca|1997", "Arrival|2016",
