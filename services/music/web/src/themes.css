@@ -462,21 +462,21 @@ html.design-redroom {
   --round: 50%;
 }
 
-/* «Пять звёзд»: a crime-game city at sunset: dusk violet, sunset pink, gold, condensed capitals. */
+/* «Пять звёзд»: a purple grid desk under a sticker collage: hot pink, azure, condensed capitals. */
 html.design-fivestars {
-  --bg: rgb(20, 10, 34);
-  --panel: rgb(34, 16, 54);
-  --panel-2: rgb(48, 22, 74);
-  --panel-3: rgb(64, 30, 96);
-  --line: rgb(112, 58, 140);
-  --text: rgb(255, 245, 236);
-  --muted: rgb(222, 200, 226);
-  --dim: rgb(160, 126, 176);
-  --accent: rgb(255, 92, 158);
-  --accent-2: rgb(255, 184, 64);
-  --on-accent: rgb(20, 10, 34);
-  --accent-fill: rgb(255, 61, 139);
-  --on-accent-fill: rgb(20, 10, 34);
+  --bg: rgb(59, 42, 134);
+  --panel: rgb(46, 32, 108);
+  --panel-2: rgb(64, 46, 140);
+  --panel-3: rgb(82, 62, 168);
+  --line: rgb(150, 132, 226);
+  --text: rgb(255, 255, 255);
+  --muted: rgb(222, 214, 255);
+  --dim: rgb(176, 160, 236);
+  --accent: rgb(255, 120, 186);
+  --accent-2: rgb(60, 155, 224);
+  --on-accent: rgb(26, 18, 64);
+  --accent-fill: rgb(255, 79, 163);
+  --on-accent-fill: rgb(26, 18, 64);
   --radius: 2px;
   --radius-ctl: 4px;
   --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

@@ -81,9 +81,10 @@
 }
 .dt-redroom.dt-on { box-shadow: inset 12px 0 0 #b3121c, inset -12px 0 0 #b3121c, 0 0 0 3px rgb(var(--mt-bg)), 0 0 0 6px rgb(var(--mt-accent)); }
 .dt-redroom .dt-poster { border-color: #f0ece4 !important; background: #2a0a0c !important; }
-/* «Пять звёзд»: a sunset over a dark skyline, collage panels with a white keyline and a pink drop. */
+/* «Пять звёзд»: a purple grid desk with a pink-and-azure sticker corner; white-bordered sticker posters. */
 .dt-fivestars {
-  background-color: #140a22 !important;
-  background-image: linear-gradient(180deg, rgba(20,10,34,0) 62%, #1a0b28 62%), radial-gradient(ellipse 60% 40% at 72% 66%, #ffd27a 0%, #ff9d55 22%, #f0506a 46%, rgba(60,18,80,0) 100%), linear-gradient(180deg, #120820 0%, #3a1250 100%) !important;
+  background-color: #3b2a86 !important;
+  background-image: linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(0deg, rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(135deg, rgba(0,0,0,0) 62%, #ff4fa3 62%, #ff4fa3 76%, #3c9be0 76%) !important;
+  background-size: 12px 12px, 12px 12px, 100% 100% !important;
 }
-.dt-fivestars .dt-poster { border-radius: 0; border: 2px solid #0b0612 !important; box-shadow: 0 0 0 1px #fff5ec, 3px 3px 0 1px #ff3d8b; }
+.dt-fivestars .dt-poster { border-radius: 3px; border: 2px solid #ffffff !important; box-shadow: 0 0 0 1px #0e0a24, 3px 3px 0 1px #ff4fa3; }

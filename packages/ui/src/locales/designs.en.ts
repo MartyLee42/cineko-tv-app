@@ -41,7 +41,7 @@ export const designsEn = {
   "settings.design.redroom": "Red Room",
   "settings.design.redroom_hint": "A homage to a famous surreal TV series: red curtains around the screen, a black-and-white zigzag floor, coffee and cherry pie. Sometimes a title plays backwards.",
   "settings.design.fivestars": "Five Stars",
-  "settings.design.fivestars_hint": "A homage to big-city crime sandbox games: sunset over the skyline, palms and a highway, cards as comic panels from a box cover, titles like mission text. The wanted stars light up when the server is in trouble, and picking a title is a camera switch with a flash.",
+  "settings.design.fivestars_hint": "A homage to 80s big-city crime games: a fan's desk on lilac graph paper under a sticker collage — a hand-lettered pink script, an azure comic city, a «Five Stars» poster, a «Greetings from» postcard. Cards are white-bordered stickers, titles read like mission text, and picking a title is a camera switch with a flash.",
   "designs.motion": "Background motion",
   "designs.motion_hint": "The neon grid slowly runs towards you. Calm keeps it still (easier on older TVs).",
   "designs.motion_hint_matrix": "A few columns of code slowly fall. Calm keeps the rain still (easier on older TVs).",

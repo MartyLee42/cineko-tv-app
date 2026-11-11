@@ -1,37 +1,32 @@
-/* «Пять звёзд» scenery (fivestars.tsx). */
+/* «Пять звёзд» scenery (fivestars.tsx): a purple grid desk under the sticker collage. */
 .fs-scene {
-  background-color: rgb(20, 10, 34);
-  background-image:
-    radial-gradient(ellipse 70vw 48vh at 72% 82%, rgba(255, 157, 85, 0.42) 0%, rgba(240, 80, 106, 0.32) 30%, rgba(160, 38, 95, 0.3) 60%, rgba(60, 18, 80, 0) 100%),
-    linear-gradient(180deg, #120820 0%, #1d0b30 40%, #2c0f42 70%, #3a1250 100%);
+  background-color: #3b2a86;
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.09) 2px, transparent 2px), linear-gradient(0deg, rgba(255, 255, 255, 0.09) 2px, transparent 2px);
+  background-size: 48px 48px;
 }
-/* Page text runs over the whole scene: a veil keeps it a dusk, not a blaze. */
+.fs-collage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+/* Page text runs over the whole collage: a veil keeps it a backdrop. */
 .fs-scene::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(20, 10, 34, 0.38);
+  background: rgba(30, 20, 76, 0.78);
 }
-.fs-city {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
+/* The glints on the bay's water take turns (opacity only). */
+@keyframes fsb-shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
 }
-/* The freeway's two lanes of light slide by one width (transform only). */
-@keyframes fs-drive-r {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(1920px, 0, 0); }
-}
-@keyframes fs-drive-l {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(-1920px, 0, 0); }
-}
-.fs-drive-r { animation: fs-drive-r 26s linear infinite; }
-.fs-drive-l { animation: fs-drive-l 32s linear infinite; }
+.fsb-shimmer-a { animation: fsb-shimmer 2.4s ease-in-out infinite; }
+.fsb-shimmer-b { animation: fsb-shimmer 2.4s ease-in-out -1.2s infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .fs-drive-r, .fs-drive-l { animation: none; }
+  .fsb-shimmer-a, .fsb-shimmer-b { animation: none; }
 }
 /* Over Home's hero. */
 .fs-grade {
@@ -40,7 +35,7 @@
   top: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(58, 18, 80, 0.18) 0%, rgba(255, 61, 139, 0.08) 55%, rgba(255, 150, 70, 0.22) 100%);
+  background: linear-gradient(180deg, rgba(20, 104, 184, 0.14) 0%, rgba(255, 79, 163, 0.05) 55%, rgba(255, 79, 163, 0.16) 100%);
 }
 .fs-dots {
   position: absolute;
@@ -48,7 +43,7 @@
   top: 0;
   width: min(420px, 50%);
   height: 70%;
-  background-image: radial-gradient(circle, rgba(255, 61, 139, 0.55) 0 3px, transparent 3.5px);
+  background-image: radial-gradient(circle, rgba(255, 79, 163, 0.55) 0 3px, transparent 3.5px);
   background-size: 14px 14px;
   -webkit-mask-image: linear-gradient(225deg, #000 0%, rgba(0, 0, 0, 0) 70%);
   mask-image: linear-gradient(225deg, #000 0%, rgba(0, 0, 0, 0) 70%);
@@ -59,8 +54,8 @@
   right: 12%;
   width: 26px;
   height: 120%;
-  background: #0b0612;
-  box-shadow: -5px 0 0 #fff5ec, 5px 0 0 #fff5ec;
+  background: #0e0a24;
+  box-shadow: -5px 0 0 #ffffff, 5px 0 0 #ffffff;
   transform: rotate(12deg);
 }
 @media (max-width: 767px) {
