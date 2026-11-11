@@ -526,3 +526,133 @@ describe("cancelled while preparing", () => {
     expect(c.flow.phase).toBe("idle");
   });
 });
+
+// ---------------------------------------------------------------- controller: the spinner over the picture
+
+describe("buffering spinner after a slow first frame (next episode, a new torrent)", () => {
+  const ctx = { media_id: MOVIE, kind: "movie" as const, title: "T", poster_path: null, backdrop_path: null, season: null, episode: null, episode_id: null, episode_name: null, profile_id: "p", lang: "en" as const, player: "builtin" as const, app: null };
+  const transport = { start: async () => ({ id: "sess", resume_position_seconds: null, progress: null, report_token: null }), report: async () => null, beacon: () => undefined };
+
+  async function slowStart() {
+    const data = await import("./data");
+    const torrent = () => online({ id: "s-tor", kind: "torrent", format: undefined, mime_type: "video/mp4", stream_url: "/api/v1/stream/t1", qualities: [], quality: null });
+    vi.mocked(data.createSource).mockImplementation(async () => torrent());
+    vi.mocked(data.getSource).mockImplementation(async () => torrent());
+    const { PlayerController } = await import("./controller");
+    const c = new PlayerController(Date.now, transport as never);
+    const v = new FakeVideo();
+    v.canPlayType = () => "maybe";
+    v.readyState = 1;
+    c.attach(v as unknown as HTMLVideoElement);
+    c.playRelease(ctx, variantRelease(variant) as Release);
+    await vi.waitFor(() => expect(v.src).toBe("/api/v1/stream/t1"));
+    const tick = () => (c as unknown as { tick(): void }).tick();
+    const now = vi.spyOn(Date, "now");
+    let t = Date.now();
+    const at = (ms: number) => {
+      t += ms;
+      now.mockReturnValue(t);
+    };
+    // The loading screen for 4 s: no frame yet.
+    for (let i = 0; i < 8; i++) {
+      at(500);
+      tick();
+    }
+    const done = () => {
+      now.mockRestore();
+      vi.mocked(data.createSource).mockImplementation(async () => online());
+      vi.mocked(data.getSource).mockImplementation(async () => online());
+      c.close();
+    };
+    return { c, v, tick, at, done };
+  }
+
+  it("the first frame after a long load doesn't bring the spinner up", async () => {
+    const { c, v, done } = await slowStart();
+    try {
+      v.readyState = 4;
+      v.paused = false;
+      v.dispatchEvent(new Event("playing"));
+      expect(c.started).toBe(true);
+      // The frozen-picture clock used to count from the load: 4 s «frozen» → spinner at once.
+      expect(c.buffering()).toBe(false);
+    } finally {
+      done();
+    }
+  });
+
+  it("a spinner already drawn goes once the picture moves, without any media event", async () => {
+    const { c, v, tick, at, done } = await slowStart();
+    try {
+      v.readyState = 4;
+      v.paused = false;
+      v.dispatchEvent(new Event("playing"));
+      // The picture stands for 2 s: the view draws the spinner.
+      at(500);
+      tick();
+      at(1500);
+      tick();
+      expect(c.buffering()).toBe(true);
+      let redraws = 0;
+      const off = c.subscribe((k) => k === "playback" && redraws++);
+      // Now it plays on (only timeupdates, which the view doesn't listen to).
+      for (let i = 0; i < 3; i++) {
+        at(500);
+        v.currentTime += 0.5;
+        tick();
+      }
+      off();
+      expect(redraws).toBeGreaterThan(0);
+      expect(c.buffering()).toBe(false);
+    } finally {
+      done();
+    }
+  });
+
+  it("never a spinner while the element's time moves on, whatever the bookkeeping says", async () => {
+    const { c, v, tick, at, done } = await slowStart();
+    try {
+      v.readyState = 4;
+      v.paused = false;
+      v.dispatchEvent(new Event("playing"));
+      // A compat restart that never finished (the tick skips everything then).
+      (c as unknown as { compatPending: number | null }).compatPending = 100;
+      expect(c.buffering()).toBe(true);
+      for (let i = 0; i < 2; i++) {
+        at(500);
+        v.currentTime += 0.5;
+        tick();
+      }
+      expect(c.buffering()).toBe(false);
+      // Paused by the viewer: not «moving», back to the bookkeeping.
+      v.paused = true;
+      at(500);
+      tick();
+      expect(c.buffering()).toBe(true);
+    } finally {
+      (c as unknown as { compatPending: number | null }).compatPending = null;
+      done();
+    }
+  });
+});
+
+describe("where the player left a series (Details on return)", () => {
+  it("records the episode the session ended on", async () => {
+    const { PlayerController } = await import("./controller");
+    const { lastPlayed, clearPlayed } = await import("../watch/lastPlayed");
+    clearPlayed();
+    const transport = { start: async () => ({ id: "sess", resume_position_seconds: null, progress: null, report_token: null }), report: async () => ({ accepted: true }), beacon: () => undefined };
+    const c = new PlayerController(Date.now, transport as never);
+    const v = new FakeVideo();
+    c.attach(v as unknown as HTMLVideoElement);
+    const ctx = { media_id: MOVIE, kind: "series" as const, title: "T", poster_path: null, backdrop_path: null, season: 2, episode: 1, episode_id: "e21", episode_name: null, profile_id: "p", lang: "en" as const, player: "builtin" as const, app: null };
+    c.playRelease(ctx, variantRelease(variant) as Release);
+    await vi.waitFor(() => expect(c.flow.phase).toBe("playing"));
+    await vi.waitFor(() => expect(c.reporter.active).toBe(true));
+    v.dispatchEvent(new Event("loadedmetadata"));
+    v.currentTime = 118;
+    v.dispatchEvent(new Event("timeupdate"));
+    c.close();
+    expect(lastPlayed(MOVIE)).toMatchObject({ season: 2, episode: 1, episode_id: "e21" });
+  });
+});
