@@ -33,6 +33,7 @@ export const LOOK_LOADERS: Partial<Record<DesignSetting, Loader>> = {
   vague: () => import("./scenes/vague"),
   western: () => import("./scenes/western"),
   redroom: () => import("./scenes/redroom"),
+  fivestars: () => import("./scenes/fivestars"),
 };
 
 const loaded = new Map<DesignSetting, WebLook>();

@@ -11,6 +11,8 @@ describe("costumePlan", () => {
     expect(costumePlan("cyberpunk", null, "idle")?.costume).toBe("visor");
     expect(costumePlan("matrix", null, "idle")?.costume).toBe("sunglasses");
     expect(costumePlan("popart", null, "idle")?.costume).toBe("bubble");
+    expect(costumePlan("fivestars", null, "idle")?.costume).toBe("aviators");
+    expect(costumePlan("fivestars", null, "idle")?.eyes).toHaveLength(2);
   });
 
   it("no costume for the plain designs, Конструктивизм or before a design is applied", () => {

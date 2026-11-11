@@ -1,9 +1,9 @@
 // The main app's visual designs (tokens vendored in ../shared/theme.css).
 // <html> gets `design-<id>` + `skel-<skeleton>`; Кинозал alone has a light mode.
-export type DesignId = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson" | "noir" | "vague" | "western" | "redroom";
+export type DesignId = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson" | "noir" | "vague" | "western" | "redroom" | "fivestars";
 export type Skeleton = "kinozal" | "terminal" | "projector";
 
-export const DESIGNS: DesignId[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson", "noir", "vague", "western", "redroom"];
+export const DESIGNS: DesignId[] = ["kinozal", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson", "noir", "vague", "western", "redroom", "fivestars"];
 
 
 export const DESIGN_SKELETON: Record<DesignId, Skeleton> = {
@@ -29,6 +29,7 @@ export const DESIGN_SKELETON: Record<DesignId, Skeleton> = {
   vague: "terminal",
   western: "kinozal",
   redroom: "projector",
+  fivestars: "kinozal",
 };
 
 export const DESIGN_NAMES: Record<DesignId, { ru: string; kk: string; en: string }> = {
@@ -54,6 +55,7 @@ export const DESIGN_NAMES: Record<DesignId, { ru: string; kk: string; en: string
   vague: { ru: "Новая волна", kk: "Жаңа толқын", en: "New Wave" },
   western: { ru: "Вестерн", kk: "Вестерн", en: "Western" },
   redroom: { ru: "Красная комната", kk: "Қызыл бөлме", en: "Red Room" },
+  fivestars: { ru: "Пять звёзд", kk: "Бес жұлдыз", en: "Five Stars" },
 };
 
 export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; accent: string; accent2: string; text: string }> = {
@@ -79,6 +81,7 @@ export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; acce
   vague: { bg: "#0a0a0c", surface: "#345cde", accent: "#e6281e", accent2: "#fafaf8", text: "#fafaf8" },
   western: { bg: "#ecdcbc", surface: "#e0c79a", accent: "#a33a1c", accent2: "#d08a2e", text: "#2b1a0e" },
   redroom: { bg: "#0b0606", surface: "#2a0a0c", accent: "#c8141e", accent2: "#f0ece4", text: "#f4efe6" },
+  fivestars: { bg: "#140a22", surface: "#28133e", accent: "#ff3d8b", accent2: "#ffb840", text: "#fff5ec" },
 };
 
 export function isDesign(v: unknown): v is DesignId {

@@ -19,7 +19,7 @@ const BASE = process.env.E2E_BASE_URL ?? "http://localhost:8080";
 const USER = process.env.E2E_USER ?? "e2e-admin";
 const PASS = process.env.E2E_PASS ?? "e2e-password-123";
 const [modeArg = "all", ...designArgs] = process.argv.slice(2);
-const ALL = ["kinozal", "kinozal-light", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson", "noir", "vague", "western", "redroom"];
+const ALL = ["kinozal", "kinozal-light", "terminal", "projector", "wireframe", "cyberpunk", "deco", "retro80", "retro90", "popart", "constructivism", "matrix", "stickerbook", "pocketpet", "odyssey", "mult", "tarkovsky", "silent", "anderson", "noir", "vague", "western", "redroom", "fivestars"];
 const RUNS = (designArgs.length ? designArgs : ALL).map((s) => ({ name: s, design: s.split("-")[0], theme: s.endsWith("-light") ? "light" : "dark" }));
 const OUT = new URL(`./out/${process.env.OUT ?? "contrast"}/`, import.meta.url);
 mkdirSync(OUT, { recursive: true });

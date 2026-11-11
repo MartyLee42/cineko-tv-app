@@ -452,6 +452,29 @@ html.design-western header.sticky { box-shadow: 0 3px 0 rgba(163, 58, 28, 0.55);
 html.design-western :focus-visible { outline: 3px solid rgb(163, 58, 28); outline-offset: 3px; }
 .design-swatch-western { background-image: linear-gradient(180deg, #f6eedb 0%, #ecd6aa 58%, #d29d5f 58%, #c88f52 100%) !important; box-shadow: inset 0 6px 0 #0b0806, inset 0 -6px 0 #0b0806; }
 
+/* «Пять звёзд»: a city at sunset behind the page (decor/scenes/fivestars.tsx); panels and posters are
+   collage panels with a thick black frame and a white keyline; section titles in a gold brush script;
+   buttons and focus drop a hard sunset-pink shadow. */
+html.design-fivestars body { background-color: rgb(var(--mt-bg)); }
+html.design-fivestars main section h2:not(#hero-title) {
+  font-family: "Pacifico", cursive; font-weight: 400; text-transform: none; letter-spacing: 0; color: #ffb840;
+  text-shadow: 3px 3px 0 #0b0612;
+}
+html.design-fivestars section.rounded-2xl.border { border-radius: 2px; border: 3px solid #0b0612; background-color: rgba(40, 19, 62, 0.92); box-shadow: 0 0 0 2px rgba(255, 245, 236, 0.75), 6px 6px 0 2px rgba(11, 6, 18, 0.6); }
+html.design-fivestars .aspect-\[2\/3\] { border-radius: 1px; border: 4px solid #0b0612; box-shadow: 0 0 0 2px #fff5ec, 0 6px 14px rgba(5, 2, 10, 0.5); }
+html.design-fivestars a:hover .aspect-\[2\/3\], html.design-fivestars a:focus-visible .aspect-\[2\/3\] { box-shadow: 0 0 0 3px #ffd64a, 8px 8px 0 3px #ff3d8b; }
+html.design-fivestars header.sticky { box-shadow: 0 3px 0 #ff3d8b; }
+html.design-fivestars a.bg-accent,
+html.design-fivestars button.bg-accent {
+  border-radius: 3px; font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  box-shadow: 4px 4px 0 #0b0612;
+}
+html.design-fivestars :focus-visible { outline: 3px solid #ffd64a; outline-offset: 3px; }
+.design-swatch-fivestars {
+  background-color: #140a22 !important;
+  background-image: linear-gradient(180deg, rgba(20, 10, 34, 0) 62%, #1a0b28 62%), radial-gradient(ellipse 60% 40% at 72% 66%, #ffd27a 0%, #ff9d55 22%, #f0506a 46%, rgba(60, 18, 80, 0) 100%), linear-gradient(180deg, #120820 0%, #3a1250 100%) !important;
+}
+
 /* «Красная комната»: red curtains at the viewport's sides, a zigzag floor strip at the bottom;
    ivory serif headings; an ivory focus with a red glow. */
 html.design-redroom body {

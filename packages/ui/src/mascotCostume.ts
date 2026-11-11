@@ -4,11 +4,12 @@
 //   deco      → a top hat (on the head)        retro90 → a pixel-cat badge (corner)
 //   cyberpunk → a visor (over the eyes)        matrix  → sunglasses (over the eyes)
 //   popart    → a speech bubble (corner)       constructivism → no mascot at all (Mayakovsky)
+//   fivestars → gold aviators with sunset lenses (over the eyes)
 import type { DesignSetting } from "./designs";
 import type { MascotMood } from "./marty";
 import type { MascotHatId } from "./seasonStore";
 
-export type Costume = "tophat" | "pixelcat" | "visor" | "sunglasses" | "bubble";
+export type Costume = "tophat" | "pixelcat" | "visor" | "sunglasses" | "bubble" | "aviators";
 
 /** Where a costume goes: on the head, over the eyes, or in a corner of the box. */
 export type CostumeSlot = "head" | "face" | "corner";
@@ -19,6 +20,7 @@ export const COSTUME_OF: Partial<Record<DesignSetting, Costume>> = {
   cyberpunk: "visor",
   matrix: "sunglasses",
   popart: "bubble",
+  fivestars: "aviators",
 };
 
 export const COSTUME_SLOT: Record<Costume, CostumeSlot> = {
@@ -27,6 +29,7 @@ export const COSTUME_SLOT: Record<Costume, CostumeSlot> = {
   visor: "face",
   sunglasses: "face",
   bubble: "corner",
+  aviators: "face",
 };
 
 /**

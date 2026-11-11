@@ -137,3 +137,58 @@ export interface Frame {
 export function corridorFrames(vp: { x: number; y: number }, half: { w: number; h: number }, depths: number[]): Frame[] {
   return depths.map((s) => ({ l: vp.x - half.w * s, r: vp.x + half.w * s, t: vp.y - half.h * s, b: vp.y + half.h * s }));
 }
+
+/** «Пять звёзд»: a palm silhouette — a tapered, slightly bent trunk and drooping fronds (filled paths). */
+export interface Palm {
+  trunk: string;
+  fronds: string[];
+}
+
+/** A palm rooted at (x, base), `h` tall, its crown `lean` px to the side. */
+export function palm(x: number, base: number, h: number, lean: number): Palm {
+  const tx = x + lean;
+  const ty = base - h;
+  const r = (n: number) => Math.round(n * 10) / 10;
+  const trunk = `M${r(x - h * 0.026)} ${base} Q${r(x + lean * 0.3 - h * 0.022)} ${r(base - h * 0.55)} ${r(tx - h * 0.011)} ${r(ty)} L${r(tx + h * 0.011)} ${r(ty)} Q${r(x + lean * 0.3 + h * 0.022)} ${r(base - h * 0.55)} ${r(x + h * 0.026)} ${base} Z`;
+  const L = h * 0.42;
+  // Directions in degrees (0 = right, negative = up); each frond droops towards its tip.
+  const fronds = [-168, -140, -112, -84, -58, -30, -4, 196].map((deg) => {
+    const a = (deg * Math.PI) / 180;
+    const len = L * (0.8 + 0.2 * Math.abs(Math.cos(a)));
+    const droop = len * 0.42 * Math.abs(Math.cos(a)) + len * 0.12;
+    const ex = tx + Math.cos(a) * len;
+    const ey = ty + Math.sin(a) * len * 0.55 + droop;
+    const mx = tx + Math.cos(a) * len * 0.55;
+    const my = ty + Math.sin(a) * len * 0.5 - len * 0.12;
+    const w = len * 0.1;
+    return `M${r(tx)} ${r(ty)} Q${r(mx)} ${r(my - w)} ${r(ex)} ${r(ey)} Q${r(mx)} ${r(my + w)} ${r(tx)} ${r(ty)} Z`;
+  });
+  return { trunk, fronds };
+}
+
+/** «Пять звёзд»: a row of towers standing on `base` between x0 and x1, a few lit windows each, some with an antenna. */
+export interface Tower {
+  x: number;
+  w: number;
+  h: number;
+  antenna: boolean;
+  win: { x: number; y: number; c: number }[];
+}
+
+export function towers(seed: number, x0: number, x1: number, base: number, minH: number, maxH: number, lit = 7): Tower[] {
+  const r = rand(seed);
+  const out: Tower[] = [];
+  let x = x0;
+  while (x < x1) {
+    const w = 44 + Math.round(r() * 86);
+    const h = minH + Math.round(r() * (maxH - minH));
+    const win: Tower["win"] = [];
+    // Windows on a 14 × 22 grid, so lit ones line up like floors.
+    const cols = Math.max(1, Math.floor((w - 12) / 14));
+    const rows = Math.max(1, Math.floor((h - 24) / 22));
+    for (let k = 0; k < lit; k++) if (r() < 0.85) win.push({ x: x + 8 + Math.floor(r() * cols) * 14, y: base - h + 14 + Math.floor(r() * rows) * 22, c: Math.floor(r() * 3) });
+    out.push({ x, w, h, antenna: h > minH + (maxH - minH) * 0.7 && r() < 0.6, win });
+    x += w + 2 + Math.round(r() * 8);
+  }
+  return out;
+}

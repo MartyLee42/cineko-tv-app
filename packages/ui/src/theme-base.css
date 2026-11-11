@@ -24,6 +24,7 @@
      design-vague              — «Новая волна»: French New Wave: red/blue/white word cards, handwritten notes (terminal skeleton)
      design-western            — «Вестерн»: sun-bleached desert, wanted posters, letterboxing, slab type (kinozal skeleton)
      design-redroom            — «Красная комната»: red curtains, zigzag floor, ivory serif capitals (projector skeleton)
+     design-fivestars          — «Пять звёзд»: a crime-game city at sunset, collage panels, mission text, wanted stars (kinozal skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {

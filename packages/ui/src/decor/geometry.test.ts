@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { burstPoints, floorLines, hillPath, rainStreaks, rand, skyline, starField, starPath, sunGaps, wireRidge } from "./geometry";
+import { burstPoints, floorLines, hillPath, palm, rainStreaks, rand, skyline, starField, starPath, sunGaps, towers, wireRidge } from "./geometry";
 
 describe("decor geometry", () => {
   it("rand is deterministic and stays in (0, 1)", () => {
@@ -83,5 +83,31 @@ describe("decor geometry", () => {
     const l = floorLines(760, 0.78, 22);
     for (let i = 1; i < l.length; i++) expect(l[i]! / l[i - 1]!).toBeCloseTo(0.78, 6);
     expect(Math.min(...l)).toBeGreaterThan(3);
+  });
+
+  it("«Пять звёзд» palms: a closed trunk and eight closed fronds from the crown, stable", () => {
+    const p = palm(100, 1080, 500, 40);
+    expect(p.trunk.startsWith("M")).toBe(true);
+    expect(p.trunk.endsWith("Z")).toBe(true);
+    expect(p.fronds).toHaveLength(8);
+    for (const f of p.fronds) expect(f.startsWith("M140 580")).toBe(true);
+    expect(palm(100, 1080, 500, 40)).toEqual(p);
+  });
+
+  it("«Пять звёзд» towers: fill the span, stand on the base, windows inside the tower", () => {
+    const t = towers(7, 0, 1920, 900, 140, 420);
+    expect(t[0]!.x).toBe(0);
+    expect(t[t.length - 1]!.x + t[t.length - 1]!.w).toBeGreaterThanOrEqual(1920 - 140);
+    for (const b of t) {
+      expect(b.h).toBeGreaterThanOrEqual(140);
+      expect(b.h).toBeLessThanOrEqual(420);
+      for (const w of b.win) {
+        expect(w.x).toBeGreaterThanOrEqual(b.x);
+        expect(w.x).toBeLessThan(b.x + b.w);
+        expect(w.y).toBeGreaterThanOrEqual(900 - b.h);
+        expect(w.y).toBeLessThan(900);
+      }
+    }
+    expect(towers(7, 0, 1920, 900, 140, 420)).toEqual(t);
   });
 });

@@ -1,0 +1,34 @@
+@import "@martytv/ui/fonts/oswald.css"; /* not in the startup CSS */
+@import "@martytv/ui/fonts/pacifico.css";
+/* ---- fivestars: sunset over the city, three box-art panels slam in, the logo drops, five wanted stars flash */
+.fsi-sky { background-image: radial-gradient(ellipse 760px 380px at 50% 78%, #ffd27a 0%, #ff9d55 18%, #f0506a 40%, rgba(120,30,90,.6) 64%, rgba(40,12,60,0) 100%), linear-gradient(180deg, #120820 0%, #2c0f42 70%, #3a1250 100%); }
+@keyframes fsi-sun { from { transform: translateY(60px); } to { transform: translateY(0); } }
+.fsi-sun { animation: fsi-sun 1.4s cubic-bezier(.2,.8,.2,1) both; }
+
+.fsi-panel { position: relative; overflow: hidden; border: 7px solid #0b0612; box-shadow: 0 0 0 4px #fff5ec, 10px 12px 0 4px rgba(11,6,18,.6); }
+.fsi-panel-bg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.fsi-bg-pink { background: radial-gradient(circle 4px, rgba(255,245,236,.35) 98%, transparent) 0 0 / 18px 18px, linear-gradient(160deg, #ff3d8b 0%, #ff8a4c 100%); }
+.fsi-bg-sun { background: linear-gradient(180deg, #3a1250 0%, #f0506a 60%, #ffb85a 100%); }
+.fsi-bg-night { background: linear-gradient(180deg, #120820 0%, #2a0f40 100%); }
+@keyframes fsi-from-left { 0% { opacity: 0; transform: translate3d(-260px,40px,0) rotate(-12deg); } 70% { opacity: 1; transform: translate3d(10px,-4px,0) rotate(1deg); } 100% { opacity: 1; transform: none; } }
+@keyframes fsi-from-top { 0% { opacity: 0; transform: translate3d(60px,-260px,0) rotate(10deg); } 70% { opacity: 1; transform: translate3d(-6px,8px,0) rotate(-1deg); } 100% { opacity: 1; transform: none; } }
+@keyframes fsi-from-right { 0% { opacity: 0; transform: translate3d(320px,30px,0) rotate(12deg); } 70% { opacity: 1; transform: translate3d(-10px,-2px,0) rotate(-1deg); } 100% { opacity: 1; transform: none; } }
+.fsi-from-left { animation: fsi-from-left .42s cubic-bezier(.3,.7,.3,1) both; }
+.fsi-from-top { animation: fsi-from-top .42s cubic-bezier(.3,.7,.3,1) both; }
+.fsi-from-right { animation: fsi-from-right .42s cubic-bezier(.3,.7,.3,1) both; }
+
+@keyframes fsi-drop { 0% { opacity: 0; transform: scale(1.9) rotate(-14deg); } 60% { opacity: 1; transform: scale(.94) rotate(-4deg); } 100% { opacity: 1; transform: scale(1) rotate(-6deg); } }
+.fsi-logo {
+  font-size: 118px; line-height: 1.2; color: #ffb840;
+  text-shadow: 6px 6px 0 #0b0612, -3px -3px 0 #0b0612, 3px -3px 0 #0b0612, -3px 3px 0 #0b0612, 3px 3px 0 #0b0612, 0 0 40px rgba(255,61,139,.6);
+  animation: fsi-drop .45s cubic-bezier(.3,.7,.3,1) both;
+}
+.fsi-tag { margin-top: 2px; font-size: 28px; font-weight: 700; letter-spacing: .14em; color: #fff5ec; text-shadow: 3px 3px 0 #0b0612; }
+
+@keyframes fsi-star { 0% { opacity: 0; transform: scale(2.2); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes fsi-siren { 0%, 49% { fill: #ff4a5a; } 50%, 100% { fill: #4aa8ff; } }
+.fsi-star-pop { transform-box: fill-box; transform-origin: center; animation: fsi-star .22s cubic-bezier(.3,.7,.3,1) both; }
+.fsi-star { fill: #fff5ec; stroke: #0b0612; stroke-width: 6px; stroke-linejoin: round; paint-order: stroke; animation: fsi-siren .3s steps(1) 2.15s 3; }
+.fsi-sub { font-size: 30px; font-weight: 500; letter-spacing: .02em; color: #fff5ec; text-shadow: 2px 2px 0 #0b0612, -1px -1px 0 #0b0612, 1px -1px 0 #0b0612, -1px 1px 0 #0b0612; }
+@keyframes fsi-road { from { transform: translate3d(0,0,0); } to { transform: translate3d(-1240px,0,0); } }
+.fsi-road { animation: fsi-road 3s linear both; }
