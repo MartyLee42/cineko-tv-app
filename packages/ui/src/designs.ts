@@ -17,7 +17,7 @@ import { loadCvGlyphs } from "./cvIcons";
 //   noir      → terminal skeleton (1940s film noir: blinds, rain, typewriter)
 //   vague     → terminal skeleton (French New Wave: red/blue/white word cards, jump cuts)
 //   western   → kinozal skeleton (desert, wanted posters)      redroom → projector skeleton (red curtains, zigzag floor)
-//   fivestars → kinozal skeleton (an open-world crime game: a city at sunset, collage panels, wanted stars)
+//   fivestars → projector skeleton (an 80s crime game: a sticker collage on a purple grid desk, wanted stars)
 // <html> gets `design-<id>` (tokens, skin CSS) and `skel-<skeleton>` (layout CSS).
 export type DesignSetting = "kinozal" | "terminal" | "projector" | "wireframe" | "cyberpunk" | "deco" | "retro80" | "retro90" | "popart" | "constructivism" | "matrix" | "stickerbook" | "pocketpet" | "odyssey" | "mult" | "tarkovsky" | "silent" | "anderson" | "noir" | "vague" | "western" | "redroom" | "fivestars";
 export type Skeleton = "kinozal" | "terminal" | "projector";
@@ -51,7 +51,7 @@ export const DESIGN_SKELETON: Record<DesignSetting, Skeleton> = {
   vague: "terminal",
   western: "kinozal",
   redroom: "projector",
-  fivestars: "kinozal",
+  fivestars: "projector",
 };
 
 /** The layout skeleton a design is drawn on (unknown values → Кинозал). */
@@ -88,7 +88,7 @@ export const DESIGN_SWATCH: Record<DesignSetting, { bg: string; surface: string;
   vague: { bg: "#0a0a0c", surface: "#345cde", accent: "#e6281e", accent2: "#fafaf8", text: "#fafaf8" },
   western: { bg: "#ecdcbc", surface: "#e0c79a", accent: "#a33a1c", accent2: "#d08a2e", text: "#2b1a0e" },
   redroom: { bg: "#0b0606", surface: "#2a0a0c", accent: "#c8141e", accent2: "#f0ece4", text: "#f4efe6" },
-  fivestars: { bg: "#140a22", surface: "#28133e", accent: "#ff3d8b", accent2: "#ffb840", text: "#fff5ec" },
+  fivestars: { bg: "#3b2a86", surface: "#4a36a0", accent: "#ff4fa3", accent2: "#3c9be0", text: "#ffffff" },
 };
 
 let onApply: ((design: DesignSetting) => void) | null = null;

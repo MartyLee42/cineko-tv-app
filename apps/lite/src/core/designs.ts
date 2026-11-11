@@ -29,7 +29,7 @@ export const DESIGN_SKELETON: Record<DesignId, Skeleton> = {
   vague: "terminal",
   western: "kinozal",
   redroom: "projector",
-  fivestars: "kinozal",
+  fivestars: "projector",
 };
 
 export const DESIGN_NAMES: Record<DesignId, { ru: string; kk: string; en: string }> = {
@@ -81,7 +81,7 @@ export const DESIGN_SWATCH: Record<DesignId, { bg: string; surface: string; acce
   vague: { bg: "#0a0a0c", surface: "#345cde", accent: "#e6281e", accent2: "#fafaf8", text: "#fafaf8" },
   western: { bg: "#ecdcbc", surface: "#e0c79a", accent: "#a33a1c", accent2: "#d08a2e", text: "#2b1a0e" },
   redroom: { bg: "#0b0606", surface: "#2a0a0c", accent: "#c8141e", accent2: "#f0ece4", text: "#f4efe6" },
-  fivestars: { bg: "#140a22", surface: "#28133e", accent: "#ff3d8b", accent2: "#ffb840", text: "#fff5ec" },
+  fivestars: { bg: "#3b2a86", surface: "#4a36a0", accent: "#ff4fa3", accent2: "#3c9be0", text: "#ffffff" },
 };
 
 export function isDesign(v: unknown): v is DesignId {

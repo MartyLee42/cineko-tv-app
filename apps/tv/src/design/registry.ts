@@ -54,8 +54,8 @@ export const SKINS: Record<DesignSetting, Skin> = {
   western: { id: "western", skeleton: "kinozal", light: false, background: "desert", titleScale: 1, animatedLayers: 0, ornaments: { ...none, heroEdges: true, titlePlate: true } },
   // Playfair runs wide in capitals: titles a touch smaller.
   redroom: { id: "redroom", skeleton: "projector", light: false, background: "curtains", titleScale: 0.9, animatedLayers: 0, ornaments: { ...none, heroEdges: true } },
-  // Oswald capitals run narrow but heavy with the outline: titles a touch smaller. The freeway traffic is the one animated layer.
-  fivestars: { id: "fivestars", skeleton: "kinozal", light: false, background: "sunset", titleScale: 0.92, animatedLayers: 1, ornaments: { ...none, heroEdges: true, titlePlate: true } },
+  // Oswald capitals run narrow but heavy with the outline: titles a touch smaller. The glints on the bay's water are the one animated layer.
+  fivestars: { id: "fivestars", skeleton: "projector", light: false, background: "sunset", titleScale: 0.92, animatedLayers: 1, ornaments: { ...none, heroEdges: true } },
 };
 
 export { DESIGNS };
