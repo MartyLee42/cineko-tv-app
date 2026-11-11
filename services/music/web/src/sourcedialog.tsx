@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { api, fmtTime, type Candidate, type Me, type Track, type ZvCandidate } from "./api";
 import { ModalHead, ReleasePicker, TrackFilePicker, openModal, releaseSearch } from "./dialogs";
 import { PlayIcon } from "./icons";
+import { isDownloaded, redownload } from "./offline";
 import { usePlayer } from "./player";
 import {
   allPreview,
@@ -99,7 +100,7 @@ function SourceDialog({ track, initial, close }: { track: Track; initial: Source
     setPreview(null);
     if (!saved) {
       // A plain upload / torrent file: nothing to remember, just play the choice.
-      player.playList([itemTrack(track, it)], 0, { type: "other", name: track.title });
+      player.replaceTrack(track.id, itemTrack(track, it));
       close();
       return;
     }
@@ -108,7 +109,9 @@ function SourceDialog({ track, initial, close }: { track: Track; initial: Source
       toast(`Запись заменена · ${PROVIDER_LABEL[it.provider]}`);
       void qc.invalidateQueries({ queryKey: ["sources"] });
       close();
-      if (player.current?.id === track.id) player.reloadCurrent();
+      player.sourceChanged(track.id);
+      // A copy on the device would go on playing the old recording.
+      if (isDownloaded(track.id)) void redownload(track);
     } catch (e) {
       toast((e as Error).message);
     }

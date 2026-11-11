@@ -45,7 +45,19 @@ parallel; the trackers are searched when their tab opens). Works for catalog
 (`dz:`), imported / AI (`yq:`) and plain upload tracks; `PUT
 /music/api/sources/match {trackId, artist, title, value}` stores the choice
 for `dz:` / `yq:` tracks (and drops an "always from this torrent" choice);
-other tracks just play the chosen upload.
+other tracks take the chosen upload's place in the queue. `/play/{id}` and
+`/ytq` answer `Cache-Control: no-store` (what they serve depends on the
+current choice, not the URL), and the player adds a revision (`&r=`) to a
+changed track's stream, drops its preload and fetches a downloaded copy again.
+
+**Autoplay after a list** («Дальше — похожие»): when a finite list (album,
+playlist, AI / imported playlist, search…) runs out, `POST
+/music/api/continue {tracks, exclude}` mixes the radios of the list's most
+frequent artists (artists known only by name are looked up in the catalog),
+skipping what is queued, recently played, or the same song under another id.
+
+**Long lists** render windowed: only the rows near the viewport are in the
+DOM (`src/virtual.ts`, lists over 80 rows).
 
 **Screen off while a track is still resolving**: the player plays a looped
 near-silent clip on its audio element while it waits on `GET

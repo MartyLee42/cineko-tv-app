@@ -123,6 +123,9 @@ func (a *App) hSourceMatch(w http.ResponseWriter, r *http.Request, u *User) erro
 		return err
 	}
 	a.st.ForgetTorrentMatch(r.Context(), key)
+	// Played next as chosen, even if it was marked bad (resolve and /ytq skip
+	// bad matches and would search again).
+	memo.clearBad(key, b.Value)
 	w.WriteHeader(204)
 	return nil
 }

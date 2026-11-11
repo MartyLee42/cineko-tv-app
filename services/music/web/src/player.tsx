@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, dzId, img, sized, type Track } from "./api";
 import { isDownloaded, offlineUrl } from "./offline";
-import { Starter, resolvePath, silenceWav } from "./playback";
+import { Starter, continueBody, resolvePath, silenceWav, withRev } from "./playback";
 import { toast } from "./toast";
 
 export type Repeat = "off" | "all" | "one";
@@ -54,6 +54,10 @@ interface PlayerApi extends PlayerState {
   jumpTo(i: number): void;
   moveInQueue(from: number, to: number): void;
   reloadCurrent(): void;
+  /** The track's source was changed (dialog): no cached / preloaded copy of the old one plays again. */
+  sourceChanged(id: string): void;
+  /** Swaps a track for another version of it wherever it is queued (a one-off source choice). */
+  replaceTrack(id: string, t: Track): void;
   clearUpcoming(): void;
 }
 
@@ -193,6 +197,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const repickRef = useRef<string | null>(null);
   const extendingRef = useRef(false);
   const topUpRef = useRef<string | null>(null); // last track already topped up for
+  // Source revision per track id: bumped by sourceChanged, part of the stream URL.
+  const revRef = useRef(new Map<string, number>());
+  const continuedRef = useRef(false); // «дальше — похожие» told once per list
 
   const current = state.queue[state.index] ?? null;
 
@@ -209,13 +216,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const srcFor = (t: Track, tc: boolean, at: number, repick = false): string => {
     if (isDownloaded(t.id)) return offlineUrl(t.id);
     const id = dzId(t);
-    if (id !== null) return `/music/api/play/${id}${repick ? "?repick=1" : ""}`;
+    const rev = revRef.current.get(t.id);
+    if (id !== null) return withRev(`/music/api/play/${id}${repick ? "?repick=1" : ""}`, rev);
     if (t.id.startsWith("yt:")) return `/music/api/yt/${t.id.slice(3)}`;
     if (t.id.startsWith("zv:")) return `/music/api/zv/${t.id.slice(3)}`;
     if (t.id.startsWith("yq:")) {
       const q = new URLSearchParams({ id: t.id, artist: t.artist, title: t.title, duration: String(t.duration || 0) });
       if (repick) q.set("repick", "1");
-      return `/music/api/ytq?${q}`;
+      return withRev(`/music/api/ytq?${q}`, rev);
     }
     if (t.src) {
       const base = `/music/api/stream/${t.src.hash}/${t.src.file}`;
@@ -328,6 +336,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     (tracks: Track[], start = 0, ctx?: PlayContext) => {
       if (tracks.length === 0) return;
       errorsRef.current = 0;
+      continuedRef.current = false;
       const s = stateRef.current;
       let queue = tracks;
       let index = Math.max(0, Math.min(start, tracks.length - 1));
@@ -384,25 +393,34 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     const last = s.queue[s.queue.length - 1];
     if (!last) return null;
     const ctx = s.context;
-    let path: string | null = null;
+    let load: (() => Promise<Track[]>) | null = null;
+    // A finite list (album, playlist, AI / imported playlist, search…) goes on
+    // with recommendations made from the list itself.
+    let continuing = false;
     if (ctx?.type === "flow") {
       const recent = s.queue.slice(-60).map((t) => t.id).join(",");
-      path = `/flow?${ctx.id ? `artist=${ctx.id}&` : ""}${ctx.params ? `${ctx.params}&` : ""}exclude=${encodeURIComponent(recent)}`;
+      const path = `/flow?${ctx.id ? `artist=${ctx.id}&` : ""}${ctx.params ? `${ctx.params}&` : ""}exclude=${encodeURIComponent(recent)}`;
+      load = () => api.get<Track[]>(path);
     } else if (ctx?.type === "radio" && ctx.id) {
-      path = `/artist/${ctx.id}/radio`;
-    } else if (autoplayRef.current && last.artistId) {
-      path = `/artist/${last.artistId}/radio`;
+      load = () => api.get<Track[]>(`/artist/${ctx.id}/radio`);
+    } else if (autoplayRef.current) {
+      continuing = true;
+      load = () => api.post<Track[]>("/continue", continueBody(s.queue));
     }
-    if (!path) return null;
+    if (!load) return null;
     extendingRef.current = true;
     try {
-      const more = await api.get<Track[]>(path);
+      const more = await load();
       const have = new Set(stateRef.current.queue.map((t) => t.id));
       const fresh = more.filter((t) => !have.has(t.id));
       if (fresh.length === 0) return null;
       const queue = [...stateRef.current.queue, ...fresh];
       stateRef.current = { ...stateRef.current, queue }; // read before the next render
       setState((st) => ({ ...st, queue: [...st.queue, ...fresh] }));
+      if (continuing && !continuedRef.current) {
+        continuedRef.current = true;
+        toast("Дальше — похожие треки");
+      }
       return queue;
     } catch {
       return null;
@@ -473,6 +491,42 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     loadTrack(t, true, pos > 1 ? pos : 0);
     setState((st) => ({ ...st, playing: true }));
   }, [loadTrack]);
+
+  const sourceChanged = useCallback((id: string) => {
+    revRef.current.set(id, Date.now());
+    prefetched.current.delete(id);
+    const pre = preRef.current;
+    if (pre && preIdRef.current === id) {
+      pre.removeAttribute("src");
+      pre.load();
+      preIdRef.current = null;
+    }
+    const s = stateRef.current;
+    if (s.queue[s.index]?.id === id) reloadCurrent();
+  }, [reloadCurrent]);
+
+  const replaceTrack = useCallback((id: string, nt: Track) => {
+    const s = stateRef.current;
+    if (!s.queue.some((t) => t.id === id)) {
+      playList([nt], 0, { type: "other", name: nt.title });
+      return;
+    }
+    const swap = (q: Track[]) => q.map((t) => (t.id === id ? nt : t));
+    if (originalRef.current) originalRef.current = swap(originalRef.current);
+    const queue = swap(s.queue);
+    const isCur = s.queue[s.index]?.id === id;
+    stateRef.current = { ...s, queue };
+    if (preIdRef.current === id && preRef.current) {
+      preRef.current.removeAttribute("src");
+      preRef.current.load();
+      preIdRef.current = null;
+    }
+    if (isCur) {
+      reportedRef.current = null;
+      loadTrack(nt, true, 0);
+    }
+    setState((st) => ({ ...st, queue: swap(st.queue), playing: isCur ? true : st.playing }));
+  }, [playList, loadTrack]);
 
   const addToQueue = useCallback((tracks: Track[]) => {
     if (tracks.length === 0) return;
@@ -832,10 +886,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       jumpTo,
       moveInQueue,
       reloadCurrent,
+      sourceChanged,
+      replaceTrack,
       clearUpcoming,
     }),
     [state, current, autoplay, playList, toggle, play, pause, next, prev, seek, setVolume, toggleMute, toggleShuffle, cycleRepeat,
-      setAutoplay, addToQueue, playNext, removeAt, jumpTo, moveInQueue, reloadCurrent, clearUpcoming],
+      setAutoplay, addToQueue, playNext, removeAt, jumpTo, moveInQueue, reloadCurrent, sourceChanged, replaceTrack, clearUpcoming],
   );
 
   return (

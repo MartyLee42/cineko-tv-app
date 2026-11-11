@@ -49,6 +49,13 @@ func (m *sourceMemo) isBad(key, v string) bool {
 	return ok && time.Since(at) < badTTL
 }
 
+// clearBad: the listener chose v by hand (it may have failed here before).
+func (m *sourceMemo) clearBad(key, v string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	delete(m.bad[key], v)
+}
+
 func (m *sourceMemo) setServed(key, v string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()

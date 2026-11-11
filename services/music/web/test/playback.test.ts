@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Starter, resolvePath, silenceWav, type AudioLike } from "../src/playback.ts";
+import { Starter, continueBody, resolvePath, silenceWav, withRev, type AudioLike } from "../src/playback.ts";
 
 class FakeAudio implements AudioLike {
   src = "";
@@ -137,4 +137,24 @@ test("silenceWav is a valid, near-silent PCM WAV", () => {
   assert.equal(v.getUint32(40, true), 16000);
   assert.equal(w.length, 44 + 16000);
   for (let i = 44; i < w.length; i += 2) assert.ok(Math.abs(v.getInt16(i, true)) <= 1);
+});
+
+test("withRev busts only after a source change", () => {
+  assert.equal(withRev("/music/api/play/1", undefined), "/music/api/play/1");
+  assert.equal(withRev("/music/api/play/1", 5), "/music/api/play/1?r=5");
+  assert.equal(withRev("/music/api/ytq?id=x", 5), "/music/api/ytq?id=x&r=5");
+  assert.equal(withRev("/music/api/play/1?repick=1", 7), "/music/api/play/1?repick=1&r=7");
+});
+
+test("continueBody: the tail plus a spread of a long list, every id excluded", () => {
+  const q = Array.from({ length: 300 }, (_, i) => ({ id: `dz:${i}`, title: `t${i}`, artist: `a${i % 7}`, duration: 1, ...(i % 2 ? { artistId: i } : {}) }));
+  const b = continueBody(q);
+  assert.equal(b.tracks.length, 60);
+  assert.equal(b.tracks.at(-1)!.id, "dz:299");
+  assert.equal(b.tracks[0]!.id, "dz:0");
+  assert.ok(b.tracks.slice(0, 20).every((t) => Number(t.id.slice(3)) < 260));
+  assert.equal(b.exclude.length, 300);
+  assert.deepEqual(Object.keys(b.tracks[1]!).sort(), ["artist", "artistId", "id", "title"]);
+  const short = continueBody(q.slice(0, 5));
+  assert.equal(short.tracks.length, 5);
 });

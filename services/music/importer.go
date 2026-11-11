@@ -150,6 +150,7 @@ func (a *App) hImportMatch(w http.ResponseWriter, r *http.Request, u *User) erro
 // hYTQuery plays a "yq:" track: ?id=&artist=&title=&duration=. The YouTube
 // match is found once (verified, cached like catalog matches).
 func (a *App) hYTQuery(w http.ResponseWriter, r *http.Request, u *User) error {
+	w = &noStore{ResponseWriter: w}
 	q := r.URL.Query()
 	id := q.Get("id")
 	t := &Track{Artist: q.Get("artist"), Title: q.Get("title")}
