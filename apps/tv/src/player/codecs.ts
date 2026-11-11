@@ -503,6 +503,24 @@ export function videoUndecodable(support: Support | null | undefined): boolean {
 }
 
 /**
+ * How many fresh-URL restarts (same position) a <video> error gets before the
+ * player gives up. Network drops: 3. SRC_NOT_SUPPORTED: 1 (a 403 on the first
+ * request looks like it in Chrome), 2 in compat mode. In compat mode a
+ * MEDIA_ERR_DECODE gets 2 too: the server made that stream (AAC audio), so
+ * the error is most likely a broken chunk — e.g. a stream cut off
+ * mid-fragment after a stall — not a codec this TV lacks; if the copied video
+ * really is at fault, the restarts fail fast and the player still gives up.
+ * Original files: 0 (the compat fallback handles those). The counter resets
+ * once playback moves on.
+ */
+export function errorRetries(code: number, compat: boolean): number {
+  if (code === 2) return 3;
+  if (code === 4) return compat ? 2 : 1;
+  if (code === 3) return compat ? 2 : 0;
+  return 0;
+}
+
+/**
  * A decode error the player gives up on (MEDIA_ERR_DECODE / SRC_NOT_SUPPORTED):
  * the reason to show and the codec keys the next release must avoid.
  * Original file: every unsupported component. Compat stream (MP4 + AAC,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { MediaInfo, PlaybackSource, Release } from "@martytv/contracts";
-import { assessRelease, assessSource, decodeFailure, nextRelease, rankForTv, releaseVideoKey, usesCodec, videoKey, videoUndecodable, type Probe } from "./codecs";
+import { assessRelease, assessSource, decodeFailure, errorRetries, nextRelease, rankForTv, releaseVideoKey, usesCodec, videoKey, videoUndecodable, type Probe } from "./codecs";
 
 function release(p: Partial<Release> = {}): Release {
   return {
@@ -184,5 +184,19 @@ describe("decode-error fallback", () => {
     const s = assessSource(src(hi10), tizen);
     expect(decodeFailure(s, false, "video/x-matroska")).toEqual({ reason: "10-bit H.264, DTS", avoid: ["h264_10bit", "dts"] });
     expect(decodeFailure(null, false, "video/x-matroska; x=1")).toEqual({ reason: "video/x-matroska", avoid: [] });
+  });
+});
+
+describe("errorRetries", () => {
+  it("restarts a broken compat stream on a decode error, never an original file", () => {
+    expect(errorRetries(3, true)).toBe(2);
+    expect(errorRetries(3, false)).toBe(0);
+  });
+  it("keeps the network and SRC_NOT_SUPPORTED limits", () => {
+    expect(errorRetries(2, false)).toBe(3);
+    expect(errorRetries(2, true)).toBe(3);
+    expect(errorRetries(4, false)).toBe(1);
+    expect(errorRetries(4, true)).toBe(2);
+    expect(errorRetries(1, true)).toBe(0);
   });
 });
