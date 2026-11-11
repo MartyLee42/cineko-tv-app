@@ -230,3 +230,30 @@ func TestParseCorpus(t *testing.T) {
 		t.Fatalf("corpus too small: %d titles", n)
 	}
 }
+
+// Russian subtitles are not Russian audio.
+func TestSubtitlesAreNotAudio(t *testing.T) {
+	for _, c := range []struct {
+		in string
+		ru bool
+	}{
+		{"Последний детектив / The Last Detective / Сезон: 1 / Серии: 1-4 из 4 (Дэвид Такер) [2003, Великобритания, драма, DVDRip-AVC] Original + Rus Sub", false},
+		{"Последний детектив / The Last Detective / S1E1-4 of 4 [2003, Великобритания, драма, комедия, DVDRip-AVC] Original + Rus", false},
+		{"Фильм / Film [2010, США, драма, BDRip 1080p] Original Eng + Sub (Rus, Eng)", false},
+		{"Фильм / Film [2010, США, драма, BDRip 1080p] Original + Sub(rus,eng)", false},
+		// A Russian voice is named: Russian audio.
+		{"Фильм / Film [2010, США, драма, BDRip 1080p] Dub + Original + Sub (Rus, Eng)", true},
+		{"Фильм / Film [2010, США, драма, HDRip, 576p] Dub + Original + rus Sub", true},
+		{"Фильм / Film [2010, США, драма, BDRip 1080p] MVO (LostFilm) + Original + Sub Rus", true},
+		{"Фильм / Film [2010, США, драма, BDRip 1080p] Original + MVO (Jaskier) + Sub Rus", true},
+		// The voice was left out of the title ("+ Original Eng"), or a Russian film: as before.
+		{"Фильм / Film [2010, США, драма, BDRip 1080p] + Original Eng + Sub Rus", true},
+		{"Слово пацана. Кровь на асфальте [2023, драма, WEBRip 2160p] + Sub (Rus)", true},
+		{"Матрица / The Matrix (1999) BDRip 1080p | D, P2, A | Original + Sub", true},
+	} {
+		p := Parse(c.in)
+		if got := slices.Contains(p.Languages, "ru"); got != c.ru {
+			t.Errorf("%q: Russian audio = %v (languages %v), want %v", c.in, got, p.Languages, c.ru)
+		}
+	}
+}

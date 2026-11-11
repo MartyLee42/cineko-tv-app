@@ -148,7 +148,7 @@ var (
 	sceneGroup = regexp.MustCompile(`-([A-Za-z0-9]{2,20})$`)
 
 	langPatterns = []pattern{
-		pat(`(?i)(?:\bDub\b|\bMVO\b|\bDVO\b|\bAVO\b|\bVO\b|\bRus\b|Дубляж|Дублир|Многоголос|Двухголос|Одноголос|Авторск|Профессиональн|Любительск|Лицензи|Гоблин|Гаврилов|Пучков|Володарск|Михал[её]в|Живов|Кравец|Kravec|LostFilm|Amedia|AlexFilm|NewStudio|HDrezka|Кубик в кубе|Kubik|Novamedia|Jaskier|TVShows|Пифагор|Первый канал|РенТВ|Рен ТВ|ОРТ|НТВ|СТС|Netflix\s*\(Rus|Red Head Sound|Невафильм|Пирамида|Мосфильм|iTunes\)|Яроцкий|Сербин|Карцев|Есарев)`, "ru"),
+		pat(`(?i)(?:\bRus\b|\bDub\b|\bMVO\b|\bDVO\b|\bAVO\b|\bVO\b|Дубляж|Дублир|Многоголос|Двухголос|Одноголос|Авторск|Профессиональн|Любительск|Лицензи|Гоблин|Гаврилов|Пучков|Володарск|Михал[её]в|Живов|Кравец|Kravec|LostFilm|Amedia|AlexFilm|NewStudio|HDrezka|Кубик в кубе|Kubik|Novamedia|Jaskier|TVShows|Пифагор|Первый канал|РенТВ|Рен ТВ|ОРТ|НТВ|СТС|Netflix\s*\(Rus|Red Head Sound|Невафильм|Пирамида|Мосфильм|iTunes\)|Яроцкий|Сербин|Карцев|Есарев)`, "ru"),
 		pat(`(?i)(?:\bEng\b|\bEnglish\b|Английск)`, "en"),
 		pat(`(?i)(?:\bUkr\b|\bUA\b|Укр|Ukrainian)`, "uk"),
 		pat(`(?i)(?:\bJap\b|\bJpn\b|Японск)`, "ja"),
@@ -156,7 +156,16 @@ var (
 		pat(`(?i)(?:\bOriginal\b|Оригинал)`, "orig"),
 	}
 	rutorCodes = regexp.MustCompile(`(?:^|[|,\s])(?:D|P|P1|P2|L|L1|L2|A)(?:$|[|,\s-])`)
-	noRusRe    = regexp.MustCompile(`(?i)без перевода|no\s*rus|\[Original\]`)
+	// A named Russian voice track (RuTracker always says which: Dub, MVO,
+	// AVO, a studio…), unlike a bare "Rus", which often lists subtitles.
+	ruVoiceRe = regexp.MustCompile(`(?i)(?:\bDub\b|\bMVO\b|\bDVO\b|\bAVO\b|\bVO\b|Дубляж|Дублир|Многоголос|Двухголос|Одноголос|Авторск|Профессиональн|Любительск|Лицензи|Гоблин|Гаврилов|Пучков|Володарск|Михал[её]в|Живов|Кравец|Kravec|LostFilm|Amedia|AlexFilm|NewStudio|HDrezka|Кубик в кубе|Kubik|Novamedia|Jaskier|TVShows|Пифагор|Первый канал|РенТВ|Рен ТВ|ОРТ|НТВ|СТС|Netflix\s*\(Rus|Red Head Sound|Невафильм|Пирамида|Мосфильм|iTunes\)|Яроцкий|Сербин|Карцев|Есарев)`)
+	// Subtitles name languages too: "Sub (Rus, Eng)", "Sub(rus,ukr)",
+	// "rus Sub", "Sub Rus", "[UKR, EN Sub]". Not audio.
+	subtitleRe = regexp.MustCompile(`(?i)\b(?:subs?|субтитры)\b(?:\s*[(:]?\s*(?:rus|eng|ukr|ru|en|ua|jap|рус\S*|англ\S*|укр\S*)(?:\s*[,/]\s*(?:rus|eng|ukr|ru|en|ua|jap|рус\S*|англ\S*|укр\S*))*\s*\)?)?|\b(?:rus|eng|ukr|ru|en|ua|рус\S*|англ\S*)(?:\s*[,/]\s*(?:rus|eng|ukr|ru|en|ua))*\s+subs?\b`)
+	// The original track is the first one listed after the [year, genre,
+	// rip] bracket ("…DVDRip-AVC] Original + Rus Sub").
+	origFirstRe = regexp.MustCompile(`(?i)\]\s*(?:Original|Оригинал)\b`)
+	noRusRe     = regexp.MustCompile(`(?i)без перевода|no\s*rus|\[Original\]`)
 
 	extrasRe    = regexp.MustCompile(`(?i)фильм о фильме|дополнительные материалы|доп\.?\s*материалы|бонус|\bextras?\b|making[- ]of|behind the scenes|featurette|трейлер|\btrailer\b|викторина|квизиум|пародия|смешной перевод`)
 	nonVideoRe  = regexp.MustCompile(`(?i)\bEPUB\b|\bFB2\b|\bPDF\b|\bDJVU\b|аудиокниг|audiobook|публицистика|\bPC\b|\bРС\b|re-?pack|steam-?rip|\bGOG\b|\[DLC?\]|nintendo|\bPS[2345]\b|xbox|\bNSZ\b|русификатор|\bAEP\b|videohive|\bportable\b|\bx86\b|\bx64\b`)
@@ -604,8 +613,9 @@ func parseLanguages(p *Parsed, tail, full string) {
 			p.Languages = append(p.Languages, l)
 		}
 	}
+	audio := subtitleRe.ReplaceAllString(tail, " ")
 	for _, l := range langPatterns {
-		if l.re.MatchString(tail) {
+		if l.re.MatchString(audio) {
 			add(l.val)
 		}
 	}
@@ -614,6 +624,13 @@ func parseLanguages(p *Parsed, tail, full string) {
 		add("ru")
 	}
 	p.NoRussian = noRusRe.MatchString(full)
+	// "Original + Rus Sub", "Original + Rus": the original audio comes first
+	// and no Russian voice is named, so Russian is only in the subtitles —
+	// not a Cyrillic-titled release with a dub left out of the title.
+	if !p.NoRussian && origFirstRe.MatchString(full) && !ruVoiceRe.MatchString(audio) &&
+		(strings.Index(tail, "|") < 0 || !rutorCodes.MatchString(tail[strings.Index(tail, "|"):])) {
+		p.NoRussian = true
+	}
 	// Russian trackers' Cyrillic-titled releases carry Russian audio unless
 	// marked otherwise (Prowlarr's RuTracker definition often strips the
 	// "Dub"/"MVO" part, leaving "+ Original Eng").
