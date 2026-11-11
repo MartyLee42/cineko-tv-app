@@ -24,7 +24,11 @@ type Config struct {
 	MaxSubJobs  int    // concurrent subtitle extractions
 	MaxProbes   int    // concurrent keyframe probes
 	SlotWait    time.Duration
-	IdleTimeout time.Duration // no output for this long → kill
+	IdleTimeout time.Duration // no output from ffmpeg for this long → kill
+	// PausedTimeout: the client hasn't read for this long → kill. Players
+	// stop reading while paused or buffered far ahead; cutting them early
+	// leaves a half-written fragment (default 30 min, at least IdleTimeout).
+	PausedTimeout time.Duration
 	// SubIdleTimeout: subtitle cues can be minutes apart (default 15 min).
 	SubIdleTimeout time.Duration
 	MaxDuration    time.Duration // hard cap per job
@@ -383,8 +387,8 @@ const (
 // run starts ffmpeg and streams its stdout to w. Headers are sent once the
 // first bytes arrive, so a file that can't be opened still gets a clean 502.
 // ffmpeg is killed when the client goes away, when nothing was written for
-// IdleTimeout (stalled torrent or a paused player that stopped reading), or
-// after MaxDuration. retry: an ffmpeg error before any output returns
+// IdleTimeout (stalled torrent), when the client hasn't read for
+// PausedTimeout (an abandoned paused player), or after MaxDuration. retry: an ffmpeg error before any output returns
 // runRetry without answering (the caller tries again on the CPU).
 func (s *Server) run(w http.ResponseWriter, r *http.Request, j *Job, kind, bin string, args []string, contentType string, start float64, retry bool) runOutcome {
 	ctx, cancel := context.WithTimeout(r.Context(), s.cfg.MaxDuration)
@@ -419,43 +423,72 @@ func (s *Server) run(w http.ResponseWriter, r *http.Request, j *Job, kind, bin s
 	if kind == KindSubtitles && s.cfg.SubIdleTimeout > idle {
 		idle = s.cfg.SubIdleTimeout
 	}
-	var idled atomic.Bool
-	watchdog := time.AfterFunc(idle, func() {
+	// Two watchdogs. idle: ffmpeg wrote nothing for that long (stalled
+	// torrent) — armed only while waiting for ffmpeg. paused: the client
+	// stopped reading (a player buffered far ahead or paused) — armed only
+	// while a write is blocked, with a much longer limit, so a pause doesn't
+	// cut the stream; it only frees the slot of an abandoned one.
+	paused := max(s.cfg.PausedTimeout, idle)
+	rc := http.NewResponseController(w)
+	var idled, pausedOut atomic.Bool
+	idleDog := time.AfterFunc(time.Hour, func() {
 		idled.Store(true)
 		cancel()
 	})
-	defer watchdog.Stop()
+	idleDog.Stop()
+	defer idleDog.Stop()
+	pauseDog := time.AfterFunc(time.Hour, func() {
+		pausedOut.Store(true)
+		cancel()
+		_ = rc.SetWriteDeadline(time.Now()) // unblock the stuck Write
+	})
+	pauseDog.Stop()
+	defer pauseDog.Stop()
+
+	var src io.Reader = &watchedReader{r: stdout, arm: func() { idleDog.Reset(idle) }, disarm: func() { idleDog.Stop() }}
+	if contentType == "video/mp4" {
+		// Whole fragments only: a cut stream ends on a fragment boundary.
+		src = newFragReader(src, func() bool { return ctx.Err() != nil })
+	}
 
 	buf := make([]byte, 64<<10)
 	var written int64
-	n, rerr := io.ReadFull(stdout, buf[:1])
+	var n int
+	var rerr error
+	for n == 0 && rerr == nil {
+		n, rerr = src.Read(buf)
+	}
 	headerSent := false
 	if n > 0 {
 		h := w.Header()
 		h.Set("Content-Type", contentType)
 		h.Set("Cache-Control", "no-store")
 		h.Set("X-Stream-Start", fmtSeconds(start))
+		pauseDog.Reset(paused)
 		w.WriteHeader(http.StatusOK)
+		pauseDog.Stop()
 		headerSent = true
 		flusher, _ := w.(http.Flusher)
-		pending := buf[:1]
+		pending := buf[:n]
 		for {
 			if len(pending) > 0 {
-				if _, werr := w.Write(pending); werr != nil {
+				pauseDog.Reset(paused)
+				_, werr := w.Write(pending)
+				if werr == nil && flusher != nil {
+					flusher.Flush()
+				}
+				pauseDog.Stop()
+				if werr != nil || pausedOut.Load() {
 					cancel()
 					break
 				}
 				written += int64(len(pending))
-				watchdog.Reset(idle)
-				if flusher != nil {
-					flusher.Flush()
-				}
 			}
 			if rerr != nil {
 				break
 			}
 			var m int
-			m, rerr = stdout.Read(buf)
+			m, rerr = src.Read(buf)
 			pending = buf[:m]
 		}
 	}
@@ -471,6 +504,8 @@ func (s *Server) run(w http.ResponseWriter, r *http.Request, j *Job, kind, bin s
 	switch {
 	case idled.Load():
 		reason = "idle_timeout"
+	case pausedOut.Load():
+		reason = "paused_timeout"
 	case r.Context().Err() != nil:
 		reason = "client_gone"
 	case errors.Is(ctx.Err(), context.DeadlineExceeded):
@@ -577,4 +612,18 @@ func (c *keyframeCache) put(input string, start, k float64) {
 		}
 	}
 	c.m[kfKey(input, start)] = kfEntry{k: k, at: time.Now()}
+}
+
+// watchedReader arms the idle watchdog only while a Read is waiting on
+// ffmpeg, so time spent blocked on a slow or paused client doesn't count.
+type watchedReader struct {
+	r           io.Reader
+	arm, disarm func()
+}
+
+func (w *watchedReader) Read(p []byte) (int, error) {
+	w.arm()
+	n, err := w.r.Read(p)
+	w.disarm()
+	return n, err
 }
