@@ -459,6 +459,11 @@ No host cron or systemd timer is needed; it starts with the stack (also after
 - **Behind Cloudflare**: SSL mode "Full (strict)"; set
   `CADDY_TRUSTED_PROXIES` to Cloudflare's ranges and
   `CADDY_CLIENT_IP_HEADER=CF-Connecting-IP` so client IPs can't be spoofed.
+- **Search engines**: both hosts answer `/robots.txt` with `Disallow: /` and
+  send `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex`
+  on every response; the PWA, TV app and Music pages also carry a
+  `<meta name="robots" content="noindex…">`. Behind your own proxy (below),
+  add the header there too.
 
 ### Cineko Music on its own domain
 
