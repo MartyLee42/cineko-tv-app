@@ -1,0 +1,146 @@
+@import "@martytv/ui/themes/fivestars.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/oswald.css";
+@import "@martytv/ui/fonts/pacifico.css";
+/* «fivestars»: this design's own rules (loaded with the design's chunk, design/looks).
+   ---------------------------------------------------------------- Пять звёзд (kinozal skeleton)
+   An open-world crime-game homage on dusk violet (tokens in theme.css). Cards are collage panels
+   from a box cover: a thick black frame with a white keyline, leaning a little left or right, a
+   black caption box; focus straightens the panel and drops a hard sunset-pink shadow. Headings are
+   mission text (condensed capitals, black outline); row titles a gold brush script. The status
+   corner is a HUD: big outlined clock, money-green status, five wanted stars that light up and
+   flash red/blue while TorrServer is down. One animated layer: the freeway's traffic. */
+.fs-sky {
+  background-color: rgb(20,10,34);
+  background-image:
+    radial-gradient(ellipse 1100px 520px at 72% 74%, #ffd27a 0%, #ff9d55 16%, #f0506a 36%, rgba(160,38,95,.62) 60%, rgba(60,18,80,0) 100%),
+    linear-gradient(180deg, #120820 0%, #1d0b30 40%, #2c0f42 70%, #3a1250 100%);
+}
+.fs-sky-dim { background-image: linear-gradient(180deg, #120820 0%, #1d0b30 50%, #2a0f40 100%); }
+.fs-blimp-text { font-family: "Pacifico", cursive; font-size: 44px; fill: #ffb840; }
+
+/* ---- the freeway's traffic (transform only; the strip is drawn twice and slides by one width). */
+@keyframes fs-drive-r { from { transform: translate3d(0,0,0); } to { transform: translate3d(1920px,0,0); } }
+@keyframes fs-drive-l { from { transform: translate3d(0,0,0); } to { transform: translate3d(-1920px,0,0); } }
+.fs-drive-r { animation: fs-drive-r 26s linear infinite; }
+.fs-drive-l { animation: fs-drive-l 32s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .fs-drive-r, .fs-drive-l { animation: none; }
+}
+
+/* ---- cards: collage panels. */
+html.design-fivestars .mt-card { border: 5px solid #0b0612; border-radius: 2px; box-shadow: 0 0 0 3px #fff5ec, 0 12px 20px rgba(5,2,10,.55); }
+html.design-fivestars [data-card-id] > .relative { transform: rotate(-1.1deg); transition: transform 140ms ease; }
+html.design-fivestars [data-card-id]:nth-child(even) > .relative { transform: rotate(.9deg); }
+html.design-fivestars [data-card-id]:nth-child(3n) > .relative { transform: rotate(-.4deg); }
+/* The caption box under the panel (title, then year). */
+html.design-fivestars [data-card-id] > .relative + p {
+  position: relative; margin-top: 10px; padding: 4px 10px 2px; background: #0b0612; border-radius: 0;
+  font-family: var(--mt-font-display); font-weight: 700; font-size: 22px; line-height: 30px; text-transform: uppercase; letter-spacing: .02em;
+  color: #fff5ec;
+}
+html.design-fivestars [data-card-id] > .relative + p + p {
+  margin-top: 0; padding: 0 10px 4px; background: #0b0612;
+  font-family: var(--mt-font-display); font-weight: 500; font-size: 20px; line-height: 26px; letter-spacing: .04em; color: #ffb840;
+}
+/* Focus: the panel straightens and pops forward with a hard pink shadow and a gold keyline. */
+html.design-fivestars [data-card-id].mt-hop > .relative { transform: rotate(0deg); }
+html.design-fivestars .mt-card.tv-focus.is-focused { box-shadow: 0 0 0 4px #ffd64a, 12px 12px 0 4px #ff3d8b, 0 18px 30px rgba(5,2,10,.6); }
+html.design-fivestars [data-card-id].mt-hop > .relative + p { background: #ff3d8b; color: #140a22; }
+html.design-fivestars [data-card-id].mt-hop > .relative + p + p { background: #ff3d8b; color: #140a22; }
+
+/* ---- OK on a card: the camera switch (a push-in and a white flash), then Details (skipped in calm motion). */
+@keyframes fs-switch { 0% { transform: scale(1); } 100% { transform: scale(1.16); } }
+@keyframes fs-flash { 0% { opacity: 0; } 55% { opacity: .92; } 100% { opacity: .5; } }
+html.design-fivestars .fs-switch { position: relative; z-index: 6; animation: fs-switch 240ms cubic-bezier(.5,0,.8,.4) both; }
+html.design-fivestars .fs-switch > .relative::after {
+  content: ""; position: absolute; left: -8px; top: -8px; right: -8px; bottom: -8px; z-index: 5; background: #fff5ec; pointer-events: none;
+  animation: fs-flash 240ms ease-in both;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.design-fivestars .fs-switch, html.design-fivestars .fs-switch > .relative::after { animation: none; }
+}
+
+/* ---- the HUD (status corner): an outlined clock, the money-green status, the wanted stars. */
+/* A dark HUD plate with a pink underline keeps it legible over any artwork. */
+html.design-fivestars [data-testid="status-corner"].tv-key-hint {
+  background: linear-gradient(90deg, rgba(11,6,18,0) 0%, rgba(11,6,18,.9) 26px, rgba(11,6,18,.9) 100%); box-shadow: inset 0 -3px 0 #ff3d8b;
+  border-radius: 0; padding: 4px 16px 6px 34px; align-items: flex-start;
+}
+html.design-fivestars [data-testid="status-corner"] > span:first-child { display: none; }
+html.design-fivestars [data-testid="status-corner"] > span:nth-child(2) {
+  margin-top: 14px; margin-right: 22px; font-family: var(--mt-font-display); font-weight: 700; font-size: 24px; text-transform: uppercase; letter-spacing: .04em;
+  color: #76e676; text-shadow: 2px 2px 0 #0b0612, -1px -1px 0 #0b0612, 1px -1px 0 #0b0612, -1px 1px 0 #0b0612;
+}
+html.design-fivestars [data-testid="status-corner"][data-torrserver="offline"] > span:nth-child(2) { color: #ff8a8a; }
+html.design-fivestars [data-testid="status-corner"] > span:last-child {
+  position: relative; margin-left: 0; font-family: var(--mt-font-display); font-weight: 700; font-size: 50px; line-height: 1; letter-spacing: .02em;
+  color: #fff5ec; text-shadow: 3px 3px 0 #0b0612, -2px -2px 0 #0b0612, 2px -2px 0 #0b0612, -2px 2px 0 #0b0612;
+}
+/* The wanted level under the clock: five empty stars; all lit and flashing while the server is down. */
+html.design-fivestars [data-testid="status-corner"]::after {
+  content: ""; position: absolute; right: 8px; top: 74px; width: 180px; height: 36px;
+  background-image: var(--fs-star-empty); background-size: 36px 36px; background-repeat: repeat-x;
+}
+@keyframes fs-police { 0%, 49% { background-image: var(--fs-star-red); } 50%, 100% { background-image: var(--fs-star-blue); } }
+html.design-fivestars [data-testid="status-corner"][data-torrserver="offline"]::after { background-image: var(--fs-star-on); animation: fs-police 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  html.design-fivestars [data-testid="status-corner"][data-torrserver="offline"]::after { animation: none; }
+}
+
+/* ---- headings: mission text; row titles in a gold brush script. */
+html.design-fivestars h3 { font-family: "Pacifico", cursive; font-weight: 400; letter-spacing: 0; line-height: 1.25; color: #ffb840; text-shadow: 3px 3px 0 #0b0612; position: relative; top: -10px; }
+html.design-fivestars h3.text-\[31px\] { font-size: 34px; }
+html.design-fivestars [data-testid="hero"] h2, html.design-fivestars [data-media-id] h1 { line-height: 1.02; letter-spacing: .005em; text-shadow: 5px 5px 0 #0b0612, -2px -2px 0 #0b0612, 2px -2px 0 #0b0612, -2px 2px 0 #0b0612, 2px 2px 0 #0b0612; }
+
+/* ---- Home's hero (looks/fivestars.tsx HeroGrade): a sunset grade and a halftone corner. */
+.fs-grade { background: linear-gradient(180deg, rgba(58,18,80,.18) 0%, rgba(255,61,139,.08) 55%, rgba(255,150,70,.22) 100%); }
+.fs-dots {
+  width: 420px; height: 300px;
+  background-image: radial-gradient(circle, rgba(255,61,139,.55) 0 3px, transparent 3.5px);
+  background-size: 14px 14px;
+  -webkit-mask-image: linear-gradient(315deg, #000 0%, rgba(0,0,0,0) 70%); mask-image: linear-gradient(315deg, #000 0%, rgba(0,0,0,0) 70%);
+}
+
+/* ---- the rest of the kinozal skeleton: a dusk-violet rail, sunset-pink accents, gold focus. */
+html.design-fivestars nav[data-design-nav="kinozal"] > div:first-child { background-color: rgba(16,8,28,.94); box-shadow: inset -3px 0 0 #ff3d8b; }
+html.design-fivestars .tv-menu-panel { background: linear-gradient(90deg, rgba(16,8,28,.97) 0%, rgba(16,8,28,.97) 72%, rgba(16,8,28,0) 100%); }
+html.design-fivestars .k-rail-focus { background: #ff3d8b; color: #140a22; box-shadow: 4px 4px 0 #0b0612; }
+html.design-fivestars .k-rail-active { background: rgba(255,61,139,.16); color: rgb(var(--mt-text)); box-shadow: inset 0 0 0 2px rgba(255,61,139,.7); }
+html.design-fivestars .k-primary { background: #ff3d8b; color: #140a22; font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; box-shadow: 5px 5px 0 #0b0612; }
+html.design-fivestars .k-icon-btn { background: rgba(40,19,62,.92); box-shadow: inset 0 0 0 2px rgba(255,245,236,.5), 4px 4px 0 #0b0612; }
+html.design-fivestars .k-badge { background: #0b0612; color: #ffb840; box-shadow: inset 0 0 0 2px #ffb840; }
+html.design-fivestars .k-track { background: rgba(255,245,236,.18); }
+html.design-fivestars .tv-rate-good, html.design-fivestars .tv-rate-mid, html.design-fivestars .tv-rate-bad { border-radius: 2px; background: #0b0612; font-family: var(--mt-font-display); font-weight: 700; }
+html.design-fivestars .tv-rate-good { color: #76e676; }
+html.design-fivestars .tv-rate-mid { color: #ffd64a; }
+html.design-fivestars .tv-rate-bad { color: #ff8a8a; }
+html.design-fivestars .tv-key-hint { background: rgba(11,6,18,.92); box-shadow: inset 0 0 0 2px rgba(255,61,139,.6); }
+html.design-fivestars .tv-chip.is-focused { background: #ff3d8b; color: #140a22; }
+html.design-fivestars .tv-progress-fill, html.design-fivestars .tv-check { background: #ff3d8b; color: #140a22; }
+html.design-fivestars .tv-panel, html.design-fivestars .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 2px rgba(255,61,139,.3); }
+
+/* ---- Details: the mission card (looks/fivestars.tsx MissionPlate). */
+.fs-mission { display: inline-block; max-width: 1100px; }
+.fs-mission-label { font-family: "Pacifico", cursive; font-size: 38px; line-height: 1.3; color: #ff80b4; text-shadow: 3px 3px 0 #0b0612; }
+.fs-mission h1 { margin-top: 2px; }
+.fs-mission-wanted { display: flex; align-items: center; margin-top: 12px; }
+.fs-mission-caption {
+  margin-left: 18px; font-family: var(--mt-font-display); font-weight: 700; font-size: 22px; letter-spacing: .12em; text-transform: uppercase;
+  color: #fff5ec; text-shadow: 2px 2px 0 #0b0612;
+}
+.fs-stars path { fill: #fff5ec; stroke: #0b0612; stroke-width: 5px; stroke-linejoin: round; paint-order: stroke; }
+/* On open the stars flash police red and blue three times, then stay lit. */
+@keyframes fs-siren { 0%, 49% { fill: #ff4a5a; } 50%, 100% { fill: #4aa8ff; } }
+.fs-stars path { animation: fs-siren .5s steps(1) 3; }
+@media (prefers-reduced-motion: reduce) {
+  .fs-stars path { animation: none; }
+}
+
+/* ---- «Миссия выполнена» after a row's last card. */
+.fs-end-wrap { display: flex; align-items: center; justify-content: center; }
+.fs-end { text-align: center; transform: rotate(-3deg); }
+.fs-end-text {
+  font-family: var(--mt-font-display); font-weight: 700; font-size: 40px; line-height: 1.02; text-transform: uppercase; letter-spacing: .01em; white-space: nowrap;
+  color: #ffb840; text-shadow: 4px 4px 0 #0b0612, -2px -2px 0 #0b0612, 2px -2px 0 #0b0612, -2px 2px 0 #0b0612;
+}
+.fs-end-respect { margin-top: 10px; font-family: var(--mt-font-display); font-weight: 700; font-size: 24px; text-transform: uppercase; letter-spacing: .06em; color: #fff5ec; text-shadow: 2px 2px 0 #0b0612; }

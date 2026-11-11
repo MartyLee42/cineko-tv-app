@@ -11,7 +11,7 @@ export interface Skin {
   /** Has a light colour mode (Кинозал only). */
   light: boolean;
   /** Full-screen background layer drawn behind screens (null = plain bg colour / skeleton default). */
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | "intertitle" | "symmetry" | "gouache" | "rainwater" | "blinds" | "cards" | "desert" | "curtains" | null;
+  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | "intertitle" | "symmetry" | "gouache" | "rainwater" | "blinds" | "cards" | "desert" | "curtains" | "sunset" | null;
   /** Animated background layers (transform-only); the calm mode stops them. */
   animatedLayers: 0 | 1;
   /** Headline size factor on the skeleton's sizes (wide display faces need less). */
@@ -54,6 +54,8 @@ export const SKINS: Record<DesignSetting, Skin> = {
   western: { id: "western", skeleton: "kinozal", light: false, background: "desert", titleScale: 1, animatedLayers: 0, ornaments: { ...none, heroEdges: true, titlePlate: true } },
   // Playfair runs wide in capitals: titles a touch smaller.
   redroom: { id: "redroom", skeleton: "projector", light: false, background: "curtains", titleScale: 0.9, animatedLayers: 0, ornaments: { ...none, heroEdges: true } },
+  // Oswald capitals run narrow but heavy with the outline: titles a touch smaller. The freeway traffic is the one animated layer.
+  fivestars: { id: "fivestars", skeleton: "kinozal", light: false, background: "sunset", titleScale: 0.92, animatedLayers: 1, ornaments: { ...none, heroEdges: true, titlePlate: true } },
 };
 
 export { DESIGNS };

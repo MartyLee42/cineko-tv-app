@@ -1,0 +1,36 @@
+/* «fivestars» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Пять звёзд»: an homage to open-world crime games (original drawings only): a city at sunset —
+   dusk violet, hot sunset pink, gold, a money-green; condensed bold capitals with a black outline
+   (Oswald, has Cyrillic) like mission text, a sunset brush script (Pacifico) for the logo and row
+   titles. The kinozal skeleton. */
+html.design-fivestars {
+  --mt-bg: 20, 10, 34;
+  --mt-surface: 40, 19, 62;
+  --mt-surface-2: 60, 28, 88;
+  --mt-border: 112, 58, 140;
+  --mt-text: 255, 245, 236;
+  --mt-muted: 222, 200, 226;
+  --mt-accent: 255, 61, 139;
+  --mt-accent-strong: 255, 184, 64;
+  --mt-on-accent: 20, 10, 34;
+  --mt-focus: 255, 214, 74;
+  --mt-danger: 255, 96, 96;
+  --mt-ok: 118, 230, 118;
+  --mt-warn: 255, 184, 64;
+  --mt-font-display: "Oswald", "Arial Narrow", Arial, sans-serif;
+  --mt-radius-card: 2px;
+  --mt-radius-control: 4px;
+  color-scheme: dark;
+  --mt-accent-text: 255, 128, 180;
+  /* Wanted stars (one 32×32 star each, black outline): empty, lit, and the police flash. */
+  --fs-star-empty: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16.0,3.0L19.4,11.3L28.4,12.0L21.6,17.8L23.6,26.5L16.0,21.9L8.4,26.5L10.4,17.8L3.6,12.0L12.6,11.3Z' fill='%23fff5ec' fill-opacity='.22' stroke='%230b0612' stroke-width='4' stroke-linejoin='round' paint-order='stroke'/%3E%3C/svg%3E");
+  --fs-star-on: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16.0,3.0L19.4,11.3L28.4,12.0L21.6,17.8L23.6,26.5L16.0,21.9L8.4,26.5L10.4,17.8L3.6,12.0L12.6,11.3Z' fill='%23fff5ec' fill-opacity='1' stroke='%230b0612' stroke-width='4' stroke-linejoin='round' paint-order='stroke'/%3E%3C/svg%3E");
+  --fs-star-red: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16.0,3.0L19.4,11.3L28.4,12.0L21.6,17.8L23.6,26.5L16.0,21.9L8.4,26.5L10.4,17.8L3.6,12.0L12.6,11.3Z' fill='%23ff4a5a' fill-opacity='1' stroke='%230b0612' stroke-width='4' stroke-linejoin='round' paint-order='stroke'/%3E%3C/svg%3E");
+  --fs-star-blue: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16.0,3.0L19.4,11.3L28.4,12.0L21.6,17.8L23.6,26.5L16.0,21.9L8.4,26.5L10.4,17.8L3.6,12.0L12.6,11.3Z' fill='%234aa8ff' fill-opacity='1' stroke='%230b0612' stroke-width='4' stroke-linejoin='round' paint-order='stroke'/%3E%3C/svg%3E");
+}
+
+/* Headings use the display face (web and TV): condensed capitals with a black outline, mission-text style. */
+html.design-fivestars h1, html.design-fivestars h2 {
+  font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: .01em;
+  -webkit-text-stroke: 0; text-shadow: 3px 3px 0 #0b0612, -1px -1px 0 #0b0612, 1px -1px 0 #0b0612, -1px 1px 0 #0b0612;
+}

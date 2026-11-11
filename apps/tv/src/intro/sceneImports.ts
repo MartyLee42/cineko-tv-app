@@ -28,6 +28,7 @@ export const SCENE_IMPORTS: Record<DesignSetting, () => Promise<SceneMod>> = {
   vague: () => import("./scenes/vague"),
   western: () => import("./scenes/western"),
   redroom: () => import("./scenes/redroom"),
+  fivestars: () => import("./scenes/fivestars"),
 };
 
 /** Starts fetching a design's scene (the intro shell itself is lazy too). */

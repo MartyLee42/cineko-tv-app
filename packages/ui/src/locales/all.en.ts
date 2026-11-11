@@ -37,6 +37,7 @@ import { sleepEn } from "./sleep.en";
 import { skipEn } from "./skip.en";
 import { pocketpetEn } from "./pocketpet.en";
 import { westernEn } from "./western.en";
+import { fivestarsEn } from "./fivestars.en";
 import { quickEn } from "./quick.en";
 import { triviaEn } from "./trivia.en";
 import { surpriseEn } from "./surprise.en";
@@ -68,4 +69,4 @@ import { pcPlayEn } from "./pcplay.en";
 import { cancelPreloadEn } from "./cancelpreload.en";
 import { familyVisEn } from "./familyvis.en";
 
-export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...newEpMuteEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn, ...soundtrackEn, ...themesEn, ...smoothEn, ...chaptersEn, ...companionEn, ...devsettingsEn, ...loadersEn, ...loaders2En, ...filmthemeEn, ...multtarkovskyEn, ...andersonEn, ...westernEn, ...quickEn, ...demoEn, ...errorsUserEn, ...devicedlEn, ...titleActionsEn, ...appupdateEn, ...iptvplayEn, ...uilangEn, ...learnWeightsEn, ...alertsEn, ...keepsakesEn, ...ytaudioEn, ...channelEn, ...instantPlayEn, ...pcPlayEn, ...cancelPreloadEn, ...familyVisEn };
+export const messagesEn = { ...coreEn, ...catalogEn, ...remoteEn, ...playerEn, ...settingsEn, ...adminEn, ...tvdesignEn, ...errorsEn, ...sourcesEn, ...importsEn, ...onlineEn, ...foryouEn, ...askEn, ...tasteEn, ...downloadsEn, ...iptvEn, ...designsEn, ...videoEn, ...seasonsEn, ...tvplayEn, ...playerStatsEn, ...devprefsEn, ...superplayEn, ...newEpisodesEn, ...newEpMuteEn, ...tasteQuizEn, ...cozyEn, ...martyEn, ...healthEn, ...curatedEn, ...awardsEn, ...idleEn, ...mascotEn, ...soundsEn, ...sleepEn, ...triviaEn, ...skipEn, ...pocketpetEn, ...surpriseEn, ...soundtrackEn, ...themesEn, ...smoothEn, ...chaptersEn, ...companionEn, ...devsettingsEn, ...loadersEn, ...loaders2En, ...filmthemeEn, ...multtarkovskyEn, ...andersonEn, ...westernEn, ...fivestarsEn, ...quickEn, ...demoEn, ...errorsUserEn, ...devicedlEn, ...titleActionsEn, ...appupdateEn, ...iptvplayEn, ...uilangEn, ...learnWeightsEn, ...alertsEn, ...keepsakesEn, ...ytaudioEn, ...channelEn, ...instantPlayEn, ...pcPlayEn, ...cancelPreloadEn, ...familyVisEn };

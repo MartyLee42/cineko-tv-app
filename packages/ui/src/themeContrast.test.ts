@@ -20,10 +20,11 @@ import t_tarkovsky from "./themes/tarkovsky.css?raw";
 import t_terminal from "./themes/terminal.css?raw";
 import t_vague from "./themes/vague.css?raw";
 import t_western from "./themes/western.css?raw";
+import t_fivestars from "./themes/fivestars.css?raw";
 import t_wireframe from "./themes/wireframe.css?raw";
 
 // Each design's tokens live in themes/<id>.css (loaded with the design's chunk); the base has :root and Кинозал.
-const designFiles: Record<string, string> = { "anderson": t_anderson, "constructivism": t_constructivism, "cyberpunk": t_cyberpunk, "deco": t_deco, "matrix": t_matrix, "mult": t_mult, "noir": t_noir, "odyssey": t_odyssey, "pocketpet": t_pocketpet, "popart": t_popart, "projector": t_projector, "redroom": t_redroom, "retro80": t_retro80, "retro90": t_retro90, "silent": t_silent, "stickerbook": t_stickerbook, "tarkovsky": t_tarkovsky, "terminal": t_terminal, "vague": t_vague, "western": t_western, "wireframe": t_wireframe };
+const designFiles: Record<string, string> = { "anderson": t_anderson, "constructivism": t_constructivism, "cyberpunk": t_cyberpunk, "deco": t_deco, "fivestars": t_fivestars, "matrix": t_matrix, "mult": t_mult, "noir": t_noir, "odyssey": t_odyssey, "pocketpet": t_pocketpet, "popart": t_popart, "projector": t_projector, "redroom": t_redroom, "retro80": t_retro80, "retro90": t_retro90, "silent": t_silent, "stickerbook": t_stickerbook, "tarkovsky": t_tarkovsky, "terminal": t_terminal, "vague": t_vague, "western": t_western, "wireframe": t_wireframe };
 const css = [base, ...Object.values(designFiles)].join("\n");
 import { DESIGNS } from "./designs";
 import { contrast, designTokens, parseTokenBlocks, type Rgb } from "./themeContrast";

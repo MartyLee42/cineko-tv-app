@@ -160,6 +160,11 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [tone("sine", 520, 440, 0.03, 0.3)], noise: [] },
     click: { tones: [tone("sine", 330, 660, 0.08, 0.45), tone("triangle", 990, 990, 0.03, 0.08, 0.07)], noise: [] },
   },
+  // A game HUD: a short phone-menu blip on a move; OK a two-note pager beep (up a fourth).
+  fivestars: {
+    tick: { tones: [tone("triangle", 1320, 1320, 0.028, 0.16)], noise: [] },
+    click: { tones: [tone("triangle", 1568, 1568, 0.045, 0.3), tone("triangle", 2093, 2093, 0.06, 0.3, 0.055)], noise: [noise("highpass", 6000, 0.006, 0.06)] },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */

@@ -27,6 +27,41 @@ function Sunglasses({ eyes: [l, r] }: { eyes: [Pt, Pt] }) {
   );
 }
 
+/** «Пять звёзд»: gold-framed teardrop aviators, the lenses reflecting a sunset (pink → orange), a double bridge. */
+function Aviators({ eyes: [l, r] }: { eyes: [Pt, Pt] }) {
+  const d = dist(l, r);
+  const c = mid(l, r);
+  const w = d * 0.46;
+  const h = d * 0.42;
+  // One teardrop lens centred on (x, 0): flat-ish top, deep rounded bottom drooping to the outside.
+  const lens = (x: number, out: number) =>
+    `M ${x - w} ${-h * 0.45} Q ${x} ${-h * 0.62} ${x + w} ${-h * 0.45} Q ${x + w * (1 + 0.15 * out)} ${h * 0.55} ${x + w * 0.25 * out} ${h * 0.75} Q ${x - w * 0.9} ${h * 0.7} ${x - w} ${-h * 0.45} Z`;
+  return (
+    <g transform={`translate(${c.x} ${c.y}) rotate(${deg(l, r)})`} data-costume="aviators">
+      <defs>
+        <linearGradient id="mt-aviator" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor="#3a1250" />
+          <stop offset=".45" stopColor="#ff3d8b" />
+          <stop offset="1" stopColor="#ffb840" />
+        </linearGradient>
+      </defs>
+      <path d={`M ${-d / 2 + w * 0.9} ${-h * 0.5} Q 0 ${-h * 0.75} ${d / 2 - w * 0.9} ${-h * 0.5}`} fill="none" stroke="#e8b84a" strokeWidth={d * 0.05} />
+      <path d={`M ${-d / 2 + w * 0.95} ${-h * 0.22} Q 0 ${-h * 0.36} ${d / 2 - w * 0.95} ${-h * 0.22}`} fill="none" stroke="#e8b84a" strokeWidth={d * 0.035} />
+      <line x1={-d / 2 - w} y1={-h * 0.42} x2={-d / 2 - w - d * 0.28} y2={-h * 0.62} stroke="#e8b84a" strokeWidth={d * 0.045} strokeLinecap="round" />
+      <line x1={d / 2 + w} y1={-h * 0.42} x2={d / 2 + w + d * 0.28} y2={-h * 0.62} stroke="#e8b84a" strokeWidth={d * 0.045} strokeLinecap="round" />
+      {[-1, 1].map((side) => {
+        const x = (side * d) / 2;
+        return (
+          <g key={side}>
+            <path d={lens(x, side)} fill="url(#mt-aviator)" stroke="#e8b84a" strokeWidth={d * 0.04} strokeLinejoin="round" />
+            <path d={`M ${x - w * 0.6} ${-h * 0.18} L ${x - w * 0.1} ${-h * 0.36}`} stroke="#fff5ec" strokeWidth={d * 0.045} strokeLinecap="round" opacity=".85" />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
 /** «Киберпанк»: a translucent cyan→magenta visor across the eyes. */
 function Visor({ eyes: [l, r] }: { eyes: [Pt, Pt] }) {
   const d = dist(l, r);
@@ -102,6 +137,7 @@ export function CostumeArt({ plan, bubble }: { plan: CostumePlan; bubble: string
   let art = null;
   if (plan.costume === "sunglasses" && plan.eyes) art = <Sunglasses eyes={plan.eyes} />;
   else if (plan.costume === "visor" && plan.eyes) art = <Visor eyes={plan.eyes} />;
+  else if (plan.costume === "aviators" && plan.eyes) art = <Aviators eyes={plan.eyes} />;
   else if (plan.costume === "tophat" && plan.head) art = <TopHat head={plan.head} />;
   else if (plan.costume === "pixelcat") art = <PixelCat />;
   else if (plan.costume === "bubble") art = <Bubble text={bubble} />;
