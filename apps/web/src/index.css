@@ -101,6 +101,8 @@ html {
 html.design-wireframe body {
   background-color: rgb(var(--mt-bg));
 }
+/* Text over the sun and the neon floor: a soft dark-violet shadow under every line keeps white type readable on the bright stripes (headings with their own neon glow keep it). */
+html.design-wireframe body { text-shadow: 0 0 2px #0d0420, 0 0 4px #0d0420, 0 1px 3px #0d0420, 0 0 14px rgba(13, 4, 32, 0.8); }
 /* «Каркас»: its scenery (sky, sun, mountains, floor) is decor/scenes/wireframe. */
 html.design-matrix body {
   background-color: rgb(var(--mt-bg));
