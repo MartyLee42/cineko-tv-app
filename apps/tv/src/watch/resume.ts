@@ -55,14 +55,21 @@ export function suggestedEpisode(mp: MediaProgress | null | undefined): { season
 
 /**
  * Index to focus in a season's episode list: the remembered one, else the
- * requested (phone) one, else the suggested one when it is in this season,
- * else the first.
+ * one the player last left the series at (this season's; by id, else by
+ * number), else the requested (phone) one, else the suggested one when it is
+ * in this season, else the first.
  */
 export function focusEpisodeIndex(
   episodes: readonly { id: string; episode_number: number }[],
-  opts: { remembered?: number; requested?: number; suggestedId?: string | null },
+  opts: { remembered?: number; played?: { episode_id: string | null; episode: number } | null; requested?: number; suggestedId?: string | null },
 ): number {
   if (opts.remembered !== undefined && opts.remembered >= 0 && opts.remembered < episodes.length) return opts.remembered;
+  if (opts.played) {
+    const p = opts.played;
+    const i = p.episode_id ? episodes.findIndex((e) => e.id === p.episode_id) : -1;
+    const j = i >= 0 ? i : episodes.findIndex((e) => e.episode_number === p.episode);
+    if (j >= 0) return j;
+  }
   if (opts.requested !== undefined) {
     const i = episodes.findIndex((e) => e.episode_number === opts.requested);
     if (i >= 0) return i;

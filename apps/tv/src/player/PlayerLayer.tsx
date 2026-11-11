@@ -896,7 +896,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         : t("chapters.n", { n: chapterAt + 1 })
       : null;
   // Once the picture moves, no spinner (whatever the engine's readyState or a recovery's bookkeeping say).
-  const bufferingNow = playing && (!!rebuf || player.compatRestarting() || (player.recovering() && !player.advancingNow()) || player.stalled());
+  const bufferingNow = playing && player.buffering();
   // After a seek (esp. backwards) seeking / readyState flap several times a
   // second: show the spinner / «Буферизация» only once it lasts, hide it once
   // playback has really resumed; nothing while ◀▶ are still choosing a position.

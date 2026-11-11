@@ -37,6 +37,7 @@ import { useCompanion } from "../../catalog/companion";
 import { AfterCreditsPanel, RecapPanel } from "../../design/companion";
 import { indexTag } from "../../design/format";
 import { useMediaProgress, useSetWatched } from "../../watch/api";
+import { adoptPlayed, lastPlayed } from "../../watch/lastPlayed";
 import { watchOnlineItems } from "../../player/online";
 import { useOnlineLazy } from "../../player/onlineQuery";
 import { OnlinePicker, type OnlineChoice } from "../../player/OnlinePicker";
@@ -115,6 +116,8 @@ export function DetailsScreen({
   const [menu, setMenu] = useState<{ title: string; subtitle?: string | null; actions: MenuAction[]; testId: string } | null>(null);
   const similar = useRelated(id, "similar", !!d);
   const recs = useRelated(id, "recommendations", !!d);
+  // Back from the player that moved on (next episode, maybe into another season): that episode's season and card.
+  const [played] = useState(() => adoptPlayed(mem, lastPlayed(id), Date.now()));
   const [season, setSeason] = useState<number | null>(() => mem.get<number>("season") ?? requestedSeason ?? null);
   // Without a choice, the season of the suggested ("next up") episode.
   const seasonNo = d ? (d.kind === "series" ? pickSeason(d.seasons, season ?? suggested?.season ?? null) : null) : season;
@@ -169,6 +172,7 @@ export function DetailsScreen({
     if (eps.length === 0) return null;
     const i = focusEpisodeIndex(eps, {
       remembered: mem.get<number>(`idx-ep-${seasonNo}`),
+      played: played?.season === seasonNo ? played : null,
       requested: seasonNo === requestedSeason ? requestedEpisode : undefined,
       suggestedId: suggested?.id,
     });
@@ -565,6 +569,7 @@ export function DetailsScreen({
                   viewport={1920 - frame.x}
                   initialIndex={focusEpisodeIndex(episodes, {
                     remembered: mem.get<number>(`idx-ep-${seasonNo}`),
+                    played: played?.season === seasonNo ? played : null,
                     requested: seasonNo === requestedSeason ? requestedEpisode : undefined,
                     suggestedId: suggested?.id,
                   })}

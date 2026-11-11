@@ -103,6 +103,7 @@ import { ProgressReporter, type Snapshot, type Transport } from "../watch/report
 import { apiTransport, refreshWatchData } from "../watch/api";
 import { MIN_RESUME } from "../watch/resume";
 import { isCompleted } from "../watch/rating";
+import { notePlayed } from "../watch/lastPlayed";
 import { ratingQueue } from "../watch/stores";
 
 export const POLL_MS = 1000;
@@ -283,8 +284,15 @@ export class PlayerController {
   /** `shown`: the highest «Буферизация N%» shown in this rebuffer (the buffered end may shrink: never back). */
   private advancing = false;
   private lastTickTime = 0;
-  /** The spinner's state at the last tick (a redraw when it flips without a media event). */
-  private lastSpin = false;
+  /**
+   * What the view last drew for the spinner (buffering()): a tick that finds
+   * it changed redraws — playback raises no media event once it plays on
+   * smoothly, so a spinner drawn a moment too early used to stay up.
+   */
+  private shownBuffering = false;
+  /** The element's time moves on by itself (tracked every tick whatever else goes on): never a spinner then. */
+  private moving = false;
+  private motionT = NaN;
   /** The stall watchdog (starve.ts): when the picture / the data last moved. */
   private stallW: StallWatch = stallWatch0(0);
   /** When the viewer last resumed a pause (a dead connection is likely then). */
@@ -1356,7 +1364,19 @@ export class PlayerController {
     const f = this.flow;
     if (snap && f.phase === "playing" && f.ctx.player === "builtin") {
       const kind = f.ctx.kind === "series" || f.ctx.episode_id ? "series" : "movie";
-      if (isCompleted(snap.position, snap.duration, kind)) {
+      const done = isCompleted(snap.position, snap.duration, kind);
+      // Details shows where the series was left (the next episode once this one is done), see lastPlayed.ts.
+      if (f.ctx.kind === "series" && f.ctx.season !== null && f.ctx.episode !== null) {
+        const next = done ? this.nextRef() : null;
+        const at = Date.now();
+        notePlayed(
+          f.ctx.media_id,
+          next
+            ? { season: next.season, episode: next.episode, episode_id: next.id ?? null, at }
+            : { season: f.ctx.season, episode: f.ctx.episode, episode_id: f.ctx.episode_id, at },
+        );
+      }
+      if (done) {
         const media = cachedMedia(f.ctx.media_id, f.ctx.lang);
         ratingQueue.offer(
           { profile_id: f.ctx.profile_id, media_id: f.ctx.media_id, episode_id: f.ctx.episode_id, kind, title: f.ctx.title, poster_path: f.ctx.poster_path },
@@ -1460,6 +1480,8 @@ export class PlayerController {
     this.reopenAt = null;
     this.advancing = false;
     this.lastTickTime = Number.POSITIVE_INFINITY;
+    this.moving = false;
+    this.motionT = NaN;
     this.rateSamples = [];
     const f = this.flow;
     // Online HLS on Android: hls.js (its native HLS seeks badly), see stream.ts.
@@ -2057,6 +2079,25 @@ export class PlayerController {
   }
 
   private tick() {
+    this.trackMotion();
+    this.step();
+    // Redraw when the spinner's state changed without a media event.
+    if (this.bufferingNow() !== this.shownBuffering) this.emit("playback");
+  }
+
+  private trackMotion() {
+    const v = this.video;
+    if (!v || this.flow.phase !== "playing" || v.paused || v.seeking || v.ended) {
+      this.moving = false;
+      this.motionT = NaN;
+      return;
+    }
+    const t = v.currentTime;
+    this.moving = t > this.motionT + 0.05 && t < this.motionT + 3;
+    this.motionT = t;
+  }
+
+  private step() {
     const v = this.video;
     const f = this.flow;
     if (!v || f.phase !== "playing" || f.ctx.player !== "builtin" || this.loadedUrl === null || this.compatPending !== null) return;
@@ -2067,6 +2108,9 @@ export class PlayerController {
       const moved = !v.paused && !v.seeking && this.pendingSeek === null && v.readyState >= 2 && t0 > this.lastTickTime + 0.05 && t0 < this.lastTickTime + 3;
       this.lastTickTime = t0;
       if (!moved) {
+        // Still the loading screen: the frozen-picture clock starts at the first frame, not at the load
+        // (a slow first frame — a new torrent — used to put the spinner up the moment the screen went).
+        this.stallW = stallWatch0(now);
         if (!this.compat && !f.source.live && f.source.kind !== "online") this.watchFirstLoad(v, now);
         return;
       }
@@ -2091,12 +2135,6 @@ export class PlayerController {
     const wants = (!v.paused || !!this.rebuf) && !v.ended && !nearEnd && !f.source.live && (typeof document === "undefined" || document.visibilityState !== "hidden");
     this.stallW = watchStep(this.stallW, { wants, advancing: this.advancing, end: this.abs(v) + ahead, now });
     if (this.advancing) this.reopens = 0;
-    // Redraw when the spinner's state flips without a media event.
-    const spin = this.stalled();
-    if (spin !== this.lastSpin) {
-      this.lastSpin = spin;
-      this.emit("playback");
-    }
     const bitrate = this.bitrate();
     // Buffer growth measures the link only while the engine is still
     // fetching; with a comfortable buffer the link isn't the limit.
@@ -2171,6 +2209,24 @@ export class PlayerController {
   /** The video's time moved since the last tick (500 ms): it plays, whatever readyState says. */
   advancingNow(): boolean {
     return this.advancing;
+  }
+
+  /**
+   * The spinner over the picture: «Буферизация», a compat stream starting, a
+   * recovery that doesn't play yet, or a stall (stalled()). Never while the
+   * element's time moves on by itself (whatever the engine's readyState or
+   * our bookkeeping say). The view's call: a tick that finds it changed redraws.
+   */
+  buffering(): boolean {
+    this.shownBuffering = this.bufferingNow();
+    return this.shownBuffering;
+  }
+
+  private bufferingNow(): boolean {
+    if (this.flow.phase !== "playing" || !this.video) return false;
+    if (this.rebuf) return true;
+    if (this.moving) return false;
+    return this.compatPending !== null || (this.resumeAt !== null && !this.advancing) || this.stalled();
   }
 
   /**
