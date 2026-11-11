@@ -16,6 +16,7 @@ import {
   assessSource,
   audioProbeAnswers,
   decodeFailure,
+  errorRetries,
   engineProbe,
   lighterInstead,
   nextRelease,
@@ -1679,8 +1680,7 @@ export class PlayerController {
       void this.startCompat(this.trustedPosition(), true, this.compat?.audio ?? null);
       return;
     }
-    const limit = err.code === 2 ? 3 : err.code === 4 ? (this.compat ? 2 : 1) : 0;
-    if (this.refreshes < limit) {
+    if (this.refreshes < errorRetries(err.code, !!this.compat)) {
       this.refreshes++;
       this.pendingSeek = null;
       void this.refreshUrl(true);

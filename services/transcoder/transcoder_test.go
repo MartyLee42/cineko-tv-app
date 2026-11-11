@@ -409,6 +409,38 @@ func TestIdleWatchdogKillsStalledJob(t *testing.T) {
 	waitDead(t, h.pid())
 }
 
+func TestPausedClientIsNotCut(t *testing.T) {
+	// The player stops reading (buffered ahead / paused) far longer than the
+	// idle limit: the stream must survive and go on when it reads again.
+	h := newHarness(t, "flood", func(c *Config) { c.IdleTimeout = 200 * time.Millisecond; c.PausedTimeout = time.Minute })
+	resp := h.post(context.Background(), "/v1/remux", Job{Kind: KindRemux, Input: "http://ts/x"})
+	defer resp.Body.Close()
+	buf := make([]byte, 1<<20)
+	if _, err := io.ReadFull(resp.Body, buf); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(1200 * time.Millisecond) // writes block meanwhile
+	pid := h.pid()
+	if !alive(pid) {
+		t.Fatal("ffmpeg killed while the client was paused")
+	}
+	if _, err := io.ReadFull(resp.Body, buf); err != nil {
+		t.Fatalf("stream cut after the pause: %v", err)
+	}
+}
+
+func TestPausedTimeoutFreesAbandonedStream(t *testing.T) {
+	h := newHarness(t, "flood", func(c *Config) { c.IdleTimeout = 100 * time.Millisecond; c.PausedTimeout = 400 * time.Millisecond })
+	resp := h.post(context.Background(), "/v1/remux", Job{Kind: KindRemux, Input: "http://ts/x"})
+	defer resp.Body.Close()
+	if _, err := io.ReadFull(resp.Body, make([]byte, 1<<16)); err != nil {
+		t.Fatal(err)
+	}
+	// Never reads again: the job ends and frees its slot.
+	waitDead(t, h.pid())
+	waitActive(t, h.srv, 0)
+}
+
 func TestMaxDurationCap(t *testing.T) {
 	h := newHarness(t, "stream", func(c *Config) { c.MaxDuration = 400 * time.Millisecond })
 	resp := h.post(context.Background(), "/v1/remux", Job{Kind: KindRemux, Input: "http://ts/x"})
@@ -471,7 +503,7 @@ func TestMetricsAndConfig(t *testing.T) {
 	}
 	env = map[string]string{"TRANSCODER_SECRET": strings.Repeat("s", 32), "TRANSCODER_MAX_JOBS": "5", "TRANSCODER_NICE": "0"}
 	cfg, addr, err := loadConfig(func(k string) string { return env[k] })
-	if err != nil || cfg.MaxJobs != 5 || addr != ":8090" || cfg.IdleTimeout != 2*time.Minute || cfg.NicePath != "" || cfg.SubReadRate != 4 {
+	if err != nil || cfg.MaxJobs != 5 || addr != ":8090" || cfg.IdleTimeout != 2*time.Minute || cfg.PausedTimeout != 30*time.Minute || cfg.NicePath != "" || cfg.SubReadRate != 4 {
 		t.Fatalf("%+v %s %v", cfg, addr, err)
 	}
 	env["TRANSCODER_MAX_JOBS"] = "0"

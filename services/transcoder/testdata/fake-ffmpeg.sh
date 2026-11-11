@@ -1,6 +1,7 @@
 #!/bin/sh
 # Stand-in for ffmpeg in unit tests. Records its pid and arguments, then
-# behaves per FAKE_MODE: stream (write until killed), short (a few bytes),
+# behaves per FAKE_MODE: stream (write until killed), flood (write as fast as
+# possible until killed), short (a few bytes),
 # fail (error on stderr, exit 1), silent (no output until killed),
 # hls (an EVENT playlist with 3 segments in the cwd, then runs until killed).
 # FAKE_FAIL_ON: fail like a broken GPU when an argument equals it.
@@ -17,6 +18,7 @@ case "$FAKE_MODE" in
   short) printf 'ftypfake'; exit 0 ;;
   fail) echo "[http @ 0x1] HTTP error 404 Not Found http://ts.local:5665/stream?link=abc" >&2; echo "Error opening input $FAKE_INPUT" >&2; exit 1 ;;
   silent) while :; do sleep 0.05; done ;;
+  flood) exec cat /dev/zero ;;
   hls)
     printf 'init' > init.mp4
     for i in 0 1 2; do printf 'segment%s' "$i" > "seg$i.m4s"; done

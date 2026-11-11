@@ -120,6 +120,7 @@ func loadConfig(getenv func(string) string) (Config, string, error) {
 		MaxSubJobs:     num("TRANSCODER_MAX_SUBTITLE_JOBS", 0),
 		SlotWait:       dur("TRANSCODER_SLOT_WAIT", 3*time.Second),
 		IdleTimeout:    dur("TRANSCODER_IDLE_TIMEOUT", 2*time.Minute),
+		PausedTimeout:  dur("TRANSCODER_PAUSED_TIMEOUT", 30*time.Minute),
 		SubIdleTimeout: dur("TRANSCODER_SUBTITLE_IDLE_TIMEOUT", 15*time.Minute),
 		MaxDuration:    dur("TRANSCODER_MAX_DURATION", 6*time.Hour),
 		FFmpeg:         get("FFMPEG_PATH", "ffmpeg"),

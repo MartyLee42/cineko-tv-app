@@ -1043,6 +1043,15 @@ browser ─GET compat.mp4?audio=&start=─▶ API (token, checks) ─POST /v1/re
   with `ffprobe -read_intervals start%+#8` and cached; +0.15 s defeats
   ffmpeg's B-frame seek heuristic (−3/23 s), so the output's t=0 is K.
   Headers go out with the first bytes (an unopenable file gets a clean 502).
+- **Watchdogs and clean ends.** ffmpeg is killed when it writes nothing for
+  `TRANSCODER_IDLE_TIMEOUT` (2 min; armed only while waiting on ffmpeg: a
+  stalled torrent) or when the client hasn't read for
+  `TRANSCODER_PAUSED_TIMEOUT` (30 min; armed only while a write is blocked —
+  players stop reading while paused or buffered far ahead, so a pause never
+  cuts the stream). The MP4 goes out in whole top-level boxes, a `moof` held
+  until its `mdat` is complete (`fragment.go`; boxes > 64 MB or non-box
+  output pass through): a cut stream ends on a fragment boundary, which the
+  player recovers from, instead of a half-written packet (MEDIA_ERR_DECODE).
 - **Video conversion** (`video=h264`, `PlaybackSource.compat_video`). For
   MPEG-4 Part 2 (XviD / DivX, `msmpeg4*`), MPEG-1/2, VC-1 / WMV and H.263 at
   ≤ 1080p (by `media_info`: width ≤ 2048, height ≤ 1088 —
