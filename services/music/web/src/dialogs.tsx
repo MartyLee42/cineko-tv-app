@@ -4,7 +4,7 @@ import { api, fmtSize, fmtTime, type Album, type Release, type TorrentInfo, type
 import { CloseIcon, MagnetIcon, PlayIcon } from "./icons";
 import { useLibrary } from "./library";
 import { usePlayer } from "./player";
-import { canPromptInstall, isIOS, isStandalone, promptInstall } from "./offline";
+import { canPromptInstall, isDownloaded, isIOS, isStandalone, promptInstall, redownload } from "./offline";
 import { setWireBg, useWireBg } from "./backdrop";
 import { DESIGNS, ownDesign, setOwnDesign, tvDesign, type DesignId } from "./themes";
 import { useScrollLock } from "./scrolllock";
@@ -550,8 +550,10 @@ export function TrackFilePicker({ track, hash, onBack, close }: { track: Track; 
         toast((e as Error).message);
         return;
       }
-      if (player.current?.id === track.id) player.reloadCurrent();
-      else player.playList([track], 0, { type: "other", name: track.title });
+      if (isDownloaded(track.id)) void redownload(track);
+      const playingIt = player.current?.id === track.id;
+      player.sourceChanged(track.id);
+      if (!playingIt) player.playList([track], 0, { type: "other", name: track.title });
     } else {
       player.playList([{ ...track, id: f.id, src: f.src }], 0, { type: "torrent", name: track.title });
     }

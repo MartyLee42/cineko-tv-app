@@ -1036,7 +1036,8 @@ textarea {
 
 /* ------------------------------------------------------------ track list */
 
-.tracklist {
+.tracklist,
+.tracklist-rows {
   display: flex;
   flex-direction: column;
 }

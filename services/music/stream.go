@@ -182,7 +182,44 @@ func (a *App) hResolve(w http.ResponseWriter, r *http.Request, u *User) error {
 	return nil
 }
 
+// noStore: what /play and /ytq answer depends on the track's current source
+// (the server's pick or the listener's choice), not on the URL, so the
+// browser must not keep it: after «Выбрать источник» the same URL replayed
+// the old recording from its HTTP cache. The direct /yt/{vid} and /zv/{id}
+// streams stay cacheable.
+type noStore struct {
+	http.ResponseWriter
+	wrote bool
+}
+
+func (w *noStore) WriteHeader(code int) {
+	if !w.wrote {
+		w.wrote = true
+		w.Header().Set("Cache-Control", "no-store")
+	}
+	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *noStore) Write(b []byte) (int, error) {
+	if !w.wrote {
+		w.WriteHeader(http.StatusOK)
+	}
+	return w.ResponseWriter.Write(b)
+}
+
+func (w *noStore) Flush() {
+	if !w.wrote {
+		w.WriteHeader(http.StatusOK)
+	}
+	if f, ok := w.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
+func (w *noStore) Unwrap() http.ResponseWriter { return w.ResponseWriter }
+
 func (a *App) hPlay(w http.ResponseWriter, r *http.Request, u *User) error {
+	w = &noStore{ResponseWriter: w}
 	id, err := pathInt(r, "id")
 	if err != nil {
 		return err
@@ -335,6 +372,7 @@ func (a *App) hSetMatch(w http.ResponseWriter, r *http.Request, u *User) error {
 	if err := a.st.SetMatch(r.Context(), "dz:"+strconv.FormatInt(id, 10), b.VideoID, true); err != nil {
 		return err
 	}
+	memo.clearBad("dz:"+strconv.FormatInt(id, 10), b.VideoID)
 	w.WriteHeader(204)
 	return nil
 }

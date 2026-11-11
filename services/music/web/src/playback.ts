@@ -151,3 +151,31 @@ export function silenceWav(seconds = 2, rate = 8000): Uint8Array {
   for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, i % 2 ? 1 : -1, true);
   return new Uint8Array(buf);
 }
+
+/** A stream URL with the track's source revision (bumped when its source is changed, so no cache replays the old one). */
+export function withRev(url: string, rev: number | undefined): string {
+  if (!rev || !url) return url;
+  return `${url}${url.includes("?") ? "&" : "?"}r=${rev}`;
+}
+
+type Seed = Pick<Track, "id" | "artist" | "title"> & { artistId?: number };
+
+/**
+ * POST /continue for a list that ran out: the tracks recommendations are
+ * made from (the latest ones and a spread of the rest, so a long playlist
+ * isn't judged by its tail only) and every id already queued.
+ */
+export function continueBody(queue: Track[], tail = 40, spread = 20): { tracks: Seed[]; exclude: string[] } {
+  const slim = (t: Track): Seed => ({ id: t.id, artist: t.artist, title: t.title, ...(t.artistId ? { artistId: t.artistId } : {}) });
+  const cut = Math.max(0, queue.length - tail);
+  const head = queue.slice(0, cut);
+  const picked: Track[] = [];
+  if (head.length) {
+    const step = Math.max(1, head.length / spread);
+    for (let i = 0; i < head.length && picked.length < spread; i += step) picked.push(head[Math.floor(i)]!);
+  }
+  return {
+    tracks: [...picked, ...queue.slice(cut)].map(slim),
+    exclude: [...new Set(queue.map((t) => t.id))].slice(-2000),
+  };
+}

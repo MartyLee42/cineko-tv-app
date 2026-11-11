@@ -88,7 +88,8 @@ async function saveImages(t: Track) {
 async function downloadOne(t: Track) {
   const url = sourceUrl(t);
   if (!url) throw new Error("Нельзя скачать этот трек");
-  const res = await fetch(url);
+  // Never from the HTTP cache: after a source change it held the old recording.
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok || !res.body) throw new Error(`Ошибка ${res.status}`);
   const total = Number(res.headers.get("Content-Length")) || 0;
   const type = res.headers.get("Content-Type") || "audio/mpeg";
@@ -165,6 +166,13 @@ export async function removeDownloads(ids: string[]) {
   }
   queue = queue.filter((t) => !ids.includes(t.id));
   saveMeta();
+}
+
+/** Downloads a track again (its source was changed). */
+export async function redownload(t: Track) {
+  await removeDownloads([t.id]);
+  emit();
+  download([t]);
 }
 
 export function useOffline() {

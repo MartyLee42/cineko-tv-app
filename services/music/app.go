@@ -290,6 +290,7 @@ func (a *App) routes() http.Handler {
 	api("GET /music/api/me", a.hMe)
 	api("GET /music/api/home", a.hHome)
 	api("GET /music/api/flow", a.hFlow)
+	api("POST /music/api/continue", a.hContinue)
 	api("GET /music/api/genres", a.hGenres)
 	api("GET /music/api/genre/{id}", a.hGenre)
 	api("GET /music/api/search", a.hSearch)
@@ -695,6 +696,24 @@ func (a *App) hFlow(w http.ResponseWriter, r *http.Request, u *User) error {
 			recent[x] = true
 		}
 	}
+	if len(seeds) == 0 {
+		c, err := a.dz.Chart(ctx, 0)
+		if err != nil {
+			return err
+		}
+		ts := append([]Track(nil), c.Tracks...)
+		rand.Shuffle(len(ts), func(a, b int) { ts[a], ts[b] = ts[b], ts[a] })
+		writeJSON(w, 200, interleave([][]Track{ts}, recent, 40))
+		return nil
+	}
+	out := a.mixRadios(ctx, seeds, recent, 40)
+	writeJSON(w, 200, out)
+	return nil
+}
+
+// mixRadios: n tracks from the seed artists' radios (their top tracks when
+// an artist has no radio), taking turns, skipping recent ones.
+func (a *App) mixRadios(ctx context.Context, seeds []ArtistRef, recent map[string]bool, n int) []Track {
 	lists := make([][]Track, len(seeds))
 	var wg sync.WaitGroup
 	for i, s := range seeds {
@@ -710,26 +729,28 @@ func (a *App) hFlow(w http.ResponseWriter, r *http.Request, u *User) error {
 		}(i, s.ID)
 	}
 	wg.Wait()
-	if len(seeds) == 0 {
-		c, err := a.dz.Chart(ctx, 0)
-		if err != nil {
-			return err
-		}
-		ts := append([]Track(nil), c.Tracks...)
-		rand.Shuffle(len(ts), func(a, b int) { ts[a], ts[b] = ts[b], ts[a] })
-		lists = [][]Track{ts}
-	}
+	return interleave(lists, recent, n)
+}
+
+// interleave takes one track from each list in turn (no artist twice in a
+// row when there are several lists, nothing seen or recent), up to n.
+func interleave(lists [][]Track, recent map[string]bool, n int) []Track {
 	out := []Track{}
 	seen := map[string]bool{}
 	lastArtist := int64(-1)
-	for round := 0; len(out) < 40 && round < 60; round++ {
+	// relax: only one artist is left, so it may follow itself.
+	relax := false
+	for round := 0; len(out) < n && round < 2*n+10; round++ {
 		added := false
 		for _, l := range lists {
+			if len(out) >= n {
+				break
+			}
 			for k, t := range l {
 				if seen[t.ID] || recent[t.ID] {
 					continue
 				}
-				if t.ArtistID == lastArtist && len(lists) > 1 {
+				if t.ArtistID == lastArtist && len(lists) > 1 && !relax {
 					continue
 				}
 				seen[t.ID] = true
@@ -741,11 +762,15 @@ func (a *App) hFlow(w http.ResponseWriter, r *http.Request, u *User) error {
 			}
 		}
 		if !added {
-			break
+			if relax {
+				break
+			}
+			relax = true
+			continue
 		}
+		relax = false
 	}
-	writeJSON(w, 200, out)
-	return nil
+	return out
 }
 
 // ---- library handlers ----

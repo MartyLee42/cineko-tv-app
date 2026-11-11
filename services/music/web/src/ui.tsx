@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode, type RefObject } from "react";
 import { Link, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { api, fmtTime, img, sized, type Me, type Track } from "./api";
@@ -11,6 +11,7 @@ import { openSourcePicker } from "./sourcedialog";
 import { sourceMenu } from "./sources";
 import { download, isDownloaded, removeDownloads, useOffline } from "./offline";
 import { songsterrLink } from "./songsterr";
+import { VIRTUAL_FROM, averageRow, windowRange, type Range } from "./virtual";
 
 // ---------------------------------------------------------------- cover
 
@@ -243,6 +244,40 @@ export function TrackList({ tracks, context, showCover = true, showAlbum = false
   const canFilter = ["album", "playlist", "myplaylist", "artist", "chart", "other", "search"].includes(context.type) && likedCount > 0 && likedCount < full.length;
   const idx = tracks.map((_, i) => i).filter((i) => !onlyLiked || !canFilter || lib.isLiked((full[i] ?? tracks[i]!).id));
   const list = idx.map((i) => full[i] ?? tracks[i]!);
+  const rowsRef = useRef<HTMLDivElement | null>(null);
+  const win = useVirtual(rowsRef, idx.length);
+  // Rows are memoized: the handlers read the latest props through a ref.
+  const h = useRef({ play: (_k: number) => {}, toggle: () => {}, menu: (_e: MouseEvent, _i: number) => {} });
+  h.current = {
+    play: (k) => player.playList(list, k, context),
+    toggle: () => player.toggle(),
+    menu: (e, i) => menu(e, full[i] ?? tracks[i]!, menuExtra?.(tracks[i]!, i)),
+  };
+  const rows = [];
+  for (let k = win.start; k < win.end; k++) {
+    const i = idx[k]!;
+    const t = tracks[i]!;
+    const pt = full[i] ?? t;
+    const active = player.current?.id === pt.id;
+    rows.push(
+      <TrackRow
+        key={`${t.id}-${i}`}
+        t={t}
+        pt={pt}
+        i={i}
+        k={k}
+        active={active}
+        playing={active && player.playing}
+        liked={lib.isLiked(pt.id)}
+        downloaded={off.isDownloaded(pt.id)}
+        progress={off.progress.get(pt.id)}
+        numbered={numbered}
+        showCover={showCover}
+        showAlbum={showAlbum}
+        h={h}
+      />,
+    );
+  }
   return (
     <div className={`tracklist ${showAlbum ? "with-album" : ""}`}>
       {canFilter && (
@@ -252,65 +287,149 @@ export function TrackList({ tracks, context, showCover = true, showAlbum = false
           </button>
         </div>
       )}
-      {idx.map((i, k) => {
-        const t = tracks[i]!;
-        const pt = full[i] ?? t;
-        const active = player.current?.id === pt.id;
-        const playing = active && player.playing;
-        const liked = lib.isLiked(pt.id);
-        return (
-          <div
-            key={`${t.id}-${i}`}
-            className={`track-row ${active ? "active" : ""} ${liked ? "liked" : ""}`}
-            onDoubleClick={() => player.playList(list, k, context)}
-            onClick={() => window.innerWidth < 760 && player.playList(list, k, context)}
-            onContextMenu={(e) => menu(e, pt, menuExtra?.(t, i))}
-          >
-            <div className="tr-num">
-              <span className="n">{playing ? <EqBars /> : numbered ? (t.position ?? i + 1) : i + 1}</span>
-              <button
-                className="tr-play"
-                title={playing ? "Пауза" : "Играть"}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (active) player.toggle();
-                  else player.playList(list, k, context);
-                }}
-              >
-                {playing ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
-              </button>
-            </div>
-            <div className="tr-main">
-              {showCover && <Cover src={t.cover} size={120} className="tr-cover" />}
-              <div className="tr-text">
-                <div className="tr-title">
-                  {t.title}
-                  {t.version && <span className="muted"> {t.version}</span>}
-                  {t.explicit && <span className="badge-e" title="Ненормативная лексика">E</span>}
-                  {pt.src?.lossless && <span className="badge-l">{pt.src.ext.toUpperCase()}</span>}
-                  {liked && <span className="liked-mark" title="В любимых">♥</span>}
-                </div>
-                <div className="tr-artist">
-                  {off.isDownloaded(pt.id) && <span className="dl-dot" title="Скачано на устройство">↓</span>}
-                  {off.progress.has(pt.id) && <span className="dl-dot busy">{Math.round((off.progress.get(pt.id) ?? 0) * 100)}%</span>}
-                  <ArtistLinks track={t} />
-                </div>
-              </div>
-            </div>
-            {showAlbum && <div className="tr-album">{t.albumId ? <Link to={`/album/${t.albumId}`} onClick={(e) => e.stopPropagation()}>{t.album}</Link> : t.album}</div>}
-            <div className="tr-end">
-              <TrackDownload track={pt} />
-              <LikeButton track={pt} />
-              <span className="tr-dur">{t.duration ? fmtTime(t.duration) : ""}</span>
-              <button className="icon-btn" title="Ещё" onClick={(e) => menu(e, pt, menuExtra?.(t, i))}>
-                <MoreIcon size={18} />
-              </button>
-            </div>
-          </div>
-        );
-      })}
+      <div className="tracklist-rows" ref={rowsRef}>
+        {win.before > 0 && <div aria-hidden style={{ height: win.before }} />}
+        {rows}
+        {win.after > 0 && <div aria-hidden style={{ height: win.after }} />}
+      </div>
     </div>
   );
+}
+
+type RowHandlers = { current: { play: (k: number) => void; toggle: () => void; menu: (e: MouseEvent, i: number) => void } };
+
+const TrackRow = memo(function TrackRow({ t, pt, i, k, active, playing, liked, downloaded, progress, numbered, showCover, showAlbum, h }: {
+  t: Track;
+  pt: Track;
+  i: number;
+  k: number;
+  active: boolean;
+  playing: boolean;
+  liked: boolean;
+  downloaded: boolean;
+  progress: number | undefined;
+  numbered: boolean;
+  showCover: boolean;
+  showAlbum: boolean;
+  h: RowHandlers;
+}) {
+  return (
+    <div
+      className={`track-row ${active ? "active" : ""} ${liked ? "liked" : ""}`}
+      onDoubleClick={() => h.current.play(k)}
+      onClick={() => window.innerWidth < 760 && h.current.play(k)}
+      onContextMenu={(e) => h.current.menu(e, i)}
+    >
+      <div className="tr-num">
+        <span className="n">{playing ? <EqBars /> : numbered ? (t.position ?? i + 1) : i + 1}</span>
+        <button
+          className="tr-play"
+          title={playing ? "Пауза" : "Играть"}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (active) h.current.toggle();
+            else h.current.play(k);
+          }}
+        >
+          {playing ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+        </button>
+      </div>
+      <div className="tr-main">
+        {showCover && <Cover src={t.cover} size={120} className="tr-cover" />}
+        <div className="tr-text">
+          <div className="tr-title">
+            {t.title}
+            {t.version && <span className="muted"> {t.version}</span>}
+            {t.explicit && <span className="badge-e" title="Ненормативная лексика">E</span>}
+            {pt.src?.lossless && <span className="badge-l">{pt.src.ext.toUpperCase()}</span>}
+            {liked && <span className="liked-mark" title="В любимых">♥</span>}
+          </div>
+          <div className="tr-artist">
+            {downloaded && <span className="dl-dot" title="Скачано на устройство">↓</span>}
+            {progress !== undefined && <span className="dl-dot busy">{Math.round(progress * 100)}%</span>}
+            <ArtistLinks track={t} />
+          </div>
+        </div>
+      </div>
+      {showAlbum && <div className="tr-album">{t.albumId ? <Link to={`/album/${t.albumId}`} onClick={(e) => e.stopPropagation()}>{t.album}</Link> : t.album}</div>}
+      <div className="tr-end">
+        <TrackDownload track={pt} />
+        <LikeButton track={pt} />
+        <span className="tr-dur">{t.duration ? fmtTime(t.duration) : ""}</span>
+        <button className="icon-btn" title="Ещё" onClick={(e) => h.current.menu(e, i)}>
+          <MoreIcon size={18} />
+        </button>
+      </div>
+    </div>
+  );
+});
+
+/** The scrolling ancestor of el (null: the page scrolls — phones). */
+function scrollParent(el: HTMLElement | null): HTMLElement | null {
+  for (let p = el?.parentElement ?? null; p && p !== document.body; p = p.parentElement) {
+    const o = getComputedStyle(p).overflowY;
+    if (o === "auto" || o === "scroll") return p;
+  }
+  return null;
+}
+
+/** Windowing for a list of count rows rendered in ref (see virtual.ts). */
+function useVirtual(ref: RefObject<HTMLDivElement | null>, count: number) {
+  const on = count > VIRTUAL_FROM;
+  const [range, setRange] = useState<Range>(() => ({ start: 0, end: on ? Math.min(count, 40) : count }));
+  const rowH = useRef(0);
+  useLayoutEffect(() => {
+    if (!on) {
+      setRange((r) => (r.start === 0 && r.end === count ? r : { start: 0, end: count }));
+      return;
+    }
+    const el = ref.current;
+    if (!el) return;
+    let scroller: HTMLElement | null = null;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      // Rendered rows: their average height (spacers excluded).
+      const rows = el.querySelectorAll<HTMLElement>(".track-row");
+      if (rows.length > 1) {
+        const first = rows[0]!;
+        const last = rows[rows.length - 1]!;
+        const hgt = averageRow(last.offsetTop + last.offsetHeight - first.offsetTop, rows.length);
+        if (hgt > 0) rowH.current = hgt;
+      }
+      const top = el.getBoundingClientRect().top - (scroller ? scroller.getBoundingClientRect().top : 0);
+      const view = scroller ? scroller.clientHeight : window.innerHeight;
+      const next = windowRange(count, rowH.current, -top, view);
+      setRange((r) => (r.start === next.start && r.end === next.end ? r : next));
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    // The scroller changes with the layout (the page on phones, .main wider).
+    const bind = () => {
+      scroller?.removeEventListener("scroll", schedule);
+      scroller = scrollParent(el);
+      scroller?.addEventListener("scroll", schedule, { passive: true });
+    };
+    const onResize = () => {
+      bind();
+      schedule();
+    };
+    bind();
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      scroller?.removeEventListener("scroll", schedule);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [on, count, ref]);
+  const start = Math.min(range.start, count);
+  const end = Math.min(range.end, count);
+  const hgt = rowH.current || 56;
+  return { start, end, before: on ? start * hgt : 0, after: on ? (count - end) * hgt : 0 };
 }
 
 export function ArtistLinks({ track }: { track: Track }) {
