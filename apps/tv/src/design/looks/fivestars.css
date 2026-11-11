@@ -6,14 +6,15 @@
    An 80s crime-game homage: a fan's desk — a purple grid under a sticker collage (decor/collage.tsx)
    — in hot pink, azure and gold (tokens in theme.css). Cards are white-bordered stickers, leaning a
    little left or right, with a black caption box; focus straightens the sticker and drops a hard
-   pink shadow. Headings are mission text (condensed capitals, black outline); row titles a pink brush
-   script with a white outline. The clock is a HUD: outlined capitals over five wanted stars. One
+   pink shadow. Headings are mission text (condensed capitals, black outline); row titles a light-pink brush
+   script. The clock is a HUD: outlined capitals over five wanted stars. One
    animated layer: the glints on the bay's water. */
 .fs-desk {
   background-color: #3b2a86;
   background-image: linear-gradient(90deg, rgba(255,255,255,.09) 2px, transparent 2px), linear-gradient(0deg, rgba(255,255,255,.09) 2px, transparent 2px);
   background-size: 64px 64px;
 }
+.fs-veil { background: rgba(30,20,76,.72); }
 
 /* ---- the glints on the bay's water take turns (opacity only). */
 @keyframes fsb-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
@@ -66,11 +67,9 @@ html.design-fivestars nav[data-design-nav="projector"] > div:last-child > span:f
   background-image: var(--fs-star-empty); background-size: 24px 24px; background-repeat: repeat-x;
 }
 
-/* ---- headings: mission text; row titles in a pink brush script with a white outline and an ink drop. */
-html.design-fivestars h3 {
-  font-family: "Pacifico", cursive; font-weight: 400; letter-spacing: 0; line-height: 1.25; color: #ff4fa3; position: relative; top: -10px;
-  text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff, 2px 2px #fff, -2px -2px #fff, 2px -2px #fff, -2px 2px #fff, 5px 5px 0 #0e0a24;
-}
+/* ---- headings: mission text; row titles in a light-pink brush script with a plain ink drop (an outline smears it). */
+html.design-fivestars h3 { font-family: "Pacifico", cursive; font-weight: 400; letter-spacing: .01em; line-height: 1.25; color: #ffb3da; position: relative; top: -10px; text-shadow: 3px 3px 0 #0e0a24; }
+html.design-fivestars h3 > * { font-family: var(--mt-font-body); text-shadow: none; }
 html.design-fivestars [data-testid="hero"] h2, html.design-fivestars [data-media-id] h1 { line-height: 1.02; letter-spacing: .005em; text-shadow: 5px 5px 0 #0e0a24, -2px -2px 0 #0e0a24, 2px -2px 0 #0e0a24, -2px 2px 0 #0e0a24, 2px 2px 0 #0e0a24; }
 /* The hero's eyebrow: a pink tag like a sticker label. */
 html.design-fivestars [data-testid="hero"] p:first-child, html.design-fivestars [data-media-id] h1 + p { font-family: var(--mt-font-display); text-transform: uppercase; letter-spacing: .08em; }

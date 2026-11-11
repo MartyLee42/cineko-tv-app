@@ -455,12 +455,16 @@ html.design-western :focus-visible { outline: 3px solid rgb(163, 58, 28); outlin
 .design-swatch-western { background-image: linear-gradient(180deg, #f6eedb 0%, #ecd6aa 58%, #d29d5f 58%, #c88f52 100%) !important; box-shadow: inset 0 6px 0 #0b0806, inset 0 -6px 0 #0b0806; }
 
 /* «Пять звёзд»: a sticker collage on a purple grid desk behind the page (decor/scenes/fivestars.tsx);
-   panels and posters are white-bordered stickers; section titles in a pink brush script with a white
-   outline; buttons and focus drop a hard pink shadow. */
+   panels and posters are white-bordered stickers; section titles in pink condensed capitals; buttons
+   and focus drop a hard pink shadow. */
 html.design-fivestars body { background-color: rgb(var(--mt-bg)); }
 html.design-fivestars main section h2:not(#hero-title) {
-  font-family: "Pacifico", cursive; font-weight: 400; text-transform: none; letter-spacing: 0; color: #ffb3da;
-  text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff, 2px 2px #fff, -2px -2px #fff, 2px -2px #fff, -2px 2px #fff, 4px 4px 0 #0e0a24;
+  font-family: var(--mt-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #ffb3da;
+  text-shadow: 2px 2px 0 #0e0a24;
+}
+/* Pills and badges inside a section title stay plain text. */
+html.design-fivestars main section h2:not(#hero-title) > * {
+  font-family: var(--mt-font-body); font-weight: 600; text-transform: none; letter-spacing: normal; text-shadow: none;
 }
 html.design-fivestars section.rounded-2xl.border { border-radius: 8px; border: 4px solid #ffffff; background-color: rgba(42, 30, 104, 0.94); box-shadow: 0 0 0 2px #0e0a24, 6px 6px 0 2px rgba(14, 10, 36, 0.6); }
 html.design-fivestars .aspect-\[2\/3\] { border-radius: 6px; border: 5px solid #ffffff; box-shadow: 0 0 0 1px #0e0a24, 0 6px 14px rgba(10, 6, 30, 0.5); }
