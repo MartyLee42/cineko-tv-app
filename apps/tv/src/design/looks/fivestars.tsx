@@ -16,6 +16,8 @@ function Desk({ calm, dim }: { calm: boolean; dim: boolean }) {
   return (
     <div data-skin-bg="sunset" className={`fs-desk ${layer}`}>
       <StickerDesk calm={calm} dim={dim} className="absolute left-0 top-0" />
+      {/* Lists and grids put text anywhere on the screen: a veil keeps the collage a backdrop. */}
+      <div className="fs-veil absolute left-0 top-0 h-full w-full" />
     </div>
   );
 }
