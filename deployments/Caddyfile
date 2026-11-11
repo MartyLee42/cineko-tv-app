@@ -26,7 +26,19 @@
 	header {
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
+		# A private household server: nothing here is for search engines
+		# (the header covers files and API answers that carry no <meta>).
+		X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex"
 		-Server
+	}
+
+	# …and crawlers that read robots.txt don't even fetch the pages.
+	handle /robots.txt {
+		header Content-Type "text/plain; charset=utf-8"
+		header Cache-Control "public, max-age=86400"
+		respond `User-agent: *
+Disallow: /
+` 200
 	}
 
 	# Android app links (a self-built TWA wrapper): ANDROID_ASSETLINKS holds
