@@ -11,6 +11,8 @@
 html.design-wireframe body, html.design-wireframe .bg-bg { background-color: rgb(var(--mt-bg)); }
 /* Text over the sun and the neon floor: a soft dark-violet shadow under every line keeps white type readable on the bright stripes (headings with their own neon glow keep it). */
 html.design-wireframe body { text-shadow: 0 0 2px #0d0420, 0 0 4px #0d0420, 0 1px 3px #0d0420, 0 0 14px rgba(13, 4, 32, 0.8); }
+/* …but not on cards, panels, dialogs and filled buttons: their own background already gives contrast, and the halo only blurs the type there. (Class tokens only: "hover:bg-surface" on a row over the sun keeps it.) */
+html.design-wireframe :is([class^="bg-surface"], [class*=" bg-surface"], [class^="bg-muted"], [class*=" bg-muted"], [class^="bg-accent"], [class*=" bg-accent"], [class^="bg-bg"], [class*=" bg-bg"], [class^="bg-black"], [class*=" bg-black"], [class^="bg-white"], [class*=" bg-white"], input, textarea, select, [role="dialog"], [role="menu"], [role="listbox"], .mt-card, .tv-panel, .p-glass, .p-primary, .p-outline, .p-bar, .tv-chip, .tv-release, .tv-rate-chip, .tv-check) { text-shadow: none; }
 .sw-floor-fade { background: linear-gradient(180deg, rgba(13,4,32,1) 0%, rgba(13,4,32,.55) 14%, rgba(13,4,32,0) 46%), linear-gradient(0deg, rgba(13,4,32,.55) 0%, rgba(13,4,32,0) 30%); }
 .sw-veil { background: linear-gradient(90deg, rgba(13,4,32,.7) 0%, rgba(13,4,32,.5) 40%, rgba(13,4,32,0) 72%); }
 .sw-lines { transform-origin: 50% 0; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }

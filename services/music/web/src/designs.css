@@ -106,6 +106,8 @@ html.design-wireframe .wire-bg {
 html.design-wireframe body { background: transparent; }
 /* Text over the sun and the neon floor: a soft dark-violet shadow under every line keeps white type readable on the bright stripes (headings with their own neon glow keep it). */
 html.design-wireframe body { text-shadow: 0 0 2px #0d0420, 0 0 4px #0d0420, 0 1px 3px #0d0420, 0 0 14px rgba(13, 4, 32, 0.8); }
+/* …but not on cards, panels, dialogs and filled buttons: their own background already gives contrast, and the halo only blurs the type there. (Class tokens only: "hover:bg-surface" on a row over the sun keeps it.) */
+html.design-wireframe :is(.logo, .nav-group, .user-box, .side-panel, .wave, .wave-settings, .ai-box, .btn, .chip, .input, .search-box, .menu, .modal, .tab-sheet, .toast, .top-card, .quick-tile, .player-bar, .offline-bar, .design-opt, .tv-pill, .tv-match, .rel, .big-play, .wave-play, .card-play, .q-play) { text-shadow: none; }
 html.design-wireframe .main {
   background: color-mix(in srgb, var(--panel) 66%, transparent);
 }
