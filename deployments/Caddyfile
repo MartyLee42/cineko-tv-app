@@ -196,3 +196,8 @@ Disallow: /
 		import music
 	}
 }
+
+# Install-local sites: every *.site file in the server's caddy-extra/ folder is a
+# whole site block of its own (e.g. a download host on a subdomain; its DNS must
+# point here). Snippets above (common…) can be imported. None = nothing.
+import /etc/caddy/extra/*.site

@@ -485,6 +485,23 @@ No host cron or systemd timer is needed; it starts with the stack (also after
   Then `scripts/cineko.sh restart web`. Use `/temp/` (or `/downloads/`):
   the PWA's service worker answers other page addresses with the app
   itself in browsers that have opened Cineko.
+  A whole site of its own (another host name whose DNS points here) goes in
+  `caddy-extra/<name>.site`, e.g. one file behind a password:
+
+  ```
+  files.example.com {
+  	import common
+  	handle {
+  		basic_auth {
+  			family <bcrypt hash>
+  		}
+  		root * /srv/files/temp
+  		rewrite * /App.apk
+  		header Content-Disposition `attachment; filename="App.apk"`
+  		file_server
+  	}
+  }
+  ```
 
 ### Cineko Music on its own domain
 
