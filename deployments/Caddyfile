@@ -144,6 +144,12 @@ Disallow: /
 		file_server
 	}
 
+	# Install-local routes: every *.caddy file in the server's caddy-extra/
+	# folder next to compose.yaml (none = nothing). Files they serve go in
+	# files/ (/srv/files). E.g. a password-protected folder:
+	#   handle_path /temp/* { basic_auth { user <bcrypt hash> }  root * /srv/files/temp  file_server browse }
+	import /etc/caddy/extra/*.caddy
+
 	# TV app (built with base /tv/).
 	handle_path /tv/* {
 		handle /assets/* {

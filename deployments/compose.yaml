@@ -204,6 +204,10 @@ services:
       # Earlier releases' hashed /assets and /tv/assets for pages opened before
       # a deploy (TVs run one page for days); filled and pruned at start.
       - asset-archive:/srv/asset-archive
+      # Install-local Caddy routes (caddy-extra/*.caddy, imported into the main
+      # site) and the files they serve (files/ → /srv/files). Never in git.
+      - ./caddy-extra:/etc/caddy/extra:ro
+      - ./files:/srv/files:ro
     depends_on:
       api:
         condition: service_started
