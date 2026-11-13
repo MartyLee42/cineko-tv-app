@@ -465,6 +465,25 @@ No host cron or systemd timer is needed; it starts with the stack (also after
   `<meta name="robots" content="noindex…">`. Behind your own proxy (below),
   add the header there too.
 
+- **Your own routes**: every `*.caddy` file in `caddy-extra/` next to
+  `compose.yaml` is imported into the main site, and `files/` is served to
+  them as `/srv/files` (both read-only, never in git). E.g. a
+  password-protected folder at `/temp/` (hash from
+  `scripts/cineko.sh exec web caddy hash-password`):
+
+  ```
+  redir /temp /temp/
+  handle_path /temp/* {
+  	basic_auth {
+  		family <bcrypt hash>
+  	}
+  	root * /srv/files/temp
+  	file_server browse
+  }
+  ```
+
+  Then `scripts/cineko.sh restart web`.
+
 ### Cineko Music on its own domain
 
 Cineko Music always lives at `/music/` on the main host. Optionally it can also
