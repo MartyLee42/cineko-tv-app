@@ -482,7 +482,9 @@ No host cron or systemd timer is needed; it starts with the stack (also after
   }
   ```
 
-  Then `scripts/cineko.sh restart web`.
+  Then `scripts/cineko.sh restart web`. Use `/temp/` (or `/downloads/`):
+  the PWA's service worker answers other page addresses with the app
+  itself in browsers that have opened Cineko.
 
 ### Cineko Music on its own domain
 
