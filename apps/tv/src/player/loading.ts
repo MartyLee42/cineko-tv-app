@@ -3,8 +3,11 @@
 //
 //   resolving / searching / creating the source   0    → 0.08
 //   TorrServer fetching metadata (no stats yet)    0.08 → 0.15
-//   preloading (preloaded_bytes vs the goal)       0.15 → 0.9
-//   stream ready, video loading → first frame      0.9  → 1
+//   the torrent's bytes (preloaded_bytes vs goal)  0.15 → 0.97
+//     — before the source is ready AND after it, while the TV pulls the first
+//       data through TorrServer (the slow part: the bar used to leap
+//       10 → 90 % at «ready» and then sit there)
+//   the first frame                                       → 1
 //
 // Inside a stage with no measurable progress the value creeps towards the
 // stage's end (never reaching it), so the animation never looks frozen.
@@ -26,8 +29,9 @@ export const STAGE_RANGE: Record<LoadStage, [number, number]> = {
   searching: [0.02, 0.06],
   creating: [0.05, 0.08],
   metadata: [0.08, 0.15],
-  preloading: [0.15, 0.9],
-  starting: [0.9, 1],
+  preloading: [0.15, 0.97],
+  // Shares the bytes scale with preloading (the meter keeps whichever is ahead).
+  starting: [0.15, 0.97],
   done: [1, 1],
 };
 
@@ -65,6 +69,13 @@ export function stageOf(step: "resolving" | "searching" | "preparing", source: P
   return "preloading";
 }
 
+/** The torrent's preloaded bytes against the goal, 0→1. */
+function bytesDone(i: LoadInput): number {
+  const size = i.source?.file?.size_bytes ?? i.source?.release?.size_bytes ?? null;
+  const got = i.source?.torrent?.preloaded_bytes ?? 0;
+  return Math.min(1, got / preloadGoal(i.source?.torrent, size));
+}
+
 /** Raw (possibly non-monotonic) progress for the current stage. */
 export function rawProgress(i: LoadInput): number {
   const [a, b] = STAGE_RANGE[i.stage];
@@ -72,15 +83,15 @@ export function rawProgress(i: LoadInput): number {
   switch (i.stage) {
     case "done":
       return 1;
-    case "preloading": {
-      const size = i.source?.file?.size_bytes ?? i.source?.release?.size_bytes ?? null;
-      const got = i.source?.torrent?.preloaded_bytes ?? 0;
-      const f = Math.min(1, got / preloadGoal(i.source?.torrent, size));
-      return a + span * f;
+    case "preloading":
+      return a + span * bytesDone(i);
+    case "starting": {
+      // The torrent's bytes lead; without stats (online sources, a TorrServer
+      // that doesn't say) time creeps it on, faster once the metadata is in.
+      const time = i.metadata ? 0.5 + 0.45 * creep(i.stageMs, 2500) : 0.5 * creep(i.stageMs, 5000);
+      const bytes = i.source?.torrent ? bytesDone(i) : 0;
+      return a + span * Math.max(time, bytes);
     }
-    case "starting":
-      // Metadata arrived: most of the way to the first frame.
-      return a + span * (i.metadata ? 0.6 + 0.35 * creep(i.stageMs, 1500) : 0.55 * creep(i.stageMs, 2500));
     default:
       return a + span * 0.92 * creep(i.stageMs, i.stage === "metadata" ? 6000 : 2500);
   }

@@ -61,6 +61,7 @@ import { qualityInPlace, videoControl } from "./video/remote";
 import { PillLayer } from "./design/PillDialog";
 import { PausedSaver } from "./idle/PausedSaver";
 import { introEnv, shouldShowIntro } from "./intro/logic";
+import { takeUpdateReload } from "./update";
 import { preloadIntroScene } from "./intro/sceneImports";
 import { beforeChunkReload, watched } from "./chunkReload";
 import { ChunkBoundary } from "./ChunkBoundary";
@@ -188,7 +189,8 @@ export function App() {
   const resumed = useRef(false);
   // Startup intro: once per app start, in the design this TV last showed
   // (not when coming back from a chunk reload: straight back to the film).
-  const [intro, setIntro] = useState(() => (!resume && shouldShowIntro(introEnv()) ? themeCache.design() : null));
+  // Nor after an update's reload (update.ts): Home was just on screen.
+  const [intro, setIntro] = useState(() => (!resume && !takeUpdateReload() && shouldShowIntro(introEnv()) ? themeCache.design() : null));
   const endIntro = useCallback(() => setIntro(null), []);
   // The intro's scene is its own chunk: fetch it with the intro shell.
   useEffect(() => {
@@ -880,7 +882,8 @@ export function App() {
   return (
     <DesignProvider value={design}>
     <DeviceProvider value={device}>
-    <div className="relative h-full w-full">
+    {/* data-screen: what the TV shows (the TV emulator, e2e/tests/tv-emulator.spec.ts, watches it for flashes). */}
+    <div data-screen={screen.kind} className="relative h-full w-full">
       {/* Pairing / profile pick: the skin's background behind the screen (the catalog draws its own). */}
       {screen.kind === "home" ? body : (
         <>

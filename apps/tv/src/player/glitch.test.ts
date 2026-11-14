@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed } from "./glitch";
+import { beyondTarget, decodeErrorIsNetwork, isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed, shownPosition, truncatedLength } from "./glitch";
 
 describe("seekMissed", () => {
   it("an engine that dropped the start seek plays near 0", () => {
@@ -45,5 +45,53 @@ describe("isUnexplainedDrop", () => {
     expect(isUnexplainedDrop(3, 2400, false)).toBe(true);
     expect(isUnexplainedDrop(2390, 2400, false)).toBe(false); // small wobble
     expect(isUnexplainedDrop(3, 2400, true)).toBe(false); // the viewer seeked back
+  });
+});
+
+describe("shownPosition", () => {
+  it("holds the resume spot while the engine still reads 0 (no 0 ↔ resume flicker)", () => {
+    expect(shownPosition({ time: 0, lastGood: 1800, target: 1800, seekWindow: true })).toBe(1800);
+    expect(shownPosition({ time: 1801, lastGood: 1800, target: 1800, seekWindow: true })).toBe(1801);
+  });
+  it("never shows the end of the film when the network drops", () => {
+    // Right after a (re)load: the engine leaps to the end.
+    expect(shownPosition({ time: 7190, lastGood: 1800, target: 1800, seekWindow: true })).toBe(1800);
+    // Later in playback.
+    expect(shownPosition({ time: 7190, lastGood: 2400, target: 1800, seekWindow: false })).toBe(2400);
+    // …or restarts from the start.
+    expect(shownPosition({ time: 2, lastGood: 2400, target: 1800, seekWindow: false })).toBe(2400);
+  });
+  it("normal playback and a landed seek show the engine's time", () => {
+    expect(shownPosition({ time: 2405, lastGood: 2400, target: 1800, seekWindow: false })).toBe(2405);
+    expect(shownPosition({ time: 300, lastGood: 300, target: 300, seekWindow: true })).toBe(300);
+  });
+  it("a NaN time shows the target", () => {
+    expect(shownPosition({ time: NaN, lastGood: 10, target: 600, seekWindow: true })).toBe(600);
+  });
+});
+
+describe("beyondTarget / truncatedLength", () => {
+  it("a jump past the seek's target is not explained by that seek", () => {
+    expect(beyondTarget(7190, 1800)).toBe(true);
+    expect(beyondTarget(1810, 1800)).toBe(false);
+    expect(beyondTarget(7190, null)).toBe(false);
+  });
+  it("an engine length far shorter than ffprobe's is a cut-off stream", () => {
+    expect(truncatedLength(1900, 7200)).toBe(true);
+    expect(truncatedLength(7199.5, 7200)).toBe(false);
+    expect(truncatedLength(1900, null)).toBe(false);
+  });
+});
+
+describe("decodeErrorIsNetwork", () => {
+  it("a decode error after playing fine (Tizen on a dropped link) is a network drop", () => {
+    expect(decodeErrorIsNetwork(3, 6000, true)).toBe(true);
+    expect(decodeErrorIsNetwork(4, 120, true)).toBe(true);
+    expect(decodeErrorIsNetwork(3, 5, false)).toBe(true);
+  });
+  it("right at the start it is about the codec (compat / unplayable as before)", () => {
+    expect(decodeErrorIsNetwork(3, 0, true)).toBe(false);
+    expect(decodeErrorIsNetwork(4, 20, true)).toBe(false);
+    expect(decodeErrorIsNetwork(2, 6000, true)).toBe(false);
   });
 });

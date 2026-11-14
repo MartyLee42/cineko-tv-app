@@ -16,10 +16,39 @@ const CHECK_MS = 10 * 60_000;
 /** No key for this long counts as nobody using the TV right now. */
 const QUIET_MS = 3 * 60_000;
 
-/** Whether a reload may happen now. */
-export function safeToReload(o: { playerIdle: boolean; mediaPlaying: boolean; sinceKeyMs: number; justWoke: boolean }): boolean {
+/** Whether a reload may happen now. `hidden`: the screen is off / the app in the background (nobody sees it). */
+export function safeToReload(o: { playerIdle: boolean; mediaPlaying: boolean; sinceKeyMs: number; justWoke: boolean; hidden?: boolean }): boolean {
   if (!o.playerIdle || o.mediaPlaying) return false;
-  return o.justWoke || o.sinceKeyMs >= QUIET_MS;
+  return !!o.hidden || o.justWoke || o.sinceKeyMs >= QUIET_MS;
+}
+
+/**
+ * Marks the next page load as this update's reload (sessionStorage): it
+ * skips the startup intro. A reload on waking showed Home, then the boot
+ * screen and the intro all over again («заставка ещё раз на секунду»).
+ */
+const RELOAD_KEY = "martytv.update_reload";
+
+function markReload() {
+  try {
+    sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
+  } catch {
+    /* no storage: the intro plays, nothing worse */
+  }
+}
+
+type Store = Pick<Storage, "getItem" | "removeItem">;
+const session = (): Store | null => (typeof sessionStorage === "undefined" ? null : sessionStorage);
+
+/** This page is an update reload (read once; within a minute of it). */
+export function takeUpdateReload(now = Date.now(), store: Store | null = session()): boolean {
+  try {
+    const at = Number(store?.getItem(RELOAD_KEY));
+    store?.removeItem(RELOAD_KEY);
+    return at > 0 && now - at >= 0 && now - at < 60_000;
+  } catch {
+    return false;
+  }
 }
 
 function mediaPlaying(): boolean {
@@ -34,9 +63,13 @@ export function installAutoUpdate(playerIdle: () => boolean) {
   let stale = false;
   window.addEventListener("keydown", () => (lastKey = Date.now()), true);
 
+  const hidden = () => document.visibilityState === "hidden";
   const tryReload = (justWoke: boolean) => {
     if (!stale) return;
-    if (safeToReload({ playerIdle: playerIdle(), mediaPlaying: mediaPlaying(), sinceKeyMs: Date.now() - lastKey, justWoke })) location.reload();
+    if (safeToReload({ playerIdle: playerIdle(), mediaPlaying: mediaPlaying(), sinceKeyMs: Date.now() - lastKey, justWoke, hidden: hidden() })) {
+      markReload();
+      location.reload();
+    }
   };
   const check = async (justWoke: boolean) => {
     try {
@@ -61,7 +94,13 @@ export function installAutoUpdate(playerIdle: () => boolean) {
     if (woke) void check(true);
     else tryReload(false);
   }, 30_000);
+  // Best while the screen is off (standby, the app in the background): the
+  // reload happens unseen and the TV wakes straight into the new release.
+  // Waking with a stale page still reloads (no intro then: takeUpdateReload).
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") void check(true);
+    if (hidden()) {
+      if (stale) tryReload(false);
+      else void check(false);
+    } else void check(true);
   });
 }

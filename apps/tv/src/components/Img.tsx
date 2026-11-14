@@ -10,19 +10,44 @@ export function Img({ src, className = "", alt = "" }: { src: string | null | un
   return <ImgInner key={src} src={src} className={className} alt={alt} />;
 }
 
+/**
+ * Images that already loaded in this session (bounded). Rows and grids are
+ * virtualized: a card that scrolls out of the render window unmounts, and
+ * coming back it used to start hidden again — lazy, async-decoded, a 300 ms
+ * fade from the placeholder — so scrolling a row made posters blink. A known
+ * image now shows at once (eager, decoded with the frame, no fade).
+ */
+const shown = new Set<string>();
+const SHOWN_MAX = 1500;
+
+function remember(src: string) {
+  if (shown.has(src)) return;
+  shown.add(src);
+  if (shown.size > SHOWN_MAX) shown.delete(shown.values().next().value as string);
+}
+
+/** Tests: whether `src` counts as already shown. */
+export function wasShown(src: string): boolean {
+  return shown.has(src);
+}
+
 function ImgInner({ src, className, alt }: { src: string; className: string; alt: string }) {
-  const [state, setState] = useState<"loading" | "ok" | "error">("loading");
+  const [known] = useState(() => shown.has(src));
+  const [state, setState] = useState<"loading" | "ok" | "error">(known ? "ok" : "loading");
   if (state === "error") return null;
   return (
     <img
       src={src}
       alt={alt}
-      decoding="async"
-      loading="lazy"
+      decoding={known ? "sync" : "async"}
+      loading={known ? "eager" : "lazy"}
       draggable={false}
-      onLoad={() => setState("ok")}
+      onLoad={() => {
+        remember(src);
+        if (state !== "ok") setState("ok");
+      }}
       onError={() => setState("error")}
-      className={`transition-opacity duration-300 ${state === "ok" ? "opacity-100" : "opacity-0"} ${className}`}
+      className={`${known ? "" : "transition-opacity duration-300 "}${state === "ok" ? "opacity-100" : "opacity-0"} ${className}`}
     />
   );
 }
