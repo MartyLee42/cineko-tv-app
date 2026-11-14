@@ -92,6 +92,42 @@ func (s *Store) List(ctx context.Context) ([]User, error) {
 	return out, rows.Err()
 }
 
+// LastSeen is when a user last used Cineko: the web app / Cineko Music
+// (their newest session) or one of their TVs (Device names it).
+type LastSeen struct {
+	At     time.Time
+	App    string // "web" or "tv"
+	Device string
+}
+
+// LastSeenAll: every user's latest activity (users never seen are absent).
+// Sessions and TVs record it at most once a minute (auth.Service).
+func (s *Store) LastSeenAll(ctx context.Context) (map[string]LastSeen, error) {
+	rows, err := s.q.Query(ctx, `
+		SELECT DISTINCT ON (user_id) user_id, at, app, device FROM (
+			SELECT user_id, max(last_seen_at) AS at, 'web' AS app, '' AS device
+			FROM user_sessions GROUP BY user_id
+			UNION ALL
+			SELECT owner_user_id, last_seen_at, 'tv', name
+			FROM devices WHERE last_seen_at IS NOT NULL
+		) x
+		ORDER BY user_id, at DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]LastSeen{}
+	for rows.Next() {
+		var id string
+		var l LastSeen
+		if err := rows.Scan(&id, &l.At, &l.App, &l.Device); err != nil {
+			return nil, err
+		}
+		out[id] = l
+	}
+	return out, rows.Err()
+}
+
 func (s *Store) Count(ctx context.Context) (int, error) {
 	var n int
 	err := s.q.QueryRow(ctx, `SELECT count(*) FROM users`).Scan(&n)

@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type BrowserContext, type Page, type Route } from "@playwright/test";
 import { quietHome } from "./quietHome";
-import { barBounces, emulateTv, flashesAfterHome, loadDrops, takeBlinks, takeLog, timeline, TV_CPU } from "./tvEmulator";
+import { barBounces, emulateTv, flashesAfterHome, loadDrops, takeBlinks, takeLog, unshownPosters, timeline, TV_CPU } from "./tvEmulator";
 
 const USER = process.env.E2E_USER ?? "e2e-admin";
 const PASS = process.env.E2E_PASS ?? "e2e-password-123";
@@ -181,15 +181,24 @@ test(`TV emulator (CPU ×${TV_CPU}): no start-up flash, steady loading, no jump 
     await expect(tv.locator("[data-card-id] img").first()).toBeVisible({ timeout: 30_000 });
     await tv.waitForTimeout(3_000);
     await takeBlinks(tv);
-    for (const key of ["ArrowRight", "ArrowLeft"]) {
-      for (let i = 0; i < 16; i++) {
-        await tv.keyboard.press(key);
-        await tv.waitForTimeout(250);
-      }
-      await tv.waitForTimeout(2_000);
+    // Right: the cards coming in at the right edge are loaded before they show
+    // (checked once each move's slide is over); then back left.
+    const late: string[] = [];
+    // Holding → on a remote (key repeat, a move every ~0.2 s), checked after each slide.
+    for (let i = 0; i < 18; i++) {
+      await tv.keyboard.press("ArrowRight");
+      await tv.waitForTimeout(220);
+      late.push(...(await unshownPosters(tv)));
     }
+    await tv.waitForTimeout(2_000);
+    for (let i = 0; i < 16; i++) {
+      await tv.keyboard.press("ArrowLeft");
+      await tv.waitForTimeout(250);
+    }
+    await tv.waitForTimeout(2_000);
     const blinks = await takeBlinks(tv);
     expect(blinks, "posters that came back hidden").toEqual([]);
+    expect([...new Set(late)], "posters still loading when they scrolled into view").toEqual([]);
 
     // --- 2. Play from 120 s: the loading screen, then the start seek (dropped once, slow to land).
     await takeLog(tv);

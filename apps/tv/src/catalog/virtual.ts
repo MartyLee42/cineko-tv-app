@@ -9,16 +9,25 @@ export function windowRange(focus: number, count: number, before: number, after:
 }
 
 /**
+ * Cards mounted past the row's right edge, so their posters have loaded
+ * before they slide in. With one or two (the old window) holding → on a TV
+ * gave each poster ~0.3 s: the cards coming in at the edge showed their
+ * placeholder and faded in — «the last two blink».
+ */
+export const ROW_AHEAD = 3;
+
+/**
  * Items to render in a horizontal row: the focus window, widened to every
- * item actually on screen at `offset` (plus one on each side). At the end of
- * a row the focused card sits at the right edge, so the plain window (a few
- * before the focus) left the left part of the screen empty.
+ * item actually on screen at `offset` (plus one on the left and ROW_AHEAD on
+ * the right). At the end of a row the focused card sits at the right edge,
+ * so the plain window (a few before the focus) left the left part of the
+ * screen empty.
  */
 export function rowWindow(focus: number, count: number, before: number, after: number, offset: number, pitch: number, viewport: number): [number, number] {
   const [a, b] = windowRange(focus, count, before, after);
   if (count <= 0 || pitch <= 0) return [a, b];
   const first = Math.max(0, Math.floor(offset / pitch) - 1);
-  const last = Math.min(count, Math.ceil((offset + viewport) / pitch) + 1);
+  const last = Math.min(count, Math.ceil((offset + viewport) / pitch) + ROW_AHEAD);
   return [Math.min(a, first), Math.max(b, last)];
 }
 

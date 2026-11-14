@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gridNeighbor, gridWindow, nearEnd, rowWindow, trackOffset, windowRange } from "./virtual";
+import { gridNeighbor, gridWindow, nearEnd, ROW_AHEAD, rowWindow, trackOffset, windowRange } from "./virtual";
 import { applyKey, LAYOUTS, normalizeQuery, physicalKey, type KeyAction } from "./keyboard";
 import { cardKey, linearNext, uniqueById } from "./focusKeys";
 import { initialStack, openSection, pop, push } from "./nav";
@@ -139,6 +139,11 @@ describe("rowWindow", () => {
     expect(b - a).toBeGreaterThanOrEqual(8);
   });
   it("in the middle keeps the usual window", () => {
-    expect(rowWindow(10, 20, 4, 8, off(10), pitch, 1720)).toEqual([6, 19]);
+    expect(rowWindow(10, 20, 4, 8, off(10), pitch, 1720)).toEqual([6, 20]);
+  });
+  it("mounts ROW_AHEAD cards past the right edge (posters load before they slide in)", () => {
+    // Focus 2 at the left edge: the cards on screen, then ROW_AHEAD more.
+    const [, b] = rowWindow(2, 40, 4, 8, off(2), pitch, 1720);
+    expect(b).toBe(Math.ceil((off(2) + 1720) / pitch) + ROW_AHEAD);
   });
 });
