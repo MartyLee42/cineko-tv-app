@@ -156,6 +156,8 @@ describe("controller quality switch", () => {
     expect(c.qualities()).toEqual({ list: [1080, 720, 480], current: 1080 });
     // Watched a while, playing.
     v.dispatchEvent(new Event("loadedmetadata"));
+    // (A seek: a 600 s leap right after the load would be a broken stream.)
+    c.seekTo(600);
     v.currentTime = 600;
     v.dispatchEvent(new Event("timeupdate"));
     expect(await c.setQuality(480)).toBe(true);
@@ -194,6 +196,7 @@ describe("progress session vs a late <video>", () => {
     c.attach(v as unknown as HTMLVideoElement);
     expect(v.src).toBe("/api/v1/stream/tok1/index.m3u8");
     v.dispatchEvent(new Event("loadedmetadata"));
+    c.seekTo(50);
     v.currentTime = 50;
     v.paused = false;
     v.dispatchEvent(new Event("playing"));
@@ -294,6 +297,8 @@ describe("controller seeks", () => {
     c.playRelease(ctx, variantRelease(variant) as Release);
     await vi.waitFor(() => expect(c.flow.phase).toBe("playing"));
     v.dispatchEvent(new Event("loadedmetadata"));
+    // (A seek: a 600 s leap right after the load would be a broken stream.)
+    c.seekTo(600);
     v.currentTime = 600;
     v.dispatchEvent(new Event("timeupdate"));
     expect(await c.setQuality(480)).toBe(true);

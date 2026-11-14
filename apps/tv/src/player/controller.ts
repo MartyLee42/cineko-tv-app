@@ -6,7 +6,7 @@ import { hasMediaSource, hlsMode, isAndroid, skipTarget } from "@martytv/media-t
 import { setMediaContext } from "@martytv/ui";
 import { hasAudio } from "./audio";
 import { tvVolume } from "./volume";
-import { isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed } from "./glitch";
+import { beyondTarget, isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed, shownPosition, truncatedLength } from "./glitch";
 import { attachHlsJs, reloadUrl, streamMode, type HlsHandle } from "./stream";
 
 type Track = Schemas["Track"];
@@ -230,6 +230,13 @@ export class PlayerController {
   private freshUrl: string | null = null;
   private refreshes = 0;
   private lastGood = 0;
+  /**
+   * Where the last load / seek was meant to land. Until the engine gets there
+   * (within the seek window) the bar shows this, not the engine's interim
+   * 0 or a dropped seek — the start of a film used to flick 0 ↔ resume spot.
+   * A jump past it is never «explained» by that seek.
+   */
+  private seekTarget: number | null = null;
   /** Until when a big position jump is expected (user/remote seek, new load). */
   private seekAllowedUntil = 0;
   /** Where to continue after a premature end / jump (the last trusted spot). */
@@ -355,8 +362,8 @@ export class PlayerController {
     const f = this.flow;
     if (!v || f.phase !== "playing" || f.ctx.player !== "builtin" || this.loadedUrl === null) return null;
     const position = this.resumeAt ?? this.pendingSeek ?? (v.currentTime > 0 || this.started ? this.trustedPosition() : f.startAt);
-    const d = isFinite(v.duration) && v.duration > 0 ? v.duration : knownDuration(f.source);
-    const snap = { position, duration: this.compat ? knownDuration(f.source) : d, paused: v.paused && !this.rebuf };
+    // duration(): a cut-off stream's shortened engine length never counts (a «watched to the end» report).
+    const snap = { position, duration: this.duration(), paused: v.paused && !this.rebuf };
     this.lastSnap = snap;
     return snap;
   }
@@ -1318,7 +1325,7 @@ export class PlayerController {
         }
         const v = this.video;
         if (v && !v.seeking && this.position() < 5) this.seekTo(at);
-        else if (!v) this.pendingSeek = at;
+        else if (!v) this.pendingSeek = this.seekTarget = at;
       });
   }
 
@@ -1469,6 +1476,7 @@ export class PlayerController {
     this.pendingSeek = !compat && at > 0.5 ? at : null;
     this.seekCheck = null;
     this.lastGood = at;
+    this.seekTarget = at;
     this.loadedAt = at;
     this.seekAllowedUntil = Date.now() + 15000;
     // A fresh stream: the next stall uses the short after-seek threshold.
@@ -1576,6 +1584,9 @@ export class PlayerController {
     if (f.phase !== "playing") return;
     if (kind === "network" && this.refreshes < 3) {
       this.refreshes++;
+      // Hold the spot (the bar too) while the fresh URL comes: a dead link
+      // can leave the engine at the end of the film or at 0.
+      this.resumeAt = this.trustedPosition();
       this.pendingSeek = null;
       void this.refreshUrl(true);
       return;
@@ -1644,7 +1655,10 @@ export class PlayerController {
     // Absolute time (compat streams count from their offset).
     const t = this.abs(v);
     const allowed = Date.now() <= this.seekAllowedUntil;
-    if (!v.seeking && (isUnexplainedJump(t, this.lastGood, allowed) || (!v.ended && isUnexplainedDrop(t, this.lastGood, allowed)))) {
+    // A seek explains landing at its target, never a jump past it: a stream
+    // cut off right after a (re)load made TV engines leap to the credits.
+    const jumpOk = allowed && !beyondTarget(t, this.seekTarget);
+    if (!v.seeking && (isUnexplainedJump(t, this.lastGood, jumpOk) || (!v.ended && isUnexplainedDrop(t, this.lastGood, allowed)))) {
       // Nobody asked for this jump: a broken stream made the engine skip
       // ahead, or restart from the beginning — continue at the trusted spot.
       this.recoverPrematureEnd();
@@ -1704,6 +1718,9 @@ export class PlayerController {
     }
     if (this.refreshes < errorRetries(err.code, !!this.compat)) {
       this.refreshes++;
+      // Hold the spot (the bar too) while the fresh URL comes: a dead link
+      // can leave the engine at the end of the film or at 0.
+      this.resumeAt = this.trustedPosition();
       this.pendingSeek = null;
       void this.refreshUrl(true);
       return;
@@ -2372,12 +2389,7 @@ export class PlayerController {
 
   /** The position minus unexplained jumps (what progress reports and errors keep). */
   trustedPosition(): number {
-    if (this.resumeAt !== null) return this.resumeAt;
-    const v = this.video;
-    const p = this.position();
-    const allowed = Date.now() <= this.seekAllowedUntil;
-    if (v && (isUnexplainedJump(p, this.lastGood, allowed) || isUnexplainedDrop(p, this.lastGood, allowed))) return this.lastGood;
-    return p;
+    return this.position();
   }
 
   /**
@@ -2419,7 +2431,14 @@ export class PlayerController {
     if (this.compatPending !== null) return this.compatPending;
     if (this.awaitingInfo()) return this.infoWait!.at;
     if (!v || this.loadedUrl === null) return f.startAt;
-    return this.pendingSeek ?? this.abs(v);
+    if (this.resumeAt !== null) return this.resumeAt;
+    if (this.pendingSeek !== null) return this.pendingSeek;
+    return shownPosition({
+      time: this.abs(v),
+      lastGood: this.lastGood,
+      target: this.seekTarget,
+      seekWindow: Date.now() <= this.seekAllowedUntil,
+    });
   }
 
   /** Absolute time of the element (compat: + the stream's offset). */
@@ -2429,9 +2448,15 @@ export class PlayerController {
 
   duration(): number | null {
     const v = this.video;
-    if (v && !this.compat && isFinite(v.duration) && v.duration > 0) return v.duration;
     const f = this.flow;
-    return f.phase === "playing" || f.phase === "preparing" ? knownDuration(f.source) : null;
+    const known = f.phase === "playing" || f.phase === "preparing" ? knownDuration(f.source) : null;
+    if (v && !this.compat && isFinite(v.duration) && v.duration > 0) {
+      // A cut-off stream can shorten the engine's length (the bar then sat at
+      // the end): the server's ffprobe length wins over a much shorter one.
+      const probed = f.phase === "playing" ? f.source.media_info?.duration_seconds : null;
+      return truncatedLength(v.duration, probed) ? probed! : v.duration;
+    }
+    return known;
   }
 
   isPlaying(): boolean {
@@ -2455,7 +2480,12 @@ export class PlayerController {
     // Play while rebuffering: the user resumes early (if that doesn't move soon either, the watchdog reopens it).
     this.resumedAt = Date.now();
     if (this.rebuf) return this.endRebuffer(true), true;
-    if (v.ended) v.currentTime = 0;
+    if (v.ended) {
+      // Again from the start: the viewer's own jump back.
+      this.lastGood = this.seekTarget = 0;
+      this.seekAllowedUntil = Date.now() + 8000;
+      v.currentTime = 0;
+    }
     this.play();
     this.emit("playback");
     return true;
@@ -2495,6 +2525,7 @@ export class PlayerController {
     // back, again and again. A backward seek left lastGood ahead too, so a
     // later recovery jumped forward to where the viewer had been.
     this.lastGood = target;
+    this.seekTarget = target;
     this.seeks++;
     this.seekCheck = null;
     this.seekedAt = Date.now();

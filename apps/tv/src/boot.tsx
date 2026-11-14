@@ -52,6 +52,13 @@ if (needsBackTrap(detectPlatform()) || /MSX|Media ?Station/i.test(navigator.user
 
 // Remote-control focus management (arrow keys + OK/Enter).
 init({ debug: false, visualDebug: false, throttle: 80, throttleKeypresses: true });
+// Tests (the TV emulator) and debugging: what the player's bar shows.
+(window as unknown as { __playerBar?: () => { phase: string; pos: number; dur: number | null; started: boolean } }).__playerBar = () => ({
+  phase: player.flow.phase,
+  pos: player.position(),
+  dur: player.duration(),
+  started: player.started,
+});
 // Tests and debugging: the current focus key.
 (window as unknown as { __focusKey?: () => string }).__focusKey = getCurrentFocusKey;
 // Reports a Left/Right in the menu that skips a tab (seen on some TVs only).

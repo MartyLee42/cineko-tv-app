@@ -40,6 +40,8 @@ make dev          # dev stack on :8080 (PWA /, TV /tv/, music /music/), live rel
 make admin USER=me
 make test         # Go (with the dev Postgres) + JS unit tests
 make lint typecheck e2e
+make tv-emu      # TV emulator: slow CPU (TV_CPU=6), TV video-engine quirks, offline mid-film,
+                 # start-up flashes, poster blinks (e2e/tests/tv-emulator.spec.ts)
 ```
 
 One-off without the dev stack:

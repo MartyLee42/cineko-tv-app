@@ -40,3 +40,37 @@ export function seekMissed(current: number, target: number): boolean {
   if (!Number.isFinite(current)) return false;
   return current < target - 10 || current > target + 30;
 }
+
+/** True when `position` is far past where the last load / seek was meant to land. */
+export function beyondTarget(position: number, target: number | null): boolean {
+  return target !== null && position > target + JUMP_LIMIT;
+}
+
+/**
+ * The position the player shows (and reports): the engine's time, except
+ *  - within a seek's window, while the engine hasn't reached the target yet
+ *    (it reads 0 before a start seek lands, or the old spot): the target;
+ *  - an unexplained jump / drop (a broken stream: the engine leapt to the
+ *    end or restarted at 0): the last trusted position.
+ * Before, the raw time showed: the bar flicked between 0 and the resume
+ * spot on start, and ran to the end of the film when the network dropped.
+ */
+export function shownPosition(o: { time: number; lastGood: number; target: number | null; seekWindow: boolean }): number {
+  const { time, lastGood, target, seekWindow } = o;
+  if (!Number.isFinite(time)) return target ?? lastGood;
+  if (seekWindow) {
+    if (target !== null && Math.abs(time - target) > JUMP_LIMIT) return target;
+    return time;
+  }
+  if (isUnexplainedJump(time, lastGood, false) || isUnexplainedDrop(time, lastGood, false)) return lastGood;
+  return time;
+}
+
+/**
+ * The engine's length is much shorter than the server's ffprobe length: a
+ * stream cut off mid-way (the network dropped) that the engine took for the
+ * whole file.
+ */
+export function truncatedLength(engine: number, probed: number | null | undefined): boolean {
+  return !!probed && probed > 0 && engine < probed * 0.9;
+}

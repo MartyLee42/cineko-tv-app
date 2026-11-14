@@ -32,11 +32,11 @@ describe("loading progress model", () => {
     }
   });
 
-  it("preloading follows preloaded bytes from 0.15 to 0.9", () => {
+  it("preloading follows preloaded bytes from 0.15 to 0.97", () => {
     const src = (n: number) => ({ torrent: tor(n), file: { index: 0, path: "x", size_bytes: 1000 * MB, is_video: true, season: null, episode: null }, release: null } as never);
     expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(0) })).toBeCloseTo(0.15);
-    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(10 * MB) })).toBeCloseTo(0.525);
-    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(40 * MB) })).toBeCloseTo(0.9);
+    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(10 * MB) })).toBeCloseTo(0.56);
+    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src(40 * MB) })).toBeCloseTo(0.97);
   });
 
   it("metadata moves 'starting' forward; done is 1", () => {
@@ -97,10 +97,10 @@ describe("one load's progress (LoadTracker)", () => {
   it("survives a remount of the loading screen (same load)", () => {
     const t = new LoadTracker();
     const a = t.update("g1", { stage: "preloading", source: src("s1", 10 * MB, 1000 * MB), sourceId: "s1" }, 1000);
-    expect(a).toBeCloseTo(0.525);
+    expect(a).toBeCloseTo(0.56);
     // A remounted screen starts from what was shown, and continues from there.
-    expect(t.current("g1")).toBeCloseTo(0.525);
-    expect(t.update("g1", { stage: "metadata", source: src("s1", null, 1000 * MB), sourceId: "s1" }, 1400)).toBeCloseTo(0.525);
+    expect(t.current("g1")).toBeCloseTo(0.56);
+    expect(t.update("g1", { stage: "metadata", source: src("s1", null, 1000 * MB), sourceId: "s1" }, 1400)).toBeCloseTo(0.56);
     expect(t.current("g2")).toBe(0);
   });
 
@@ -205,10 +205,20 @@ describe("one number for one load attempt", () => {
     expect(t.update("k", { stage: "done" }, 1000 + SHOW_EVERY_MS + 1)).toBe(1);
   });
 
-  it("phases share one scale: preload up to 0.9, the first frame the rest", () => {
-    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src("s", 64 * MB) })).toBeCloseTo(0.9);
-    expect(rawProgress({ stage: "starting", stageMs: 0 })).toBeGreaterThanOrEqual(0.9);
+  it("phases share one scale: the torrent's bytes up to 0.97, the first frame the rest", () => {
+    expect(rawProgress({ stage: "preloading", stageMs: 0, source: src("s", 64 * MB) })).toBeCloseTo(0.97);
     expect(rawProgress({ stage: "starting", stageMs: 600_000, metadata: true })).toBeLessThan(1);
+  });
+
+  it("«ready» doesn't leap to 90 %: the first data through TorrServer moves the bar", () => {
+    // Ready with little preloaded: well short of the end…
+    const ready = rawProgress({ stage: "starting", stageMs: 0, source: src("s", 2 * MB) });
+    expect(ready).toBeLessThan(0.3);
+    // …and it grows with the bytes the TV pulls.
+    expect(rawProgress({ stage: "starting", stageMs: 0, source: src("s", 16 * MB) })).toBeGreaterThan(0.5);
+    expect(rawProgress({ stage: "starting", stageMs: 0, source: src("s", 64 * MB) })).toBeCloseTo(0.97);
+    // No torrent stats (online): time moves it, metadata faster.
+    expect(rawProgress({ stage: "starting", stageMs: 3000 })).toBeLessThan(rawProgress({ stage: "starting", stageMs: 3000, metadata: true }));
   });
 
   it("the bar and the «N МБ из M» text use the same goal", () => {
