@@ -4406,6 +4406,11 @@ components:
           properties:
             disabled_at: { type: [string, "null"], format: date-time }
             created_at: { type: string, format: date-time }
+            # When the account last used Cineko (GET /admin/users only): its
+            # newest web / Cineko Music session or one of its TVs (named).
+            last_seen_at: { type: [string, "null"], format: date-time }
+            last_seen_app: { type: [string, "null"], enum: [web, tv, null] }
+            last_seen_device: { type: [string, "null"] }
     Session:
       type: object
       required: [kind, user]

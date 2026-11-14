@@ -235,6 +235,7 @@ function UsersCard({ selfId, selfRole }: { selfId: string; selfRole: Role }) {
               </Select>
             )}
             {u.disabled_at && <span className="text-xs text-danger">{t("admin.disabled")}</span>}
+            <LastSeen user={u} />
             <div className="ml-auto flex flex-wrap justify-end gap-2">
               <Button variant="secondary" className="min-h-0 py-1 text-sm" data-testid="user-history" onClick={() => setHistoryOf(u)}>
                 {t("admin.history")}
@@ -296,6 +297,20 @@ function UsersCard({ selfId, selfRole }: { selfId: string; selfRole: Role }) {
 }
 
 type AdminUser = Schemas["AdminUser"];
+
+/** When the account last opened Cineko: «Заходил(а) 2 часа назад · веб / Гостиная». */
+function LastSeen({ user }: { user: AdminUser }) {
+  const { t, locale } = useI18n();
+  if (!user.last_seen_at) {
+    return <span className="text-xs text-muted" data-testid="user-last-seen">{t("admin.last_seen_never")}</span>;
+  }
+  const via = user.last_seen_app === "tv" ? (user.last_seen_device ?? "TV") : t("admin.via_web");
+  return (
+    <span className="text-xs text-muted" data-testid="user-last-seen" title={new Date(user.last_seen_at).toLocaleString(locale)}>
+      {t("admin.last_seen", { when: timeAgo(user.last_seen_at, locale) })} · {via}
+    </span>
+  );
+}
 
 // ---------------------------------------------------------------- watching now
 

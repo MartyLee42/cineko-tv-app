@@ -184,6 +184,11 @@ function install(quirks: TvQuirks) {
 /** Makes `page` a slow TV (call before its first goto). */
 export async function emulateTv(ctx: BrowserContext, page: Page, quirks: TvQuirks = {}) {
   await page.addInitScript(install, quirks);
+  // Posters come from TMDB over the internet: slow on a TV (each ~0.7 s).
+  await ctx.route(/image\.tmdb\.org|\/api\/v1\/images\//, async (route) => {
+    await new Promise((r) => setTimeout(r, 700));
+    return route.fallback();
+  });
   const cdp = await ctx.newCDPSession(page);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: TV_CPU });
   // A TV on Wi-Fi: some latency, ~25 Mbit/s.
@@ -231,4 +236,28 @@ export function timeline(log: TvSample[]): string {
 /** Card images that came back hidden since the last call (and clears the list). */
 export async function takeBlinks(page: Page): Promise<string[]> {
   return page.evaluate(() => (window as unknown as { __tvBlinks: string[] }).__tvBlinks.splice(0));
+}
+
+/**
+ * Card posters on screen right now that aren't showing (still loading, or
+ * fading in): the cards scrolling in at the row's right edge used to load
+ * only once visible (lazy images clipped by the row) — «the last two blink».
+ */
+export async function unshownPosters(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const out: string[] = [];
+    const W = window.innerWidth;
+    // The row being scrolled (other rows may be dimmed on purpose).
+    const track = document.querySelector(".is-focused")?.closest(".tv-track");
+    if (!track) return ["(no focused row)"];
+    track.querySelectorAll("[data-card-id]").forEach((card) => {
+      const r = card.getBoundingClientRect();
+      // Fully on screen (horizontally) and in the visible rows.
+      if (r.left < 0 || r.right > W || r.bottom < 0 || r.top > window.innerHeight || r.width === 0) return;
+      const img = card.querySelector("img");
+      if (!img) return;
+      if (!img.complete || img.naturalWidth === 0 || parseFloat(getComputedStyle(img).opacity) < 0.5) out.push(`${img.src} complete=${img.complete} opacity=${getComputedStyle(img).opacity}`);
+    });
+    return out;
+  });
 }

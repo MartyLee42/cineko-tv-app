@@ -42,9 +42,16 @@ function ImgInner({ src, className, alt }: { src: string; className: string; alt
       decoding={known ? "sync" : "async"}
       loading={known ? "eager" : "lazy"}
       draggable={false}
-      onLoad={() => {
+      onLoad={(e) => {
         remember(src);
-        if (state !== "ok") setState("ok");
+        if (state === "ok") return;
+        // Decoded before it shows: old TV engines (Tizen's Chrome 69) decode
+        // an image only when it first paints, so the cards sliding in at a
+        // row's edge showed their placeholder for a frame or two (a blink).
+        const img = e.currentTarget;
+        const show = () => setState("ok");
+        if (typeof img.decode === "function") img.decode().then(show, show);
+        else show();
       }}
       onError={() => setState("error")}
       className={`${known ? "" : "transition-opacity duration-300 "}${state === "ok" ? "opacity-100" : "opacity-0"} ${className}`}

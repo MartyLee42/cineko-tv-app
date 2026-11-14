@@ -1,6 +1,8 @@
 package users
 
 import (
+	"time"
+
 	"context"
 	"errors"
 	"strings"
@@ -84,12 +86,37 @@ func (h *Handlers) AdminRoutes(admin fiber.Router) {
 	g.Post("/:id/password", h.resetPassword)
 }
 
+// adminUser: an account plus when it last used Cineko (web app or a TV).
+type adminUser struct {
+	User
+	LastSeenAt     *time.Time `json:"last_seen_at"`
+	LastSeenApp    *string    `json:"last_seen_app"`
+	LastSeenDevice *string    `json:"last_seen_device"`
+}
+
 func (h *Handlers) list(c fiber.Ctx) error {
 	list, err := h.store.List(c.Context())
 	if err != nil {
 		return err
 	}
-	return c.JSON(httpx.List(list))
+	seen, err := h.store.LastSeenAll(c.Context())
+	if err != nil {
+		return err
+	}
+	out := make([]adminUser, 0, len(list))
+	for _, u := range list {
+		a := adminUser{User: u}
+		if l, ok := seen[u.ID]; ok {
+			at, app := l.At, l.App
+			a.LastSeenAt, a.LastSeenApp = &at, &app
+			if l.Device != "" {
+				d := l.Device
+				a.LastSeenDevice = &d
+			}
+		}
+		out = append(out, a)
+	}
+	return c.JSON(httpx.List(out))
 }
 
 func (h *Handlers) create(c fiber.Ctx) error {

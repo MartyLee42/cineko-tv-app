@@ -4044,6 +4044,11 @@ export interface components {
             disabled_at: string | null;
             /** Format: date-time */
             created_at: string;
+            /** Format: date-time */
+            last_seen_at?: string | null;
+            /** @enum {string|null} */
+            last_seen_app?: "web" | "tv" | null;
+            last_seen_device?: string | null;
         };
         Session: {
             /** @enum {string} */
