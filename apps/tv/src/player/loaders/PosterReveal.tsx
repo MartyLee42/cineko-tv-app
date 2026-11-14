@@ -35,11 +35,11 @@ export default function PosterReveal({ m }: { m: LoaderModel }) {
             <>
               <Img src={m.poster} className={`absolute left-0 top-0 h-full w-full object-cover ${filters ? "tv-reveal-blur" : "tv-reveal-dim"}`} />
               {filters && (
-                <div className="tv-loader-fade absolute left-0 top-0 h-full w-full" style={{ opacity: mid }}>
+                <div className="tv-loader-follow absolute left-0 top-0 h-full w-full" style={{ opacity: mid }}>
                   <Img src={m.poster} className="tv-reveal-soft absolute left-0 top-0 h-full w-full object-cover" />
                 </div>
               )}
-              <div className="tv-loader-fade absolute left-0 top-0 h-full w-full" style={{ opacity: sharp }}>
+              <div className="tv-loader-follow absolute left-0 top-0 h-full w-full" style={{ opacity: sharp }}>
                 <Img src={m.poster} className="absolute left-0 top-0 h-full w-full object-cover" />
               </div>
             </>

@@ -29,7 +29,10 @@ const COMMON_CSS = `
 @keyframes ld-pop { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: scale(1); } }
 .ld-bob { animation: ld-bob 2.4s ease-in-out infinite; }
 @keyframes ld-bob { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-8px,0); } }
-.ld-ease { transition: transform .6s cubic-bezier(.25,.6,.4,1), opacity .6s ease; }
+/* Follows the progress steps (~4/s): linear and done before the next one (retargeted mid-flight it jumps back on TVs). */
+.ld-ease { transition: transform .24s linear, opacity .24s linear; }
+/* One step at a time (a paw print every 5 %): eased. */
+.ld-step { transition: transform .6s cubic-bezier(.25,.6,.4,1), opacity .6s ease; }
 .ld-calm *, .ld-calm { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { .ld-box * { animation: none !important; } }
 `;

@@ -58,7 +58,7 @@ export function PawsArt({ p, width, calm, done, label }: ArtProps & { label?: st
         );
       })}
       {/* Cineko walks above the newest print */}
-      <At x={0} y={0} w={1200} h={420} className="ld-ease" style={{ transform: `translate3d(${pawX(lead) - 120}px,0,0)` }}>
+      <At x={0} y={0} w={1200} h={420} className="ld-step" style={{ transform: `translate3d(${pawX(lead) - 120}px,0,0)` }}>
         <At x={0} y={200} w={240} h={240} className={done ? "ld-hop" : "ld-bob"}>
           <CinekoFace size={240} mood={face} look={{ dx: stalled ? 0 : 0.7, dy: stalled ? 1 : 0.4 }} />
         </At>
