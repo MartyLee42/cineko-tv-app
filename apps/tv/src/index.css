@@ -74,8 +74,11 @@ body { overflow: hidden; cursor: none; }
 .tv-spoiler { -webkit-filter: blur(18px); filter: blur(18px); transform: scale(1.15); }
 
 /* ---------------------------------------------------------------- loading screens */
-/* Progress steps arrive ~4/s (loading.ts SHOW_EVERY_MS): ease between them. */
-.tv-loader-ease { transition: transform 600ms cubic-bezier(.25,.6,.4,1); will-change: transform; }
+/* Anything following progress steps (~4/s, loading.ts SHOW_EVERY_MS) moves linearly and is done before the
+   next one: a transition retargeted mid-flight jumps back on TV engines (the shot ran back and forth). */
+.tv-loader-ease { transition: transform 240ms linear; will-change: transform; }
+.tv-loader-follow { transition: opacity 240ms linear; }
+/* One-off changes (a film frame lit). */
 .tv-loader-fade { transition: opacity 900ms ease; }
 /* The end flourish over the starting film (loaderChunks FINALE_MS): holds, then fades away. */
 .tv-loader-finale { pointer-events: none; animation: tv-loader-finale 1500ms ease-in both; }

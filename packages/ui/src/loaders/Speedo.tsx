@@ -12,7 +12,7 @@ const CSS = `
 @keyframes ld-flash { from { opacity: .9; } to { opacity: 0; } }
 .ld-shake { animation: ld-shake .12s linear infinite; }
 @keyframes ld-shake { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(2px,-1px,0); } }
-.ld-needle { transition: transform .6s cubic-bezier(.25,.6,.4,1); transform-origin: 50% 100%; }
+.ld-needle { transition: transform .24s linear; transform-origin: 50% 100%; }
 `;
 
 const CX = 600;

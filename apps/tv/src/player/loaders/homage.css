@@ -1,7 +1,8 @@
 /* What the film-homage loaders share (homageParts.tsx). Transform/opacity
    animations only; the calm switch (data-calm) stops every loop. */
 .hg-caption { text-shadow: 0 2px 12px rgba(0, 0, 0, .35); }
-.hg-ease { transition: transform 900ms cubic-bezier(.22, .61, .36, 1); }
+/* Follows the progress steps (~4/s): linear, done before the next one — retargeted mid-flight it jumps back on TVs. */
+.hg-ease { transition: transform 240ms linear; }
 .hg-fade { transition: opacity 700ms ease; }
 .hg-root[data-calm] *,
 .hg-root[data-calm] *::before,
