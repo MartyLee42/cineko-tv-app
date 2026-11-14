@@ -207,7 +207,7 @@ test(`TV emulator (CPU ×${TV_CPU}): no start-up flash, steady loading, no jump 
     expect(playingAt).toBeLessThan(150);
 
     // --- 3. The internet goes: the engine leaps to the end of the file / takes the cut for its length.
-    for (const mode of ["end", "shrink"] as const) {
+    for (const mode of ["decode", "end", "shrink"] as const) {
       const before = await tv.evaluate(() => (window as unknown as { __playerBar: () => { pos: number } }).__playerBar().pos);
       net.offline = true;
       await tvCtx.setOffline(true);

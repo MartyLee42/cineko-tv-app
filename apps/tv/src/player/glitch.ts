@@ -74,3 +74,18 @@ export function shownPosition(o: { time: number; lastGood: number; target: numbe
 export function truncatedLength(engine: number, probed: number | null | undefined): boolean {
   return !!probed && probed > 0 && engine < probed * 0.9;
 }
+
+/** Seconds of good playback after which a decode error is no longer about the codec. */
+export const DECODED_FINE_S = 60;
+
+/**
+ * A MEDIA_ERR_DECODE / SRC_NOT_SUPPORTED that is really a broken stream:
+ * this stream already decoded fine for a while (`playedS` since its load),
+ * or the device says it is offline. Tizen reports a dead link mid-film as
+ * MEDIA_ERR_DECODE: it used to restart the film in compat mode (at the
+ * engine's bogus position — the end of the film) or call it unplayable.
+ */
+export function decodeErrorIsNetwork(code: number, playedS: number, online: boolean): boolean {
+  if (code !== 3 && code !== 4) return false;
+  return !online || playedS >= DECODED_FINE_S;
+}

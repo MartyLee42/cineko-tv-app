@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { beyondTarget, isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed, shownPosition, truncatedLength } from "./glitch";
+import { beyondTarget, decodeErrorIsNetwork, isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed, shownPosition, truncatedLength } from "./glitch";
 
 describe("seekMissed", () => {
   it("an engine that dropped the start seek plays near 0", () => {
@@ -80,5 +80,18 @@ describe("beyondTarget / truncatedLength", () => {
     expect(truncatedLength(1900, 7200)).toBe(true);
     expect(truncatedLength(7199.5, 7200)).toBe(false);
     expect(truncatedLength(1900, null)).toBe(false);
+  });
+});
+
+describe("decodeErrorIsNetwork", () => {
+  it("a decode error after playing fine (Tizen on a dropped link) is a network drop", () => {
+    expect(decodeErrorIsNetwork(3, 6000, true)).toBe(true);
+    expect(decodeErrorIsNetwork(4, 120, true)).toBe(true);
+    expect(decodeErrorIsNetwork(3, 5, false)).toBe(true);
+  });
+  it("right at the start it is about the codec (compat / unplayable as before)", () => {
+    expect(decodeErrorIsNetwork(3, 0, true)).toBe(false);
+    expect(decodeErrorIsNetwork(4, 20, true)).toBe(false);
+    expect(decodeErrorIsNetwork(2, 6000, true)).toBe(false);
   });
 });

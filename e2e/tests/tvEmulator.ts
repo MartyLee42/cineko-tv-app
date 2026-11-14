@@ -7,7 +7,9 @@
 //  - dropStartSeek: the first seek before playback starts is silently dropped;
 //  - cut("end"):    the link dies and the engine leaps to the end of the file
 //                   and fires "ended" (seen on TVs when the stream breaks);
-//  - cut("shrink"): …or takes the cut-off point for the file's length.
+//  - cut("shrink"): …or takes the cut-off point for the file's length;
+//  - cut("decode"): …or reports MEDIA_ERR_DECODE (Samsung Tizen 5.5, seen in
+//                   production when the internet dropped mid-film).
 //
 // A recorder logs, frame by frame, what the screen shows (the app screen,
 // the startup intro, the loading screen's percentage, the player's bar), so
@@ -39,11 +41,11 @@ export const TV_CPU = Number(process.env.TV_CPU ?? 6);
 
 /** Runs in the page before the app: the engine quirks and the recorder. */
 function install(quirks: TvQuirks) {
-  type St = { fakeTime: number | null; fakeDur: number | null; played: boolean; dropped: boolean; seekUntil: number };
+  type St = { fakeTime: number | null; fakeDur: number | null; fakeErr: { code: number } | null; played: boolean; dropped: boolean; seekUntil: number };
   const states = new WeakMap<HTMLMediaElement, St>();
   const st = (m: HTMLMediaElement): St => {
     let s = states.get(m);
-    if (!s) states.set(m, (s = { fakeTime: null, fakeDur: null, played: false, dropped: false, seekUntil: 0 }));
+    if (!s) states.set(m, (s = { fakeTime: null, fakeDur: null, fakeErr: null, played: false, dropped: false, seekUntil: 0 }));
     return s;
   };
   const proto = HTMLMediaElement.prototype;
@@ -75,19 +77,26 @@ function install(quirks: TvQuirks) {
       return s.fakeDur ?? du.get!.call(this);
     },
   });
+  const er = Object.getOwnPropertyDescriptor(proto, "error")!;
+  Object.defineProperty(proto, "error", {
+    configurable: true,
+    get(this: HTMLMediaElement) {
+      return st(this).fakeErr ?? er.get!.call(this);
+    },
+  });
   document.addEventListener("playing", (e) => (st(e.target as HTMLMediaElement).played = true), true);
   // A new src: the engine starts clean (the cut is over).
   document.addEventListener(
     "loadstart",
     (e) => {
       const s = st(e.target as HTMLMediaElement);
-      s.fakeTime = s.fakeDur = null;
+      s.fakeTime = s.fakeDur = s.fakeErr = null;
     },
     true,
   );
 
   const w = window as unknown as {
-    __tvEngine: { cut(mode: "end" | "shrink"): void };
+    __tvEngine: { cut(mode: "end" | "shrink" | "decode"): void };
     __tvLog: TvSample[];
     __playerBar?: () => { phase: string; pos: number; dur: number | null };
   };
@@ -98,6 +107,12 @@ function install(quirks: TvQuirks) {
       const s = st(v);
       const real = du.get!.call(v) as number;
       const at = ct.get!.call(v) as number;
+      if (mode === "decode") {
+        v.pause();
+        s.fakeErr = { code: 3 };
+        v.dispatchEvent(new Event("error"));
+        return;
+      }
       if (mode === "end") s.fakeTime = real;
       else s.fakeTime = s.fakeDur = at + 0.5;
       if (mode === "shrink") v.dispatchEvent(new Event("durationchange"));

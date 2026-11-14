@@ -6,7 +6,7 @@ import { hasMediaSource, hlsMode, isAndroid, skipTarget } from "@martytv/media-t
 import { setMediaContext } from "@martytv/ui";
 import { hasAudio } from "./audio";
 import { tvVolume } from "./volume";
-import { beyondTarget, isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed, shownPosition, truncatedLength } from "./glitch";
+import { beyondTarget, decodeErrorIsNetwork, isRealEnd, isUnexplainedDrop, isUnexplainedJump, seekMissed, shownPosition, truncatedLength } from "./glitch";
 import { attachHlsJs, reloadUrl, streamMode, type HlsHandle } from "./stream";
 
 type Track = Schemas["Track"];
@@ -286,6 +286,9 @@ export class PlayerController {
   private infoWait: { gen: number; id: string; at: number; loaded: boolean } | null = null;
   /** Absolute position the current stream was loaded at (the no-sound check). */
   private loadedAt = 0;
+  /** Seconds this stream really played (small steps of timeupdate; seeks don't count): proof it decodes here. */
+  private decodedS = 0;
+  private decodedT = NaN;
 
   // Rebuffering to a threshold and the bandwidth estimate (rebuffer.ts).
   /** `shown`: the highest «Буферизация N%» shown in this rebuffer (the buffered end may shrink: never back). */
@@ -1478,6 +1481,8 @@ export class PlayerController {
     this.lastGood = at;
     this.seekTarget = at;
     this.loadedAt = at;
+    this.decodedS = 0;
+    this.decodedT = NaN;
     this.seekAllowedUntil = Date.now() + 15000;
     // A fresh stream: the next stall uses the short after-seek threshold.
     this.rebuf = null;
@@ -1654,6 +1659,9 @@ export class PlayerController {
     if (!v || f.phase !== "playing" || this.compatPending !== null) return;
     // Absolute time (compat streams count from their offset).
     const t = this.abs(v);
+    const step = t - this.decodedT;
+    if (step > 0 && step < 2) this.decodedS += step;
+    this.decodedT = t;
     const allowed = Date.now() <= this.seekAllowedUntil;
     // A seek explains landing at its target, never a jump past it: a stream
     // cut off right after a (re)load made TV engines leap to the credits.
@@ -1703,7 +1711,11 @@ export class PlayerController {
     // can't convert it: compat copies it. Old codecs the server converts
     // (compat_video: XviD, MPEG-2…) are re-encoded on such an error even when
     // the probe claimed support, also when a copied-video compat stream failed.
-    const decodeErr = err.code === 3 || err.code === 4;
+    // A stream that decoded fine for a while and then «can't decode» (Tizen,
+    // when the internet drops): a network drop — fresh URL, same spot.
+    const online = typeof navigator === "undefined" || navigator.onLine !== false;
+    const code = decodeErrorIsNetwork(err.code, this.decodedS, online) ? 2 : err.code;
+    const decodeErr = code === 3 || code === 4;
     const convertible = !!f.source.compat_video;
     if (!this.compat && decodeErr && !this.compatTried && this.compatPossible(f.source) && (convertible || !videoUndecodable(this.support))) {
       this.compatTried = true;
@@ -1716,7 +1728,7 @@ export class PlayerController {
       void this.startCompat(this.trustedPosition(), true, this.compat?.audio ?? null);
       return;
     }
-    if (this.refreshes < errorRetries(err.code, !!this.compat)) {
+    if (this.refreshes < errorRetries(code, !!this.compat)) {
       this.refreshes++;
       // Hold the spot (the bar too) while the fresh URL comes: a dead link
       // can leave the engine at the end of the film or at 0.
@@ -1725,7 +1737,7 @@ export class PlayerController {
       void this.refreshUrl(true);
       return;
     }
-    if (err.code === 2) return this.dispatch({ type: "fail", code: "network" });
+    if (code === 2) return this.dispatch({ type: "fail", code: "network" });
     // In compat mode only the (copied) video can be at fault: its key goes to
     // `avoid` so «Другая раздача» skips e.g. other 10-bit H.264 releases.
     const { reason, avoid } = decodeFailure(this.support, !!this.compat, f.source.mime_type);
