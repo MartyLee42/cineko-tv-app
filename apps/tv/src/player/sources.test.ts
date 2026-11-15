@@ -661,3 +661,81 @@ describe("where the player left a series (Details on return)", () => {
     expect(lastPlayed(MOVIE)).toMatchObject({ season: 2, episode: 1, episode_id: "e21" });
   });
 });
+
+describe("internet lost mid-film", () => {
+  const ctx = { media_id: MOVIE, kind: "movie" as const, title: "T", poster_path: null, backdrop_path: null, season: null, episode: null, episode_id: null, episode_name: null, profile_id: "p", lang: "en" as const, player: "builtin" as const, app: null };
+  const transport = { start: async () => ({ id: "sess", resume_position_seconds: null, progress: null, report_token: null }), report: async () => null, beacon: () => undefined };
+
+  it("waits for the server as long as the outage lasts (no failure screen), then goes on at the same spot", async () => {
+    const { PlayerController } = await import("./controller");
+    const data = await import("./data");
+    const { ApiError } = await import("@martytv/contracts");
+    const c = new PlayerController(Date.now, transport as never);
+    const v = new FakeVideo();
+    c.attach(v as unknown as HTMLVideoElement);
+    c.playRelease(ctx, variantRelease(variant) as Release);
+    await vi.waitFor(() => expect(c.flow.phase).toBe("playing"));
+    v.dispatchEvent(new Event("loadedmetadata"));
+    v.paused = false;
+    v.dispatchEvent(new Event("playing"));
+    for (let t = 0; t <= 600; t += 2) {
+      v.currentTime = t;
+      v.dispatchEvent(new Event("timeupdate"));
+    }
+    vi.useFakeTimers();
+    // Well past the start-up seek window.
+    vi.setSystemTime(Date.now() + 60_000);
+    const get = vi.mocked(data.getSource);
+    try {
+      get.mockImplementation(() => Promise.reject(new ApiError(0, undefined)));
+      // The link drops: the engine errors and lands at 0 (Tizen).
+      (v as { error: unknown }).error = { code: 2 };
+      v.currentTime = 0;
+      v.dispatchEvent(new Event("error"));
+      await vi.advanceTimersByTimeAsync(5 * 60_000);
+      expect(c.flow.phase).toBe("playing");
+      expect(c.offline()?.at).toBe(600);
+      // More errors from the dead link while waiting: still waiting.
+      for (let i = 0; i < 6; i++) v.dispatchEvent(new Event("error"));
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(c.flow.phase).toBe("playing");
+      expect(c.offline()).not.toBeNull();
+      // Back online: the next ask reloads the stream at the spot.
+      get.mockImplementation(async () => online({ stream_url: "/api/v1/stream/tok3/index.m3u8" }));
+      (v as { error: unknown }).error = null;
+      await vi.advanceTimersByTimeAsync(3_100);
+      expect(c.offline()).toBeNull();
+      expect(v.src).toBe("/api/v1/stream/tok3/index.m3u8");
+      expect(c.position()).toBe(600);
+    } finally {
+      get.mockImplementation(async () => online());
+      vi.useRealTimers();
+      c.close();
+    }
+  });
+
+  it("a request hanging on the dead link counts as no network", async () => {
+    const { PlayerController } = await import("./controller");
+    const data = await import("./data");
+    const c = new PlayerController(Date.now, transport as never);
+    const v = new FakeVideo();
+    c.attach(v as unknown as HTMLVideoElement);
+    c.playRelease(ctx, variantRelease(variant) as Release);
+    await vi.waitFor(() => expect(c.flow.phase).toBe("playing"));
+    v.dispatchEvent(new Event("loadedmetadata"));
+    vi.useFakeTimers();
+    const get = vi.mocked(data.getSource);
+    try {
+      get.mockImplementation(() => new Promise(() => undefined));
+      (v as { error: unknown }).error = { code: 2 };
+      v.dispatchEvent(new Event("error"));
+      await vi.advanceTimersByTimeAsync(11_000);
+      expect(c.offline()).not.toBeNull();
+      expect(c.flow.phase).toBe("playing");
+    } finally {
+      get.mockImplementation(async () => online());
+      vi.useRealTimers();
+      c.close();
+    }
+  });
+});

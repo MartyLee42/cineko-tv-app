@@ -871,7 +871,9 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
 
   const pos = seek ? seek.target : player.position();
   const dur = player.duration();
-  const rebuf = playing ? player.rebuffering() : null;
+  // No connection to the server: the player waits and goes on by itself.
+  const offline = playing ? player.offline() : null;
+  const rebuf = playing && !offline ? player.rebuffering() : null;
   const slow = playing ? player.slowHint() : null;
   const compatOff = playing ? player.compatOffBlocks() : null;
   // Each time the hint appears, «Не сейчас» is focused again.
@@ -896,7 +898,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
         : t("chapters.n", { n: chapterAt + 1 })
       : null;
   // Once the picture moves, no spinner (whatever the engine's readyState or a recovery's bookkeeping say).
-  const bufferingNow = playing && player.buffering();
+  const bufferingNow = playing && !offline && player.buffering();
   // After a seek (esp. backwards) seeking / readyState flap several times a
   // second: show the spinner / «Буферизация» only once it lasts, hide it once
   // playback has really resumed; nothing while ◀▶ are still choosing a position.
@@ -959,6 +961,12 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
           {flow.phase === "playing" && <RebufferTorrent source={flow.source} />}
           {slowT && <SlowTorrentHint slow={slowT} focus={slowTFocus} className="mt-6 text-left" />}
           {!slow && <p className="mt-5 text-2xl text-white/80">{t("tvplay.rebuffer_ok")}</p>}
+        </div>
+      )}
+      {offline && (
+        <div data-testid="player-offline" className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-black/70 px-12 py-8 text-center">
+          <p className="text-5xl font-semibold">{t("tvplay.offline")}</p>
+          <p className="mt-4 text-2xl text-white/80 tabular-nums">{t("tvplay.offline_resume", { at: formatClock(offline.at) })}</p>
         </div>
       )}
       {slow && panel === null && countdown === null && (
