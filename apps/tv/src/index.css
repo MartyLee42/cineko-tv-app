@@ -119,6 +119,17 @@ body { overflow: hidden; cursor: none; }
 
 /* ================================================================ designs */
 
+/* Whatever is drawn over a design's background (SkinBackground: the catalog's
+   content box and menus, Settings, the guide, the quiz…) is a composited
+   stacking context of its own. Several backgrounds animate a transform
+   (Каркас's floor, Матрица's rain, the fog / mist / streaks): Tizen's Chrome 69
+   then assumes everything painted after it may overlap the animation and gives
+   every card, poster and caption a GPU layer of its own; as rows slide those
+   layers are rebuilt and posters re-rastered — a poster blinks now and then.
+   Inside a composited stacking context overlap is tested again, so the screen
+   stays one layer (plus the parts that really move). */
+[data-skin-bg] ~ * { will-change: transform; }
+
 /* Rating badge on posters (top-right). */
 .tv-rate-good { background: #237a35; color: #fff; }
 .tv-rate-mid { background: #5c6066; color: #fff; }
