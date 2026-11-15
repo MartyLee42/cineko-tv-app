@@ -25,11 +25,17 @@ import (
 type fakeCDN struct {
 	srv  *httptest.Server
 	seg  []byte
-	hits sync.Map // path → *atomic.Int32
+	mp4  []byte
+	hits sync.Map     // path → *atomic.Int32
+	sent atomic.Int64 // MP4 bytes sent
 }
 
 func newFakeCDN(t *testing.T) *fakeCDN {
 	f := &fakeCDN{seg: bytes.Repeat([]byte("TSDATA-"), 2000)}
+	f.mp4 = make([]byte, 5<<20+123)
+	for i := range f.mp4 {
+		f.mp4[i] = byte(i * 13 % 251)
+	}
 	f.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		n, _ := f.hits.LoadOrStore(r.URL.Path, &atomic.Int32{})
 		n.(*atomic.Int32).Add(1)
@@ -42,6 +48,9 @@ func newFakeCDN(t *testing.T) *fakeCDN {
 			_, _ = w.Write([]byte("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:10\n" +
 				"#EXT-X-KEY:METHOD=AES-128,URI=\"keys/k1.key\"\n" +
 				"#EXTINF:10,\nseg-" + q + "-0.ts\n#EXTINF:10,\n" + f.srv.URL + "/media/seg-" + q + "-1.ts\n#EXT-X-ENDLIST\n"))
+		case strings.HasSuffix(r.URL.Path, ".mp4"):
+			w.Header().Set("Content-Type", "video/mp4")
+			http.ServeContent(countingWriter{w, &f.sent}, r, "", time.Unix(1700000000, 0), bytes.NewReader(f.mp4))
 		case strings.HasSuffix(r.URL.Path, ".ts"):
 			w.Header().Set("Content-Type", "video/mp2t")
 			http.ServeContent(w, r, "", time.Unix(1700000000, 0), bytes.NewReader(f.seg))
@@ -89,6 +98,9 @@ func (p *fakeAnime) Resolve(_ context.Context, v sources.Variant, q int) (*sourc
 	ver := "v1"
 	if p.stale.Load() {
 		ver = "old"
+	}
+	if v.Format == "mp4" {
+		return &sources.Stream{URL: p.cdn.srv.URL + "/" + ver + "/film-" + itoa(q) + ".mp4", Format: "mp4", Quality: q}, nil
 	}
 	return &sources.Stream{URL: p.cdn.srv.URL + "/" + ver + "/" + itoa(q) + ".m3u8?ep=" + itoa(v.Episode), Format: "hls", Quality: q,
 		Subtitles: []sources.Subtitle{{URL: p.cdn.srv.URL + "/subs/ru.vtt", Lang: "ru", Label: "Надписи"}}}, nil
@@ -331,4 +343,71 @@ func (f *flakyTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 		return nil, &net.OpError{Op: "dial", Net: "tcp", Err: errors.New("i/o timeout")}
 	}
 	return http.DefaultTransport.RoundTrip(r)
+}
+
+type countingWriter struct {
+	http.ResponseWriter
+	n *atomic.Int64
+}
+
+func (w countingWriter) Write(p []byte) (int, error) {
+	n, err := w.ResponseWriter.Write(p)
+	w.n.Add(int64(n))
+	return n, err
+}
+
+// Online MP4: answered from the chunk cache — exact bytes and headers, the
+// CDN asked only for what's missing, an expired URL re-resolved.
+func TestOnlinePlaybackMP4ChunkCache(t *testing.T) {
+	pe := newPlaybackEnv(t)
+	cdn := newFakeCDN(t)
+	prov := &fakeAnime{cdn: cdn}
+	prov.stale.Store(true) // the first resolution answers 403
+	lookup := fakeLookup{pe.movieID + "|ofilm": {ID: "ofilm", Provider: "anilibria", Voice: "AniLibria", VoiceKind: "mvo", MaxQuality: 720,
+		Qualities: []int{720}, Format: "mp4", Title: "Фильм", Ref: json.RawMessage(`{"r":1}`)}}
+	pe.Server.Playback.SetOnline(fakeProviders{prov}, lookup)
+	pe.Server.Playback.SetUpstreamClient(http.DefaultClient)
+	alice, _ := pe.NewUserClient("alice", "user")
+	anon := pe.Client()
+	src := alice.Do("POST", "/api/v1/playback/sources", map[string]any{"media_id": pe.movieID, "release_id": "ofilm"}).Expect(201).JSON()
+	u := src["stream_url"].(string)
+	size := len(cdn.mp4)
+
+	r := anon.Do("GET", u, nil, "Range", "bytes=3000000-").Expect(206)
+	if !bytes.Equal(r.Body, cdn.mp4[3000000:]) {
+		t.Fatalf("open range: %d bytes", len(r.Body))
+	}
+	if cr := r.Header.Get("Content-Range"); cr != "bytes 3000000-"+itoa(size-1)+"/"+itoa(size) {
+		t.Fatalf("content-range %q", cr)
+	}
+	if ct := r.Header.Get("Content-Type"); ct != "video/mp4" || r.Header.Get("Accept-Ranges") != "bytes" || prov.refreshed.Load() != 1 {
+		t.Fatalf("headers %v, refreshed %d", r.Header, prov.refreshed.Load())
+	}
+	// Overlapping requests further on: from memory, the CDN isn't asked again.
+	before := cdn.sent.Load()
+	for _, rg := range [][2]int{{3000500, 3100000}, {3200000, 4000000}, {size - 10, size - 1}} {
+		r = anon.Do("GET", u, nil, "Range", "bytes="+itoa(rg[0])+"-"+itoa(rg[1])).Expect(206)
+		if !bytes.Equal(r.Body, cdn.mp4[rg[0]:rg[1]+1]) {
+			t.Fatalf("range %v", rg)
+		}
+	}
+	if cdn.sent.Load() != before {
+		t.Fatalf("cached ranges re-fetched: %d bytes", cdn.sent.Load()-before)
+	}
+	// Whole file, suffix range, past the end.
+	if r = anon.Do("GET", u, nil).Expect(200); !bytes.Equal(r.Body, cdn.mp4) {
+		t.Fatalf("whole file: %d bytes", len(r.Body))
+	}
+	if r = anon.Do("GET", u, nil, "Range", "bytes=-100").Expect(206); !bytes.Equal(r.Body, cdn.mp4[size-100:]) {
+		t.Fatal("suffix range")
+	}
+	if cr := anon.Do("GET", u, nil, "Range", "bytes="+itoa(size)+"-").Expect(416).Header.Get("Content-Range"); cr != "bytes */"+itoa(size) {
+		t.Fatalf("416 content-range %q", cr)
+	}
+	// The CDN sent each byte about once.
+	if sent := cdn.sent.Load(); sent > int64(size)+(2<<20) {
+		t.Fatalf("CDN sent %d bytes for a %d-byte file", sent, size)
+	}
+	// HEAD passes through.
+	anon.Do("HEAD", u, nil).Expect(200)
 }

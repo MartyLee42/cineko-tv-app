@@ -76,6 +76,8 @@ type onlineDeps struct {
 	hc        *http.Client
 	urls      *urlSigner
 
+	chunks *chunkCache // online MP4 bytes (chunkcache.go)
+
 	mu       sync.Mutex
 	resolved map[string]resolvedStream // source id → upstream stream
 }
@@ -89,7 +91,7 @@ type resolvedStream struct {
 func (s *Service) SetOnline(p OnlineProviders, l sources.VariantLookup) {
 	s.online = &onlineDeps{
 		providers: p, lookup: l, hc: newUpstreamClientT(false, onlineDialTimeout, upstreamTimeout), urls: newURLSigner(s.cfg.SessionSecret),
-		resolved: map[string]resolvedStream{},
+		resolved: map[string]resolvedStream{}, chunks: newChunkCache(mp4CacheMax, mp4ChunkSize, mp4ChunkAhead),
 	}
 }
 
@@ -476,6 +478,9 @@ func (h *Handlers) streamOnline(c fiber.Ctx, token, name string, src *source) er
 		if st.Format != "hls" {
 			// MP4: Range pass-through; an expired/IP-mismatched URL (403/410)
 			// is re-resolved once.
+			if done, err := h.serveMP4Cached(c, src, st, log); done {
+				return err
+			}
 			reresolve := func() (*sources.Stream, error) { return s.upstream(ctx, src, true) }
 			return h.proxyUpstreamRetry(c, src, st.URL, st.Headers, mk, log, reresolve)
 		}
@@ -519,6 +524,105 @@ func (h *Handlers) streamOnline(c fiber.Ctx, token, name string, src *source) er
 		headers = st.Headers
 	}
 	return h.proxyUpstream(c, src, u, headers, mk, log)
+}
+
+// serveMP4Cached answers a GET of an online MP4 from the chunk cache
+// (chunkcache.go). done=false: not cacheable (HEAD, If-Range, several
+// ranges, an upstream that ignores Range) — the caller passes it through.
+func (h *Handlers) serveMP4Cached(c fiber.Ctx, src *source, st *sources.Stream, log *slog.Logger) (bool, error) {
+	s := h.svc
+	o := s.online
+	if c.Method() != fiber.MethodGet || c.Get(fiber.HeaderIfRange) != "" || o.chunks == nil {
+		return false, nil
+	}
+	// One rendition of the source = one file (a quality switch is another).
+	file := src.ID + "|" + strconv.Itoa(st.Quality)
+	if o.chunks.isPlain(file) {
+		return false, nil
+	}
+	start, end, suffix, none, ok := parseClientRange(c.Get(fiber.HeaderRange))
+	if !ok {
+		return false, nil
+	}
+	var mu sync.Mutex
+	u, hdr := st.URL, st.Headers
+	target := func() (string, map[string]string) {
+		mu.Lock()
+		defer mu.Unlock()
+		return u, hdr
+	}
+	// An expired / IP-bound CDN URL (403/410): resolve again once per fetch.
+	resolve := func() error {
+		ns, err := s.upstream(context.Background(), src, true)
+		if err != nil {
+			return err
+		}
+		mu.Lock()
+		u, hdr = ns.URL, ns.Headers
+		mu.Unlock()
+		return nil
+	}
+	fetch := func(ctx context.Context, off, end int64) ([]byte, mp4Meta, error) {
+		return fetchMP4Range(ctx, o.hc, target, resolve, off, end)
+	}
+	meta, known := o.chunks.meta(file)
+	if !known {
+		first := int64(0)
+		if !suffix {
+			first = start / o.chunks.chunk
+		}
+		if _, err := o.chunks.get(c.Context(), file, first, fetch); err != nil {
+			return h.mp4CacheFailed(src, err, log)
+		}
+		meta, _ = o.chunks.meta(file)
+	}
+	size := meta.size
+	if suffix {
+		start, end = max(0, size-start), size-1
+	}
+	if end < 0 || end >= size {
+		end = size - 1
+	}
+	if start >= size {
+		c.Set("Content-Range", "bytes */"+strconv.FormatInt(size, 10))
+		return true, c.SendStatus(fiber.StatusRequestedRangeNotSatisfiable)
+	}
+	if none {
+		c.Status(fiber.StatusOK)
+	} else {
+		c.Status(fiber.StatusPartialContent)
+		c.Set("Content-Range", "bytes "+strconv.FormatInt(start, 10)+"-"+strconv.FormatInt(end, 10)+"/"+strconv.FormatInt(size, 10))
+	}
+	c.Set("Accept-Ranges", "bytes")
+	if meta.etag != "" {
+		c.Set("ETag", meta.etag)
+	}
+	if meta.lastMod != "" {
+		c.Set("Last-Modified", meta.lastMod)
+	}
+	ct := meta.ctype
+	if ct == "" || strings.HasPrefix(ct, "text/html") || ct == "application/octet-stream" {
+		ct = "video/mp4"
+	}
+	c.Set(fiber.HeaderContentType, ct)
+	r := o.chunks.reader(file, start, end+1, fetch)
+	body := newIdleReader(r, r.cancel, s.t.StreamIdle, newStreamMeta(c, log, "online"))
+	return true, c.SendStream(body, int(end-start+1))
+}
+
+func (h *Handlers) mp4CacheFailed(src *source, err error, log *slog.Logger) (bool, error) {
+	var se upstreamStatusError
+	switch {
+	case errors.Is(err, errNoRanges):
+		log.Info("online mp4: upstream ignores ranges, passing through")
+		return false, nil
+	case errors.As(err, &se) && se.code == http.StatusNotFound:
+		return true, httpx.NotFound()
+	case errors.As(err, &se) && (se.code == http.StatusForbidden || se.code == http.StatusGone):
+		h.svc.online.forget(src.ID)
+	}
+	log.Warn("online mp4 upstream failed", "err", err)
+	return true, streamUnavailable()
 }
 
 func streamUnavailable() error {

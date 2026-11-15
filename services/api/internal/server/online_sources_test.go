@@ -150,12 +150,13 @@ func TestOnlineBalancerPlayback(t *testing.T) {
 	}
 	anon.Do("HEAD", u, nil).Expect(200)
 
-	// The signed URL expires (403): the same request re-resolves and retries.
+	// Bytes already fetched come from the chunk cache: the expired signed
+	// URL isn't even asked (re-resolving on 403 is in TestOnlinePlaybackMP4ChunkCache).
 	cdn.sig.Store("s2")
-	before := prov.resolves.Load()
+	before, hits := prov.resolves.Load(), cdn.count("/mp4/s1/720.mp4")
 	r = anon.Do("GET", u, nil, "Range", "bytes=0-7").Expect(206)
-	if string(r.Body) != "MP4BYTES" || prov.resolves.Load() != before+1 || cdn.count("/mp4/s1/720.mp4") < 2 || cdn.count("/mp4/s2/720.mp4") != 1 {
-		t.Fatalf("re-resolve: body %q resolves %d→%d s1=%d s2=%d", r.Body, before, prov.resolves.Load(),
+	if string(r.Body) != "MP4BYTES" || prov.resolves.Load() != before || cdn.count("/mp4/s1/720.mp4") != hits || cdn.count("/mp4/s2/720.mp4") != 0 {
+		t.Fatalf("cached: body %q resolves %d→%d s1=%d s2=%d", r.Body, before, prov.resolves.Load(),
 			cdn.count("/mp4/s1/720.mp4"), cdn.count("/mp4/s2/720.mp4"))
 	}
 
