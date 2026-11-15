@@ -823,9 +823,16 @@ The plugin itself is only a map: nothing is ported or evaluated from it.
   `DEFAULT=YES,AUTOSELECT=YES`. Old TV engines that can't switch HLS audio
   tracks therefore play the chosen voice; each voice is its own variant.
 - **Playback:** both go through the signed proxy above (URLs are IP-bound
-  and expire). MP4 (`/video.mp4`) is a Range pass-through; an upstream
-  403/410 re-resolves once (provider `Refresh` drops its cache) and retries
-  inside the same request. `duration_seconds` on the `PlaybackSource` carries
+  and expire). MP4 (`/video.mp4`) GETs are answered from a chunk cache
+  (`playback/chunkcache.go`): the file is fetched from the CDN in 2 MiB
+  bounded Range requests into a shared in-memory LRU (256 MiB), 3 chunks
+  are read ahead of the client, and concurrent requests for a chunk share
+  one fetch. TV engines read MP4 in short open-ended requests that they
+  hang up after ~1 MB; passed through, each one pulled "to the end" from
+  the CDN (~20× the film's bitrate). HEAD, `If-Range`, multi-range requests
+  and CDNs that ignore Range still pass through. An upstream 403/410
+  re-resolves once (provider `Refresh` drops its cache) and retries inside
+  the same fetch. `duration_seconds` on the `PlaybackSource` carries
   the provider's length for the TV player's resume/premature-end guards.
   MP4 is preferred in ranking (+0.02) and plays on every engine; Collaps only
   offers HLS.
