@@ -27,6 +27,8 @@ export const tvplayEn = {
   "tvplay.rebuffer": "Buffering… {pct}%",
   "tvplay.rebuffer_stats": "{ahead} s ahead · {rate} Mbit/s",
   "tvplay.rebuffer_ok": "OK — play now",
+  "tvplay.offline": "No connection to the server",
+  "tvplay.offline_resume": "I'll continue from {at} as soon as it's back · Back to exit",
   "tvplay.slow.text": "The connection is slower than this release needs (≈{rate} of {bitrate} Mbit/s)",
   "tvplay.slow.lighter": "Choose a lighter release",
   "tvplay.slow.dismiss": "Keep watching",

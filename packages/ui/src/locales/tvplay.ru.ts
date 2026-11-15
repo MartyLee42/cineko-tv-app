@@ -23,6 +23,8 @@ export const tvplayRu: Record<keyof typeof tvplayEn, string> = {
   "tvplay.rebuffer": "Буферизация… {pct}%",
   "tvplay.rebuffer_stats": "запас {ahead} с · {rate} Мбит/с",
   "tvplay.rebuffer_ok": "OK — смотреть сейчас",
+  "tvplay.offline": "Нет связи с сервером",
+  "tvplay.offline_resume": "Продолжу с {at}, как только связь вернётся · Back — выйти",
   "tvplay.slow.text": "Скорость соединения ниже, чем нужно этой раздаче (≈{rate} из {bitrate} Мбит/с)",
   "tvplay.slow.lighter": "Выбрать раздачу полегче",
   "tvplay.slow.dismiss": "Смотреть дальше",

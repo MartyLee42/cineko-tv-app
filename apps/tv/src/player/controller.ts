@@ -3,6 +3,7 @@
 // synchronously and reports PlaybackState. React components subscribe to it.
 import type { Episode, PlaybackLoading, PlaybackSource, PlaybackState, Release, Schemas } from "@martytv/contracts";
 import { hasMediaSource, hlsMode, isAndroid, skipTarget } from "@martytv/media-types";
+import { ApiError } from "@martytv/contracts";
 import { setMediaContext } from "@martytv/ui";
 import { hasAudio } from "./audio";
 import { tvVolume } from "./volume";
@@ -116,6 +117,31 @@ const EXPIRY_MARGIN = 60_000;
 /** Retries of a stream URL refresh after a playback error (backoff grows). */
 const REFRESH_RETRIES = 4;
 const REFRESH_BACKOFF = 1500;
+/**
+ * The server is unreachable during a recovery (no internet, a router
+ * reboot): hold the spot and ask again every NET_POLL_MS — the film goes on
+ * by itself once it answers. Only after NET_WAIT_MS does the playback fail.
+ */
+export const NET_POLL_MS = 3_000;
+export const NET_WAIT_MS = 20 * 60_000;
+/** A dead link can leave a request hanging for minutes: counts as no network after this. */
+const NET_ASK_MS = 10_000;
+
+function answerWithin<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new ApiError(0, { error: { code: "network_error", message: "timeout" } })), ms);
+    p.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
 /** Seconds of playback after which "no audio decoded" means it can't decode it. */
 const AUDIO_CHECK_AFTER = 4;
 /**
@@ -289,6 +315,8 @@ export class PlayerController {
   /** Seconds this stream really played (small steps of timeupdate; seeks don't count): proof it decodes here. */
   private decodedS = 0;
   private decodedT = NaN;
+  /** Since when (ms) a recovery of load attempt `gen` can't reach the server; null while it answers. */
+  private netLost: { since: number; gen: number } | null = null;
 
   // Rebuffering to a threshold and the bandwidth estimate (rebuffer.ts).
   /** `shown`: the highest «Буферизация N%» shown in this rebuffer (the buffered end may shrink: never back). */
@@ -1622,25 +1650,48 @@ export class PlayerController {
   private async refreshUrl(now: boolean) {
     const f = this.flow;
     if (f.phase !== "playing") return;
+    // A wait for the network is on: it reloads once the server answers.
+    if (this.netWaiting()) return;
     const gen = this.gen;
+    let waited = false;
     try {
-      // After an error, ride out short outages (an API restart, Wi-Fi blip).
+      // After an error, ride out short outages (an API restart, Wi-Fi blip);
+      // without any connection, wait for it (see NET_WAIT_MS).
       let src: PlaybackSource | null = null;
       for (let attempt = 0; ; attempt++) {
         try {
-          src = await getSource(f.source.id);
+          src = await answerWithin(getSource(f.source.id), NET_ASK_MS);
           break;
         } catch (e) {
-          if (!now || attempt >= REFRESH_RETRIES || gen !== this.gen) throw e;
+          if (!now || gen !== this.gen) throw e;
+          if (e instanceof ApiError && e.code === "network_error") {
+            if (!waited) {
+              this.netLost = { since: Date.now(), gen };
+              waited = true;
+              this.rebuf = null;
+              this.emit("playback");
+            }
+            if (Date.now() - this.netLost!.since > NET_WAIT_MS) throw e;
+            await this.netSleep(NET_POLL_MS);
+            continue;
+          }
+          if (attempt >= REFRESH_RETRIES) throw e;
           await sleep(REFRESH_BACKOFF * (attempt + 1));
         }
       }
+      if (waited) this.endNetWait(gen);
       if (gen !== this.gen || this.flow.phase !== "playing") return;
       if (src.status !== "ready" || !src.stream_url) return this.dispatch({ type: "fail", code: src.error || "release_unavailable" });
       this.dispatch({ type: "source", source: src });
       this.scheduleRefresh(src);
       const v = this.video;
       const at = this.resumeAt ?? this.position();
+      if (waited) {
+        // A fresh start after the outage: the error / recovery budgets are for broken streams.
+        this.refreshes = 0;
+        this.recoveries = 0;
+        this.reopenAt = null;
+      }
       // Compat: restarts read the fresh compat_url from the flow anyway.
       if (this.compat) {
         if (now) void this.startCompat(at, true, this.compat.audio);
@@ -1649,8 +1700,39 @@ export class PlayerController {
       if (now || (v && v.paused)) this.load(src.stream_url, at, now ? true : false);
       else this.freshUrl = src.stream_url;
     } catch (e) {
+      if (waited) this.endNetWait(gen);
       if (now && gen === this.gen) this.dispatch({ type: "fail", code: apiErrorCode(e) });
     }
+  }
+
+  private netWaiting(): boolean {
+    return this.netLost !== null && this.netLost.gen === this.gen;
+  }
+
+  private endNetWait(gen: number) {
+    if (this.netLost?.gen !== gen) return;
+    this.netLost = null;
+    this.emit("playback");
+  }
+
+  private netSleep(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      const w = typeof window === "undefined" ? null : window;
+      const done = () => {
+        clearTimeout(timer);
+        w?.removeEventListener("online", done);
+        resolve();
+      };
+      // The TV saying «online» again: ask right away.
+      const timer = setTimeout(done, ms);
+      w?.addEventListener("online", done);
+    });
+  }
+
+  /** «Нет связи с сервером» while the player waits for the network; null otherwise. */
+  offline(): { since: number; at: number } | null {
+    if (!this.netWaiting() || this.flow.phase !== "playing") return null;
+    return { since: this.netLost!.since, at: this.position() };
   }
 
   private onTime() {
@@ -1702,6 +1784,8 @@ export class PlayerController {
     const f = this.flow;
     const err = v?.error;
     if (!v || !err || err.code === 1 || f.phase !== "playing") return;
+    // Waiting for the network: the dead link's errors say nothing about the file.
+    if (this.netWaiting()) return;
     // 403 (expired token) and network drops: fresh URL, same position. A 403
     // on the first request surfaces as SRC_NOT_SUPPORTED in Chrome, so that
     // gets one refresh too before it counts as "unplayable".
@@ -2424,6 +2508,8 @@ export class PlayerController {
     const f = this.flow;
     const v = this.video;
     if (f.phase !== "playing" || !v) return;
+    // Waiting for the network already: that wait reloads at the spot.
+    if (this.netWaiting()) return;
     const at = this.resumeAt ?? this.lastGood;
     this.resumeAt = at;
     this.recoverFrom = at;
