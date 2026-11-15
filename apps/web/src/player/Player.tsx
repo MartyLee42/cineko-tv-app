@@ -54,6 +54,7 @@ import {
   lateResume,
   mediaErrorKind,
   NEXT_COUNTDOWN,
+  refreshFixes,
   qualityReload,
   reloadUrl,
   SEEK_BACK,
@@ -784,7 +785,7 @@ export function Player(props: PlayerProps) {
       if (refreshes.current < 2) {
         // hls.js plays from a blob: URL; the playlist URL is what expires.
         const status = await streamStatus(mode === "hlsjs" ? src : v.currentSrc || src);
-        if (status === 403 || status === 0 || (kind === "network" && status < 400)) {
+        if (refreshFixes(kind, status)) {
           refreshes.current++;
           const fresh = await P.current.refresh().catch(() => null);
           if (fresh?.stream_url) {

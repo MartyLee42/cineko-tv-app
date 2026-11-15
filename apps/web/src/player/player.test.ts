@@ -12,6 +12,7 @@ import {
   LoadMeter,
   LoadTracker,
   mediaErrorKind,
+  refreshFixes,
   nextEpisode,
   packCovers,
   parseT,
@@ -323,6 +324,20 @@ describe("errors and silent playback", () => {
     expect(mediaErrorKind(3)).toBe("decode");
     expect(mediaErrorKind(2)).toBe("network");
     expect(mediaErrorKind(1)).toBe("aborted");
+  });
+
+  it("refreshes the stream when a new URL can fix the error", () => {
+    // Expired token, no answer, the server not reaching an online CDN (Safari calls all of these unsupported).
+    expect(refreshFixes("unsupported", 403)).toBe(true);
+    expect(refreshFixes("unsupported", 0)).toBe(true);
+    expect(refreshFixes("unsupported", 502)).toBe(true);
+    expect(refreshFixes("network", 504)).toBe(true);
+    // A dropped connection to a URL that still works.
+    expect(refreshFixes("network", 206)).toBe(true);
+    // The file itself: the URL answers fine, or it is gone.
+    expect(refreshFixes("unsupported", 200)).toBe(false);
+    expect(refreshFixes("decode", 200)).toBe(false);
+    expect(refreshFixes("network", 404)).toBe(false);
   });
 
   it("detects video without decoded audio where the engine tells", () => {

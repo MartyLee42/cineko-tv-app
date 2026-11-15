@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -256,6 +258,19 @@ func TestOnlinePlaybackHLSProxy(t *testing.T) {
 	if cdn.count("/v1/seg-720-0.ts") != 2 || cdn.count("/media/seg-720-1.ts") != 1 {
 		t.Fatal("segment upstream paths")
 	}
+	// The CDN doesn't answer for a moment (connect timeouts): retried, served.
+	flaky := &flakyTransport{fails: 2}
+	pe.Server.Playback.SetUpstreamClient(&http.Client{Transport: flaky})
+	if r := anon.Do("GET", segs[0], nil).Expect(200); !bytes.Equal(r.Body, cdn.seg) || flaky.calls.Load() != 3 {
+		t.Fatalf("flaky CDN: %d calls, %d bytes", flaky.calls.Load(), len(r.Body))
+	}
+	// Still down after the retries: 502.
+	flaky = &flakyTransport{fails: 100}
+	pe.Server.Playback.SetUpstreamClient(&http.Client{Transport: flaky})
+	if code := anon.Do("GET", segs[0], nil).Expect(502).ErrorCode(); code != "stream_unavailable" || flaky.calls.Load() != 3 {
+		t.Fatalf("CDN down: %s after %d calls", code, flaky.calls.Load())
+	}
+	pe.Server.Playback.SetUpstreamClient(http.DefaultClient)
 
 	// No open proxy: tampered / foreign refs and tokens are refused.
 	tok := strings.TrimSuffix(strings.TrimPrefix(streamURL, "/api/v1/stream/"), "/index.m3u8")
@@ -302,4 +317,18 @@ func TestOnlinePlaybackHLSProxy(t *testing.T) {
 	pid := alice.Do("POST", "/api/v1/profiles", map[string]string{"name": "Alice"}).Expect(201).JSON()["id"].(string)
 	sess := startSession(t, alice, map[string]any{"profile_id": pid, "media_id": pe.movieID, "source_id": id})
 	expectAccepted(t, report(t, alice, sess["id"].(string), 1, 120, 1435, "playing"), true, "")
+}
+
+// flakyTransport fails its first `fails` requests like an unreachable CDN
+// edge (no response), then passes them to the default transport.
+type flakyTransport struct {
+	fails int32
+	calls atomic.Int32
+}
+
+func (f *flakyTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	if f.calls.Add(1) <= f.fails {
+		return nil, &net.OpError{Op: "dial", Net: "tcp", Err: errors.New("i/o timeout")}
+	}
+	return http.DefaultTransport.RoundTrip(r)
 }

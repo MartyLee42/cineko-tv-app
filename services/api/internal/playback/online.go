@@ -88,7 +88,7 @@ type resolvedStream struct {
 // SetOnline enables online sources (wired in server.New).
 func (s *Service) SetOnline(p OnlineProviders, l sources.VariantLookup) {
 	s.online = &onlineDeps{
-		providers: p, lookup: l, hc: newUpstreamClient(false), urls: newURLSigner(s.cfg.SessionSecret),
+		providers: p, lookup: l, hc: newUpstreamClientT(false, onlineDialTimeout, upstreamTimeout), urls: newURLSigner(s.cfg.SessionSecret),
 		resolved: map[string]resolvedStream{},
 	}
 }
@@ -546,6 +546,7 @@ func (h *Handlers) proxyUpstreamRetry(c fiber.Ctx, src *source, u string, header
 		cancel context.CancelFunc
 		resp   *http.Response
 	)
+	failed := 0 // requests that got no response (CDN unreachable for a moment)
 	for attempt := 0; ; attempt++ {
 		ctx, cancel = context.WithCancel(context.Background())
 		req, err := http.NewRequestWithContext(ctx, method, u, nil)
@@ -562,6 +563,16 @@ func (h *Handlers) proxyUpstreamRetry(c fiber.Ctx, src *source, u string, header
 		resp, err = s.online.hc.Do(req)
 		if err != nil {
 			cancel()
+			// No response at all (connect / DNS / TLS timeout): nothing reached
+			// the CDN, so asking again is safe. Its edges drop connections for
+			// a few seconds at a time; one 502 ends playback in Safari.
+			if failed < len(upstreamRetryWait) && c.Context().Err() == nil {
+				log.Info("online upstream failed, retrying", "err", err, "retry", failed+1)
+				time.Sleep(upstreamRetryWait[failed])
+				failed++
+				attempt--
+				continue
+			}
 			log.Warn("online upstream failed", "err", err)
 			return streamUnavailable()
 		}

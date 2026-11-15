@@ -36,8 +36,14 @@ const (
 	maxPlaylistBytes = 2 << 20
 	maxProxiedURL    = 2048
 	upstreamTimeout  = 15 * time.Second
-	hlsMime          = "application/vnd.apple.mpegurl"
+	// Online CDN connects: short, retried (upstreamRetryWait) — an edge that
+	// doesn't answer in 5 s rarely does in 10, and the next try often lands.
+	onlineDialTimeout = 5 * time.Second
+	hlsMime           = "application/vnd.apple.mpegurl"
 )
+
+// Pauses before re-sending an online CDN request that got no response.
+var upstreamRetryWait = []time.Duration{300 * time.Millisecond, time.Second}
 
 var (
 	errBadProxyRef   = errors.New("invalid proxied url")

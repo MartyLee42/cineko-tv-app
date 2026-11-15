@@ -338,6 +338,17 @@ export function mediaErrorKind(code: number | null | undefined): ErrorKind {
   return "network";
 }
 
+/**
+ * After a player error, whether a fresh stream URL (resumed at the same spot)
+ * can fix it, from the stream URL's HEAD `status` (0 = no answer): an
+ * expired token (403), a dropped connection, or the server failing to reach
+ * the upstream for a moment (5xx: an online CDN timing out). Safari reports
+ * any of these as an unsupported source.
+ */
+export function refreshFixes(kind: ErrorKind, status: number): boolean {
+  return status === 403 || status === 0 || status >= 500 || (kind === "network" && status < 400);
+}
+
 /** Whether a stream URL is about to expire (refresh it before reloading). */
 export function streamExpired(expiresAt: string | null | undefined, now = Date.now(), marginMs = 60_000): boolean {
   if (!expiresAt) return false;
