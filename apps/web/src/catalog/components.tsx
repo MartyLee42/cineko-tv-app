@@ -293,7 +293,7 @@ function RowArrow({ dir, hidden, onClick, label }: { dir: 1 | -1; hidden: boolea
   );
 }
 
-export const gridCols = "grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 sm:gap-x-4 md:grid-cols-5";
+export const gridCols = "mt-poster-grid grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 sm:gap-x-4 md:grid-cols-5";
 export const gridSizes = "(min-width: 1024px) 180px, (min-width: 640px) 25vw, 33vw";
 
 export function PosterGrid({ items, className = gridCols }: { items: MediaSummary[]; className?: string }) {

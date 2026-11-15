@@ -3,6 +3,8 @@
 export const remoteEn = {
   "remote.send_to_tv": "Send to TV",
   "remote.open_on_tv": "Open on TV",
+  "remote.choose_where": "Where to watch?",
+  "remote.here_hint": "In the browser on this device",
   "remote.choose_tv": "Choose a TV",
   "remote.no_tvs": "No TVs paired yet.",
   "remote.no_online_tvs": "None of your TVs are online.",

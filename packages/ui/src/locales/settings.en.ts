@@ -1,6 +1,8 @@
 // Phase 5 strings: settings page, watch progress, lists. Apps add keys only
 // inside their marked section; ru must mirror en.
 export const settingsEn = {
+  "settings.wide_layout": "Full screen width",
+  "settings.wide_layout_hint": "On a big screen use the whole window instead of a centred column; grids show more posters.",
   "settings.title": "Settings",
   "settings.profile_section": "For profile {name}",
   "settings.device_section": "This device",

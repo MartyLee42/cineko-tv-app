@@ -1,6 +1,8 @@
 import type { settingsEn } from "./settings.en";
 
 export const settingsKk: Record<keyof typeof settingsEn, string> = {
+  "settings.wide_layout": "Экранның толық енімен",
+  "settings.wide_layout_hint": "Үлкен экранда — ортадағы баған емес, бүкіл терезе; торларда постерлер көбірек.",
   "settings.title": "Баптаулар",
   "settings.profile_section": "{name} профилі үшін",
   "settings.device_section": "Осы құрылғы",

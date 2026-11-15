@@ -58,6 +58,7 @@ export const playerKk: Record<keyof typeof playerEn, string> = {
   "player.current_source": "Қазір ойнап тұр",
   "player.confidence_hint": "Бұл дәл қажетті фильм не серия екеніне қаншалықты сенімдіміз",
   "player.warnings": "Ескертулер",
+  "player.play_episode_where": "{code} көру",
   "player.play_episode": "{code} теледидардан көру",
   "player.releases_for": "{code} үшін тарату таңдау",
   "player.peers_speed": "{peers} пир · {speed}",

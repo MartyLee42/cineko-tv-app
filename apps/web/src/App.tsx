@@ -35,6 +35,7 @@ import { useSettings, useThemeSync } from "./watch/queries";
 import type { Settings } from "./watch/settings";
 import { OnboardingGate } from "./watch/Onboarding";
 import { RecoHeaderButton } from "./reco/header";
+import { columnClass, useWideLayout } from "./layout/wide";
 import { RecommendationsPage } from "./reco/RecommendationsPage";
 import { ExplorePage, ExploreTilePage } from "./foryou/ExplorePage";
 import { CollectionPage } from "./foryou/CollectionPage";
@@ -218,6 +219,7 @@ function Layout() {
   // The remote belongs to Devices; Browse / tiles / collections / Surprise to Explore; Diary / Taste to History.
   const active = (to: string, isActive: boolean) => isActive || navSection(pathname) === to;
   const isAdmin = isAdminRole(session?.user.role);
+  const col = columnClass(useWideLayout());
 
   const logout = async () => {
     await api.POST("/auth/logout");
@@ -269,7 +271,7 @@ function Layout() {
     <div className="flex min-h-full flex-col">
       <DesignDecor />
       <header className="sticky top-0 z-10 border-b border-border bg-bg/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
+        <div className={`mx-auto flex h-14 items-center gap-4 ${col}`}>
           <NavLink to="/" className="shrink-0 text-xl">
             <Logo />
           </NavLink>
@@ -321,7 +323,7 @@ function Layout() {
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 md:pb-10">
+      <main className={`mx-auto w-full flex-1 pb-24 pt-6 md:pb-10 ${col}`}>
         {/* A new page fades in (opacity + a few px: cheap, compositor-only) and
             keeps a screen's height while its data loads, so the footer and
             the bottom bar's surroundings don't jump. */}

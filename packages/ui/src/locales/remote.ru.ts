@@ -3,6 +3,8 @@ import type { remoteEn } from "./remote.en";
 export const remoteRu: Record<keyof typeof remoteEn, string> = {
   "remote.send_to_tv": "На телевизор",
   "remote.open_on_tv": "Открыть на ТВ",
+  "remote.choose_where": "Где смотреть?",
+  "remote.here_hint": "В браузере на этом устройстве",
   "remote.choose_tv": "Выберите телевизор",
   "remote.no_tvs": "Телевизоры ещё не подключены.",
   "remote.no_online_tvs": "Ни один телевизор не в сети.",

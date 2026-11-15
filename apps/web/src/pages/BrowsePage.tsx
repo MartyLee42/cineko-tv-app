@@ -26,7 +26,7 @@ import { HideWatchedToggle } from "../watch/components";
 type Discover = Extract<BrowseState, { mode: "discover" }>;
 type ListState = Extract<BrowseState, { mode: "list" }>;
 
-const gridWithSidebar = "grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 sm:gap-x-4 lg:grid-cols-4 xl:grid-cols-5";
+const gridWithSidebar = "mt-poster-grid grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 sm:gap-x-4 lg:grid-cols-4 xl:grid-cols-5";
 
 export function BrowsePage() {
   const [params, setParams] = useSearchParams();

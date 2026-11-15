@@ -141,7 +141,7 @@ function Person({ id }: { id: number }) {
           />
         </div>
         {shown.length ? (
-          <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 sm:gap-x-4 md:grid-cols-5 lg:grid-cols-6" data-testid="person-credits">
+          <div className="mt-poster-grid grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 sm:gap-x-4 md:grid-cols-5 lg:grid-cols-6" data-testid="person-credits">
             {shown.map((c) => (
               <div key={c.media.id} data-testid="person-credit">
                 <PosterCard item={c.media} sizes="(min-width: 1024px) 160px, (min-width: 640px) 25vw, 33vw" />

@@ -6,7 +6,7 @@ import type { Device } from "@martytv/contracts";
 import { Spinner, StatusDot, useI18n } from "@martytv/ui";
 import { AllDevicesToggle, isForeign, usePickerDevices } from "./AllDevicesToggle";
 import { timeAgo } from "../components";
-import { AlertIcon, CastIcon, CheckIcon, CloseIcon, RemoteIcon } from "../icons";
+import { AlertIcon, CastIcon, CheckIcon, CloseIcon, DeviceIcon, RemoteIcon } from "../icons";
 import {
   ackOutcome,
   chooseDevice,
@@ -170,12 +170,13 @@ export function Sheet({
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     const el = panel.current;
-    (el?.querySelector<HTMLElement>("[data-autofocus]") ?? el?.querySelector<HTMLElement>("button:not([disabled])"))?.focus();
+    (el?.querySelector<HTMLElement>("[data-autofocus]") ?? el?.querySelector<HTMLElement>("button:not([disabled])"))?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close.current();
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("keydown", onKey);
-      prev?.focus?.();
+      // Never scrolls the page (Safari scrolled it to bring the element into view).
+      prev?.focus?.({ preventScroll: true });
     };
   }, []);
 
@@ -233,12 +234,15 @@ export function DevicePicker({
   states,
   preferred,
   onPick,
+  onHere,
   onClose,
 }: {
   devices: Device[];
   states: Record<string, LiveState>;
   preferred: string | null;
   onPick: (id: string) => void;
+  /** «Смотреть здесь» as the first choice (the sheet asks «Где смотреть?»). */
+  onHere?: () => void;
   onClose: () => void;
 }) {
   const { t } = useI18n();
@@ -247,7 +251,24 @@ export function DevicePicker({
   const anyOnline = devices.some((d) => d.online);
 
   return (
-    <Sheet title={t("remote.choose_tv")} onClose={onClose}>
+    <Sheet title={t(onHere ? "remote.choose_where" : "remote.choose_tv")} onClose={onClose}>
+      {onHere && (
+        <button
+          type="button"
+          onClick={onHere}
+          data-testid="picker-watch-here"
+          {...(!(preferred && devices.some((d) => d.id === preferred && d.online)) ? { "data-autofocus": true } : {})}
+          className="mb-2 flex min-h-[60px] w-full items-center gap-3 rounded-2xl border border-accent/50 bg-accent/10 px-3.5 py-2.5 text-left transition hover:border-accent focus-visible:border-accent focus-visible:outline-none"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/20 text-xl text-accent">
+            <DeviceIcon />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-semibold">{t("player.web.watch_here")}</span>
+            <span className="mt-0.5 block truncate text-sm text-muted">{t("remote.here_hint")}</span>
+          </span>
+        </button>
+      )}
       {!devices.length ? (
         <div className="space-y-4 py-2 text-center" data-testid="no-tvs">
           <p className="text-muted">{t("remote.no_tvs")}</p>

@@ -28,6 +28,8 @@ export interface PlayRequest extends ReleaseTarget {
   position_seconds?: number;
   /** Online variants: wanted quality (omitted → best ≤ the profile's resolution). */
   quality?: number;
+  /** Always ask where (TVs and «Смотреть здесь»), even with one TV online. */
+  offerHere?: boolean;
 }
 
 export type PlayError = { scope: "command"; code: string };

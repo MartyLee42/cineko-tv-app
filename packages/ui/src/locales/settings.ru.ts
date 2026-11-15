@@ -1,6 +1,8 @@
 import type { settingsEn } from "./settings.en";
 
 export const settingsRu: Record<keyof typeof settingsEn, string> = {
+  "settings.wide_layout": "Во всю ширину экрана",
+  "settings.wide_layout_hint": "На большом экране — всё окно, а не колонка по центру; в сетках больше постеров.",
   "settings.title": "Настройки",
   "settings.profile_section": "Для профиля {name}",
   "settings.device_section": "Это устройство",

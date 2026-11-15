@@ -66,7 +66,7 @@ export function PlayChooser({ m, target, label, testId = "play-on-tv", resumeTim
 
   const close = useCallback((refocus = false) => {
     setOpen(false);
-    if (refocus) trigger.current?.focus();
+    if (refocus) trigger.current?.focus({ preventScroll: true });
   }, []);
 
   const main = () => {
@@ -208,7 +208,7 @@ function ChooserPanel({
   useEffect(() => {
     if (!shown) return;
     const el = panel.current;
-    (el?.querySelector<HTMLElement>(`[data-key="${initial}"]:not([disabled])`) ?? el?.querySelector<HTMLElement>("[data-key]:not([disabled])"))?.focus();
+    (el?.querySelector<HTMLElement>(`[data-key="${initial}"]:not([disabled])`) ?? el?.querySelector<HTMLElement>("[data-key]:not([disabled])"))?.focus({ preventScroll: true });
   }, [initial, shown]);
 
   useEffect(() => {
