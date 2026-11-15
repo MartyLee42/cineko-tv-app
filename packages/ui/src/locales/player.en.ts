@@ -58,6 +58,7 @@ export const playerEn = {
   "player.current_source": "Playing now",
   "player.confidence_hint": "How sure we are this release is the right title",
   "player.warnings": "Warnings",
+  "player.play_episode_where": "Play {code}",
   "player.play_episode": "Play {code} on TV",
   "player.releases_for": "Choose a release for {code}",
   "player.peers_speed": "{peers} peers · {speed}",

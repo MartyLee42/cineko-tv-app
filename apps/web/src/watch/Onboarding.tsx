@@ -32,6 +32,7 @@ import {
 } from "./onboarding";
 import { useProfileSettings, useUpdateSettings } from "./queries";
 import { LOADING_STYLES, mergeSettings, setLook, type SettingsPatch } from "./settings";
+import { useScrollLock } from "../scrollLock";
 
 const TITLES: Record<Step, MessageKey> = {
   look: "onboarding.look",
@@ -90,13 +91,7 @@ function Onboarding({ profile }: { profile: Profile }) {
   }, [settings.theme, settings.design]);
 
   // Lock page scroll behind the guide.
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  useScrollLock();
 
   const finish = async (): Promise<boolean> => {
     setSaving(true);

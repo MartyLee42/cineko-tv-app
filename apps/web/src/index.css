@@ -542,3 +542,9 @@ html.design-redroom :focus-visible { outline: 2px solid rgb(240, 236, 228); outl
 a:focus-visible > .ks-hover {
   transform: rotate(0deg) !important;
 }
+
+/* «Во всю ширину экрана» (layout/wide.ts): on big windows poster grids add
+   columns (~170 px posters) instead of stretching each poster. */
+@media (min-width: 1400px) {
+  html.mt-wide .mt-poster-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+}

@@ -105,7 +105,9 @@ export function PlayOnTvProvider({ children }: { children: ReactNode }) {
   const play = useCallback(
     (req: PlayRequest) => {
       writeWatchWhere("tv");
-      const choice = chooseDevice(live, lastUsed);
+      let choice = chooseDevice(live, lastUsed);
+      // «Где смотреть?»: the picker with «Смотреть здесь», even for one TV.
+      if (req.offerHere && choice.kind === "auto") choice = { kind: "pick", preferred: choice.deviceId };
       dispatch({ type: "request", req, choice, ...(choice.kind === "auto" && { player: decide(choice.deviceId, req) }) });
     },
     [dispatch, live, lastUsed, decide],
@@ -197,6 +199,17 @@ export function PlayOnTvProvider({ children }: { children: ReactNode }) {
           states={states}
           preferred={flow.preferred ?? lastUsed}
           onPick={(id) => dispatch({ type: "pick", deviceId: id, player: decide(id, flow.req) })}
+          onHere={
+            flow.req.offerHere
+              ? () => {
+                  // The player resumes where this profile stopped by itself.
+                  const req = flow.req;
+                  dispatch({ type: "cancel" });
+                  writeWatchWhere("here");
+                  navigate(watchUrl(req, { release: req.release_id }));
+                }
+              : undefined
+          }
           onClose={() => dispatch({ type: "cancel" })}
         />
       )}
@@ -367,17 +380,16 @@ export function ChooseReleaseButton({ target, className = "" }: { target: PlayTa
 export function EpisodePlayButtons({ target, code }: { target: PlayTarget; code: string }) {
   const { t } = useI18n();
   const { flow, play, chooseRelease } = usePlayOnTv();
-  const watchHere = useWatchHere();
   const busy = isBusy(flow);
   const mine = busy && "req" in flow && flow.req.episode_id === target.episode_id;
-  const playLabel = t("player.play_episode", { code });
+  const playLabel = t("player.play_episode_where", { code });
   const listLabel = t("player.releases_for", { code });
-  const hereLabel = t("player.web.watch_episode_here", { code });
   return (
     <div className="flex shrink-0 flex-col items-center gap-1.5 self-center">
       <button
         type="button"
-        onClick={() => play(target)}
+        // Asks where: a TV or «Смотреть здесь».
+        onClick={() => play({ ...target, offerHere: true })}
         disabled={busy}
         aria-label={playLabel}
         title={playLabel}
@@ -385,16 +397,6 @@ export function EpisodePlayButtons({ target, code }: { target: PlayTarget; code:
         className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-xl text-on-accent transition hover:bg-accent-strong disabled:opacity-50"
       >
         {mine ? <Spinner size={18} /> : <PlayIcon className="translate-x-px" />}
-      </button>
-      <button
-        type="button"
-        onClick={() => watchHere({ ...target, position_seconds: undefined })}
-        aria-label={hereLabel}
-        title={hereLabel}
-        data-testid="episode-watch-here"
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-accent/50 bg-surface-2 text-base text-accent transition hover:border-accent hover:bg-accent/10"
-      >
-        <DeviceIcon />
       </button>
       <button
         type="button"

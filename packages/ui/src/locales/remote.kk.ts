@@ -3,6 +3,8 @@ import type { remoteEn } from "./remote.en";
 export const remoteKk: Record<keyof typeof remoteEn, string> = {
   "remote.send_to_tv": "Теледидарға",
   "remote.open_on_tv": "ТВ-да ашу",
+  "remote.choose_where": "Қайда көру керек?",
+  "remote.here_hint": "Осы құрылғыдағы браузерде",
   "remote.choose_tv": "Теледидарды таңдаңыз",
   "remote.no_tvs": "Әзірге теледидар қосылмаған.",
   "remote.no_online_tvs": "Бірде-бір теледидар желіде емес.",

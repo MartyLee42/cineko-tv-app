@@ -58,6 +58,7 @@ export const playerRu: Record<keyof typeof playerEn, string> = {
   "player.current_source": "Сейчас играет",
   "player.confidence_hint": "Насколько мы уверены, что это нужный фильм или серия",
   "player.warnings": "Предупреждения",
+  "player.play_episode_where": "Смотреть {code}",
   "player.play_episode": "Смотреть {code} на ТВ",
   "player.releases_for": "Выбрать раздачу для {code}",
   "player.peers_speed": "{peers} пиров · {speed}",

@@ -13,6 +13,7 @@ import { useSession } from "../session";
 import { clientId, detectedSummary, dismissSuggest, isAllAuto, looseT, suggestDismissed, toAuto } from "./logic";
 import { PrefsEditor } from "./PrefsEditor";
 import { slowHintPref } from "../player/slowHint";
+import { useWideLayout, wideLayout } from "../layout/wide";
 import { speedtest, speedtestLine, useSpeedtest } from "./speedtest";
 import {
   detectHere,
@@ -56,11 +57,37 @@ export function ThisDeviceCard() {
             error={save.error}
             savedAt={save.isSuccess ? save.submittedAt : 0}
           />
+          <WideLayoutSwitch />
           <SlowHintSwitch />
           <SpeedtestRow />
         </>
       )}
     </Card>
+  );
+}
+
+/** «Во всю ширину экрана» for this browser (large windows only; off by default). */
+function WideLayoutSwitch() {
+  const { t } = useI18n();
+  const on = useWideLayout();
+  return (
+    <div className="hidden items-center gap-3 border-t border-border pt-4 lg:flex">
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold">{t("settings.wide_layout")}</span>
+        <span className="block text-xs text-muted">{t("settings.wide_layout_hint")}</span>
+      </span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-label={t("settings.wide_layout")}
+        data-testid="wide-layout-switch"
+        onClick={() => wideLayout.set(!on)}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition ${on ? "bg-accent" : "bg-text/20"}`}
+      >
+        <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-[left] ${on ? "left-[1.375rem]" : "left-0.5"}`} />
+      </button>
+    </div>
   );
 }
 
