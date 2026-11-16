@@ -15,8 +15,18 @@ export function initialReleaseMode(o: { stored: ReleaseMode | null; lastWhere: R
   return o.lastWhere ?? "here";
 }
 
-/** A computer: a wide screen with a mouse (not a phone or tablet). */
+/**
+ * A TV's own browser (Samsung / LG / Sony / Android TV, Yandex Browser
+ * «… TV Safari», Fire TV…). It is the screen, not a remote: it watches here.
+ * Driven by a remote, it fails isDesktop's mouse check.
+ */
+export function isTvBrowser(ua: string = typeof navigator !== "undefined" ? navigator.userAgent : ""): boolean {
+  return /\bTV\b|SMART-?TV|SmartTV|Tizen|Web0S|webOS|HbbTV|BRAVIA|GoogleTV|CrKey|\bAFT[A-Z]/i.test(ua);
+}
+
+/** A computer (a wide screen with a mouse) or a TV's own browser — not a phone or tablet. */
 export function isDesktop(): boolean {
+  if (isTvBrowser()) return true;
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
   try {
     return window.matchMedia("(min-width: 1024px) and (hover: hover) and (pointer: fine)").matches;

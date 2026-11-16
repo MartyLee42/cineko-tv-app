@@ -21,7 +21,7 @@ import { PlayOnTvProvider, releaseSummary, usePlayOnTv } from "../play/PlayOnTv"
 import { SlowTorrentBanner, useLiveTorrent, useSlowSource } from "./torrentLive";
 import { apiErrorCode, cancelSource, createSource, releasesQuery, sourceKey, usePlaybackSource, useReleases } from "../play/queries";
 import { sourceErrorMessage, type ReleaseTarget } from "../play/releases";
-import { assessHere, assessSource, bestForBrowser, reasonTexts, thisBrowser, type BrowserSupport } from "../play/browserSupport";
+import { assessHere, assessSource, avoidAfterFailure, bestForBrowser, reasonTexts, thisBrowser, type BrowserSupport } from "../play/browserSupport";
 import { useActiveProfile } from "../watch/ActiveProfile";
 import { useMediaProgress, useSettings, useThemeSync } from "../watch/queries";
 import { formatClock } from "../watch/format";
@@ -323,7 +323,12 @@ function Watch({ sourceId, params }: { sourceId: string; params: URLSearchParams
     if (releases.isPending) return { loading: true, label: null, go: null };
     const items = releases.data?.items ?? [];
     const skip = [...triedFor(triedKey), ...(source ? [source.release.id] : [])];
-    const next = bestForBrowser(items, assessHere, { tried: skip, avoid: support?.avoid ?? [] });
+    const next = bestForBrowser(items, assessHere, { tried: skip, avoid: avoidAfterFailure(
+        fallback?.mode === "unsupported" || fallback?.mode === "decode",
+        support,
+        source?.media_info?.video_codec ?? source?.release.video_codec,
+      ),
+    });
     if (!next) return { loading: false, label: null, go: null };
     return {
       loading: false,
