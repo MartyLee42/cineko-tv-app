@@ -270,7 +270,7 @@ function Layout() {
   return (
     <div className="flex min-h-full flex-col">
       <DesignDecor />
-      <header className="sticky top-0 z-10 border-b border-border bg-bg/90 backdrop-blur">
+      <header className="mt-app-header sticky top-0 z-10 border-b border-border bg-bg/90 backdrop-blur">
         <div className={`mx-auto flex h-14 items-center gap-4 ${col}`}>
           <NavLink to="/" className="shrink-0 text-xl">
             <Logo />

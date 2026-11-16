@@ -548,3 +548,10 @@ a:focus-visible > .ks-hover {
 @media (min-width: 1400px) {
   html.mt-wide .mt-poster-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
 }
+
+/* iPhone home-screen app: the page runs under the status bar (black-translucent,
+   viewport-fit=cover), so the top menu starts below it. iOS only (the
+   -webkit-touch-callout test); elsewhere the inset is 0 or the bar is opaque. */
+@supports (-webkit-touch-callout: none) {
+  .mt-app-header { padding-top: env(safe-area-inset-top); }
+}
