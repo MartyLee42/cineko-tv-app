@@ -4,6 +4,7 @@ import { translate, type MessageKey } from "@martytv/ui";
 import {
   assessForBrowser,
   assessRelease,
+  avoidAfterFailure,
   bestForBrowser,
   codecKey,
   containerFromTitle,
@@ -283,5 +284,18 @@ describe("texts", () => {
     expect(verdictLabel(hevc, t)).toBe("Won't play here");
     expect(reasonTexts(hevc, t)[0]).toBe("HEVC video can't be decoded by this browser.");
     expect(translate("ru", "player.web.badge.no_sound")).toBe("Может быть без звука");
+  });
+});
+
+describe("avoidAfterFailure", () => {
+  it("skips the failed file's video codec unless it is H.264", () => {
+    expect(avoidAfterFailure(true, { avoid: [] }, "av1")).toEqual(["av1"]);
+    expect(avoidAfterFailure(true, { avoid: ["dts"] }, "HEVC")).toEqual(["dts", "hevc"]);
+    expect(avoidAfterFailure(true, { avoid: [] }, "h264")).toEqual([]);
+    expect(avoidAfterFailure(true, null, null)).toEqual([]);
+  });
+
+  it("keeps only the verdict's codecs when nothing failed (network, no sound)", () => {
+    expect(avoidAfterFailure(false, { avoid: ["dts"] }, "av1")).toEqual(["dts"]);
   });
 });

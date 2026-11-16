@@ -2,6 +2,7 @@
 // watch-here preferences kept in this browser.
 import { unwrap } from "@martytv/contracts";
 import { api } from "../api";
+import { isTvBrowser } from "../play/releaseMode";
 import type { ReportBody, SessionStart, SessionTarget, Transport } from "./reporter";
 
 const progressUrl = (id: string) => `/api/v1/playback/sessions/${encodeURIComponent(id)}/progress`;
@@ -44,14 +45,19 @@ export const sessionTransport: Transport = {
 export type WatchWhere = "tv" | "here";
 const WHERE_KEY = "martytv.watch_where";
 
-/** Last choice between TV and this device (Continue watching). */
+/**
+ * Last choice between TV and this device (Continue watching). A TV's own
+ * browser that hasn't chosen yet watches here: it is the TV.
+ */
 export function readWatchWhere(): WatchWhere | null {
+  let v: string | null = null;
   try {
-    const v = localStorage.getItem(WHERE_KEY);
-    return v === "tv" || v === "here" ? v : null;
+    v = localStorage.getItem(WHERE_KEY);
   } catch {
-    return null;
+    // private mode
   }
+  if (v === "tv" || v === "here") return v;
+  return isTvBrowser() ? "here" : null;
 }
 
 export function writeWatchWhere(v: WatchWhere) {

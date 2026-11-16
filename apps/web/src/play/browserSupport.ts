@@ -425,6 +425,20 @@ export function bestForBrowser<R extends { id: string; video_codec: string | nul
   return ranked.find((x) => x.support.verdict === "playable")?.release ?? ranked.find((x) => x.support.verdict === "maybe")?.release ?? null;
 }
 
+/**
+ * Codecs «Другая раздача» skips. The verdict's own (`support.avoid`); and
+ * when this file failed to open or decode here although the probe approved
+ * it (compat included), its video codec too unless it is H.264: weak TV
+ * browsers say yes to AV1 / HEVC and then fail (an AV1 10-bit BDRip on a
+ * Yandex TV box) — the next try should not be another AV1.
+ */
+export function avoidAfterFailure(failed: boolean, support: Pick<BrowserSupport, "avoid"> | null, videoCodec: string | null | undefined): string[] {
+  const avoid = [...(support?.avoid ?? [])];
+  const v = codecKey(videoCodec);
+  if (failed && v && v !== "h264" && !avoid.includes(v)) avoid.push(v);
+  return avoid;
+}
+
 // ---------------------------------------------------------------- text
 
 const REASON_KEY: Record<ReasonCode, MessageKey> = {
