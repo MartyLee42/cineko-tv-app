@@ -81,3 +81,38 @@ func TestUnmeasuredTVCap(t *testing.T) {
 		t.Fatalf("manual unlimited lost")
 	}
 }
+
+// Phones (iOS / Android, tall screen) get an automatic size limit and the
+// smaller-file bias; tablets, TV boxes and desktops don't; manual wins
+// (0 GB = unlimited, prefer_smaller=false = off). Mirrors isPhone() in TS.
+func TestPhoneDefaults(t *testing.T) {
+	iphone := PlaybackAuto{Platform: p("iOS"), ScreenWidth: p(2532), ScreenHeight: p(1170), ThroughputBps: p(100e6)}
+	e := Effective(iphone, PlaybackManual{})
+	if !IsPhone(iphone) || e.MaxSizeGB == nil || *e.MaxSizeGB != PhoneMaxSizeGB || !e.PreferSmaller {
+		t.Fatalf("iPhone: %+v", e)
+	}
+	cons, _ := json.Marshal(Constraints(e))
+	if string(cons) != `[{"code":"max_resolution","value":"1080p"},{"code":"max_bitrate","mbps":90},{"code":"max_size","gb":8},{"code":"smaller"}]` {
+		t.Fatalf("constraints %s", cons)
+	}
+	for _, a := range []PlaybackAuto{
+		{Platform: p("iOS"), ScreenWidth: p(2732), ScreenHeight: p(2048)},        // iPad
+		{Platform: p("Android"), ScreenWidth: p(2560), ScreenHeight: p(1600)},    // Android tablet
+		{Platform: p("android-tv"), ScreenWidth: p(1920), ScreenHeight: p(1080)}, // TV box
+		{Platform: p("Windows"), ScreenWidth: p(3440), ScreenHeight: p(1440)},    // ultrawide desktop
+		{Platform: p("iOS")}, // no screen
+	} {
+		if e := Effective(a, PlaybackManual{}); IsPhone(a) || e.MaxSizeGB != nil || e.PreferSmaller {
+			t.Fatalf("not a phone: %+v → %+v", a, e)
+		}
+	}
+	if !IsPhone(PlaybackAuto{Platform: p("Android"), ScreenWidth: p(1080), ScreenHeight: p(2400)}) {
+		t.Fatal("Android phone (portrait)")
+	}
+	if e := Effective(iphone, PlaybackManual{MaxSizeGB: p(0.0), PreferSmaller: p(false)}); e.MaxSizeGB != nil || e.PreferSmaller {
+		t.Fatalf("manual unlimited / off lost: %+v", e)
+	}
+	if e := Effective(iphone, PlaybackManual{MaxSizeGB: p(30.0)}); *e.MaxSizeGB != 30 {
+		t.Fatalf("manual size: %v", *e.MaxSizeGB)
+	}
+}

@@ -17,11 +17,11 @@ import (
 
 // PlaybackAuto is contract PlaybackAuto.
 type PlaybackAuto struct {
-	ScreenWidth   *int       `json:"screen_width,omitempty"`
-	ScreenHeight  *int       `json:"screen_height,omitempty"`
-	Video         []string   `json:"video,omitempty"`
-	Audio         []string   `json:"audio,omitempty"`
-	Containers    []string   `json:"containers,omitempty"`
+	ScreenWidth  *int     `json:"screen_width,omitempty"`
+	ScreenHeight *int     `json:"screen_height,omitempty"`
+	Video        []string `json:"video,omitempty"`
+	Audio        []string `json:"audio,omitempty"`
+	Containers   []string `json:"containers,omitempty"`
 	// Rough: video variants ("hevc_10bit_2160p") decoded, but not smoothly.
 	Rough         []string   `json:"rough,omitempty"`
 	HLS           *bool      `json:"hls,omitempty"`
@@ -101,6 +101,25 @@ func UnmeasuredCap(a PlaybackAuto, m PlaybackManual) bool {
 	return a.Platform != nil && slices.Contains(TVPlatforms, *a.Platform)
 }
 
+// PhoneMaxSizeGB is the automatic size limit on phones (no manual value):
+// a 30 GB remux on a 6-inch screen only costs time and data. Mirrors
+// PHONE_MAX_SIZE_GB in @martytv/media-types.
+const PhoneMaxSizeGB = 8.0
+
+// IsPhone reports whether a browser profile is a phone: iOS / Android with a
+// tall screen (phones are ≥ 1.7:1, tablets about 4:3–16:10). TV boxes report
+// "android-tv". Mirrors isPhone() in TS.
+func IsPhone(a PlaybackAuto) bool {
+	if a.Platform == nil || (*a.Platform != "iOS" && *a.Platform != "Android") {
+		return false
+	}
+	if a.ScreenWidth == nil || a.ScreenHeight == nil || *a.ScreenWidth <= 0 || *a.ScreenHeight <= 0 {
+		return false
+	}
+	long, short := max(*a.ScreenWidth, *a.ScreenHeight), min(*a.ScreenWidth, *a.ScreenHeight)
+	return float64(long) >= 1.7*float64(short)
+}
+
 // ResolutionForScreen maps physical screen pixels to the highest useful
 // resolution ("" = unknown).
 func ResolutionForScreen(w, h *int) string {
@@ -137,14 +156,23 @@ func Effective(a PlaybackAuto, m PlaybackManual) EffectivePrefs {
 	} else if r := ResolutionForScreen(a.ScreenWidth, a.ScreenHeight); r != "" {
 		e.MaxResolution = &r
 	}
-	if m.MaxSizeGB != nil && *m.MaxSizeGB > 0 {
+	phone := IsPhone(a)
+	switch {
+	case m.MaxSizeGB != nil && *m.MaxSizeGB > 0:
 		e.MaxSizeGB = m.MaxSizeGB
+	case m.MaxSizeGB == nil && phone: // 0 = explicitly unlimited
+		v := PhoneMaxSizeGB
+		e.MaxSizeGB = &v
 	}
 	e.VideoCodec = m.VideoCodec
 	e.AvoidHDR = m.HDR != nil && *m.HDR == "avoid" ||
 		m.HDR == nil && a.Video != nil && !slices.Contains(a.Video, "hdr10") && !slices.Contains(a.Video, "dv")
 	e.Audio = m.Audio
-	e.PreferSmaller = m.PreferSmaller != nil && *m.PreferSmaller
+	if m.PreferSmaller != nil {
+		e.PreferSmaller = *m.PreferSmaller
+	} else {
+		e.PreferSmaller = phone
+	}
 	if len(a.Video) > 0 {
 		e.Video = a.Video
 	}
@@ -225,7 +253,7 @@ var (
 	// RoughTokens mirrors SMOOTH_TOKENS in @martytv/media-types smooth.ts.
 	RoughTokens = []string{"h264_1080p", "h264_2160p", "hevc_1080p", "hevc_2160p", "hevc_10bit_1080p", "hevc_10bit_2160p",
 		"av1_1080p", "av1_2160p", "av1_10bit_1080p", "av1_10bit_2160p"}
-	presetRe        = regexp.MustCompile(`^[a-z0-9_]{0,32}$`)
+	presetRe = regexp.MustCompile(`^[a-z0-9_]{0,32}$`)
 )
 
 // MaxPrefsBody bounds a playback-prefs PATCH body.

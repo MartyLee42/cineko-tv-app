@@ -34,7 +34,10 @@ export function PrefsEditor({ auto, manual: savedManual, kind, onSave, busy, err
     onSave(m);
   };
   const detected = detectedSummary(auto, t);
-  const applied = constraints(effectivePrefs({ auto: auto ?? {}, manual })).map((c) => constraintText(c, looseT(t)));
+  const eff = effectivePrefs({ auto: auto ?? {}, manual });
+  const applied = constraints(eff).map((c) => constraintText(c, looseT(t)));
+  const smaller = eff.prefer_smaller;
+  const smallerAuto = effectivePrefs({ auto: auto ?? {}, manual: { ...manual, prefer_smaller: null } }).prefer_smaller;
   const [hiddenFor, setHiddenFor] = useState(0);
   const shownSaved = !!savedAt && savedAt !== hiddenFor;
   useEffect(() => {
@@ -115,13 +118,14 @@ export function PrefsEditor({ auto, manual: savedManual, kind, onSave, busy, err
           <button
             type="button"
             role="switch"
-            aria-checked={!!manual.prefer_smaller}
+            aria-checked={smaller}
             aria-label={t("tvplay.row.prefer_smaller")}
             data-testid="prefs-row-prefer_smaller"
-            onClick={() => save({ ...manual, prefer_smaller: manual.prefer_smaller ? null : true })}
-            className={`relative h-7 w-12 shrink-0 rounded-full transition ${manual.prefer_smaller ? "bg-accent" : "bg-text/20"}`}
+            // On by default on phones: switching it off is an explicit «no».
+            onClick={() => save({ ...manual, prefer_smaller: smaller === smallerAuto ? !smaller : null })}
+            className={`relative h-7 w-12 shrink-0 rounded-full transition ${smaller ? "bg-accent" : "bg-text/20"}`}
           >
-            <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-[left] ${manual.prefer_smaller ? "left-[1.375rem]" : "left-0.5"}`} />
+            <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-[left] ${smaller ? "left-[1.375rem]" : "left-0.5"}`} />
           </button>
         </label>
       </div>

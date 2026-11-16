@@ -491,6 +491,14 @@ heuristic. A release that misses nothing gets reason `device_fit`. Example
 (a test): a 1080p H.264 box with AAC/MP3, compat and ~15 Mbit/s ranks a
 12 GB WEB-DL above a 42 GB remux (≈ 42 Mbit/s, ×0.17) with 200 seeders.
 
+**Phones.** A browser profile on iOS / Android with a tall screen (long side
+≥ 1.7 × short: phones, not tablets or TV boxes; `IsPhone` / `isPhone`) gets
+two automatic defaults when no manual value is set: an 8 GB size limit
+(`PhoneMaxSizeGB`) and prefer_smaller. On a phone a 1080p remux fit the screen
+and a Wi‑Fi throughput sample, so «another release» once offered a 35 GB
+BDRemux after a 4 GB BDRip. A manual 0 GB means unlimited, and switching
+«Предпочитать файлы меньше» off is stored as an explicit `false`.
+
 **Clients.** The TV (`apps/tv/src/settings/devicePrefs.ts`) probes its
 engine (canPlayType / MediaSource, like «Об этом телевизоре»), the screen ×
 DPR (always reported landscape — long × short, `landscapeSize` in
