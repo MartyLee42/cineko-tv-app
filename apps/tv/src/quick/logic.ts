@@ -1,11 +1,12 @@
 // The TV quick-actions popup (hold OK / ☰ / Info on a poster card): which
 // lines it shows and the remote keys that open it. Pure.
 
-export type QuickLine = "like" | "want" | "rate" | "dismiss" | "open";
+export type QuickLine = "like" | "want" | "rate" | "remove" | "dismiss" | "open";
 
-/** Lines top to bottom: ♥, «Буду смотреть», the rating, then «Не интересно» / «Подробнее» when offered. */
-export function quickLines(o: { dismiss: boolean; open: boolean }): QuickLine[] {
+/** Lines top to bottom: ♥, «Буду смотреть», the rating, then «Убрать из истории» / «Не интересно» / «Подробнее» when offered. */
+export function quickLines(o: { dismiss: boolean; open: boolean; remove?: boolean }): QuickLine[] {
   const out: QuickLine[] = ["like", "want", "rate"];
+  if (o.remove) out.push("remove");
   if (o.dismiss) out.push("dismiss");
   if (o.open) out.push("open");
   return out;

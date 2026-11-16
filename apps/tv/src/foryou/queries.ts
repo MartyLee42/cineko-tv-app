@@ -129,6 +129,24 @@ export function useHistory() {
   });
 }
 
+/**
+ * «Убрать из истории»: the title's progress goes on the server (history,
+ * «Продолжить», watched marks); it leaves the loaded history at once.
+ */
+export async function removeFromHistory(mediaId: string): Promise<void> {
+  const profile = activeProfile.get();
+  if (!profile) return;
+  type Pages = { pages: { items: HistoryPage; next_cursor: string | null }[]; pageParams: unknown[] };
+  queryClient.setQueriesData<Pages>({ queryKey: ["foryou", "history", profile] }, (d) =>
+    d ? { ...d, pages: d.pages.map((p) => ({ ...p, items: p.items.filter((h) => h.media.id !== mediaId) })) } : d,
+  );
+  try {
+    await unwrap(api.DELETE("/profiles/{id}/history/{mediaId}", { params: { path: { id: profile, mediaId } } }));
+  } finally {
+    for (const key of [["foryou"], ["watch"], ["catalog"], ["media", mediaId]]) void queryClient.invalidateQueries({ queryKey: key });
+  }
+}
+
 /** Refetch everything profile-scoped after `foryou.updated` (and the history after playback). */
 export function invalidateForYou() {
   void queryClient.invalidateQueries({ queryKey: ["foryou"] });

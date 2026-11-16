@@ -8,6 +8,8 @@ export interface QuickTarget {
   onOpen?: () => void;
   /** «Не интересно» handled by the row (e.g. «Для вас» moves focus and asks «Почему?»); default: the generic dismissal. */
   onDismiss?: () => void;
+  /** «Убрать из истории» (the History screen): the popup closes and this runs (it asks first). */
+  onRemove?: () => void;
   /** Row id for the dismissal's feedback. */
   rowId?: string;
 }

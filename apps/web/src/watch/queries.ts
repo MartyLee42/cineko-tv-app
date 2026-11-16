@@ -5,10 +5,12 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type InfiniteData,
   type QueryClient,
 } from "@tanstack/react-query";
 import {
   unwrap,
+  type HistoryItem,
   type MediaPage,
   type MediaProgress,
   type MediaUserState,
@@ -269,6 +271,24 @@ export function useToggleList() {
     onMutate: ({ list, mediaId, on }) => patchMe(qc, mediaId, list === "watchlist" ? { in_watchlist: on } : { favorite: on }),
     onError: (_e, { list, mediaId, on }) => patchMe(qc, mediaId, list === "watchlist" ? { in_watchlist: !on } : { favorite: !on }),
     onSettled: (_d, _e, { list }) => qc.invalidateQueries({ queryKey: ["lists", profileId, list] }),
+  });
+}
+
+/** «Убрать из истории»: the title's progress goes (history, «Продолжить», watched marks). */
+export function useRemoveFromHistory() {
+  const qc = useQueryClient();
+  const { profileId } = useActiveProfile();
+  return useMutation({
+    mutationFn: (mediaId: string) => unwrap(api.DELETE("/profiles/{id}/history/{mediaId}", { params: { path: { id: profileId!, mediaId } } })),
+    onMutate: async (mediaId) => {
+      await qc.cancelQueries({ queryKey: ["history", profileId] });
+      qc.setQueriesData<InfiniteData<{ items: HistoryItem[]; next_cursor: string | null }>>({ queryKey: ["history", profileId] }, (d) =>
+        d ? { ...d, pages: d.pages.map((p) => ({ ...p, items: p.items.filter((h) => h.media.id !== mediaId) })) } : d,
+      );
+    },
+    onSettled: (_d, _e, mediaId) => {
+      for (const key of [["history"], ["continue"], ["catalog"], ["media", mediaId], ["foryou"], ["family"]]) void qc.invalidateQueries({ queryKey: key });
+    },
   });
 }
 

@@ -150,6 +150,9 @@ export const foryouEn = {
   "fy.history.your_rating": "Your rating: {n}",
   "fy.history.in_progress": "In progress",
   "fy.history.month_count": "{n}",
+  "fy.history.remove": "Remove from history",
+  "fy.history.remove_confirm": "Remove “{title}” from your history? Watched marks and where you stopped will be deleted. Your rating and lists stay.",
+  "fy.history.remove_keep": "Keep",
 
   // ---- Diary ----
   "fy.diary.title": "Diary",

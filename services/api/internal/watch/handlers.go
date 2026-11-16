@@ -32,6 +32,7 @@ func (h *Handlers) Routes(r fiber.Router) {
 	// existing /profiles/:id/* routes).
 	r.Get("/profiles/:id/continue-watching", caller, h.continueWatching)
 	r.Get("/profiles/:id/history", caller, h.history)
+	r.Delete("/profiles/:id/history/:mediaId", caller, h.removeFromHistory)
 	r.Get("/profiles/:id/lists/:list", caller, h.list)
 	r.Put("/profiles/:id/lists/:list/:mediaId", caller, h.addToList)
 	r.Delete("/profiles/:id/lists/:list/:mediaId", caller, h.removeFromList)
@@ -188,6 +189,22 @@ func (h *Handlers) history(c fiber.Ctx) error {
 		items = []HistoryItem{}
 	}
 	return c.JSON(fiber.Map{"items": items, "next_cursor": next})
+}
+
+// removeFromHistory is DELETE /profiles/{id}/history/{mediaId}.
+func (h *Handlers) removeFromHistory(c fiber.Ctx) error {
+	pid, err := h.profileParam(c)
+	if err != nil {
+		return err
+	}
+	mid, err := httpx.ParamUUID(c, "mediaId")
+	if err != nil {
+		return err
+	}
+	if err := h.svc.RemoveFromHistory(c.Context(), pid, mid); err != nil {
+		return fail(err)
+	}
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
 func listParam(c fiber.Ctx) (string, error) {

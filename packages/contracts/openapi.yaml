@@ -2130,6 +2130,19 @@ paths:
                 properties:
                   items: { type: array, items: { $ref: "#/components/schemas/HistoryItem" } }
                   next_cursor: { type: [string, "null"] }
+  /profiles/{id}/history/{mediaId}:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+      - { name: mediaId, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      tags: [watch]
+      operationId: removeFromHistory
+      description: >-
+        Forgets a title on this profile: its watch progress (a series: every episode) is deleted, so it leaves the
+        history, «Продолжить просмотр» and the watched marks. Ratings, lists and ticket stubs stay. Idempotent.
+      responses:
+        "204": { description: Removed (idempotent). }
+        "404": { $ref: "#/components/responses/Error" }
   /profiles/{id}/tickets:
     parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/Lang" }]
     get:

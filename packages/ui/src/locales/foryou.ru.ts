@@ -148,6 +148,9 @@ export const foryouRu: Record<keyof typeof foryouEn, string> = {
   "fy.history.your_rating": "Ваша оценка: {n}",
   "fy.history.in_progress": "Смотрите",
   "fy.history.month_count": "{n}",
+  "fy.history.remove": "Убрать из истории",
+  "fy.history.remove_confirm": "Убрать «{title}» из истории? Отметки о просмотре и место, где вы остановились, удалятся. Оценка и списки останутся.",
+  "fy.history.remove_keep": "Оставить",
 
   // ---- Diary ----
   "fy.diary.title": "Дневник",
