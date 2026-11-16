@@ -148,6 +148,9 @@ export const foryouKk: Record<keyof typeof foryouEn, string> = {
   "fy.history.your_rating": "Сіздің бағаңыз: {n}",
   "fy.history.in_progress": "Көріп жатырсыз",
   "fy.history.month_count": "{n}",
+  "fy.history.remove": "Тарихтан алып тастау",
+  "fy.history.remove_confirm": "«{title}» тарихтан алынсын ба? Көрілгені туралы белгілер мен тоқтаған жеріңіз жойылады. Бағаңыз бен тізімдер қалады.",
+  "fy.history.remove_keep": "Қалдыру",
 
   // ---- Diary ----
   "fy.diary.title": "Күнделік",

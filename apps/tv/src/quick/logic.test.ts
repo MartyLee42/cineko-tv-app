@@ -8,6 +8,7 @@ describe("quickLines", () => {
   it("♥, watchlist and the rating always; dismiss / open when offered", () => {
     expect(quickLines({ dismiss: false, open: false })).toEqual(["like", "want", "rate"]);
     expect(quickLines({ dismiss: true, open: true })).toEqual(["like", "want", "rate", "dismiss", "open"]);
+    expect(quickLines({ dismiss: true, open: true, remove: true })).toEqual(["like", "want", "rate", "remove", "dismiss", "open"]);
   });
   it("▲▼ stop at the ends", () => {
     expect(moveLine(0, -1, 5)).toBe(0);

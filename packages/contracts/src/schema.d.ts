@@ -1850,6 +1850,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profiles/{id}/history/{mediaId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Forgets a title on this profile: its watch progress (a series: every episode) is deleted, so it leaves the history, «Продолжить просмотр» and the watched marks. Ratings, lists and ticket stubs stay. Idempotent. */
+        delete: operations["removeFromHistory"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/profiles/{id}/tickets": {
         parameters: {
             query?: {
@@ -10805,6 +10825,29 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    removeFromHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+                mediaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed (idempotent). */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     profileTickets: {

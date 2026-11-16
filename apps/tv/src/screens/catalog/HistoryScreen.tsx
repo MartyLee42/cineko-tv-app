@@ -14,7 +14,8 @@ import { ErrorState } from "../../components/States";
 import { useDesign, useFrame, type Design } from "../../design/context";
 import { ScreenTitle } from "../../design/grid";
 import { useReportDeep, useToTop } from "../../design/topJump";
-import { useHistory } from "../../foryou/queries";
+import { removeFromHistory, useHistory } from "../../foryou/queries";
+import { ActionMenu } from "../../components/ActionMenu";
 import { lineWindow, listLayout, listScroll, type ListLayout } from "../../foryou/layout";
 
 const EDGE = 40;
@@ -41,6 +42,8 @@ export function HistoryScreen({ mem, onOpen }: { mem: RouteMemory; onOpen: (item
   const count = layout.items.length;
   const width = 1920 - frame.x - 96;
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = q;
+  // «Убрать из истории» (hold OK on a line): asks first.
+  const [asking, setAsking] = useState<HistoryItem | null>(null);
 
   // Near the end (or a filter with few matches): the next page.
   useEffect(() => {
@@ -92,6 +95,7 @@ export function HistoryScreen({ mem, onOpen }: { mem: RouteMemory; onOpen: (item
         renderMonth={(key, n) => <MonthHeader design={design} label={monthLabel(key, t)} count={n} />}
         renderItem={(h, focused) => <HistoryCard h={h} focused={focused} design={design} cfg={cfg.data} locale={locale} width={width} />}
         onSelect={(h) => onOpen(h.media, t("nav.history"))}
+        onRemove={setAsking}
       />
     );
 
@@ -125,6 +129,26 @@ export function HistoryScreen({ mem, onOpen }: { mem: RouteMemory; onOpen: (item
           {body}
         </div>
       </FocusLine>
+      {asking && (
+        <ActionMenu
+          testId="history-remove-ask"
+          title={t("fy.history.remove_confirm", { title: asking.media.title })}
+          actions={[
+            { key: "cancel", label: t("fy.history.remove_keep"), onPress: () => setAsking(null) },
+            {
+              key: "remove",
+              label: t("fy.history.remove"),
+              primary: true,
+              onPress: () => {
+                const id = asking.media.id;
+                setAsking(null);
+                void removeFromHistory(id).catch(() => undefined);
+              },
+            },
+          ]}
+          onCancel={() => setAsking(null)}
+        />
+      )}
     </div>
   );
 }
@@ -137,6 +161,7 @@ function HistoryList({
   initial,
   onIndex,
   onSelect,
+  onRemove,
   renderMonth,
   renderItem,
 }: {
@@ -146,6 +171,7 @@ function HistoryList({
   initial: number;
   onIndex: (i: number) => void;
   onSelect: (h: HistoryItem) => void;
+  onRemove: (h: HistoryItem) => void;
   renderMonth: (key: string, count: number) => ReactNode;
   renderItem: (h: HistoryItem, focused: boolean) => ReactNode;
 }) {
@@ -190,7 +216,7 @@ function HistoryList({
           onIndex(i);
         }}
         onPress={() => onSelect(h)}
-        quick={() => ({ item: h.media, onOpen: () => onSelect(h) })}
+        quick={() => ({ item: h.media, onOpen: () => onSelect(h), onRemove: () => onRemove(h) })}
       >
         {(focused) => renderItem(h, focused)}
       </Slot>,

@@ -56,7 +56,7 @@ function QuickMenu({ target, onClose, onDismissed }: { target: QuickTarget; onCl
   const cfg = useCatalogConfig();
   const { item } = target;
   const me = item.me;
-  const lines = quickLines({ dismiss: true, open: !!target.onOpen });
+  const lines = quickLines({ dismiss: true, open: !!target.onOpen, remove: !!target.onRemove });
   const [index, setIndex] = useState(0);
   const [liked, setLiked] = useState(!!me?.favorite);
   const [wanted, setWanted] = useState(!!me?.in_watchlist);
@@ -93,6 +93,9 @@ function QuickMenu({ target, onClose, onDismissed }: { target: QuickTarget; onCl
         if (!ch && s.pick === 0) return onClose();
         setSaved(s.pick === 0 ? t("quick.unrated") : t("quick.rated", { n: s.pick }));
         closeTimer = setTimeout(onClose, 700);
+      } else if (line === "remove") {
+        onClose();
+        target.onRemove?.();
       } else if (line === "dismiss") onDismissed(target);
       else if (line === "open") {
         onClose();
@@ -177,6 +180,15 @@ function QuickMenu({ target, onClose, onDismissed }: { target: QuickTarget; onCl
                   wanted,
                 );
               if (key === "rate") return <RateLine key={key} first={i === 0} focused={i === index} pick={pick} rating={rating} saved={saved} />;
+              if (key === "remove")
+                return line(
+                  key,
+                  i,
+                  <>
+                    <span className="mr-5 w-10 text-center">⌫</span>
+                    {t("fy.history.remove")}
+                  </>,
+                );
               if (key === "dismiss")
                 return line(
                   key,

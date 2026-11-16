@@ -437,6 +437,27 @@ func TestWatchContinueWatchingAndHistory(t *testing.T) {
 		t.Fatalf("oldest %v", h2)
 	}
 	c.Do("GET", "/api/v1/profiles/"+w.pid+"/history?cursor=garbage!", nil).Expect(422)
+
+	// Removing titles: a movie and a whole series leave history and «Продолжить» (idempotent).
+	for range 2 {
+		c.Do("DELETE", "/api/v1/profiles/"+w.pid+"/history/"+m2, nil).Expect(204)
+	}
+	c.Do("DELETE", "/api/v1/profiles/"+w.pid+"/history/"+series, nil).Expect(204)
+	c.Do("DELETE", "/api/v1/profiles/"+w.pid+"/history/not-a-uuid", nil).Expect(404)
+	var left []string
+	for _, it := range c.Do("GET", "/api/v1/profiles/"+w.pid+"/history", nil).Expect(200).Items() {
+		left = append(left, it["media"].(map[string]any)["id"].(string))
+	}
+	if fmt.Sprint(left) != fmt.Sprint([]string{done, m1}) {
+		t.Fatalf("history after removal %v (want %v)", left, []string{done, m1})
+	}
+	got = nil
+	for _, it := range c.Do("GET", "/api/v1/profiles/"+w.pid+"/continue-watching", nil).Expect(200).Items() {
+		got = append(got, it["media"].(map[string]any)["id"].(string))
+	}
+	if fmt.Sprint(got) != fmt.Sprint([]string{m1}) {
+		t.Fatalf("continue watching after removal %v", got)
+	}
 }
 
 func TestWatchListsRatingsAndSettings(t *testing.T) {
@@ -515,6 +536,7 @@ func TestWatchProfileAuthorization(t *testing.T) {
 		{"GET", base + "/settings"}, {"PUT", base + "/settings"}, {"GET", base + "/continue-watching"},
 		{"GET", base + "/history"}, {"GET", base + "/lists/watchlist"}, {"PUT", base + "/lists/favorites/" + movie},
 		{"DELETE", base + "/lists/favorites/" + movie}, {"PUT", base + "/ratings/" + movie}, {"DELETE", base + "/ratings/" + movie},
+		{"DELETE", base + "/history/" + movie},
 		{"GET", "/api/v1/media/" + movie + "/progress?profile_id=" + w.pid},
 	} {
 		var body any

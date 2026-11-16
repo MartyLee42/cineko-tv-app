@@ -18,7 +18,7 @@ import { CatalogError, Img } from "../catalog/components";
 import { useCatalogConfig } from "../catalog/queries";
 import { CheckIcon, CloseIcon, SearchIcon } from "../icons";
 import { useActiveProfile } from "../watch/ActiveProfile";
-import { useHistory } from "../watch/queries";
+import { useHistory, useRemoveFromHistory } from "../watch/queries";
 import { ProgressBar } from "../watch/components";
 
 export function NoProfile() {
@@ -57,6 +57,10 @@ export function HistoryPage() {
   const [q, setQ] = useState(params.get("q") ?? "");
   const filter = useMemo(() => ({ kind, q }), [kind, q]);
   const hq = useHistory(100);
+  const remove = useRemoveFromHistory();
+  const onRemove = (h: HistoryItem) => {
+    if (confirm(t("fy.history.remove_confirm", { title: h.media.title }))) remove.mutate(h.media.id);
+  };
   const sentinel = useRef<HTMLDivElement>(null);
   const { hasNextPage, isFetchingNextPage, fetchNextPage, isError } = hq;
 
@@ -184,7 +188,7 @@ export function HistoryPage() {
                       </h2>
                       <ol className="space-y-2">
                         {g.items.map((h) => (
-                          <HistoryRow key={`${h.media.id}-${h.progress.episode_id ?? ""}-${h.progress.updated_at}`} h={h} absolute />
+                          <HistoryRow key={`${h.media.id}-${h.progress.episode_id ?? ""}-${h.progress.updated_at}`} h={h} absolute onRemove={() => onRemove(h)} />
                         ))}
                       </ol>
                     </section>
@@ -223,7 +227,7 @@ function shortDate(iso: string, locale: string): string {
   return new Date(iso).toLocaleDateString(locale, { day: "numeric", month: "short", timeZone: "UTC" });
 }
 
-export function HistoryRow({ h, extra, absolute }: { h: HistoryItem; extra?: ReactNode; absolute?: boolean }) {
+export function HistoryRow({ h, extra, absolute, onRemove }: { h: HistoryItem; extra?: ReactNode; absolute?: boolean; onRemove?: () => void }) {
   const { t, locale } = useI18n();
   const { data: cfg } = useCatalogConfig();
   const p = h.progress;
@@ -232,8 +236,8 @@ export function HistoryRow({ h, extra, absolute }: { h: HistoryItem; extra?: Rea
   const rating = h.media.me?.rating ?? null;
   const when = absolute ? shortDate(historyDate(h), locale) : timeAgo(p.completed_at ?? p.updated_at, locale);
   return (
-    <li data-testid="history-row">
-      <Link to={href} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-2.5 hover:border-muted">
+    <li data-testid="history-row" className="flex items-stretch gap-1.5">
+      <Link to={href} className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-border bg-surface p-2.5 hover:border-muted">
         <div className="relative aspect-[2/3] w-12 shrink-0 overflow-hidden rounded-lg" style={{ background: placeholderColor(h.media.title) }}>
           <Img src={imageUrl(cfg, h.media.poster_path, "w185")} alt="" className="absolute inset-0 h-full w-full object-cover" fallback={null} />
         </div>
@@ -254,6 +258,18 @@ export function HistoryRow({ h, extra, absolute }: { h: HistoryItem; extra?: Rea
           absolute && <span className="shrink-0 text-xs font-semibold text-muted">{t("fy.history.in_progress")}</span>
         )}
       </Link>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={t("fy.history.remove")}
+          title={t("fy.history.remove")}
+          data-testid="history-remove"
+          className="flex w-11 shrink-0 items-center justify-center rounded-2xl text-muted hover:bg-surface-2 hover:text-danger"
+        >
+          <CloseIcon />
+        </button>
+      )}
     </li>
   );
 }

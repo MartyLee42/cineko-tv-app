@@ -329,6 +329,14 @@ func (s *Service) historyRows(ctx context.Context, profileIDs []string, cursor s
 	return rows, next, nil
 }
 
+// RemoveFromHistory forgets a title on a profile: its progress rows (a
+// series: every episode) go, so it leaves «История», «Продолжить» and the
+// watched marks. Ratings, lists and ticket stubs stay. Idempotent.
+func (s *Service) RemoveFromHistory(ctx context.Context, profileID, mediaID string) error {
+	_, err := s.pool.Exec(ctx, `DELETE FROM watch_progress WHERE profile_id = $1 AND media_id = $2`, profileID, mediaID)
+	return err
+}
+
 // History is GET /profiles/{id}/history.
 func (s *Service) History(ctx context.Context, profileID, cursor string, limit int, lang string) ([]HistoryItem, *string, error) {
 	rows, next, err := s.historyRows(ctx, []string{profileID}, cursor, limit)

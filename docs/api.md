@@ -367,6 +367,7 @@ GET and `write` otherwise.
 | GET | `/admin/new-episodes` | Admin: schedule (`NEW_EPISODES_AT` in `NEW_EPISODES_TZ`, default 04:00 UTC) and the last 10 runs |
 | POST | `/admin/new-episodes/run` | Admin: run the check now → 202; 409 while one runs |
 | GET | `/profiles/{id}/history?lang&cursor&limit` | `{items: HistoryItem[], next_cursor}`, newest first; bad cursor → 422 |
+| DELETE | `/profiles/{id}/history/{mediaId}` | 204: forgets the title on the profile (its progress rows, every episode of a series): gone from history, «Продолжить» and watched marks; ratings, lists and ticket stubs stay; idempotent |
 | GET | `/profiles/{id}/lists/{watchlist\|favorites}?page&lang` | `MediaPage`, newest first, 20 per page |
 | PUT/DELETE | `/profiles/{id}/lists/{list}/{mediaId}` | 204, idempotent; unknown media → 404 |
 | PUT/DELETE | `/profiles/{id}/ratings/{mediaId}` | `{rating: 1..10}` (integer, else 422) → 204; DELETE idempotent |
