@@ -125,8 +125,17 @@ export function createSource(body: { media_id: string; release_id: string; episo
   return unwrap(api.POST("/playback/sources", { body }));
 }
 
-export function getSource(id: string): Promise<PlaybackSource> {
-  return unwrap(api.GET("/playback/sources/{id}", { params: { path: { id } } }));
+/**
+ * An OK answer without a body (204 / Content-Length 0: a TV browser's data
+ * saver or proxy) is a failed call, not a source: callers poll on and read
+ * `.status`, and an undefined froze the player at 97 % (Yandex TV box).
+ */
+export async function getSource(id: string): Promise<PlaybackSource> {
+  const s = await unwrap(api.GET("/playback/sources/{id}", { params: { path: { id } } }));
+  if (!s || typeof s !== "object" || typeof (s as { status?: unknown }).status !== "string") {
+    throw new ApiError(0, { error: { code: "network_error", message: "Empty answer from the server." } });
+  }
+  return s;
 }
 
 /** The viewer cancelled while it loaded: the server stops preparing it (and drops a torrent it just added). Best effort. */
