@@ -739,3 +739,45 @@ describe("internet lost mid-film", () => {
     }
   });
 });
+
+describe("waiting for media_info", () => {
+  it("a broken poll answer still starts the video after the wait (no 97 % freeze)", async () => {
+    const data = await import("./data");
+    const tor = online({
+      id: "s-wait",
+      kind: "torrent",
+      format: undefined,
+      mime_type: "video/x-matroska",
+      stream_url: "/api/v1/stream/w1",
+      compat_url: "/api/v1/stream/w1/compat.mp4",
+      media_info: null,
+      qualities: [],
+      quality: null,
+    });
+    vi.mocked(data.createSource).mockImplementation(async () => tor);
+    // What the Yandex TV box got: an OK answer with no body.
+    vi.mocked(data.getSource).mockImplementation(async () => undefined as unknown as PlaybackSource);
+    const { PlayerController, INFO_WAIT_MS } = await import("./controller");
+    const transport = { start: async () => ({ id: "sess", resume_position_seconds: null, progress: null, report_token: null }), report: async () => null, beacon: () => undefined };
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+    const c = new PlayerController(Date.now, transport as never);
+    try {
+      const v = new FakeVideo();
+      v.canPlayType = () => "maybe";
+      c.attach(v as unknown as HTMLVideoElement);
+      const ctx = { media_id: MOVIE, kind: "movie" as const, title: "T", poster_path: null, backdrop_path: null, season: null, episode: null, episode_id: null, episode_name: null, profile_id: "p", lang: "en" as const, player: "builtin" as const, app: null };
+      c.playRelease(ctx, variantRelease(variant) as Release);
+      await vi.waitFor(() => expect(c.flow.phase).toBe("playing"));
+      expect(c.awaitingInfo()).toBe(true);
+      expect(v.src).toBe("");
+      await vi.advanceTimersByTimeAsync(INFO_WAIT_MS + 2_000);
+      expect(c.awaitingInfo()).toBe(false);
+      expect(v.src).not.toBe("");
+    } finally {
+      vi.mocked(data.getSource).mockImplementation(async () => online());
+      vi.mocked(data.createSource).mockImplementation(async () => online());
+      vi.useRealTimers();
+      c.close();
+    }
+  });
+});

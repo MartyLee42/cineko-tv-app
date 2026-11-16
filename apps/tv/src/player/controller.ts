@@ -1264,8 +1264,15 @@ export class PlayerController {
         this.emit("playback");
         break;
       }
-      if (this.infoWait === w) this.infoWait = null;
-    })();
+    })()
+      .catch(() => {
+        // Never leave the player «waiting for info» with nothing loaded: an
+        // exception here used to freeze the loader at 97 % for good.
+        if (!w.loaded && alive()) firstLoad((this.flow as Extract<Flow, { phase: "playing" }>).source);
+      })
+      .finally(() => {
+        if (this.infoWait === w) this.infoWait = null;
+      });
   }
 
   /** Waiting for media_info before the first load (nothing is loaded yet). */
