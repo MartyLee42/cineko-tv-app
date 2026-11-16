@@ -259,3 +259,28 @@ func TestDeviceXvidAndLikelyXvid(t *testing.T) {
 		t.Fatal("1080p rip guessed as XviD")
 	}
 }
+
+// Alina's iPhone and «F1» (2026-11-16): «another release» after the BDRip
+// offered a 35 GB BDRemux — fine for the 1080p screen and the measured
+// 100 Mbit/s, but pointless on a phone. Phones now rank it below the BDRip.
+func TestPhonePrefersLighterRelease(t *testing.T) {
+	const remux = "Матрица / The Matrix (1999) BDRemux 1080p | AVC | E-AC3, TrueHD | D"
+	const rip = "Матрица / The Matrix (1999) BDRip 1080p | AVC | AC3 | D"
+	c := []candidate{cand(t, remux, 120, 35), cand(t, rip, 90, 4.3)}
+	iphone := devices.PlaybackAuto{
+		Platform: ptr("iOS"), ScreenWidth: ptr(2532), ScreenHeight: ptr(1170), ThroughputBps: ptr(102e6),
+		Video: []string{"h264", "hevc", "vp9", "hdr10", "dv"}, Audio: []string{"aac", "ac3", "eac3", "mp3", "opus", "flac"},
+	}
+	prefs := Prefs{Languages: []string{"ru"}, RuntimeSeconds: 8160}
+	laptop := iphone
+	laptop.Platform, laptop.ScreenWidth, laptop.ScreenHeight = ptr("macOS"), ptr(2880), ptr(1800)
+	prefs.Device = eff(laptop, devices.PlaybackManual{})
+	if got := Rank(c, prefs); got[0].Title != remux {
+		t.Fatalf("laptop keeps the remux first: %v", ids(got))
+	}
+	prefs.Device = eff(iphone, devices.PlaybackManual{})
+	got := Rank(c, prefs)
+	if got[0].Title != rip || !slices.Contains(byTitle(got, remux).Warnings, "over_size_limit") {
+		t.Fatalf("phone: %v (remux warnings %v)", ids(got), byTitle(got, remux).Warnings)
+	}
+}

@@ -115,6 +115,20 @@ export function resolutionForScreen(w: number | null | undefined, h: number | nu
   return "720p";
 }
 
+/**
+ * The automatic size limit on phones (no manual value): a 30 GB remux on a
+ * 6-inch screen only costs time and data. Mirrors devices.PhoneMaxSizeGB.
+ */
+export const PHONE_MAX_SIZE_GB = 8;
+
+/** iOS / Android with a tall screen (phones ≥ 1.7:1; tablets ≈ 4:3–16:10). Mirrors devices.IsPhone. */
+export function isPhone(a: PlaybackAuto): boolean {
+  if (a.platform !== "iOS" && a.platform !== "Android") return false;
+  const w = a.screen_width, h = a.screen_height;
+  if (!w || !h || w <= 0 || h <= 0) return false;
+  return Math.max(w, h) >= 1.7 * Math.min(w, h);
+}
+
 /** auto + manual → effective (manual wins). */
 export function effectivePrefs(p: PlaybackPrefsLike | null | undefined): EffectivePrefs {
   const a = p?.auto ?? {};
@@ -124,14 +138,16 @@ export function effectivePrefs(p: PlaybackPrefsLike | null | undefined): Effecti
   else if (m.max_bitrate_mbps != null && m.max_bitrate_mbps > 0) bitrate = m.max_bitrate_mbps * 1e6;
   else if (a.throughput_bps && a.throughput_bps > 0) bitrate = Math.round(a.throughput_bps * THROUGHPUT_HEADROOM);
   else bitrate = unmeasuredCapBps(a, m);
+  const phone = isPhone(a);
   return {
     max_resolution: m.max_resolution ?? resolutionForScreen(a.screen_width, a.screen_height),
     max_bitrate_bps: bitrate,
-    max_size_gb: m.max_size_gb && m.max_size_gb > 0 ? m.max_size_gb : null,
+    // null = automatic (phones: PHONE_MAX_SIZE_GB), 0 = unlimited.
+    max_size_gb: m.max_size_gb && m.max_size_gb > 0 ? m.max_size_gb : m.max_size_gb == null && phone ? PHONE_MAX_SIZE_GB : null,
     video_codec: m.video_codec ?? null,
     avoid_hdr: m.hdr === "avoid" || (m.hdr == null && !!a.video && !a.video.includes("hdr10") && !a.video.includes("dv")),
     audio: m.audio ?? null,
-    prefer_smaller: !!m.prefer_smaller,
+    prefer_smaller: m.prefer_smaller ?? phone,
     video: a.video && a.video.length > 0 ? a.video : null,
     audio_codecs: a.audio && a.audio.length > 0 ? a.audio : null,
     rough: a.rough && a.rough.length > 0 ? a.rough : null,

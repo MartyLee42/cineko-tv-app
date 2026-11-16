@@ -3,7 +3,7 @@
 // Chrome on Android), and the shared device playback profile helpers.
 import { describe, expect, it, vi } from "vitest";
 import type { MediaInfo, Release } from "@martytv/contracts";
-import { applyPreset, constraints, constraintsText, effectivePrefs, medianThroughput, PRESETS, pushSample, resolutionForScreen, suggestPreset } from "@martytv/media-types";
+import { applyPreset, constraints, constraintsText, effectivePrefs, isPhone, PHONE_MAX_SIZE_GB, medianThroughput, PRESETS, pushSample, resolutionForScreen, suggestPreset } from "@martytv/media-types";
 import { audioFactor, audioSupported, bitrateFactor, heavyMbps, lighterInstead, nextRelease, playableHere, rankForTv, tooHeavyHere, videoFactor, type Probe, audioProbeAnswers } from "./codecs";
 import {
   absTime,
@@ -329,6 +329,29 @@ describe("device playback profile", () => {
     expect(m.max_bitrate_bps).toBeNull();
     expect(m.avoid_hdr).toBe(false);
     expect(effectivePrefs({ auto, manual: { max_bitrate_mbps: 25 } }).max_bitrate_bps).toBe(25e6);
+  });
+  it("phones: automatic size limit and smaller files (mirrors devices.IsPhone)", () => {
+    const iphone = { platform: "iOS", screen_width: 2532, screen_height: 1170, throughput_bps: 100e6 };
+    expect(isPhone(iphone)).toBe(true);
+    expect(isPhone({ platform: "Android", screen_width: 1080, screen_height: 2400 })).toBe(true);
+    for (const a of [
+      { platform: "iOS", screen_width: 2732, screen_height: 2048 },
+      { platform: "Android", screen_width: 2560, screen_height: 1600 },
+      { platform: "android-tv", screen_width: 1920, screen_height: 1080 },
+      { platform: "Windows", screen_width: 3440, screen_height: 1440 },
+      { platform: "iOS" },
+    ])
+      expect(isPhone(a)).toBe(false);
+    const e = effectivePrefs({ auto: iphone, manual: {} });
+    expect(e).toMatchObject({ max_size_gb: PHONE_MAX_SIZE_GB, prefer_smaller: true, max_resolution: "1080p" });
+    expect(constraints(e)).toEqual([
+      { code: "max_resolution", value: "1080p" },
+      { code: "max_bitrate", mbps: 90 },
+      { code: "max_size", gb: 8 },
+      { code: "smaller" },
+    ]);
+    expect(effectivePrefs({ auto: iphone, manual: { max_size_gb: 0, prefer_smaller: false } })).toMatchObject({ max_size_gb: null, prefer_smaller: false });
+    expect(effectivePrefs({ auto: iphone, manual: { max_size_gb: 30 } }).max_size_gb).toBe(30);
   });
   it("screens, presets, suggestions, throughput median", () => {
     expect(resolutionForScreen(3840, 2160)).toBe("2160p");

@@ -280,7 +280,7 @@ export interface RowSpec {
 export const ROWS: readonly RowSpec[] = [
   { key: "max_resolution", label: "tvplay.row.max_resolution", options: [null, "720p", "1080p", "2160p"] },
   { key: "max_bitrate_mbps", label: "tvplay.row.max_bitrate", options: [null, 8, 15, 25, 40, 0] },
-  { key: "max_size_gb", label: "tvplay.row.max_size", options: [null, 2, 4, 8, 15, 30, 60] },
+  { key: "max_size_gb", label: "tvplay.row.max_size", options: [null, 2, 4, 8, 15, 30, 60, 0] },
   { key: "video_codec", label: "tvplay.row.video_codec", options: [null, "h264", "hevc"] },
   { key: "hdr", label: "tvplay.row.hdr", options: [null, "allow", "avoid"] },
   { key: "audio", label: "tvplay.row.audio", options: [null, "prefer_aac_ac3", "avoid_dts_truehd", "always_compat"] },
@@ -334,6 +334,8 @@ export function autoValue(auto: PlaybackAuto, key: RowKey, t: T): string | null 
       return e.max_resolution ? RES_LABEL[e.max_resolution]! : null;
     case "max_bitrate_mbps":
       return e.max_bitrate_bps ? t("tvplay.mbps", { n: Math.round(e.max_bitrate_bps / 1e6) }) : null;
+    case "max_size_gb":
+      return e.max_size_gb ? t("tvplay.gb", { n: e.max_size_gb }) : null;
     case "hdr":
       return auto.video?.length ? t(e.avoid_hdr ? "tvplay.hdr.avoid" : "tvplay.hdr.allow") : null;
     default:
