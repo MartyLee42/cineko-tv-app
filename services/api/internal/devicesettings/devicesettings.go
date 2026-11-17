@@ -48,7 +48,7 @@ type Settings struct {
 
 // Allowed values (mirrors packages/ui deviceSettings.ts).
 var (
-	Screensavers = []string{"sleep", "dvd", "off"}
+	Screensavers = []string{"sleep", "dvd", "fireworks", "posters", "snow", "random", "off"}
 	Languages    = []string{"ru", "en", "kk"}
 	// Keys are the JSON names of Settings (reset_device).
 	Keys = []string{"screensaver", "ui_sounds", "startup_intro", "calm_motion", "language", "health_report", "slow_hint", "show_prebuffer", "speedtest"}

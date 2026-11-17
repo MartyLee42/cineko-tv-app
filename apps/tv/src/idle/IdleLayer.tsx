@@ -3,11 +3,16 @@
 // the secret remote code (↑↑↓↓←→←→ OK: Cineko dances; on the design previews
 // every look plays once). Transform/opacity animations only; nothing runs
 // until the TV has been left alone.
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { MediaSummary } from "@martytv/contracts";
 import { applyDesign, DESIGNS, getAppliedDesign, Mascot, SovietEmblem, useAppliedDesign, useVideoPlaying } from "@martytv/ui";
 import { useCalmMotion } from "../design/skins";
-import { CodeMatcher, codeKey, DVD_COLORS, idlePhase, saverPref, type IdlePhase } from "./logic";
+import { CodeMatcher, codeKey, DVD_COLORS, idlePhase, nextSaver, saverPref, type IdlePhase, type PosterItem } from "./logic";
+import { Fireworks } from "./savers/Fireworks";
+import { Posters } from "./savers/Posters";
+import { Snow } from "./savers/Snow";
 import "./idle.css";
+import "./savers/savers.css";
 
 /** How long each look shows in the secret design show. */
 const SHOW_STEP_MS = 1500;
@@ -21,8 +26,9 @@ function previewsVisible(): boolean {
 /**
  * `onHome`: Home's menu screen, nothing over it (no Settings, guide, quiz).
  * The secret code also works while the design previews are on screen.
+ * `onOpen`: OK on «Афиша» opens the title on screen.
  */
-export function TvIdleLayer({ onHome }: { onHome: boolean }) {
+export function TvIdleLayer({ onHome, onOpen }: { onHome: boolean; onOpen?: (item: MediaSummary) => void }) {
   const design = useAppliedDesign();
   const calm = useCalmMotion();
   const playing = useVideoPlaying();
@@ -36,6 +42,15 @@ export function TvIdleLayer({ onHome }: { onHome: boolean }) {
   const active = onHome && !playing;
   const activeRef = useRef(active);
   activeRef.current = active;
+  // «Афиша»: the title on screen (OK opens it).
+  const shown = useRef<PosterItem | null>(null);
+  const onShow = useCallback((it: PosterItem | null) => {
+    shown.current = it;
+  }, []);
+  const openRef = useRef(onOpen);
+  useEffect(() => {
+    openRef.current = onOpen;
+  }, [onOpen]);
 
   // Keys: reset the idle clock; a key that wakes the screensaver goes no further.
   useEffect(() => {
@@ -62,6 +77,8 @@ export function TvIdleLayer({ onHome }: { onHome: boolean }) {
         e.preventDefault();
         e.stopImmediatePropagation();
         setPhase("none");
+        const it = shown.current;
+        if (it?.media && codeKey(e) === "ok" && openRef.current) openRef.current(it.media as MediaSummary);
         return;
       }
       if (phaseRef.current === "cat") setPhase("none");
@@ -113,7 +130,7 @@ export function TvIdleLayer({ onHome }: { onHome: boolean }) {
         />
       )}
       {dance > 0 && active && <Dance key={dance} cv={cv} />}
-      {phase === "saver" && active && <Screensaver cv={cv} />}
+      {phase === "saver" && active && <Screensaver cv={cv} onShow={onOpen ? onShow : undefined} />}
     </>
   );
 }
@@ -137,8 +154,10 @@ function Dance({ cv }: { cv: boolean }) {
   );
 }
 
-export function Screensaver({ cv }: { cv: boolean }) {
-  const [style] = useState(() => saverPref.get());
+/** `onShow`: «Афиша» reports the title on screen (only where OK can open it). */
+export function Screensaver({ cv, onShow }: { cv: boolean; onShow?: (item: PosterItem | null) => void }) {
+  // Picked once per showing («Случайная»: a different one each time).
+  const [style] = useState(() => nextSaver());
   // Everything under it is hidden and its animations pause (idle.css): nothing else to paint.
   useEffect(() => {
     const root = document.documentElement;
@@ -147,7 +166,17 @@ export function Screensaver({ cv }: { cv: boolean }) {
   }, []);
   return (
     <div data-testid="screensaver" data-saver={style} className="idle-saver absolute left-0 top-0 z-[60]" style={{ width: 1920, height: 1080 }}>
-      {style === "dvd" ? <DvdLogo cv={cv} /> : <SleepingCineko cv={cv} />}
+      {style === "dvd" ? (
+        <DvdLogo cv={cv} />
+      ) : style === "fireworks" ? (
+        <Fireworks />
+      ) : style === "posters" ? (
+        <Posters onShow={onShow} hint={!!onShow} />
+      ) : style === "snow" ? (
+        <Snow />
+      ) : (
+        <SleepingCineko cv={cv} />
+      )}
     </div>
   );
 }

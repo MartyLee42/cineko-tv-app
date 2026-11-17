@@ -457,7 +457,7 @@ export function CatalogShell({
       {/* «Уютный режим»: palette while the catalog is up, the ambience on Home only (under the holiday layer). */}
       <TvCozyLayer onHome={route.name === "home" && !settings && !guide} />
       {/* Idle Home: the déjà-vu cat, the screensaver; the secret remote code (idle/). */}
-      <TvIdleLayer onHome={route.name === "home" && !settings && !guide && !quiz} />
+      <TvIdleLayer onHome={route.name === "home" && !settings && !guide && !quiz} onOpen={(item) => open(item, t("idle.saver.posters"))} />
       {/* Holiday animations: over the content, under the menu and overlays; menu screens only. */}
       {chrome && !settings && !guide && <TvSeasonLayer />}
       {/* «Конструктивизм»: «очередь за дефицитом» over a popular title opened in the catalog (not from the phone). */}
