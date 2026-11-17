@@ -11,7 +11,7 @@ export interface Skin {
   /** Has a light colour mode (Кинозал only). */
   light: boolean;
   /** Full-screen background layer drawn behind screens (null = plain bg colour / skeleton default). */
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | "intertitle" | "symmetry" | "gouache" | "rainwater" | "blinds" | "cards" | "desert" | "curtains" | "sunset" | null;
+  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | "intertitle" | "symmetry" | "gouache" | "rainwater" | "blinds" | "cards" | "desert" | "curtains" | "sunset" | "metromap" | null;
   /** Animated background layers (transform-only); the calm mode stops them. */
   animatedLayers: 0 | 1;
   /** Headline size factor on the skeleton's sizes (wide display faces need less). */
@@ -56,9 +56,14 @@ export const SKINS: Record<DesignSetting, Skin> = {
   redroom: { id: "redroom", skeleton: "projector", light: false, background: "curtains", titleScale: 0.9, animatedLayers: 0, ornaments: { ...none, heroEdges: true } },
   // Oswald capitals run narrow but heavy with the outline: titles a touch smaller. The glints on the bay's water are the one animated layer.
   fivestars: { id: "fivestars", skeleton: "projector", light: false, background: "sunset", titleScale: 0.92, animatedLayers: 1, ornaments: { ...none, heroEdges: true } },
+  // A night metro map: rows are coloured lines with a station under each poster (static; Jost signage capitals).
+  metro: { id: "metro", skeleton: "kinozal", light: false, background: "metromap", titleScale: 0.94, animatedLayers: 0, ornaments: { ...none, titlePlate: true } },
 };
 
 export { DESIGNS };
+
+/** Rows carry `data-line` = their index mod this (and their h3 `data-n`): «Метро» colours each row as its own line, stable while rows mount and unmount. */
+export const LINE_COLOURS = 11;
 
 /** Каркас floor: cross lines spaced by this ratio, so one animation step scales by 1/FLOOR_R (index.css sw-run). */
 export const FLOOR_R = 0.78;

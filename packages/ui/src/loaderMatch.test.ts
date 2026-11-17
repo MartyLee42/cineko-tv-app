@@ -15,12 +15,19 @@ describe("«Под фильм» loading style", () => {
     expect(matchLoader(info("A lazy cat and his owner", [35]))).toBe("paws");
     expect(matchLoader(info("Приключения кота в большом городе"))).toBe("paws");
     expect(matchLoader({ id: "x", keywords: ["time travel"], genre_ids: [35] })).toBe("speed88");
+    expect(matchLoader(info("Strangers trapped on a night train", [53]))).toBe("metro_train");
+    expect(matchLoader(info("Последний поезд метро уходит в полночь"))).toBe("metro_train");
+    expect(matchLoader(info("A girl folds a thousand origami cranes", [18]))).toBe("paper_crane");
+    expect(matchLoader(info("Девочка складывает тысячу бумажных журавликов"))).toBe("paper_crane");
   });
 
   it("no false themes inside other words", () => {
     // «workspace», «alienation», «котлета» are not space / aliens / cats.
     expect(matchLoader(info("A workspace drama about alienation", [18]))).not.toMatch(/odyssey/);
     expect(matchLoader(info("Повар готовит котлеты", [35]))).toBe("popcorn");
+    // «training», «поездка» are not trains.
+    expect(matchLoader(info("A boxer's training montage", [35]))).toBe("popcorn");
+    expect(matchLoader(info("Весёлая поездка на море", [35]))).toBe("popcorn");
   });
 
   it("then genres", () => {

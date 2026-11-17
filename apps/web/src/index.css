@@ -555,3 +555,14 @@ a:focus-visible > .ks-hover {
 @supports (-webkit-touch-callout: none) {
   .mt-app-header { padding-top: env(safe-area-inset-top); }
 }
+
+/* «Метро»: a night metro map (TV: rows are lines, posters stand on stations). The PWA keeps it
+   light: signage capitals for section titles with a red line under them, posters on a thin line. */
+html.design-metro body { background-color: rgb(var(--mt-bg)); background-image: radial-gradient(ellipse 1200px 700px at 72% 10%, rgba(40, 52, 78, 0.5), rgba(15, 18, 24, 0)); background-attachment: fixed; }
+html.design-metro main section h2:not(#hero-title) { font-family: var(--mt-font-display); font-weight: 400; text-transform: uppercase; letter-spacing: 0.05em; }
+html.design-metro main section h2:not(#hero-title)::after { content: ""; display: block; width: 96px; height: 6px; margin-top: 8px; border-radius: 3px; background: #d52028; }
+html.design-metro .aspect-\[2\/3\] { border-radius: 10px; box-shadow: 0 6px 0 -1px #d52028, 0 10px 20px rgba(0, 0, 0, 0.45); }
+html.design-metro a:hover .aspect-\[2\/3\], html.design-metro a:focus-visible .aspect-\[2\/3\] { box-shadow: 0 0 0 3px #f0f2f5, 0 8px 0 2px #d52028; }
+html.design-metro header.sticky { box-shadow: 0 3px 0 #d52028; }
+html.design-metro :focus-visible { outline: 3px solid #f0f2f5; outline-offset: 3px; }
+.design-swatch-metro { background-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 44%, #d52028 44%, #d52028 52%, rgba(0, 0, 0, 0) 52%), linear-gradient(90deg, rgba(0, 0, 0, 0) 70%, #0078bf 70%, #0078bf 76%, rgba(0, 0, 0, 0) 76%) !important; }

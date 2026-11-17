@@ -25,6 +25,7 @@
      design-western            — «Вестерн»: sun-bleached desert, wanted posters, letterboxing, slab type (kinozal skeleton)
      design-redroom            — «Красная комната»: red curtains, zigzag floor, ivory serif capitals (projector skeleton)
      design-fivestars          — «Пять звёзд»: a sticker collage on a purple grid desk, mission text, wanted stars (projector skeleton)
+     design-metro              — «Метро»: a night metro map; rows are coloured lines, titles are stations (kinozal skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {

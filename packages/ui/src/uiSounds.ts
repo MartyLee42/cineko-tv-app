@@ -165,6 +165,11 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [tone("triangle", 1320, 1320, 0.028, 0.16)], noise: [] },
     click: { tones: [tone("triangle", 1568, 1568, 0.045, 0.3), tone("triangle", 2093, 2093, 0.06, 0.3, 0.055)], noise: [noise("highpass", 6000, 0.006, 0.06)] },
   },
+  // The metro: a soft rail click on a move; OK the two-tone «doors» chime (down a third).
+  metro: {
+    tick: { tones: [tone("sine", 1250, 1180, 0.022, 0.22)], noise: [noise("bandpass", 3200, 0.01, 0.18, 4)] },
+    click: { tones: [tone("sine", 1319, 1319, 0.05, 0.36), tone("sine", 1047, 1047, 0.06, 0.36, 0.055)], noise: [] },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */

@@ -1,0 +1,10 @@
+/* «Журавлик» (PaperCrane.tsx). Transform/opacity only; the calm switch stops the loops. */
+.pc-desk { background: radial-gradient(ellipse 900px 520px at 50% 34%, rgba(255,255,255,.07), rgba(255,255,255,0)); }
+/* A new fold lands with a small press. */
+@keyframes pc-press { 0% { transform: scale(.94); } 60% { transform: scale(1.02); } 100% { transform: scale(1); } }
+.pc-press { transform-origin: 300px 240px; animation: pc-press 420ms ease-out both; }
+/* Done: the wings flap and the crane flies up and away (over the finale, ~1.5 s). */
+@keyframes pc-flap { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(-.55); } }
+.pc-fly .pc-wings { transform-origin: 320px 292px; animation: pc-flap 300ms ease-in-out infinite; }
+@keyframes pc-away { 0% { transform: translate3d(0,0,0) scale(1); opacity: 1; } 25% { transform: translate3d(0,-20px,0) scale(1); } 100% { transform: translate3d(620px,-420px,0) scale(.45); opacity: 0; } }
+.pc-fly { animation: pc-away 1.4s cubic-bezier(.45,0,.7,.4) .25s both; }

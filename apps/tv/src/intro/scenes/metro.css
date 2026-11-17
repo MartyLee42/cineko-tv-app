@@ -1,0 +1,20 @@
+@import "@martytv/ui/fonts/jost.css"; /* not in the startup CSS */
+/* ---- metro: a train pulls in under the «CINEKO» station sign and opens its doors on Cineko */
+.mxi-wall {
+  background-color: #10131a;
+  background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 80px), radial-gradient(ellipse 700px 260px at 50% 18%, rgba(70,88,130,.45), rgba(16,19,26,0));
+}
+.mxi-sign { display: flex; align-items: center; justify-content: center; border-radius: 12px; background: #0b2a5b; box-shadow: inset 0 0 0 3px rgba(255,255,255,.9), inset 0 0 0 7px #0b2a5b; }
+.mxi-platform { background: linear-gradient(180deg, #d8c79a 0px, #d8c79a 10px, #2a2e38 10px, #1b1e26 100%); }
+@keyframes mxi-arrive { from { transform: translate3d(1400px,0,0); } to { transform: translate3d(0,0,0); } }
+.mxi-train { animation: mxi-arrive 1.35s cubic-bezier(.15,.6,.3,1) both; }
+.mxi-car { position: absolute; left: 0; top: 0; width: 1000px; height: 330px; border-radius: 34px 34px 10px 10px; background: linear-gradient(180deg, #c9ced6 0%, #aeb5bf 55%, #8e959f 100%); box-shadow: inset 0 -16px 0 rgba(0,0,0,.18); }
+.mxi-window { position: absolute; top: 56px; width: 120px; height: 120px; border-radius: 14px; background: linear-gradient(160deg, #3a4a66 0%, #1a2232 100%); box-shadow: inset 0 0 0 5px #6d7480; }
+.mxi-stripe { position: absolute; left: 0; top: 214px; width: 1000px; height: 22px; background: #d52028; }
+.mxi-doorway { position: absolute; left: 350px; top: 36px; width: 300px; height: 294px; overflow: hidden; background: linear-gradient(180deg, #f2ead0 0%, #d9cfae 100%); }
+.mxi-door { position: absolute; top: 0; width: 150px; height: 294px; background: linear-gradient(180deg, #c3c9d2 0%, #a2a9b4 100%); box-shadow: inset 0 0 0 4px #7c838e; }
+.mxi-door::before { content: ""; position: absolute; left: 26px; top: 22px; width: 98px; height: 128px; border-radius: 10px; background: linear-gradient(160deg, #3a4a66 0%, #1a2232 100%); }
+.mxi-door-l { left: 0; animation: mxi-open-l .55s cubic-bezier(.5,0,.3,1) 1.5s both; }
+.mxi-door-r { left: 150px; animation: mxi-open-r .55s cubic-bezier(.5,0,.3,1) 1.5s both; }
+@keyframes mxi-open-l { from { transform: translate3d(0,0,0); } to { transform: translate3d(-146px,0,0); } }
+@keyframes mxi-open-r { from { transform: translate3d(0,0,0); } to { transform: translate3d(146px,0,0); } }

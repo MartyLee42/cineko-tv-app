@@ -44,6 +44,8 @@ const LOADING_LABEL = {
   target_scan: "loaders2.target_scan",
   docking: "loaders2.docking",
   claw_machine: "loaders2.claw_machine",
+  metro_train: "loaders2.metro_train",
+  paper_crane: "loaders2.paper_crane",
 } as const;
 
 /** The focused style's one-line explanation (styles that need one). */
@@ -77,6 +79,8 @@ const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
   target_scan: "loaders2.target_scan_hint",
   docking: "loaders2.docking_hint",
   claw_machine: "loaders2.claw_machine_hint",
+  metro_train: "loaders2.metro_train_hint",
+  paper_crane: "loaders2.paper_crane_hint",
 };
 
 export function useSettingRows() {

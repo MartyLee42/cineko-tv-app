@@ -679,7 +679,7 @@ html.design-western {
 
 /* Section headings and big titles in each design's display face. */
 :is(html.design-stickerbook, html.design-pocketpet, html.design-odyssey, html.design-mult, html.design-tarkovsky,
-  html.design-silent, html.design-anderson, html.design-noir, html.design-vague, html.design-western, html.design-redroom, html.design-fivestars)
+  html.design-silent, html.design-anderson, html.design-noir, html.design-vague, html.design-western, html.design-redroom, html.design-fivestars, html.design-metro)
   :is(h1, h2) {
   font-family: var(--font-display);
 }
@@ -1366,3 +1366,14 @@ html.design-fivestars .play-btn { background: var(--accent-fill); color: var(--o
 html.design-fivestars .liked-art { background: linear-gradient(135deg, #ff4fa3, #ffc83d); }
 html.design-fivestars :focus-visible { outline: 3px solid #ffd64a; outline-offset: 3px; }
 
+
+/* ---------------------------------------------------------------- Метро (a night metro map) */
+
+html.design-metro body { background: var(--bg); background-image: radial-gradient(ellipse 1200px 700px at 72% 10%, rgba(40, 52, 78, 0.5), rgba(15, 18, 24, 0)); background-attachment: fixed; }
+html.design-metro h1,
+html.design-metro h2 { font-weight: 400; text-transform: uppercase; letter-spacing: 0.04em; }
+html.design-metro :is(.shelf-head h2, .shelf > h2)::after { content: ""; display: block; width: 80px; height: 5px; margin-top: 6px; border-radius: 3px; background: rgb(213, 32, 40); }
+html.design-metro :is(.card-art .cover, .hero-art .cover) { box-shadow: 0 5px 0 -1px rgb(213, 32, 40), 0 10px 20px rgba(0, 0, 0, 0.45); }
+html.design-metro .card:hover .card-art .cover { box-shadow: 0 0 0 3px #f0f2f5, 0 7px 0 2px rgb(213, 32, 40); }
+html.design-metro .track-row.active { background: rgba(213, 32, 40, 0.16); box-shadow: inset 4px 0 0 rgb(213, 32, 40); }
+html.design-metro :focus-visible { outline: 3px solid #f0f2f5; outline-offset: 3px; }

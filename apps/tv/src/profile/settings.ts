@@ -23,7 +23,7 @@ export const DESIGNS: readonly DesignSetting[] = UI_DESIGNS;
 export type Settings = Required<ProfileSettings>;
 const MIN_VOTES: readonly Settings["min_votes"][] = [0, 50, 100, 300, 1000, 5000];
 
-export const LOADING_STYLES: readonly LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix", "paws", "aquarium", "speed88", "odyssey", "balloons", "catch", "water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine", "surprise", "match"];
+export const LOADING_STYLES: readonly LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix", "paws", "aquarium", "speed88", "odyssey", "balloons", "catch", "water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine", "metro_train", "paper_crane", "surprise", "match"];
 export const THEMES: readonly ThemeSetting[] = ["system", "dark", "light"];
 
 export const DEFAULT_SETTINGS: Settings = {

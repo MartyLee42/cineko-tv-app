@@ -27,6 +27,7 @@ import { SearchIcon } from "../../design/icons";
 import { indexTag } from "../../design/format";
 import { TERMINAL_MENU } from "../../design/menuOrder";
 import { useReportDeep, useToTop } from "../../design/topJump";
+import { LINE_COLOURS } from "../../design/registry";
 import { dedupeById, fullTabError, tabRows, wantsMore, withoutIds, type RowId, type VideoItem } from "../../video/logic";
 import { isVideoUnavailable, useAutoRetry, useVideoContinue, useVideoFeed, useVideoHistory, useVideoTrending, useVideoWatchLater } from "../../video/queries";
 import { useVideoMenu } from "../../video/actions";
@@ -198,7 +199,7 @@ export function VideoScreen({
       const items = data[r] ?? [];
       const sub = r === "subscriptions";
       return (
-        <section key={r} data-row={r} data-failed={lists[r].isError ? "1" : undefined} className="absolute left-0 w-full" style={{ top: tops[i] }}>
+        <section key={r} data-row={r} data-line={i % LINE_COLOURS} data-failed={lists[r].isError ? "1" : undefined} className="absolute left-0 w-full" style={{ top: tops[i] }}>
           <RowHeader design={design} index={i + 1} title={t(ROW_TITLE[r])} count={sub || r === "trending" ? null : items.length} />
           {items.length === 0 ? (
             <p data-testid={`video-empty-${r}`} className="max-w-[1300px] pt-2 text-[26px] leading-snug text-muted">
@@ -308,7 +309,7 @@ function RowHeader({ design, index, title, count }: { design: Design; index: num
   }
   return (
     <div className="flex items-center" style={{ height: ROW_HEAD }}>
-      <h3 className="truncate text-[31px] font-bold text-text">{title}</h3>
+      <h3 data-n={index} className="truncate text-[31px] font-bold text-text">{title}</h3>
       {count ? <span className="ml-4 text-[24px] text-muted">{count}</span> : null}
     </div>
   );

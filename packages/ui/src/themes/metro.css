@@ -1,0 +1,27 @@
+/* «metro» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Метро»: a metro map at night: a deep blue-black ground, signage white, the red line as the accent
+   (each row then takes its own line colour, see the TV look); geometric signage capitals (Jost, has
+   Cyrillic), body text Onest. Dark, on the kinozal skeleton. */
+html.design-metro {
+  --mt-bg: 15, 18, 24;
+  --mt-surface: 27, 31, 40;
+  --mt-surface-2: 40, 45, 57;
+  --mt-border: 74, 81, 96;
+  --mt-text: 240, 242, 245;
+  --mt-muted: 168, 176, 190;
+  --mt-accent: 213, 32, 40;
+  --mt-accent-strong: 255, 204, 0;
+  --mt-on-accent: 255, 255, 255;
+  --mt-focus: 255, 255, 255;
+  --mt-danger: 255, 128, 120;
+  --mt-ok: 98, 211, 128;
+  --mt-warn: 255, 204, 86;
+  --mt-font-display: "Jost", "Futura", "Century Gothic", Arial, sans-serif;
+  --mt-radius-card: 10px;
+  --mt-radius-control: 999px;
+  color-scheme: dark;
+  --mt-accent-text: 255, 120, 112;
+}
+
+/* Headings use the display face (web and TV): signage capitals. */
+html.design-metro h1, html.design-metro h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .01em; }
