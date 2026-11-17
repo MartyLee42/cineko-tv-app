@@ -5329,7 +5329,7 @@ export interface components {
         /** @description A TV's own options (every profile). Unset keys are absent: the TV seeds them once from its local values; clients show the defaults (screensaver sleep, ui_sounds false, startup_intro true, calm_motion false, language: the TV's, health_report true, slow_hint false, show_prebuffer false, speedtest true). */
         TvDeviceSettings: {
             /** @enum {string} */
-            screensaver?: "sleep" | "dvd" | "off";
+            screensaver?: "sleep" | "dvd" | "fireworks" | "posters" | "snow" | "random" | "off";
             ui_sounds?: boolean;
             startup_intro?: boolean;
             /** @description Calm background motion of «Каркас» / «Матрица». */

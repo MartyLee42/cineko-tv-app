@@ -1,0 +1,67 @@
+/* «Салют», «Снегопад», «Афиша» (savers/*.tsx). Transform / opacity only; no
+   filters or blur — cheap on old TV engines. Nothing stays put for long (OLED). */
+
+/* ---- «Салют» */
+.fw-sky { background: linear-gradient(180deg, #02030a 0%, #070b1d 70%, #10162b 100%); }
+.fw-rocket, .fw-spark, .fw-dot, .fw-flash { position: absolute; display: block; animation-timing-function: linear; animation-iteration-count: infinite; animation-fill-mode: both; }
+.fw-rocket { left: -3px; top: -3px; width: 6px; height: 16px; border-radius: 3px; animation-name: fw-rise; animation-timing-function: cubic-bezier(.2,.6,.4,1); }
+@keyframes fw-rise {
+  0% { transform: translate3d(0, var(--fw-rise), 0); opacity: 1; }
+  28% { transform: translate3d(0, 0, 0); opacity: 1; }
+  30%, 100% { transform: translate3d(0, 0, 0); opacity: 0; }
+}
+.fw-arm { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+/* A spark is a streak along its arm (the arm's rotation points it outwards); a white-hot core. */
+.fw-spark { left: -16px; top: -4px; width: 32px; height: 8px; border-radius: 4px; box-shadow: inset -10px 0 0 rgba(255,255,255,.75); animation-name: fw-spark; animation-timing-function: cubic-bezier(.1,.7,.3,1); }
+.fw-spark-in { left: -10px; top: -3px; width: 20px; height: 6px; box-shadow: none; }
+@keyframes fw-spark {
+  0%, 29% { transform: translate3d(0, 0, 0) scale(.4); opacity: 0; }
+  31% { transform: translate3d(0, 0, 0) scale(1.2); opacity: 1; }
+  78% { opacity: .85; }
+  100% { transform: translate3d(var(--fw-r), 40px, 0) scale(.25); opacity: 0; }
+}
+.fw-flash { left: -40px; top: -40px; width: 80px; height: 80px; border-radius: 50%; animation-name: fw-flash; }
+@keyframes fw-flash { 0%, 29% { transform: scale(.2); opacity: 0; } 31% { transform: scale(1); opacity: .8; } 40%, 100% { transform: scale(1.4); opacity: 0; } }
+.fw-dot { width: 9px; height: 9px; margin: -4px 0 0 -4px; border-radius: 50%; animation-name: fw-dot; }
+@keyframes fw-dot {
+  0%, 29% { transform: scale(.1); opacity: 0; }
+  34% { transform: scale(1.3); opacity: 1; }
+  75% { transform: translate3d(0, 10px, 0) scale(1); opacity: .9; }
+  100% { transform: translate3d(0, 46px, 0) scale(.4); opacity: 0; }
+}
+
+/* ---- «Снегопад» */
+.sn-sky { background: linear-gradient(180deg, #050a18 0%, #0c1830 55%, #1b2a44 100%); }
+.sn-moon { width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #fdf8e6 0%, #efe6c4 60%, #d9cfa6 100%); box-shadow: 0 0 60px 20px rgba(253,248,230,.12); animation: sn-moon 600s linear infinite alternate; }
+@keyframes sn-moon { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-900px, 60px, 0); } }
+.sn-sway { animation-name: sn-sway; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-direction: alternate; }
+@keyframes sn-sway { from { transform: translate3d(-30px, 0, 0); } to { transform: translate3d(30px, 0, 0); } }
+.sn-fall { animation-name: sn-fall; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform; }
+@keyframes sn-fall { from { transform: translate3d(0, calc(0px - var(--sn-tile)), 0); } to { transform: translate3d(0, 0, 0); } }
+.sn-drift { transform-origin: 50% 100%; animation: sn-drift 600s ease-out both; }
+@keyframes sn-drift { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
+.sn-walk { animation: sn-walk 45s linear infinite; }
+@keyframes sn-walk {
+  0% { transform: translate3d(-200px, 0, 0); }
+  12% { transform: translate3d(820px, 0, 0); }
+  20% { transform: translate3d(820px, 0, 0); }
+  32% { transform: translate3d(2100px, 0, 0); }
+  100% { transform: translate3d(2100px, 0, 0); }
+}
+.sn-hop { animation: sn-hop 45s ease-out infinite; }
+@keyframes sn-hop {
+  0%, 13% { transform: translate3d(0, 0, 0); }
+  15% { transform: translate3d(0, -60px, 0); }
+  17%, 100% { transform: translate3d(0, 0, 0); }
+}
+
+/* ---- «Афиша» */
+.ps-in { animation: ps-in 1.4s ease-out both; }
+@keyframes ps-in { from { opacity: 0; } to { opacity: 1; } }
+.ps-zoom { animation: ps-zoom 12s linear both; }
+@keyframes ps-zoom { from { transform: scale(1); } to { transform: scale(1.08); } }
+.ps-shade { background: radial-gradient(ellipse 1100px 700px at 50% 50%, rgba(0,0,0,.15), rgba(0,0,0,.75)); }
+.ps-float { animation: ps-float 12s ease-in-out both; }
+@keyframes ps-float { from { transform: translate3d(0, 24px, 0); } to { transform: translate3d(0, -24px, 0); } }
+.ps-hint { animation: ps-hint 12s ease-in-out infinite; }
+@keyframes ps-hint { 0%, 100% { opacity: 0; } 15%, 45% { opacity: 1; } 60% { opacity: 0; } }

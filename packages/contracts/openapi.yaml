@@ -5564,7 +5564,7 @@ components:
       type: object
       description: "A TV's own options (every profile). Unset keys are absent: the TV seeds them once from its local values; clients show the defaults (screensaver sleep, ui_sounds false, startup_intro true, calm_motion false, language: the TV's, health_report true, slow_hint false, show_prebuffer false, speedtest true)."
       properties:
-        screensaver: { type: string, enum: [sleep, dvd, "off"] }
+        screensaver: { type: string, enum: [sleep, dvd, fireworks, posters, snow, random, "off"] }
         ui_sounds: { type: boolean }
         startup_intro: { type: boolean }
         calm_motion: { type: boolean, description: "Calm background motion of «Каркас» / «Матрица»." }

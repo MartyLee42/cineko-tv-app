@@ -52,8 +52,8 @@ export function splitPatch<T extends object>(patch: Partial<T>): { base: Partial
 
 // ---------------------------------------------------------------- a TV's own options
 
-export type SaverSetting = "sleep" | "dvd" | "off";
-export const SAVER_SETTINGS: readonly SaverSetting[] = ["sleep", "dvd", "off"];
+export type SaverSetting = "sleep" | "dvd" | "fireworks" | "posters" | "snow" | "random" | "off";
+export const SAVER_SETTINGS: readonly SaverSetting[] = ["sleep", "dvd", "fireworks", "posters", "snow", "random", "off"];
 
 /** contract TvDeviceSettings (absent = not set yet). */
 export interface TvOwnSettings {
