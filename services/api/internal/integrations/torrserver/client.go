@@ -52,20 +52,22 @@ var (
 
 // Torrent is the subset of state.TorrentStatus we use.
 type Torrent struct {
-	Hash             string     `json:"hash"`
-	Title            string     `json:"title"`
-	Name             string     `json:"name"`
-	Stat             int        `json:"stat"`
-	StatString       string     `json:"stat_string"`
-	TorrentSize      int64      `json:"torrent_size"`
-	ActivePeers      int        `json:"active_peers"`
-	TotalPeers       int        `json:"total_peers"`
-	ConnectedSeeders int        `json:"connected_seeders"`
-	DownloadSpeed    float64    `json:"download_speed"`
-	UploadSpeed      float64    `json:"upload_speed"`
-	PreloadedBytes   int64      `json:"preloaded_bytes"`
-	PreloadSize      int64      `json:"preload_size"`
-	FileStats        []FileStat `json:"file_stats"`
+	Hash             string  `json:"hash"`
+	Title            string  `json:"title"`
+	Name             string  `json:"name"`
+	Stat             int     `json:"stat"`
+	StatString       string  `json:"stat_string"`
+	TorrentSize      int64   `json:"torrent_size"`
+	ActivePeers      int     `json:"active_peers"`
+	TotalPeers       int     `json:"total_peers"`
+	ConnectedSeeders int     `json:"connected_seeders"`
+	DownloadSpeed    float64 `json:"download_speed"`
+	UploadSpeed      float64 `json:"upload_speed"`
+	PreloadedBytes   int64   `json:"preloaded_bytes"`
+	// LoadedSize: the torrent's bytes TorrServer holds (cache), whether preloaded or read.
+	LoadedSize  int64      `json:"loaded_size"`
+	PreloadSize int64      `json:"preload_size"`
+	FileStats   []FileStat `json:"file_stats"`
 	// Timestamp: when it was added (unix seconds; list/get).
 	Timestamp int64 `json:"timestamp"`
 }
@@ -398,6 +400,9 @@ func (c *Client) List(ctx context.Context) ([]Torrent, error) {
 	if err := c.postJSON(ctx, "/torrents", map[string]any{"action": "list"}, &ts); err != nil {
 		return nil, err
 	}
+	for i := range ts {
+		ts[i].sanitize()
+	}
 	return ts, nil
 }
 
@@ -414,7 +419,33 @@ func normalize(t *Torrent) (*Torrent, error) {
 	if !ValidHash(t.Hash) {
 		return nil, ErrBadResponse
 	}
+	t.sanitize()
 	return t, nil
+}
+
+// MaxPlausibleSpeed is more than any server link here carries (200 MiB/s ≈ 1.7 Gbit/s).
+// TorrServer computes its speeds as bytes since its last tick / the time since;
+// when it reopens a torrent the byte counter can carry a whole session over,
+// and one tick then reports gigabytes per second (seen on TVs as «17000 МБ/с»).
+const MaxPlausibleSpeed = 200 << 20
+
+// sanitize drops impossible speeds (unknown for that poll: 0) and fills the
+// preload counter from the cache when TorrServer skipped its own preload
+// (the data was already there, or the player read it directly): otherwise
+// the loader sat at «0» with the film's bytes on hand.
+func (t *Torrent) sanitize() {
+	t.DownloadSpeed = plausibleSpeed(t.DownloadSpeed)
+	t.UploadSpeed = plausibleSpeed(t.UploadSpeed)
+	if t.PreloadedBytes <= 0 && t.LoadedSize > 0 && (t.Stat == StatPreload || t.Stat == StatWorking) {
+		t.PreloadedBytes = t.LoadedSize
+	}
+}
+
+func plausibleSpeed(v float64) float64 {
+	if v != v || v < 0 || v > MaxPlausibleSpeed { // NaN, negative or impossible
+		return 0
+	}
+	return v
 }
 
 var hashPattern = regexp.MustCompile(`^[0-9a-f]{40}$`)
