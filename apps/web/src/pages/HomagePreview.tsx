@@ -4,7 +4,7 @@ import type { MessageKey } from "@martytv/ui";
 import type { LoadingStyle } from "../watch/settings";
 import "./homagePreview.css";
 
-const HOMAGE: readonly LoadingStyle[] = ["water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine"];
+const HOMAGE: readonly LoadingStyle[] = ["water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine", "metro_train", "paper_crane"];
 
 /** A film-homage style's name and hint (which film it nods to); null for the others. */
 export function homageKeys(s: LoadingStyle): { name: MessageKey; hint: MessageKey } | null {
@@ -118,6 +118,26 @@ export function HomagePreview({ style }: { style: LoadingStyle }) {
             </span>
             <span className="hp-claw absolute left-1/2 top-0 block h-[40%] w-0.5 origin-top bg-[#9aa3ab]" />
           </span>
+        </span>
+      );
+    case "metro_train":
+      return (
+        <span className="absolute inset-0 flex items-center justify-center bg-[#0d1016]">
+          <span className="relative block h-[64%] w-[56%] overflow-hidden rounded-md bg-[#f2deaa]">
+            <span className="hp-door-l absolute left-0 top-0 block h-full w-1/2 bg-[#aeb5bf] ring-1 ring-[#7c838e]" />
+            <span className="hp-door-r absolute right-0 top-0 block h-full w-1/2 bg-[#aeb5bf] ring-1 ring-[#7c838e]" />
+          </span>
+          <span className="absolute bottom-[10%] left-[18%] block h-1 w-[64%] rounded-full bg-[#d52028]" />
+        </span>
+      );
+    case "paper_crane":
+      return (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <svg className="hp-crane block h-[62%]" viewBox="60 100 480 250" aria-hidden>
+            <path d="M300 250 L70 110 L250 286 Z" fill="#f47a63" />
+            <path d="M300 250 L530 110 L350 286 Z" fill="#e8503a" />
+            <path d="M250 284 L300 340 L350 284 L300 252 Z" fill="#b8341f" />
+          </svg>
         </span>
       );
     default:

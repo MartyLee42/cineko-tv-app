@@ -28,6 +28,8 @@ export const LOADER_ANIMATIONS = [
   "target_scan",
   "docking",
   "claw_machine",
+  "metro_train",
+  "paper_crane",
 ] as const;
 export type LoaderAnimation = (typeof LOADER_ANIMATIONS)[number];
 

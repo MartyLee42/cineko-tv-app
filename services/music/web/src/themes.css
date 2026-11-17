@@ -485,6 +485,29 @@ html.design-fivestars {
   --round: 50%;
 }
 
+/* «Метро»: a night metro map: deep blue-black, signage white, the red line, geometric capitals. */
+html.design-metro {
+  --bg: rgb(15, 18, 24);
+  --panel: rgb(27, 31, 40);
+  --panel-2: rgb(40, 45, 57);
+  --panel-3: rgb(54, 60, 74);
+  --line: rgb(74, 81, 96);
+  --text: rgb(240, 242, 245);
+  --muted: rgb(168, 176, 190);
+  --dim: rgb(128, 136, 152);
+  --accent: rgb(255, 120, 112);
+  --accent-2: rgb(0, 120, 191);
+  --on-accent: rgb(15, 18, 24);
+  --accent-fill: rgb(213, 32, 40);
+  --on-accent-fill: rgb(255, 255, 255);
+  --radius: 10px;
+  --radius-ctl: 999px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Jost", "Futura", Arial, sans-serif;
+  --font-label: "Jost", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --round: 50%;
+}
+
 /* Headings use each design's display face, like Cineko. */
 html.design-deco h1, html.design-deco h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2,

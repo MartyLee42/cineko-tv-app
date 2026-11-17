@@ -39,7 +39,7 @@ export const DEFAULT_SETTINGS: Settings = {
   film_theme: false,
 };
 
-export const LOADING_STYLES: LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix", "paws", "aquarium", "speed88", "odyssey", "balloons", "catch", "water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine", "surprise", "match"];
+export const LOADING_STYLES: LoadingStyle[] = ["popcorn", "fill_title", "poster_reveal", "film_reel", "minimal", "marty", "marty_popcorn", "matrix", "paws", "aquarium", "speed88", "odyssey", "balloons", "catch", "water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine", "metro_train", "paper_crane", "surprise", "match"];
 export const THEMES: ThemeSetting[] = ["system", "dark", "light"];
 
 /** Fills defaults for anything the server omitted, then applies a partial patch. */

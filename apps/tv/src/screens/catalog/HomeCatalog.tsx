@@ -31,6 +31,7 @@ import { useLeninFilm } from "../../catalog/lenin";
 import { useCvStats, useGoskino } from "../../catalog/cvData";
 import { CvNewsStrip, CvPlanPlaque, CvPlanToast } from "../../design/cvHome";
 import { LENIN_CARD_W, LeninCard } from "../../design/cvCards";
+import { LINE_COLOURS } from "../../design/registry";
 
 /** Hero follows focus only after it rests, so scrolling through a row stays smooth. */
 const HERO_DELAY = 380;
@@ -272,7 +273,7 @@ export function HomeCatalog({
     const size = wide ? g.wide : g.poster;
     const current = r === ri;
     return (
-      <section key={row.key} data-row={row.key} className="absolute left-0 w-full" style={{ top: tops[r] }}>
+      <section key={row.key} data-row={row.key} data-line={r % LINE_COLOURS} className="absolute left-0 w-full" style={{ top: tops[r] }}>
         <RowHeader design={design} index={r + 1} title={row.title} current={current} height={g.header} badge={row.reco && unseen > 0 ? t("reco.new", { n: unseen }) : null} />
         <div style={{ marginTop: -g.pad }}>
           {row.cv ? (
@@ -508,7 +509,7 @@ function RowHeader({ design, index, title, current, height, badge }: { design: D
   }
   return (
     <div className="flex items-center" style={{ height }}>
-      <h3 className={`truncate text-[31px] font-bold ${current || design === "projector" ? "text-text" : "text-text/80"}`}>{title}</h3>
+      <h3 data-n={index} className={`truncate text-[31px] font-bold ${current || design === "projector" ? "text-text" : "text-text/80"}`}>{title}</h3>
       {badge && <span data-testid="reco-unseen" className="ml-5 text-[22px] font-bold text-accent">{badge}</span>}
     </div>
   );

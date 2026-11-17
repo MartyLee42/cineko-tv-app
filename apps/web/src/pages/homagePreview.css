@@ -25,6 +25,12 @@
 .hp-dock { animation: hp-dock 3s ease-in-out infinite; }
 @keyframes hp-claw { 0%, 100% { transform: translateX(-50%) scaleY(.3); } 50% { transform: translateX(-50%) scaleY(1.6); } }
 .hp-claw { animation: hp-claw 3s ease-in-out infinite; }
+@keyframes hp-door-l { 0%, 45% { transform: translateX(0); } 70%, 100% { transform: translateX(-96%); } }
+@keyframes hp-door-r { 0%, 45% { transform: translateX(0); } 70%, 100% { transform: translateX(96%); } }
+.hp-door-l { animation: hp-door-l 3s ease-in-out infinite; }
+.hp-door-r { animation: hp-door-r 3s ease-in-out infinite; }
+@keyframes hp-crane { 0%, 50% { transform: translate(0, 0) scale(1); opacity: 1; } 90%, 100% { transform: translate(40%, -40%) scale(.5); opacity: 0; } }
+.hp-crane { animation: hp-crane 3s ease-in infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .hp-ring, .hp-tear-l, .hp-tear-r, .hp-choc, .hp-fill, .hp-bee, .hp-streak, .hp-needle, .hp-lamp, .hp-scan, .hp-spin, .hp-dock, .hp-claw { animation: none; }
+  .hp-ring, .hp-tear-l, .hp-tear-r, .hp-choc, .hp-fill, .hp-bee, .hp-streak, .hp-needle, .hp-lamp, .hp-scan, .hp-spin, .hp-dock, .hp-claw, .hp-door-l, .hp-door-r, .hp-crane { animation: none; }
 }

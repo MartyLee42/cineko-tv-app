@@ -5,7 +5,7 @@ import { preloadLoader, type LoaderKind, type StyleModule, type StyleProps } fro
 
 /** Styles with an end flourish: kept up this long over the starting film (fading out), see PlayerLayer. */
 export const FINALE_MS = 1500;
-const FINALE: readonly LoaderKind[] = ["paws", "aquarium", "speed88", "odyssey", "balloons", "catch"];
+const FINALE: readonly LoaderKind[] = ["paws", "aquarium", "speed88", "odyssey", "balloons", "catch", "metro_train", "paper_crane"];
 
 export function hasFinale(kind: LoaderKind): boolean {
   return FINALE.includes(kind);
@@ -36,4 +36,6 @@ export const LOADERS = {
   target_scan: lazy(() => preloadLoader("target_scan") as Promise<StyleModule>),
   docking: lazy(() => preloadLoader("docking") as Promise<StyleModule>),
   claw_machine: lazy(() => preloadLoader("claw_machine") as Promise<StyleModule>),
+  metro_train: lazy(() => preloadLoader("metro_train") as Promise<StyleModule>),
+  paper_crane: lazy(() => preloadLoader("paper_crane") as Promise<StyleModule>),
 } satisfies Record<Exclude<LoaderKind, "minimal">, ComponentType<StyleProps>>;
