@@ -2009,6 +2009,7 @@ paths:
                 position_seconds: { type: number, minimum: 0 }
                 duration_seconds: { type: [number, "null"], minimum: 0 }
                 state: { type: string, enum: [playing, paused, seeking, ended, stopped] }
+                quality: { $ref: "#/components/schemas/PlaybackQualitySample" }
       responses:
         "200":
           description: Result.
@@ -4094,6 +4095,21 @@ paths:
         "200": { description: Status., content: { application/json: { schema: { $ref: "#/components/schemas/AdminVideoStatus" } } } }
         "403": { $ref: "#/components/responses/Error" }
   # ---------------------------------------------------------------- outage alerts (internal/alerts)
+  /admin/playback-quality:
+    get:
+      tags: [admin]
+      operationId: adminPlaybackQuality
+      description: "How playback went lately, from the players' own measurements: per app and source kind, and the sessions that played worst (at least 30 s watched)."
+      parameters:
+        - { name: days, in: query, schema: { type: integer, minimum: 1, maximum: 90, default: 7 } }
+        - { $ref: "#/components/parameters/Lang" }
+      responses:
+        "200":
+          description: Summary.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlaybackQualityReport" }
+        "403": { $ref: "#/components/responses/Error" }
   /admin/incidents:
     get:
       tags: [admin]
@@ -4386,6 +4402,67 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
   schemas:
+    PlaybackQualitySample:
+      type: object
+      description: Running totals of one playback, added to some progress reports (about every 5 minutes and at the end). Invalid samples are ignored.
+      required: [app, engine, watched_s, stalls, stall_ms, longest_stall_ms, seeks, seek_wait_ms, dropped_frames, total_frames, errors]
+      properties:
+        app: { type: string, enum: [tv, web] }
+        engine: { type: string, maxLength: 16, description: "direct, compat, hlsjs or native." }
+        startup_ms: { type: [integer, "null"] }
+        watched_s: { type: integer, minimum: 0 }
+        stalls: { type: integer, minimum: 0 }
+        stall_ms: { type: integer, minimum: 0 }
+        longest_stall_ms: { type: integer, minimum: 0 }
+        seeks: { type: integer, minimum: 0 }
+        seek_wait_ms: { type: integer, minimum: 0 }
+        dropped_frames: { type: integer, minimum: 0 }
+        total_frames: { type: integer, minimum: 0 }
+        width: { type: [integer, "null"] }
+        height: { type: [integer, "null"] }
+        errors: { type: integer, minimum: 0 }
+    PlaybackQualityReport:
+      type: object
+      required: [days, groups, worst]
+      properties:
+        days: { type: integer }
+        groups:
+          type: array
+          items:
+            type: object
+            required: [app, source_kind, sessions, watched_s, smooth_pct, stalls_per_hour, stall_pct, dropped_pct, median_startup_s]
+            properties:
+              app: { type: string }
+              source_kind: { type: string, description: "torrent, online, anime or other." }
+              sessions: { type: integer }
+              watched_s: { type: integer }
+              smooth_pct: { type: number, description: "Share of sessions without a stall." }
+              stalls_per_hour: { type: number }
+              stall_pct: { type: number, description: "Share of viewing time spent stalled." }
+              dropped_pct: { type: [number, "null"] }
+              median_startup_s: { type: [number, "null"] }
+        worst:
+          type: array
+          items:
+            type: object
+            required: [id, updated_at, title, device, app, engine, source_kind, provider, height, watched_s, stalls, stall_s, longest_stall_s, dropped_pct, startup_s, errors]
+            properties:
+              id: { type: string, format: uuid }
+              updated_at: { type: string, format: date-time }
+              title: { type: string }
+              device: { type: [string, "null"] }
+              app: { type: string }
+              engine: { type: string }
+              source_kind: { type: string }
+              provider: { type: [string, "null"] }
+              height: { type: [integer, "null"] }
+              watched_s: { type: integer }
+              stalls: { type: integer }
+              stall_s: { type: number }
+              longest_stall_s: { type: number }
+              dropped_pct: { type: [number, "null"] }
+              startup_s: { type: [number, "null"] }
+              errors: { type: integer }
     Error:
       type: object
       required: [error]

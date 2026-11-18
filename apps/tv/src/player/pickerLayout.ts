@@ -12,17 +12,13 @@ export const PITCH = ROW_H + ROW_GAP;
 /** Focused row: an online variant or a torrent release. */
 export type Sel = { kind: "onl" | "rel"; i: number };
 
+/** The «Онлайн / Торренты» tabs above the list, when both exist. */
+export const TABS_H = 88;
+
 /**
- * Vertical scroll for the focused row. Without online rows it is the old
- * torrent-only formula (one row of context above the focused one).
+ * Vertical scroll for row `i` of the visible tab: one row of context above
+ * it, never past the end. `headH` is the heading above the rows.
  */
-export function pickerScroll(sel: Sel, onlineRows: number, torrentRows: number, failedLine: boolean): number {
-  if (onlineRows === 0 && !failedLine) {
-    const visible = Math.floor(LIST_H / PITCH);
-    return Math.max(0, Math.min(sel.i - 1, torrentRows - visible)) * PITCH;
-  }
-  const onlineH = HEAD_H + (failedLine ? 48 : 0) + onlineRows * PITCH;
-  const y = sel.kind === "onl" ? HEAD_H + (failedLine ? 48 : 0) + sel.i * PITCH : onlineH + HEAD_H + sel.i * PITCH;
-  const total = onlineH + HEAD_H + torrentRows * PITCH;
-  return Math.max(0, Math.min(y - PITCH, total - LIST_H));
+export function pickerScroll(i: number, rows: number, headH = 0, listH = LIST_H): number {
+  return Math.max(0, Math.min(headH + (i - 1) * PITCH, headH + rows * PITCH - listH));
 }

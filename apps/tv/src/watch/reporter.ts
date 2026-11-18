@@ -4,6 +4,7 @@
 // pause / end / stop, debounced after seeks, and as a keepalive request when
 // the page is hidden. Transport and timers are injected (unit-tested).
 import type { WatchProgress } from "@martytv/contracts";
+import { QUALITY_EVERY_REPORTS, type PlaybackQualitySample } from "@martytv/media-types";
 
 export type ReportState = "playing" | "paused" | "seeking" | "ended" | "stopped";
 
@@ -33,6 +34,8 @@ export interface ReportBody {
   position_seconds: number;
   duration_seconds: number | null;
   state: ReportState;
+  /** Playback telemetry: every few minutes and on the last report. */
+  quality?: PlaybackQualitySample;
 }
 
 export interface Transport {
@@ -62,6 +65,9 @@ export const SEEK_DEBOUNCE = 800;
 interface Session {
   target: SessionTarget;
   probe: () => Snapshot | null;
+  quality: (() => PlaybackQualitySample | null) | null;
+  /** Periodic reports since telemetry last went out. */
+  sinceQuality: number;
   /** Null until the server answered (reports wait; the latest one is kept). */
   id: string | null;
   token: string | null;
@@ -98,11 +104,18 @@ export class ProgressReporter {
    * is only opened — positions can't be known, so nothing is reported.
    * Resolves with the server's answer (where to resume), or null on failure.
    */
-  begin(target: SessionTarget, probe: () => Snapshot | null, track = true): Promise<SessionStart | null> {
+  begin(
+    target: SessionTarget,
+    probe: () => Snapshot | null,
+    track = true,
+    quality?: () => PlaybackQualitySample | null,
+  ): Promise<SessionStart | null> {
     this.end();
     const s: Session = {
       target,
       probe,
+      quality: quality ?? null,
+      sinceQuality: 0,
       id: null,
       token: null,
       failed: false,
@@ -138,6 +151,7 @@ export class ProgressReporter {
   private tick(s: Session) {
     const snap = s.probe();
     if (!snap || snap.paused) return;
+    s.sinceQuality++;
     this.push(s, "playing", snap);
   }
 
@@ -202,6 +216,12 @@ export class ProgressReporter {
       duration_seconds: snap.duration && isFinite(snap.duration) && snap.duration > 0 ? Math.round(snap.duration * 10) / 10 : null,
       state,
     };
+    // Riding on reports that go out anyway: telemetry never adds a request.
+    if (s.quality && (beacon || state === "ended" || state === "stopped" || s.sinceQuality >= QUALITY_EVERY_REPORTS)) {
+      const q = s.quality();
+      if (q) body.quality = q;
+      s.sinceQuality = 0;
+    }
     s.last = state;
     s.lastPos = snap.position;
     if (!s.id) {

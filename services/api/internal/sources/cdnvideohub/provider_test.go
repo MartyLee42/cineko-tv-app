@@ -253,3 +253,14 @@ func TestConfigureBaseURL(t *testing.T) {
 		t.Fatalf("%+v", in)
 	}
 }
+
+// 204 means "nothing for this id": an empty list, not a failing source.
+func TestNoContentIsEmpty(t *testing.T) {
+	f := newFakeAPI(t)
+	f.status = http.StatusNoContent
+	p := New(f.srv.URL+"/sv", http.DefaultClient)
+	got, err := p.Variants(context.Background(), sources.Title{KPID: 301})
+	if err != nil || len(got) != 0 {
+		t.Fatalf("variants = %v, err = %v", got, err)
+	}
+}

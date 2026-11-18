@@ -265,7 +265,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, log *slog.Logger) *Server {
 	srcReg.Register(jacred.New(cfg.Jacred))
 	srcReg.Register(anilibria.New("", nil))
 	srcReg.Register(cdnvideohub.New("", nil))
-	srcReg.Register(collaps.New("", nil))
+	srcReg.Register(collaps.New("", collaps.ProxyClient(cfg.CollapsProxyURL)))
 	// ---- end sources ----
 
 	// Phase 4: releases (Prowlarr/Jacred via sources) and playback (TorrServer).

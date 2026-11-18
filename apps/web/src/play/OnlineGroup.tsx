@@ -1,4 +1,4 @@
-// «Онлайн · CDNVideoHub, Collaps» and «Аниме · AniLiberty» above the torrent results: online variants (voice,
+// «Онлайн · CDNVideoHub, Collaps» and «Аниме · AniLiberty», the online tab of the release list: online variants (voice,
 // qualities, format, episodes) that play at once, here or on the TV. Shown
 // only when a source has variants for this title, or quietly when one failed.
 import { useMemo } from "react";
@@ -90,7 +90,6 @@ export function OnlineGroup({
           </section>
         );
       })}
-      <h3 className="pt-2 text-xs font-semibold uppercase tracking-wider text-muted">{t("sources.group.torrents")}</h3>
     </div>
   );
 }

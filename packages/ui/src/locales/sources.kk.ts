@@ -57,4 +57,5 @@ export const sourcesKk: Record<keyof typeof sourcesEn, string> = {
   "sources.admin.needs_credentials": "Тіркелгі деректері қажет",
   "sources.admin.empty": "Дереккөздер жоқ.",
   "sources.admin.env_only": "Сервер конфигурациясында бапталады (орта айнымалылары).",
+  "sources.tab.empty": "Бұл туынды үшін қазір онлайн нұсқалар жоқ.",
 };

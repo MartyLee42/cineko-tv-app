@@ -288,9 +288,13 @@ for (const vp of [
       await expect(rows.nth(0)).toContainText("1080p · 720p · 480p");
       await expect(rows.nth(0)).toContainText(/hls/i);
       // Torrents keep their own rows, each with the source that found it.
+      await expect(sheet.getByTestId("release-row")).toHaveCount(0);
+      await sheet.getByTestId("source-tab-torrents").click();
       await expect(sheet.getByTestId("release-row")).toHaveCount(2);
+      await expect(sheet.getByTestId("online-row")).toHaveCount(0);
       await expect(sheet.getByTestId("provider-chip")).toHaveText(["Prowlarr", "Jacred"]);
       await page.screenshot({ path: `${SHOTS}/web-releases-${vp.name}.png`, fullPage: false });
+      await sheet.getByTestId("source-tab-online").click();
 
       // Watch here: the variant id is the release_id.
       await rows.nth(0).getByTestId("online-watch-here").click();

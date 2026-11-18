@@ -808,6 +808,9 @@ The plugin itself is only a map: nothing is ported or evaluated from it.
   qualities (fallback 1080/720/480/360). `format: mp4`; Resolve picks the
   requested height (else best below), HLS only when no MP4 exists. URLs carry
   `srcIp=<server IP>` and `expires` (ms, ~24 h) → `Stream.Expires`.
+- **Reachability:** `COLLAPS_PROXY_URL` sends the Collaps page lookups through
+  a proxy (streams stay direct); `KINOPOISK_API_PROXY_URL` does the same for the
+  keyed Kinopoisk API only. HTTP 204 from a source means "nothing for this id".
 - **Collaps** (`https://api.nextembed.ws` with mirror
   `https://api.kinogram.best`; admin `base_url` = "primary, mirror…", tried in
   order on errors). `GET /embed/kp/<kp>`, then `/embed/imdb/<tt>`; 404 or a
@@ -1909,6 +1912,22 @@ wraps the catalog `RatingsSource`, adding one batched `GROUP BY` read on
 N номинаций ▸»; poster cards show a «🏆 Оскар ×3» chip. TV details: a line
 «🏆 Оскар ×3 · Канны: Золотая пальмовая ветвь» (`awardsSummaryLine`) and a
 focusable «Награды» panel. Shared helpers: `packages/ui/src/awards.ts`.
+
+## Playback quality telemetry
+
+The built-in players (`PlaybackQualityMeter`, `@martytv/media-types`) keep
+running totals for a session from events the `<video>` fires anyway: startup
+time, watched time, stalls (≥ 250 ms; a wait within 4 s of a seek
+counts as seek time), seeks, errors. Frame counters and resolution are read
+only when a sample goes out. There are no timers and no extra requests: a
+sample rides on every 20th periodic progress report (5 min), on the
+`ended`/`stopped` report and on the page-hide beacon. TVs honour «Отправлять
+состояние ТВ»; external players send nothing.
+
+`POST …/progress` decodes `quality` leniently and writes `playback_quality`
+(one row per session, kept 180 days) after the progress transaction, so a bad
+sample or a failed write never affects progress. Admin → «Качество» reads
+`GET /admin/playback-quality`.
 
 ## Admin system monitor
 

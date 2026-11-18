@@ -73,6 +73,7 @@ export function catalogLang(locale: string): "en" | "ru" {
 }
 
 export * from "./sources";
+export * from "./playbackQuality";
 export * from "./countries";
 export * from "./playbackPrefs";
 export * from "./speedtest";

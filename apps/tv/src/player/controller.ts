@@ -31,6 +31,9 @@ import {
   type RankEnv,
   type Support,
 } from "./codecs";
+import { PlaybackQualityMeter } from "@martytv/media-types";
+import { healthEnabled, HEALTH_PREF_KEY } from "../health/logic";
+import { storage } from "../platform";
 import {
   absTime,
   audioIndexOf,
@@ -273,6 +276,8 @@ export class PlayerController {
   private audioChecked = false;
   private expiryTimer: ReturnType<typeof setTimeout> | undefined;
   private detachVideo: (() => void) | null = null;
+  /** Playback telemetry of the current session (built-in player only). */
+  private quality: PlaybackQualityMeter | null = null;
   /** The last picture, kept up while a new stream loads mid-film (see holdFrame). */
   private frameCanvas: HTMLCanvasElement | null = null;
   private frameHeld = false;
@@ -1184,7 +1189,9 @@ export class PlayerController {
       v.removeEventListener("timeupdate", onTime);
       events.forEach((e) => v.removeEventListener(e, emit));
       reportEvents.forEach((e) => v.removeEventListener(e, onReport));
+      this.quality?.detach();
     };
+    this.quality?.attach(v);
     const f = this.flow;
     if (f.phase === "playing" && f.source.stream_url) {
       // A new view of the same playback (the old one's detach ended its session): report again.
@@ -1343,11 +1350,18 @@ export class PlayerController {
     this.autoResume = false;
     const gen = this.gen;
     const seeksAtBegin = this.seeks;
+    this.quality?.detach();
+    this.quality = builtin
+      ? new PlaybackQualityMeter("tv", () => (this.compat ? "compat" : this.hls ? "hlsjs" : "direct"), () => this.rebuf !== null)
+      : null;
+    if (this.video) this.quality?.attach(this.video);
     void this.reporter
       .begin(
         { profile_id: ctx.profile_id, media_id: ctx.media_id, episode_id: ctx.episode_id ?? src.episode_id, source_id: src.id },
         () => this.snapshot(),
         builtin,
+        // Same switch as the TV health reports («Отправлять состояние ТВ»).
+        () => (healthEnabled(storage.get(HEALTH_PREF_KEY)) ? (this.quality?.snapshot() ?? null) : null),
       )
       .then((r) => {
         // media.play without a position: resume where this profile stopped —
@@ -1406,6 +1420,8 @@ export class PlayerController {
     if (!this.reporter.active) return;
     const snap = this.snapshot() ?? this.lastSnap;
     this.reporter.end(snap);
+    this.quality?.detach();
+    this.quality = null;
     const f = this.flow;
     if (snap && f.phase === "playing" && f.ctx.player === "builtin") {
       const kind = f.ctx.kind === "series" || f.ctx.episode_id ? "series" : "movie";

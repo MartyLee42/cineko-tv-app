@@ -2,6 +2,7 @@ package watch
 
 import (
 	"context"
+	"encoding/json"
 	"math"
 	"time"
 
@@ -135,6 +136,9 @@ type ReportInput struct {
 	PositionSeconds *float64 `json:"position_seconds"`
 	DurationSeconds *float64 `json:"duration_seconds"`
 	State           string   `json:"state"`
+	// Quality: optional playback telemetry (quality.go), decoded leniently
+	// so a bad sample can never fail the progress report.
+	Quality json.RawMessage `json:"quality"`
 }
 
 type ReportResult struct {
@@ -207,6 +211,11 @@ func (s *Service) Report(ctx context.Context, sessionID string, who Reporter, in
 		out = r
 		return err
 	})
+	if err == nil && out != nil && out.Reason != ReasonStaleSequence {
+		if q := parseQuality(in.Quality); q != nil {
+			s.saveQuality(ctx, sessionID, in.State, q)
+		}
+	}
 	return out, err
 }
 

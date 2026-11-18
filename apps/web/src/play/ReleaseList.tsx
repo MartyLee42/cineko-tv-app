@@ -12,7 +12,10 @@ import { canPlayVideoHere, initialReleaseMode, isDesktop, type ReleaseMode } fro
 import { readWatchWhere } from "../player/session";
 import { OnTvAction, WatchHereAction } from "./WatchActions";
 import { useReleases, useRefreshReleases } from "./queries";
+import { onlineGroup, variantHasEpisode } from "@martytv/media-types";
+import { Tabs } from "../catalog/components";
 import { OnlineGroup } from "./OnlineGroup";
+import { useOnline } from "./sourcesApi";
 import { capsFromAuto, constraintText, fitCoveredWarnings, fitInput, hintThroughput, judgeFit, networkHint, networkHintText, type Constraint, type Fit, releaseFormat, releaseFormatText } from "@martytv/media-types";
 import { useDevicePrefs } from "../devprefs/queries";
 import { FitChips } from "./FitChips";
@@ -219,8 +222,8 @@ function ReleaseListBody({
   }, [here, tv, tvAuto, data]);
   const errors = list.data?.indexer_errors ?? [];
 
-  // Online/anime variants (fast) come first and don't wait for the torrent search.
-  const online = (
+  // Online/anime variants (fast) don't wait for the torrent search: their own tab.
+  const onlineList = (
     <OnlineGroup
       target={target}
       profileId={profileId}
@@ -231,6 +234,51 @@ function ReleaseListBody({
       onWatchHere={onWatchHere}
     />
   );
+
+  const onlineData = useOnline(target, profileId).data;
+  const onlineItems = useMemo(
+    () => (["online", "anime"] as const).flatMap((kind) => onlineGroup(onlineData, kind).items),
+    [onlineData],
+  );
+  const onlineKinds = (["online", "anime"] as const).filter((kind) => onlineGroup(onlineData, kind).show);
+  const hasOnline = onlineKinds.length > 0;
+  const [pickedTab, setPickedTab] = useState<"online" | "torrents" | null>(null);
+  const autoTab =
+    currentId && onlineItems.some((v) => v.id === currentId)
+      ? "online"
+      : currentId && items.some((r) => r.id === currentId)
+        ? "torrents"
+        : onlineItems.some((v) => variantHasEpisode(v, target.episode_number))
+          ? "online"
+          : "torrents";
+  const tab = hasOnline ? (pickedTab ?? autoTab) : "torrents";
+  const online = hasOnline ? (
+    <Tabs
+      value={tab}
+      onChange={setPickedTab}
+      label={t("titleactions.choose_release")}
+      options={[
+        {
+          value: "online",
+          testId: "source-tab-online",
+          label: `${onlineKinds.map((k) => t(k === "anime" ? "sources.kind.anime" : "sources.kind.online")).join(" · ")} · ${onlineItems.length}`,
+        },
+        { value: "torrents", testId: "source-tab-torrents", label: `${t("sources.group.torrents")}${data ? ` · ${items.length}` : ""}` },
+      ]}
+    />
+  ) : (
+    onlineList
+  );
+
+  if (tab === "online") {
+    return (
+      <div className="space-y-3" data-testid="releases-online">
+        {online}
+        {onlineList}
+        {onlineItems.length === 0 && <p className="py-4 text-center text-sm text-muted">{t("sources.tab.empty")}</p>}
+      </div>
+    );
+  }
 
   if (searching) {
     return (

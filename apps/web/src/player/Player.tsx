@@ -82,6 +82,7 @@ import {
   togglePip,
   unlockOrientation,
 } from "./media";
+import { PlaybackQualityMeter } from "@martytv/media-types";
 import { ProgressReporter, type SessionStart, type Snapshot } from "./reporter";
 import { sessionTransport } from "./session";
 import { attachHls, type HlsHandle } from "./hls";
@@ -413,6 +414,18 @@ export function Player(props: PlayerProps) {
     r.onStale = () => P.current.onStale();
     return r;
   });
+  // Playback telemetry: passive, sent along with the progress reports.
+  const qualityMeter = useRef<PlaybackQualityMeter | null>(null);
+  useEffect(() => {
+    if (!el) return;
+    const meter = (qualityMeter.current ??= new PlaybackQualityMeter(
+      "web",
+      () => (cmpRef.current ? "compat" : isHlsSource(P.current.source) ? mode : "direct"),
+      () => rebuf.current !== null,
+    ));
+    meter.attach(el);
+    return () => meter.detach();
+  }, [el, mode]);
   const probe = useCallback((): Snapshot | null => {
     const v = video.current;
     if (!v) return snap.current;
@@ -444,7 +457,7 @@ export function Player(props: PlayerProps) {
     const s = P.current.session;
     if (!s || reporter.active) return;
     void reporter
-      .begin({ ...s, source_id: P.current.source.id }, probe)
+      .begin({ ...s, source_id: P.current.source.id }, probe, () => qualityMeter.current?.snapshot() ?? null)
       .then((r: SessionStart | null) => {
         const v = video.current;
         const at = v ? lateResume(P.current.decided, r?.resume_position_seconds, absTime(v)) : null;

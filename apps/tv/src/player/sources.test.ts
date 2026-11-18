@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { PlaybackSource, Release } from "@martytv/contracts";
 import { variantRelease } from "@martytv/media-types";
 import { assessSource, type Probe } from "./codecs";
-import { pickerScroll, PITCH } from "./pickerLayout";
+import { LIST_H, pickerScroll, PITCH } from "./pickerLayout";
 import { hlsConfig, reloadUrl, streamMode } from "./stream";
 
 const MOVIE = "11111111-2222-4333-8444-555555555555";
@@ -88,15 +88,15 @@ describe("online HLS on TV engines", () => {
 });
 
 describe("picker scroll", () => {
-  it("keeps the torrent-only behaviour without online rows", () => {
-    expect(pickerScroll({ kind: "rel", i: 0 }, 0, 10, false)).toBe(0);
-    expect(pickerScroll({ kind: "rel", i: 3 }, 0, 10, false)).toBe(2 * PITCH);
+  it("keeps one row of context and stops at the end", () => {
+    expect(pickerScroll(0, 10)).toBe(0);
+    expect(pickerScroll(3, 10)).toBe(2 * PITCH);
+    expect(pickerScroll(9, 10)).toBe(10 * PITCH - LIST_H);
   });
 
-  it("scrolls past the online group to a torrent row", () => {
-    expect(pickerScroll({ kind: "onl", i: 0 }, 2, 10, false)).toBe(0);
-    const t5 = pickerScroll({ kind: "rel", i: 5 }, 2, 10, false);
-    expect(t5).toBeGreaterThan(pickerScroll({ kind: "rel", i: 0 }, 2, 10, false));
+  it("counts the heading above the rows", () => {
+    expect(pickerScroll(0, 2, 64)).toBe(0);
+    expect(pickerScroll(5, 10, 64)).toBe(64 + 4 * PITCH);
   });
 });
 

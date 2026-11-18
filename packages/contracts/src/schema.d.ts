@@ -3827,6 +3827,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/playback-quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description How playback went lately, from the players' own measurements: per app and source kind, and the sessions that played worst (at least 30 s watched). */
+        get: operations["adminPlaybackQuality"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/incidents": {
         parameters: {
             query?: never;
@@ -4035,6 +4052,62 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Running totals of one playback, added to some progress reports (about every 5 minutes and at the end). Invalid samples are ignored. */
+        PlaybackQualitySample: {
+            /** @enum {string} */
+            app: "tv" | "web";
+            /** @description direct, compat, hlsjs or native. */
+            engine: string;
+            startup_ms?: number | null;
+            watched_s: number;
+            stalls: number;
+            stall_ms: number;
+            longest_stall_ms: number;
+            seeks: number;
+            seek_wait_ms: number;
+            dropped_frames: number;
+            total_frames: number;
+            width?: number | null;
+            height?: number | null;
+            errors: number;
+        };
+        PlaybackQualityReport: {
+            days: number;
+            groups: {
+                app: string;
+                /** @description torrent, online, anime or other. */
+                source_kind: string;
+                sessions: number;
+                watched_s: number;
+                /** @description Share of sessions without a stall. */
+                smooth_pct: number;
+                stalls_per_hour: number;
+                /** @description Share of viewing time spent stalled. */
+                stall_pct: number;
+                dropped_pct: number | null;
+                median_startup_s: number | null;
+            }[];
+            worst: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                updated_at: string;
+                title: string;
+                device: string | null;
+                app: string;
+                engine: string;
+                source_kind: string;
+                provider: string | null;
+                height: number | null;
+                watched_s: number;
+                stalls: number;
+                stall_s: number;
+                longest_stall_s: number;
+                dropped_pct: number | null;
+                startup_s: number | null;
+                errors: number;
+            }[];
+        };
         Error: {
             error: {
                 /**
@@ -10620,6 +10693,7 @@ export interface operations {
                     duration_seconds?: number | null;
                     /** @enum {string} */
                     state: "playing" | "paused" | "seeking" | "ended" | "stopped";
+                    quality?: components["schemas"]["PlaybackQualitySample"];
                 };
             };
         };
@@ -13998,6 +14072,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminVideoStatus"];
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    adminPlaybackQuality: {
+        parameters: {
+            query?: {
+                days?: number;
+                /** @description Content language for titles/overviews. Defaults to en. */
+                lang?: components["parameters"]["Lang"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Summary. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlaybackQualityReport"];
                 };
             };
             403: components["responses"]["Error"];
