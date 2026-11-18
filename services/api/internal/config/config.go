@@ -54,6 +54,10 @@ type Config struct {
 	// (enables "play in MSX's native player"). MSX_BRIDGE=false → plain menu.
 	MSXBridge bool
 
+	// CollapsProxyURL routes the Collaps page lookups through a proxy where
+	// its hosts don't answer directly (streams stay direct). Never log it.
+	CollapsProxyURL *url.URL
+
 	Prowlarr ProwlarrConfig
 	Jackett  JackettConfig
 	// Indexer is the torrent search backend (INDEXER): "prowlarr" (default),
@@ -200,6 +204,9 @@ type KinopoiskConfig struct {
 	// ProxyURL optionally routes Kinopoisk traffic through a proxy (direct
 	// is usually right: the services are in Russia). Never log it.
 	ProxyURL *url.URL
+	// APIProxyURL routes only the keyed API (id lookups, facts) through a
+	// proxy, leaving the ratings feed on ProxyURL; nil = same as ProxyURL.
+	APIProxyURL *url.URL
 }
 
 // Configured reports whether TMDB → Kinopoisk id mapping is possible.
@@ -347,6 +354,8 @@ func LoadFrom(getenv func(string) string) (*Config, error) {
 		}
 	}
 	c.Kinopoisk.ProxyURL = proxyURL("KINOPOISK_PROXY_URL", secret("KINOPOISK_PROXY_URL"), &errs)
+	c.Kinopoisk.APIProxyURL = proxyURL("KINOPOISK_API_PROXY_URL", secret("KINOPOISK_API_PROXY_URL"), &errs)
+	c.CollapsProxyURL = proxyURL("COLLAPS_PROXY_URL", secret("COLLAPS_PROXY_URL"), &errs)
 	c.ForYou = loadForYou(get, secret, &errs)
 	c.NewEpisodes = loadNewEpisodes(get, &errs)
 	c.Household = loadHouseholdTZ(get)

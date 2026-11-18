@@ -247,15 +247,26 @@ test("TV: anime group in the picker, HLS playback, skip opening, quality, settin
     await expect(variants.nth(0)).toHaveAttribute("data-preferred", "1");
     await expect(variants.nth(0)).toContainText("AniLibria");
     await expect(variants.nth(0)).toContainText("1080p · 720p · 480p");
-    // Torrents keep their rows, with provider chips; the preferred variant is focused.
-    await expect(picker.locator("[data-release-id]")).toHaveCount(2);
-    await expect(picker.locator("[data-provider]")).toHaveText(["Prowlarr", "Jacred"]);
+    // The online tab opens first, with the preferred variant focused.
+    await expect(picker.locator("[data-release-id]")).toHaveCount(0);
     await expect(variants.nth(0)).toHaveClass(/is-focused/);
     await tv.screenshot({ path: `${SHOTS}/tv-picker.png` });
-    // Down moves from the variants to the torrents.
-    await press(tv, "ArrowDown", 2);
+    // Up to the tabs, right, OK: torrents, with their provider chips.
+    await press(tv, "ArrowUp");
+    await press(tv, "ArrowRight");
+    await press(tv, "Enter");
+    await expect(picker.getByTestId("picker-tab-torrents")).toHaveAttribute("data-active", "1");
+    await expect(picker.locator("[data-release-id]")).toHaveCount(2);
+    await expect(picker.locator("[data-provider]")).toHaveText(["Prowlarr", "Jacred"]);
+    await expect(variants).toHaveCount(0);
+    await press(tv, "ArrowDown");
     await expect(picker.locator("[data-release-id]").nth(0)).toHaveClass(/is-focused/);
-    await press(tv, "ArrowUp", 2);
+    // And back to the online tab.
+    await press(tv, "ArrowUp");
+    await press(tv, "ArrowLeft");
+    await press(tv, "Enter");
+    await expect(variants).toHaveCount(2);
+    await press(tv, "ArrowDown");
     await expect(variants.nth(0)).toHaveClass(/is-focused/);
 
     // --- OK plays the variant at once (HLS).

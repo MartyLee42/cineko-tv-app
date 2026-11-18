@@ -41,6 +41,10 @@ services:
       # transcoder reads downloaded files back through the API (internal net).
       LIBRARY_DIR: /var/lib/martytv/library
       INTERNAL_API_URL: http://api:8080
+      # These hosts don't answer this server directly: lookups go through the
+      # VPN proxy; the ratings feed and the video streams stay direct.
+      KINOPOISK_API_PROXY_URL: socks5h://awg-socks:10809
+      COLLAPS_PROXY_URL: socks5h://awg-socks:10809
       # YouTube «Видео» tab: the Invidious service below (internal network).
       INVIDIOUS_URL: http://invidious:3000
       # Nightly Invidious restart (INVIDIOUS_RESTART_AT, default 03:00 in TZ /

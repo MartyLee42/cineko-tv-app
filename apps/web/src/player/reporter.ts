@@ -6,6 +6,7 @@
 // page is hidden. `accepted:false, reason:stale_session` (another device took
 // over) stops reporting. Transport and timers are injected (unit-tested).
 import type { WatchProgress } from "@martytv/contracts";
+import { QUALITY_EVERY_REPORTS, type PlaybackQualitySample } from "@martytv/media-types";
 
 export type ReportState = "playing" | "paused" | "seeking" | "ended" | "stopped";
 
@@ -34,6 +35,8 @@ export interface ReportBody {
   position_seconds: number;
   duration_seconds: number | null;
   state: ReportState;
+  /** Playback telemetry: every few minutes and on the last report. */
+  quality?: PlaybackQualitySample;
 }
 
 export interface ReportResult {
@@ -67,6 +70,9 @@ export const SEEK_DEBOUNCE = 800;
 
 interface Session {
   probe: () => Snapshot | null;
+  quality: (() => PlaybackQualitySample | null) | null;
+  /** Periodic reports since telemetry last went out. */
+  sinceQuality: number;
   id: string | null;
   token: string | null;
   /** No more reports (start failed, stale session, or closed). */
@@ -106,10 +112,16 @@ export class ProgressReporter {
   }
 
   /** Opens a session; resolves with the server's answer (null on failure). */
-  begin(target: SessionTarget, probe: () => Snapshot | null): Promise<SessionStart | null> {
+  begin(
+    target: SessionTarget,
+    probe: () => Snapshot | null,
+    quality?: () => PlaybackQualitySample | null,
+  ): Promise<SessionStart | null> {
     this.end();
     const s: Session = {
       probe,
+      quality: quality ?? null,
+      sinceQuality: 0,
       id: null,
       token: null,
       stopped: false,
@@ -144,6 +156,7 @@ export class ProgressReporter {
   private tick(s: Session) {
     const snap = s.probe();
     if (!snap || snap.paused) return;
+    s.sinceQuality++;
     this.push(s, "playing", snap);
   }
 
@@ -209,6 +222,12 @@ export class ProgressReporter {
       duration_seconds: snap.duration && Number.isFinite(snap.duration) && snap.duration > 0 ? Math.round(snap.duration * 10) / 10 : null,
       state,
     };
+    // Riding on reports that go out anyway: telemetry never adds a request.
+    if (s.quality && (beacon || state === "ended" || state === "stopped" || s.sinceQuality >= QUALITY_EVERY_REPORTS)) {
+      const q = s.quality();
+      if (q) body.quality = q;
+      s.sinceQuality = 0;
+    }
     s.last = state;
     s.lastPos = snap.position;
     if (!s.id) {

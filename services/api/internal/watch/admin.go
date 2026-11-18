@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
@@ -400,6 +401,21 @@ func (h *Handlers) AdminRoutes(admin fiber.Router, live LiveStates) {
 			return err
 		}
 		return c.JSON(httpx.List(items))
+	})
+	admin.Get("/playback-quality", func(c fiber.Ctx) error {
+		lang, err := langParam(c)
+		if err != nil {
+			return err
+		}
+		days, err := strconv.Atoi(c.Query("days", "7"))
+		if err != nil {
+			return httpx.Validation(map[string]string{"days": "must be a number"})
+		}
+		rep, err := h.svc.QualityReport(c.Context(), days, lang)
+		if err != nil {
+			return err
+		}
+		return c.JSON(rep)
 	})
 	admin.Get("/users/:id/history", func(c fiber.Ctx) error {
 		uid, err := httpx.ParamUUID(c, "id")

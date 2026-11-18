@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"slices"
 	"strconv"
@@ -67,6 +68,20 @@ func New(baseURLs string, hc *http.Client) *Provider {
 	p := &Provider{c: webfetch.New(hc, minInterval, requestTimeout, maxBody), pages: webfetch.NewCache[*page](cacheEntries)}
 	p.setBases(baseURLs)
 	return p
+}
+
+// ProxyClient is the lookup client for hosts that only answer through proxy
+// (no redirects, no HTTP_PROXY env); proxy nil = nil, the default client.
+func ProxyClient(proxy *url.URL) *http.Client {
+	if proxy == nil {
+		return nil
+	}
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.Proxy = http.ProxyURL(proxy)
+	return &http.Client{
+		Transport:     tr,
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}
 }
 
 func (p *Provider) setBases(s string) {

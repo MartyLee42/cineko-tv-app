@@ -486,7 +486,7 @@ export function Tabs<T extends string>({
   label,
 }: {
   value: T;
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; testId?: string }[];
   onChange: (v: T) => void;
   label: string;
 }) {
@@ -498,6 +498,7 @@ export function Tabs<T extends string>({
           type="button"
           role="tab"
           aria-selected={o.value === value}
+          data-testid={o.testId}
           onClick={() => onChange(o.value)}
           className={`min-h-[40px] rounded-lg px-4 text-sm font-semibold transition ${
             o.value === value ? "bg-surface-2 text-text shadow" : "text-muted hover:text-text"

@@ -57,4 +57,5 @@ export const sourcesRu: Record<keyof typeof sourcesEn, string> = {
   "sources.admin.needs_credentials": "Нужны учётные данные",
   "sources.admin.empty": "Источников нет.",
   "sources.admin.env_only": "Настраивается в конфигурации сервера (переменные окружения).",
+  "sources.tab.empty": "Онлайн-вариантов для этого сейчас нет.",
 };

@@ -22,6 +22,7 @@ import { StorageTab } from "../admin/StorageTab";
 import { IptvTab } from "../admin/IptvTab";
 import { DevicesTab } from "../admin/DevicesTab";
 import { IncidentsTab, useIncidents } from "../admin/IncidentsTab";
+import { QualityTab } from "../admin/QualityTab";
 import { SeasonalAdminCard } from "../seasons/SeasonalSetting";
 import { NewEpisodesAdminCard } from "../newepisodes/AdminCard";
 import { FamilyVisibilityCard } from "../family/VisibilityCard";
@@ -33,7 +34,7 @@ export function AdminPage() {
   const tabParam = params.get("tab");
   const superAdmin = isSuperAdminRole(session?.user.role);
   const tab: AdminTab =
-    tabParam === "server" || tabParam === "incidents" || tabParam === "errors" || tabParam === "sources" || tabParam === "foryou" || tabParam === "storage" || tabParam === "iptv" || (tabParam === "devices" && superAdmin)
+    tabParam === "server" || tabParam === "quality" || tabParam === "incidents" || tabParam === "errors" || tabParam === "sources" || tabParam === "foryou" || tabParam === "storage" || tabParam === "iptv" || (tabParam === "devices" && superAdmin)
       ? tabParam
       : "overview";
   if (!session || !isAdminRole(session.user.role)) return <Navigate to="/" replace />;
@@ -44,6 +45,10 @@ export function AdminPage() {
       {tab === "server" ? (
         <div role="tabpanel" id="admin-panel-server" aria-labelledby="admin-tab-server">
           <ServerTab />
+        </div>
+      ) : tab === "quality" ? (
+        <div role="tabpanel" id="admin-panel-quality" aria-labelledby="admin-tab-quality">
+          <QualityTab />
         </div>
       ) : tab === "incidents" ? (
         <div role="tabpanel" id="admin-panel-incidents" aria-labelledby="admin-tab-incidents">
@@ -88,13 +93,14 @@ export function AdminPage() {
   );
 }
 
-type AdminTab = "overview" | "server" | "incidents" | "errors" | "sources" | "foryou" | "storage" | "iptv" | "devices";
+type AdminTab = "overview" | "server" | "quality" | "incidents" | "errors" | "sources" | "foryou" | "storage" | "iptv" | "devices";
 
 function AdminTabs({ tab, superAdmin, onChange }: { tab: AdminTab; superAdmin: boolean; onChange: (t: AdminTab) => void }) {
   const { t, locale } = useI18n();
   const tabs: { id: AdminTab; label: MessageKey }[] = [
     { id: "overview", label: "admin.tab.overview" },
     { id: "server", label: "admin.tab.server" },
+    { id: "quality", label: "admin.tab.quality" },
     { id: "incidents", label: "alerts.tab" },
     { id: "errors", label: "admin.tab.errors" },
     { id: "sources", label: "admin.tab.sources" },

@@ -354,7 +354,7 @@ GET and `write` otherwise.
 | GET/PATCH | `/devices/{id}/settings` | `TvSettings {device_id, device: TvDeviceSettings, updated_at, profiles: [{id, name, avatar, color, own}], active_profile_id, profile_id, effective, overrides, layered_keys}` (`?profile_id`, default: the profile on screen, else the default one). PATCH `{device?, reset_device?, profile_id?, profile? (layered keys only), reset?}`. `me` = the calling TV. Access: the TV, owner, `use` share (own profiles), super_admin; else 404. A change from anyone but the TV sends it realtime `settings.changed {profile_id?}` |
 | GET/PUT | `/profiles/{id}/preferences` | now also `preferred_voiceovers: string[]` (≤ 10, 1–40 chars, most preferred first; boosts matching releases) |
 | POST | `/playback/sessions` | `{profile_id, media_id, episode_id?, source_id?}` → 201 `{id, resume_position_seconds, progress, report_token}`; series need `episode_id` (422), movies refuse one |
-| POST | `/playback/sessions/{id}/progress` | `{seq, position_seconds, duration_seconds?, state}` → `{accepted, reason?, progress}`; `reason` ∈ `stale_sequence`, `stale_session`, `too_early`. JSON or `text/plain` body. Creator only (404), or `?token=<report_token>` (no cookie/CSRF needed; bad/expired → 401) |
+| POST | `/playback/sessions/{id}/progress` | `{seq, position_seconds, duration_seconds?, state, quality?}` → `{accepted, reason?, progress}`; `reason` ∈ `stale_sequence`, `stale_session`, `too_early`. JSON or `text/plain` body. Creator only (404), or `?token=<report_token>` (no cookie/CSRF needed; bad/expired → 401) |
 | GET | `/media/{id}/progress?profile_id=` | `MediaProgress` (movie row, episode rows, season counts, `next_up`) |
 | PUT | `/media/{id}/watched` | `{profile_id, watched, episode_id? \| season_number?}` → `MediaProgress`; series need exactly one of them; `watched:false` deletes |
 | GET | `/profiles/{id}/continue-watching?lang=` | `{items: ContinueItem[]}`, newest first, max 30 |
@@ -436,6 +436,7 @@ can see what they watch.
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/admin/activity/now?lang=` | `{items: ActivityItem[]}`: open sessions reported in the last 3 min + live TV player states (TV state wins for its device; `player` = `builtin` for TV states, null otherwise), newest first |
+| GET | `/admin/playback-quality?days=&lang=` | `PlaybackQualityReport`: playback measured by the players (1–90 days, default 7), per app and source kind, plus the 20 worst sessions. |
 | GET | `/admin/users/{id}/history?lang&cursor&limit` | `{items: AdminHistoryItem[], next_cursor}` across all of the user's profiles; unknown user → 404 |
 | GET | `/admin/messages` | `{items: SentMessage[]}` with `recipients`/`read_count` |
 | POST | `/admin/messages` | `{title (1–80), body (1–1000), user_ids?, show_on_tv = true}` → 201 `SentMessage`. Empty `user_ids` = every enabled user but the sender; unknown/disabled ids → 422. 20/hour per admin (429). Audited |

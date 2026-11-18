@@ -57,4 +57,5 @@ export const sourcesEn = {
   "sources.admin.needs_credentials": "Needs credentials",
   "sources.admin.empty": "No sources are registered.",
   "sources.admin.env_only": "Set up in the server configuration (environment).",
+  "sources.tab.empty": "No online options for this title right now.",
 } as const;

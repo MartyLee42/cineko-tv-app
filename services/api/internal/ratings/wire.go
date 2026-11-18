@@ -15,12 +15,16 @@ import (
 // stay null.
 func NewFromConfig(cfg config.KinopoiskConfig, pool *pgxpool.Pool, tmdbClient TMDB, log *slog.Logger) *Service {
 	client := HTTPClient(cfg.ProxyURL, 8*time.Second)
+	apiClient := client
+	if cfg.APIProxyURL != nil {
+		apiClient = HTTPClient(cfg.APIProxyURL, 8*time.Second)
+	}
 	var prov Provider
 	if cfg.Configured() {
 		if cfg.Provider == "dev" {
-			prov = NewDev(cfg.APIBaseURL, cfg.APIKey, client)
+			prov = NewDev(cfg.APIBaseURL, cfg.APIKey, apiClient)
 		} else {
-			prov = NewUnofficial(cfg.APIBaseURL, cfg.APIKey, client)
+			prov = NewUnofficial(cfg.APIBaseURL, cfg.APIKey, apiClient)
 		}
 	}
 	var wd *WikidataClient

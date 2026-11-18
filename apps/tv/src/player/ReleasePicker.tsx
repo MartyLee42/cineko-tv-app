@@ -23,7 +23,9 @@ import type { PlayContext } from "./session";
 import { playerKey } from "./keys";
 import { findDownload, useDownloadLabel, useMediaDownloads } from "./downloads";
 import { useServerFeatures } from "../design/data";
-import { HEAD_H, LIST_H, LIST_TOP, pickerScroll, ROW_GAP, ROW_H, type Sel } from "./pickerLayout";
+import { HEAD_H, LIST_H, LIST_TOP, pickerScroll, ROW_GAP, ROW_H, TABS_H, type Sel } from "./pickerLayout";
+
+type PickerTab = "online" | "torrents";
 
 const LONG_PRESS_MS = 700;
 
@@ -44,6 +46,8 @@ export function ReleasePicker({ ctx, tried }: { ctx: PlayContext; tried: readonl
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<unknown>(null);
   const [sel, setSel] = useState<Sel>({ kind: "rel", i: 0 });
+  /** «Онлайн» / «Торренты» picked by hand; until then it follows the best row. */
+  const [pickedTab, setPickedTab] = useState<PickerTab | null>(null);
   // The server ranks for this TV's playback profile (decodable codecs, its
   // throughput, manual limits). On top of that the TV re-orders by bitrate
   // only: in «Выбрать раздачу полегче» (the rate just measured), or when the
@@ -92,24 +96,30 @@ export function ReleasePicker({ ctx, tried }: { ctx: PlayContext; tried: readonl
   const listKey = items.map((r) => r.id).join(",");
   const onlineKey = online.map((v) => v.id).join(",");
   const playableOnline = online.findIndex((v) => variantHasEpisode(v, ctx.episode) && !tried.includes(v.id));
+  const lastOnline = online.findIndex((v) => v.id === remembered && !tried.includes(v.id));
+  const lastTorrent = ready ? items.findIndex((r) => r.id === remembered && !tried.includes(r.id)) : -1;
+  const autoTab: PickerTab = lastOnline >= 0 ? "online" : lastTorrent >= 0 ? "torrents" : playableOnline >= 0 ? "online" : "torrents";
+  const tab: PickerTab = group.show ? (pickedTab ?? autoTab) : "torrents";
+  const chooseTab = (next: PickerTab) => {
+    setPickedTab(next);
+    setSel({ kind: next === "online" ? "onl" : "rel", i: 0 });
+  };
   useEffect(() => {
-    if (editing || refreshing) return;
-    const lastOnline = online.findIndex((v) => v.id === remembered && !tried.includes(v.id));
-    if (lastOnline >= 0) return void setFocus(`onl-${lastOnline}`);
-    // Torrents still searching: the online variants are already playable.
-    if (!ready) {
-      if (playableOnline >= 0) void setFocus(`onl-${playableOnline}`);
+    // After a tab was picked by hand, focus stays where the viewer put it.
+    if (editing || refreshing || pickedTab) return;
+    if (tab === "online") {
+      const at = lastOnline >= 0 ? lastOnline : playableOnline;
+      if (at >= 0) void setFocus(`onl-${at}`);
       return;
     }
-    const last = items.findIndex((r) => r.id === remembered && !tried.includes(r.id));
-    if (last >= 0) return void setFocus(`rel-${last}`);
-    if (playableOnline >= 0) return void setFocus(`onl-${playableOnline}`);
+    if (!ready) return;
+    if (lastTorrent >= 0) return void setFocus(`rel-${lastTorrent}`);
     if (items.length === 0) return void setFocus("picker-refine");
     const at = Math.max(0, items.findIndex((r) => !tried.includes(r.id)));
     // (The row's onFocus updates the selection.)
     void setFocus(`rel-${at}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, listKey, onlineKey, refine]);
+  }, [ready, listKey, onlineKey, refine, tab]);
 
   const playVariant = (v: OnlineVariant) => {
     if (!variantHasEpisode(v, ctx.episode)) return;
@@ -135,9 +145,18 @@ export function ReleasePicker({ ctx, tried }: { ctx: PlayContext; tried: readonl
 
   const err = refreshError ?? list.error;
   const ep = episodeLabel(ctx.season, ctx.episode, ctx.episode_name);
-  const keys = ["picker-actions", ...online.map((_, i) => `onl-${i}`), ...items.map((_, i) => `rel-${i}`)];
+  const showOnline = tab === "online";
+  const keys = [
+    "picker-actions",
+    ...(group.show ? ["picker-tabs"] : []),
+    ...(showOnline ? online.map((_, i) => `onl-${i}`) : items.map((_, i) => `rel-${i}`)),
+  ];
   const failedLine = group.failed.length > 0;
-  const scroll = pickerScroll(sel, online.length, items.length, failedLine);
+  const listTop = LIST_TOP + (group.show ? TABS_H : 0);
+  const listH = LIST_H - (group.show ? TABS_H : 0);
+  const scroll = showOnline
+    ? pickerScroll(sel.kind === "onl" ? sel.i : 0, online.length, HEAD_H + (failedLine ? 48 : 0), listH)
+    : pickerScroll(sel.kind === "rel" ? sel.i : 0, items.length, 0, listH);
   const errors = list.data?.indexer_errors ?? [];
   const groupNames = groupProviders(online, group.failed).join(", ");
 
@@ -196,9 +215,31 @@ export function ReleasePicker({ ctx, tried }: { ctx: PlayContext; tried: readonl
           </FocusButton>
         </FocusSection>
       </div>
-          <div className="absolute overflow-hidden" style={{ left: 96, top: LIST_TOP, width: 1728, height: LIST_H }}>
+          {group.show && (
+            <FocusSection
+              focusKey="picker-tabs"
+              preferredChildFocusKey={`picker-tab-${tab}`}
+              className="absolute flex items-start gap-5"
+              style={{ left: 96, top: LIST_TOP, height: TABS_H }}
+            >
+              {(["online", "torrents"] as const).map((id) => (
+                <FocusButton
+                  key={id}
+                  focusKey={`picker-tab-${id}`}
+                  onPress={() => chooseTab(id)}
+                  className={`flex items-center rounded-control px-9 py-3 text-3xl font-semibold ${tab === id ? "bg-accent text-on-accent" : "bg-surface-2"}`}
+                >
+                  <span data-testid={`picker-tab-${id}`} data-active={tab === id ? "1" : "0"}>
+                    {id === "online" ? group.kinds.map((k) => t(`sources.kind.${k}`)).join(" · ") : t("sources.group.torrents")}
+                    <span className="ml-3 tabular-nums opacity-70">{id === "online" ? online.length : items.length}</span>
+                  </span>
+                </FocusButton>
+              ))}
+            </FocusSection>
+          )}
+          <div className="absolute overflow-hidden" style={{ left: 96, top: listTop, width: 1728, height: listH }}>
             <div className="tv-track" style={{ transform: `translate3d(0,${-scroll}px,0)` }}>
-              {group.show && (
+              {showOnline && (
                 <div data-testid="picker-online">
                   <p className="flex items-center text-3xl font-semibold" style={{ height: HEAD_H }}>
                     <span className="text-accent">{group.kinds.map((k) => t(`sources.kind.${k}`)).join(" · ")}</span>
@@ -209,6 +250,7 @@ export function ReleasePicker({ ctx, tried }: { ctx: PlayContext; tried: readonl
                       ⚠ {t("sources.group.failed", { list: group.failed.map((p) => p.name).join(", ") })}
                     </p>
                   )}
+                  {online.length === 0 && <p className="pt-10 text-4xl">{t("sources.tab.empty")}</p>}
                   {online.map((v, i) => (
                     <VariantRowView
                       key={v.id}
@@ -222,12 +264,9 @@ export function ReleasePicker({ ctx, tried }: { ctx: PlayContext; tried: readonl
                       onLongPress={() => variantHasEpisode(v, ctx.episode) && player.playWith(ctx, variantRelease(v))}
                     />
                   ))}
-                  <p className="flex items-center text-3xl font-semibold text-muted" style={{ height: HEAD_H }}>
-                    {t("sources.group.torrents")}
-                  </p>
                 </div>
               )}
-              {list.isPending || refreshing ? (
+              {showOnline ? null : list.isPending || refreshing ? (
                 <Loading />
               ) : err && items.length === 0 ? (
                 <p className="pt-10 text-4xl">

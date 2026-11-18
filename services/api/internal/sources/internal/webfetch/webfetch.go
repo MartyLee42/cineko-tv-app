@@ -113,7 +113,8 @@ func (c *Client) Get(ctx context.Context, u string, headers map[string]string) (
 	}
 	b, rerr := io.ReadAll(io.LimitReader(resp.Body, c.MaxBody+1))
 	switch {
-	case resp.StatusCode == http.StatusNotFound:
+	case resp.StatusCode == http.StatusNotFound, resp.StatusCode == http.StatusNoContent:
+		// 204: the upstream has nothing for this id, which is an answer too.
 		return b, ErrNotFound
 	case resp.StatusCode != http.StatusOK:
 		return nil, fmt.Errorf("%w: status %d", ErrUnavailable, resp.StatusCode)
