@@ -215,6 +215,8 @@ function NetStatsPanel({ source }: { source: PlaybackSource }) {
   });
   const status = useServerStatus();
   const src = live.data ?? source;
+  // Read on each render: the overlay re-renders with playback progress.
+  const ahead = player.bufferAhead();
   const items = netStats(
     {
       kind: source.kind,
@@ -224,9 +226,11 @@ function NetStatsPanel({ source }: { source: PlaybackSource }) {
       streams: status.data?.active_streams,
       device: player.deviceRate(),
       frames: player.droppedFrames(),
+      buffer: ahead === null ? null : { ahead, preloaded: src.torrent?.preloaded_bytes ?? 0 },
     },
     (b) => formatSpeed(b, locale),
     mbit,
+    (n) => formatBytes(n, locale),
   );
   if (!items.length) return null;
   return (

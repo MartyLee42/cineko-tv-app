@@ -1,4 +1,4 @@
-// The stats panel under Up (peers, server load, link to the TV) and the
+// The stats panel under Up (buffer, peers, server load, link to the TV) and the
 // «Показывать буфер» option. Pure: the player renders what this returns.
 import type { MessageKey } from "@martytv/ui";
 
@@ -15,18 +15,34 @@ export interface NetStatsInput {
   device: { bps: number; measured: boolean } | null;
   /** Dropped frames of steady playback so far (smooth.ts), null when the engine doesn't count. */
   frames?: { pct: number } | null;
+  /** Loaded ahead on this TV (seconds) and, for torrents, TorrServer's own preload (bytes); null when unknown. */
+  buffer?: { ahead: number; preloaded: number } | null;
 }
 
 export interface StatItem {
-  id: "peers" | "from_peers" | "local" | "server" | "device" | "frames";
+  id: "buffer" | "peers" | "from_peers" | "local" | "server" | "device" | "frames";
   key: MessageKey;
   vars: Record<string, string | number>;
 }
 
 /** The panel's items; parts that don't apply are left out. `speed` formats bytes/s. */
-export function netStats(i: NetStatsInput, speed: (bps: number) => string, mbit: (bps: number) => string): StatItem[] {
+export function netStats(
+  i: NetStatsInput,
+  speed: (bps: number) => string,
+  mbit: (bps: number) => string,
+  bytes: (n: number) => string = String,
+): StatItem[] {
   const out: StatItem[] = [];
   const torrent = !i.kind || i.kind === "torrent";
+  // «Буфер 42 с · TorrServer 120 МБ»: first, it's what answers "will it stall?".
+  if (i.buffer) {
+    const ahead = Math.floor(i.buffer.ahead);
+    out.push(
+      torrent && !i.local && i.buffer.preloaded > 0
+        ? { id: "buffer", key: "pstats.buffer_torrent", vars: { ahead, size: bytes(i.buffer.preloaded) } }
+        : { id: "buffer", key: "pstats.buffer", vars: { ahead } },
+    );
+  }
   if (torrent && i.local) out.push({ id: "local", key: "pstats.local", vars: {} });
   else if (torrent && i.torrent) {
     out.push({ id: "peers", key: "pstats.peers", vars: { peers: i.torrent.peers, seeders: i.torrent.seeders } });

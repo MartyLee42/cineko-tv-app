@@ -3,7 +3,7 @@ import type { PlaybackSource, Release } from "@martytv/contracts";
 import { variantRelease } from "@martytv/media-types";
 import { assessSource, type Probe } from "./codecs";
 import { LIST_H, pickerScroll, PITCH } from "./pickerLayout";
-import { hlsConfig, reloadUrl, streamMode } from "./stream";
+import { hlsAhead, hlsConfig, reloadUrl, streamMode } from "./stream";
 
 const MOVIE = "11111111-2222-4333-8444-555555555555";
 
@@ -334,6 +334,10 @@ describe("online HLS on Android", () => {
     expect(hlsConfig(4796)).toMatchObject({ startPosition: 4796, maxBufferLength: 30, backBufferLength: 30 });
     expect(hlsConfig(0).startPosition).toBe(-1);
     expect(hlsConfig(0).maxBufferSize).toBeLessThanOrEqual(30_000_000);
+    // More memory, a longer read-ahead; unknown memory keeps the weak-box cap.
+    expect(hlsConfig(0, 8)).toMatchObject({ maxBufferLength: 120, maxBufferSize: 120_000_000 });
+    expect(hlsAhead(2).maxBufferLength).toBe(60);
+    expect(hlsAhead(1)).toEqual(hlsAhead(undefined));
   });
 });
 
