@@ -27,16 +27,27 @@ export function streamMode(
 }
 
 /**
- * hls.js settings for TV engines: modest forward / back buffers and a byte
- * cap (weak Android boxes run out of memory with hls.js' 60 MB default), and
- * the first fragment loaded at the start position (not segment 0 followed by
- * a seek).
+ * How far ahead hls.js loads, by the device's memory (navigator.deviceMemory,
+ * GB; unknown = the weak-box tier): a long buffer rides out network dips, but
+ * weak Android boxes run out of memory with hls.js' 60 MB default.
  */
-export function hlsConfig(startAt: number) {
+export function hlsAhead(memoryGb: number | undefined): { maxBufferLength: number; maxMaxBufferLength: number; maxBufferSize: number } {
+  if (memoryGb !== undefined && memoryGb >= 4) return { maxBufferLength: 120, maxMaxBufferLength: 180, maxBufferSize: 120_000_000 };
+  if (memoryGb !== undefined && memoryGb >= 2) return { maxBufferLength: 60, maxMaxBufferLength: 90, maxBufferSize: 60_000_000 };
+  return { maxBufferLength: 30, maxMaxBufferLength: 60, maxBufferSize: 30_000_000 };
+}
+
+const deviceMemory = (): number | undefined =>
+  typeof navigator !== "undefined" ? (navigator as Navigator & { deviceMemory?: number }).deviceMemory : undefined;
+
+/**
+ * hls.js settings for TV engines: the forward buffer by memory (hlsAhead),
+ * a modest back buffer, and the first fragment loaded at the start position
+ * (not segment 0 followed by a seek).
+ */
+export function hlsConfig(startAt: number, memoryGb = deviceMemory()) {
   return {
-    maxBufferLength: 30,
-    maxMaxBufferLength: 60,
-    maxBufferSize: 30 * 1000 * 1000,
+    ...hlsAhead(memoryGb),
     backBufferLength: 30,
     enableWorker: true,
     startPosition: startAt > 0.5 ? startAt : -1,

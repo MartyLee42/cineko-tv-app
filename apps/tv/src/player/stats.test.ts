@@ -22,6 +22,14 @@ describe("netStats", () => {
     expect(items.map((i) => i.id)).toEqual(["server", "device"]);
     expect(items[1]!.key).toBe("pstats.device_usual");
   });
+  it("the buffer comes first, with TorrServer's preload for a streaming torrent", () => {
+    const t = { peers: 3, seeders: 2, download_speed_bps: 1 };
+    const kb = (n: number) => `${n / 1000} KB`;
+    const items = netStats({ torrent: t, local: false, cpu: null, streams: null, device: null, buffer: { ahead: 42.7, preloaded: 120_000 } }, speed, mb, kb);
+    expect(items[0]).toEqual({ id: "buffer", key: "pstats.buffer_torrent", vars: { ahead: 42, size: "120 KB" } });
+    const online = netStats({ kind: "online", torrent: null, local: false, cpu: null, streams: null, device: null, buffer: { ahead: 9, preloaded: 0 } }, speed, mb);
+    expect(online).toEqual([{ id: "buffer", key: "pstats.buffer", vars: { ahead: 9 } }]);
+  });
   it("nothing known → nothing shown", () => {
     expect(netStats({ torrent: null, local: false, cpu: undefined, streams: undefined, device: null }, speed, mb)).toEqual([]);
   });

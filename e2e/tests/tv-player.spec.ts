@@ -300,8 +300,9 @@ test("TV player: picker, preparing, playback, remote commands, unplayable", asyn
     await expect(ctl).toHaveCount(0);
     await press(tv, "ArrowUp");
     await expect(ctl).toBeVisible();
-    // Under Up: peers, peer speed, server load and the link to this TV.
+    // Under Up: the buffer (always), peers, peer speed, server load and the link to this TV.
     const net = tv.getByTestId("player-netstats");
+    await expect(net.locator("[data-stat=buffer]")).toContainText(/^Buffer \d+ s/);
     await expect(net.locator("[data-stat=peers]")).toContainText(/peers/i);
     await expect(net.locator("[data-stat=from_peers]")).toContainText(/from peers/i);
     await expect(net.locator("[data-stat=server]")).toHaveText("Server: CPU 37% · streams 2");

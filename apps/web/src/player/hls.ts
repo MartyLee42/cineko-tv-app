@@ -18,9 +18,14 @@ export function loadHls() {
   return loader;
 }
 
-/** hls.js settings: the first fragment loaded at the start position (not segment 0 followed by a seek). */
-export function hlsConfig(startAt: number) {
-  return { backBufferLength: 90, maxBufferLength: 30, maxMaxBufferLength: 120, startPosition: startAt > 0.5 ? startAt : -1 };
+/**
+ * hls.js settings: a longer read-ahead where the device has the memory
+ * (navigator.deviceMemory ≥ 4 GB) to ride out network dips, and the first
+ * fragment loaded at the start position (not segment 0 followed by a seek).
+ */
+export function hlsConfig(startAt: number, memoryGb = typeof navigator !== "undefined" ? (navigator as Navigator & { deviceMemory?: number }).deviceMemory : undefined) {
+  const ahead = memoryGb !== undefined && memoryGb >= 4 ? { maxBufferLength: 120, maxMaxBufferLength: 300, maxBufferSize: 150_000_000 } : { maxBufferLength: 30, maxMaxBufferLength: 120 };
+  return { backBufferLength: 90, ...ahead, startPosition: startAt > 0.5 ? startAt : -1 };
 }
 
 /** Plays `url` in `video` through hls.js from `startAt`; `onFatal` on unrecoverable errors. */
