@@ -217,6 +217,7 @@ type streamMeta struct {
 	kind       string       // torrent | online | compat | subtitles
 	client     string       // web | tv | other (from the User-Agent)
 	rangeStart int64        // -1 without a Range header
+	why        string       // what made the player open it (why=, streamReasons); "" unknown
 }
 
 var (
@@ -237,7 +238,7 @@ func clientKind(ua string) string {
 }
 
 func newStreamMeta(c fiber.Ctx, log *slog.Logger, kind string) streamMeta {
-	m := streamMeta{log: log, kind: kind, client: clientKind(c.Get(fiber.HeaderUserAgent)), rangeStart: -1}
+	m := streamMeta{log: log, kind: kind, client: clientKind(c.Get(fiber.HeaderUserAgent)), rangeStart: -1, why: streamReason(c)}
 	if r := rangeStart.FindStringSubmatch(strings.TrimSpace(c.Get(fiber.HeaderRange))); r != nil {
 		m.rangeStart, _ = strconv.ParseInt(r[1], 10, 64)
 	}
@@ -346,7 +347,7 @@ func (ir *idleReader) Close() error {
 			reason := ir.reason
 			ir.mu.Unlock()
 			ir.meta.log.Info("stream closed", "kind", ir.meta.kind, "client", ir.meta.client, "range_start", ir.meta.rangeStart,
-				"bytes", ir.bytes.Load(), "duration_s", time.Since(ir.opened).Round(time.Millisecond).Seconds(), "reason", reason)
+				"bytes", ir.bytes.Load(), "duration_s", time.Since(ir.opened).Round(time.Millisecond).Seconds(), "reason", reason, "why", ir.meta.why)
 		}
 	})
 	return nil

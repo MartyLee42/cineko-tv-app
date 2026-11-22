@@ -170,12 +170,24 @@ export function sourceCodecLabel(info: MediaInfo | null | undefined, index: numb
 
 const sec = (n: number) => Math.max(0, Math.round(n * 1000) / 1000);
 
-/** compat.mp4 with the audio stream index and start (seconds); `video`: re-encode the video to H.264. */
-export function compatSrc(compatUrl: string, o: { audio: number | null; start: number; video?: boolean }): string {
+/**
+ * Why the player opens a stream (compat.mp4 why=, the server logs it next to
+ * the stream): which reopen rule fired on a slow link, not a guess.
+ */
+export type StreamWhy = "start" | "seek" | "audio" | "quality" | "compat" | "error" | "network" | "starve" | "key" | "first_load" | "refresh" | "resume";
+
+/**
+ * compat.mp4 with the audio stream index and start (seconds); `video`:
+ * re-encode the video to H.264; `height`: a lower quality the viewer picked
+ * (re-encoded, scaled down: h=720|480|360); `why`: see StreamWhy.
+ */
+export function compatSrc(compatUrl: string, o: { audio: number | null; start: number; video?: boolean; height?: number; why?: StreamWhy | null }): string {
   const q: string[] = [];
   if (o.audio != null) q.push(`audio=${o.audio}`);
   if (o.start > 0) q.push(`start=${sec(o.start)}`);
   if (o.video) q.push("video=h264");
+  if (o.height) q.push(`h=${o.height}`);
+  if (o.why) q.push(`why=${o.why}`);
   if (!q.length) return compatUrl;
   return `${compatUrl}${compatUrl.includes("?") ? "&" : "?"}${q.join("&")}`;
 }
@@ -262,3 +274,20 @@ export const compatServer = {
     storage.set(SERVER_KEY, s.compat_url ? "1" : "0");
   },
 };
+
+// ---------------------------------------------------------------- quality
+
+/** Lower qualities the server re-encodes to (services/transcoder heightTiers). */
+export const SCALE_HEIGHTS = [720, 480, 360] as const;
+
+/**
+ * The lower qualities a torrent may play at here (best first): heights below
+ * the file's own, when the server can decode it (≤ 1080p, size known) — the
+ * player's ▼ panel offers them after «Оригинал». Empty: no choice.
+ */
+export function scaleChoices(info: Pick<MediaInfo, "width" | "height"> | null | undefined): number[] {
+  const w = info?.width ?? 0;
+  const h = info?.height ?? 0;
+  if (!(w > 0 && h > 0) || w > 2048 || h > 1088) return [];
+  return SCALE_HEIGHTS.filter((x) => x < h - 8);
+}

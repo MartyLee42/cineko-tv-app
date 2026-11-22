@@ -643,7 +643,8 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
           : []),
         { group: "subtitles" as const, id: null, label: t("player.subtitles_off") },
         ...tracks.subtitles.map((s) => ({ group: "subtitles" as const, id: s.id, label: s.label })),
-        ...(qualities?.list ?? []).map((q) => ({ group: "quality" as const, id: String(q), label: `${q}p` })),
+        // A torrent: «Оригинал» (0) first, then the lower qualities the server re-encodes to.
+        ...(qualities?.list ?? []).map((q) => ({ group: "quality" as const, id: String(q), label: q === 0 ? t("tvplay.quality.original") : `${q}p` })),
         // «Таймер сна»: «После этой серии» only for series.
         ...SLEEP_CHOICES.filter((c) => c !== "episode" || ctx.kind === "series").map((c) => ({
           group: "sleep" as const,
@@ -751,7 +752,8 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
           }
           if (it.group === "quality") {
             const q = Number(it.id);
-            void player.setQuality(q).then((ok) => setNote(ok ? t("sources.tv.quality_note", { q: `${q}p` }) : t("sources.player.quality_failed")));
+            const label = q === 0 ? t("tvplay.quality.original") : `${q}p`;
+            void player.setQuality(q).then((ok) => setNote(ok ? t("sources.tv.quality_note", { q: label }) : t("sources.player.quality_failed")));
             return;
           }
           const r = it.group === "audio" ? player.setAudio(it.id!) : player.setSubtitles(it.id);

@@ -8,7 +8,12 @@ package playback
 // re-encoded to H.264. The work runs in services/transcoder; the API only
 // authorizes, builds a signed job from its own records and relays the bytes.
 //
-//	GET|HEAD /api/v1/stream/<token>/compat.mp4?audio=<stream index>&start=<s>[&ch=6][&video=h264]
+//	GET|HEAD /api/v1/stream/<token>/compat.mp4?audio=<stream index>&start=<s>[&ch=6][&video=h264][&h=720|480|360][&why=<reason>]
+//
+// h: a lower quality the viewer picked (a slow link to the TV): the video is
+// re-encoded, scaled down to at most h lines at a bitrate that fits — any
+// codec the server can decode at ≤ 1080p (VideoScalable). why: what made the
+// player open this stream (logged only; see streamReasons).
 //	GET|HEAD /api/v1/stream/<token>/subs/<stream index>.vtt?start=<s>[&burst=<s>]
 //
 // No Range support (200, Accept-Ranges: none): seeking restarts the stream
@@ -87,6 +92,34 @@ func VideoTranscodable(info *MediaInfo) bool {
 	return transcodableVideo[strings.ToLower(*info.VideoCodec)] && w > 0 && h > 0 && w <= maxTranscodeWidth && h <= maxTranscodeHeight
 }
 
+// VideoScalable reports whether the probed video may be re-encoded at a
+// lower quality (compat h=): any codec, a known size ≤ 1080p (4K would be
+// too heavy to decode on the server's CPU).
+func VideoScalable(info *MediaInfo) bool {
+	if info == nil || info.Width == nil || info.Height == nil {
+		return false
+	}
+	w, h := *info.Width, *info.Height
+	return w > 0 && h > 0 && w <= maxTranscodeWidth && h <= maxTranscodeHeight
+}
+
+// scaleHeights: the qualities a viewer may pick (services/transcoder heightTiers).
+var scaleHeights = map[string]int{"720": 720, "480": 480, "360": 360}
+
+// streamReasons: why the player opened a stream (the why= query, logged).
+var streamReasons = map[string]bool{
+	"start": true, "seek": true, "audio": true, "quality": true, "compat": true, "error": true,
+	"network": true, "starve": true, "key": true, "first_load": true, "refresh": true, "resume": true,
+}
+
+// streamReason: the why= query when it is a known reason, else "".
+func streamReason(c fiber.Ctx) string {
+	if r := c.Query("why"); streamReasons[r] {
+		return r
+	}
+	return ""
+}
+
 // compatJob mirrors services/transcoder/job.go (the transcoder rejects
 // unknown fields, so keep them in sync).
 type compatJob struct {
@@ -99,6 +132,7 @@ type compatJob struct {
 	Channels  int     `json:"channels,omitempty"`
 	HVC1      bool    `json:"hvc1,omitempty"`
 	Video     string  `json:"video,omitempty"`
+	Height    int     `json:"height,omitempty"`
 	Start     float64 `json:"start,omitempty"`
 	Stream    int     `json:"stream,omitempty"`
 	Burst     float64 `json:"burst,omitempty"`
@@ -284,7 +318,7 @@ func (h *Handlers) streamCompat(c fiber.Ctx, src *source, lookupErr error) error
 	c.Status(fiber.StatusOK)
 	c.Set("X-Stream-Start", resp.Header.Get("X-Stream-Start"))
 	c.Set(fiber.HeaderContentDisposition, `inline; filename="compat.mp4"`)
-	log.Info("compat stream", "start", start, "audio", job.Audio != nil && *job.Audio >= 0, "video", job.Video)
+	log.Info("compat stream", "start", start, "audio", job.Audio != nil && *job.Audio >= 0, "video", job.Video, "height", job.Height, "why", streamReason(c))
 	body := newIdleReader(resp.Body, cancel, h.svc.t.StreamIdle, newStreamMeta(c, log, "compat"))
 	body.onClose = trackStream(src.InfoHash)
 	return c.SendStream(body, -1)
@@ -343,12 +377,23 @@ func (h *Handlers) compatJobFor(c fiber.Ctx, src *source) (compatJob, error) {
 	case "":
 	case "h264":
 		// Only what the server can afford: old codecs, ≤ 1080p (media_info).
-		if !VideoTranscodable(info) {
+		// (With h= the size check below applies instead: any codec ≤ 1080p.)
+		if !VideoTranscodable(info) && c.Query("h") == "" {
 			return job, httpx.NewError(fiber.StatusUnprocessableEntity, "video_not_convertible", "This file's video can't be converted on the server.")
 		}
 		job.Video, job.HVC1 = "h264", false
 	default:
 		return job, httpx.NewError(fiber.StatusUnprocessableEntity, "invalid_video", "video must be h264.")
+	}
+	if v := c.Query("h"); v != "" {
+		height, ok := scaleHeights[v]
+		if !ok {
+			return job, httpx.NewError(fiber.StatusUnprocessableEntity, "invalid_height", "h must be 720, 480 or 360.")
+		}
+		if !VideoScalable(info) {
+			return job, httpx.NewError(fiber.StatusUnprocessableEntity, "video_not_convertible", "This file's video can't be converted on the server.")
+		}
+		job.Video, job.Height, job.HVC1 = "h264", height, false
 	}
 	return job, nil
 }

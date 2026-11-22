@@ -310,7 +310,7 @@ func (h *Handlers) state(c fiber.Ctx) error {
 var commandTypes = map[string]bool{
 	"media.open": true, "media.play": true, "media.pause": true, "media.resume": true, "media.stop": true,
 	"media.seek": true, "media.next_episode": true, "media.select_source": true,
-	"playback.set_audio": true, "playback.set_subtitles": true, "playback.set_volume": true,
+	"playback.set_audio": true, "playback.set_subtitles": true, "playback.set_quality": true, "playback.set_volume": true,
 	"device.show_message": true, "device.request_state": true,
 	"iptv.play":  true,
 	"video.play": true,

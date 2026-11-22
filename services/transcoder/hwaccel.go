@@ -84,6 +84,40 @@ const (
 // cpuFilters: deinterlace interlaced frames, round odd sizes down to even.
 const cpuFilters = "yadif=deint=interlaced,scale=trunc(iw/2)*2:trunc(ih/2)*2"
 
+// Lower quality the viewer picked (Job.Height: a slow link to the TV): the
+// picture scaled down to at most that height and a bitrate that fits it.
+type heightTier struct{ bitrate, maxrate, bufsize string }
+
+var heightTiers = map[int]heightTier{
+	720: {"1800k", "2500k", "5000k"},
+	480: {"900k", "1200k", "2400k"},
+	360: {"500k", "700k", "1400k"},
+}
+
+// ValidHeight: 0 (the source's size) or one of the offered heights.
+func ValidHeight(h int) bool {
+	_, ok := heightTiers[h]
+	return h == 0 || ok
+}
+
+// filtersFor: cpuFilters, or deinterlace + scale down to height (never up;
+// even sizes).
+func filtersFor(height int) string {
+	if _, ok := heightTiers[height]; !ok {
+		return cpuFilters
+	}
+	h := strconv.Itoa(height)
+	return "yadif=deint=interlaced,scale=-2:'min(" + h + ",trunc(ih/2)*2)'"
+}
+
+// ratesFor: average / peak / buffer of a hardware encoder (and libx264's cap).
+func ratesFor(height int) (string, string, string) {
+	if t, ok := heightTiers[height]; ok {
+		return t.bitrate, t.maxrate, t.bufsize
+	}
+	return hwBitrate, hwMaxrate, hwBufsize
+}
+
 func forceKeyFrames() []string {
 	return []string{"-force_key_frames", "expr:gte(t,n_forced*" + strconv.Itoa(x264GOP) + ")"}
 }
@@ -102,33 +136,35 @@ func hwInputArgs(e Encoder) []string {
 
 // encodeArgs: the filter chain and video encoder options of a re-encoding
 // job on e (threads: libx264 / filter threads).
-func encodeArgs(e Encoder, threads int) []string {
+func encodeArgs(e Encoder, threads, height int) []string {
+	vf := filtersFor(height)
+	bitrate, maxrate, bufsize := ratesFor(height)
 	level := []string{"-profile:v", "high", "-level:v", "40"}
 	switch e.Backend {
 	case BackendNVENC:
 		// NVENC takes system-memory yuv420p frames directly.
-		a := []string{"-filter_threads", "1", "-vf", cpuFilters + ",format=yuv420p",
+		a := []string{"-filter_threads", "1", "-vf", vf + ",format=yuv420p",
 			"-c:v", "h264_nvenc", "-preset", "p4", "-tune", "hq", "-rc", "vbr",
-			"-b:v", hwBitrate, "-maxrate", hwMaxrate, "-bufsize", hwBufsize}
+			"-b:v", bitrate, "-maxrate", maxrate, "-bufsize", bufsize}
 		a = append(a, level...)
 		a = append(a, "-pix_fmt", "yuv420p", "-forced-idr", "1")
 		return append(a, forceKeyFrames()...)
 	case BackendVAAPI:
-		a := []string{"-filter_threads", "1", "-vf", cpuFilters + ",format=nv12,hwupload",
-			"-c:v", "h264_vaapi", "-b:v", hwBitrate, "-maxrate", hwMaxrate, "-bufsize", hwBufsize}
+		a := []string{"-filter_threads", "1", "-vf", vf + ",format=nv12,hwupload",
+			"-c:v", "h264_vaapi", "-b:v", bitrate, "-maxrate", maxrate, "-bufsize", bufsize}
 		a = append(a, level...)
 		return append(a, forceKeyFrames()...)
 	case BackendQSV:
-		a := []string{"-filter_threads", "1", "-vf", cpuFilters + ",format=nv12,hwupload=extra_hw_frames=64,format=qsv",
-			"-c:v", "h264_qsv", "-preset", "veryfast", "-b:v", hwBitrate, "-maxrate", hwMaxrate, "-bufsize", hwBufsize}
+		a := []string{"-filter_threads", "1", "-vf", vf + ",format=nv12,hwupload=extra_hw_frames=64,format=qsv",
+			"-c:v", "h264_qsv", "-preset", "veryfast", "-b:v", bitrate, "-maxrate", maxrate, "-bufsize", bufsize}
 		a = append(a, level...)
 		a = append(a, "-forced_idr", "1")
 		return append(a, forceKeyFrames()...)
 	}
 	a := []string{
-		"-filter_threads", "1", "-vf", cpuFilters,
+		"-filter_threads", "1", "-vf", vf,
 		"-c:v", "libx264", "-preset", x264Preset, "-crf", x264CRF,
-		"-maxrate", hwMaxrate, "-bufsize", hwBufsize,
+		"-maxrate", maxrate, "-bufsize", bufsize,
 		"-profile:v", "high", "-level:v", "4.0", "-pix_fmt", "yuv420p",
 	}
 	a = append(a, forceKeyFrames()...)
@@ -283,7 +319,7 @@ func testEncodeArgs(e Encoder) []string {
 	a := []string{"-hide_banner", "-nostdin", "-nostats", "-loglevel", "error"}
 	a = append(a, hwInputArgs(e)...)
 	a = append(a, "-f", "lavfi", "-i", "testsrc2=size=642x362:rate=25:duration=1")
-	a = append(a, encodeArgs(e, 1)...)
+	a = append(a, encodeArgs(e, 1, 0)...)
 	return append(a, "-f", "null", "-")
 }
 

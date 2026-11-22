@@ -11,7 +11,7 @@ package main
 //	    X-Job-Signature: hex(HMAC(key, "hls-file\n"+id+"\n"+file+"\n"+owner+"\n"+exp))
 //	    file = index.m3u8 | init.mp4 | seg<N>.m4s
 //
-// Sessions are keyed by (owner, input, audio, channels, hvc1, keyframe start)
+// Sessions are keyed by (owner, input, audio, channels, hvc1, video, height, keyframe start)
 // and reused while intact. A session holds a remux slot (Config.MaxJobs)
 // while ffmpeg runs. Disk use is bounded: ffmpeg is paused (SIGSTOP) once it
 // is HLSAhead past the last requested segment, segments more than
@@ -121,7 +121,7 @@ func hlsKey(j *Job, start float64) string {
 		audio = *j.Audio
 	}
 	h := sha256.Sum256([]byte(strings.Join([]string{
-		j.Owner, j.Input, strconv.Itoa(audio), strconv.FormatBool(j.AudioCopy), strconv.Itoa(j.Channels), strconv.FormatBool(j.HVC1), j.Video, fmtSeconds(start),
+		j.Owner, j.Input, strconv.Itoa(audio), strconv.FormatBool(j.AudioCopy), strconv.Itoa(j.Channels), strconv.FormatBool(j.HVC1), j.Video, strconv.Itoa(j.Height), fmtSeconds(start),
 	}, "\x00")))
 	return hex.EncodeToString(h[:])
 }
@@ -406,7 +406,7 @@ func (s *Server) startHLS(j *Job, start float64, key string) (*hlsSession, error
 	if j.Audio != nil {
 		audio = *j.Audio
 	}
-	log := s.log.With("kind", KindHLS, "session", sess.id, "start", fmtSeconds(start), "audio", audio, "video", j.Video)
+	log := s.log.With("kind", KindHLS, "session", sess.id, "start", fmtSeconds(start), "audio", audio, "video", j.Video, "height", j.Height)
 	if j.Video == VideoH264 {
 		log = log.With("encoder", j.enc.String())
 	}

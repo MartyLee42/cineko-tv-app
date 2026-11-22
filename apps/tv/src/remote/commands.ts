@@ -46,7 +46,9 @@ export type PlayerCommand =
   | { type: "next_episode" }
   | { type: "select_source"; source_id: string }
   | { type: "set_audio"; track_id: string }
-  | { type: "set_subtitles"; track_id: string | null };
+  | { type: "set_subtitles"; track_id: string | null }
+  /** A PlaybackState.qualities id ("0" = the original file, else a height). */
+  | { type: "set_quality"; quality: number };
 
 /** Who sent a command (display name, else username), if the server said. */
 export type Sender = string | null;
@@ -101,6 +103,7 @@ export const PLAYBACK_COMMANDS = [
   "media.select_source",
   "playback.set_audio",
   "playback.set_subtitles",
+  "playback.set_quality",
   "playback.set_volume",
 ] as const;
 
@@ -202,6 +205,10 @@ export function parseControl(type: string, p: unknown): PlayerCommand | null {
       return isObject(p) && typeof p.track_id === "string" && p.track_id.length > 0 && p.track_id.length <= 64
         ? { type: "set_audio", track_id: p.track_id }
         : null;
+    case "playback.set_quality": {
+      const id = isObject(p) && typeof p.track_id === "string" ? p.track_id : "";
+      return /^\d{1,4}$/.test(id) ? { type: "set_quality", quality: Number(id) } : null;
+    }
     case "playback.set_subtitles":
       if (!isObject(p) || !("track_id" in p)) return null;
       if (p.track_id === null) return { type: "set_subtitles", track_id: null };
@@ -351,7 +358,8 @@ export class CommandProcessor {
       case "media.next_episode":
       case "media.select_source":
       case "playback.set_audio":
-      case "playback.set_subtitles": {
+      case "playback.set_subtitles":
+      case "playback.set_quality": {
         const c = parseControl(env.type, env.payload);
         if (!c) return fail("bad_payload");
         if (!CATALOG.has(this.host.screen())) return fail("failed");

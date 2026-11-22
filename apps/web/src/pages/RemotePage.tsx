@@ -317,6 +317,9 @@ function Playback({ deviceId, online, s }: { deviceId: string; online: boolean; 
               offLabel={t("remote.subtitles_off")}
               onChange={(id) => run({ type: "playback.set_subtitles", payload: { track_id: id } })}
             />
+            {(p.qualities?.length ?? 0) > 1 && (
+              <QualitySelect qualities={p.qualities!} value={p.quality_id ?? ""} onChange={(id) => run({ type: "playback.set_quality", payload: { track_id: id } })} />
+            )}
           </fieldset>
         )}
         {v && c?.kind === "video" && <VideoExtras v={v} steady={steady} run={run} />}
@@ -544,6 +547,26 @@ function TrackSelect({
           </option>
         ))}
       </Select>
+    </label>
+  );
+}
+
+/** The TV's qualities (a torrent: «Оригинал» + what the server re-encodes to; an online source: its own). */
+function QualitySelect({ qualities, value, onChange }: { qualities: NonNullable<PlaybackState["qualities"]>; value: string; onChange: (id: string) => void }) {
+  const { t } = useI18n();
+  const torrent = qualities.some((q) => q.id === "0");
+  return (
+    <label className="block space-y-1.5">
+      <span className="text-sm text-muted">{t("remote.quality")}</span>
+      <Select value={value} onChange={(e) => e.target.value && onChange(e.target.value)} data-testid="remote-quality">
+        {!value && <option value="">—</option>}
+        {qualities.map((q) => (
+          <option key={q.id} value={q.id}>
+            {q.id === "0" ? t("remote.quality_original") : q.label}
+          </option>
+        ))}
+      </Select>
+      {torrent && value !== "0" && value !== "" && <p className="text-xs text-muted">{t("remote.quality_hint")}</p>}
     </label>
   );
 }

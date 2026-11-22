@@ -10,6 +10,7 @@ export const tvplayEn = {
   // Compat audio on the TV
   "tvplay.compat.setting": "Compatible audio (AAC)",
   "tvplay.compat.auto": "Auto",
+  "tvplay.quality.original": "Original",
   "tvplay.compat.on": "On",
   "tvplay.compat.off": "Off",
   "tvplay.compat.off_bad": "This TV can't play {codec} sound, and «Compatible sound» is off.",

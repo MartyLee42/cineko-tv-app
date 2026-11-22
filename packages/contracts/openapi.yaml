@@ -5158,7 +5158,7 @@ components:
     # ------------------------------------------------------------ realtime (Phase 3)
     CommandType:
       type: string
-      enum: [media.open, media.play, media.pause, media.resume, media.stop, media.seek, media.next_episode, media.select_source, playback.set_audio, playback.set_subtitles, playback.set_volume, device.show_message, device.request_state, iptv.play, video.play]
+      enum: [media.open, media.play, media.pause, media.resume, media.stop, media.seek, media.next_episode, media.select_source, playback.set_audio, playback.set_subtitles, playback.set_quality, playback.set_volume, device.show_message, device.request_state, iptv.play, video.play]
     CommandErrorCode:
       type: string
       description: |
@@ -5227,7 +5227,7 @@ components:
         source_id: { type: string, maxLength: 128 }
     SetTrackPayload:
       type: object
-      description: "playback.set_audio / playback.set_subtitles (track_id null = subtitles off)."
+      description: "playback.set_audio / playback.set_subtitles / playback.set_quality (track_id null = subtitles off; set_quality: a PlaybackState.qualities id)."
       required: [track_id]
       properties:
         track_id: { type: [string, "null"], maxLength: 64 }
@@ -5280,6 +5280,8 @@ components:
         subtitle_tracks: { type: array, items: { $ref: "#/components/schemas/Track" } }
         audio_track_id: { type: [string, "null"] }
         subtitle_track_id: { type: [string, "null"] }
+        qualities: { type: array, items: { $ref: "#/components/schemas/Track" }, description: "Qualities the viewer may pick (best first; id \"0\" = the original file, else the height: \"720\", \"480\", \"360\" — the server re-encodes; an online source: its own qualities). Switch with playback.set_quality. Optional; empty when there is no choice." }
+        quality_id: { type: [string, "null"], description: "The qualities id playing now." }
         loading: { oneOf: [{ $ref: "#/components/schemas/PlaybackLoading" }, { type: "null" }], description: "Set while the TV's loading screen shows (no picture yet) or the player rebuffers. Optional." }
     PlaybackLoading:
       type: object

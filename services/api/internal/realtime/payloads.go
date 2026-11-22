@@ -174,7 +174,7 @@ func ValidatePayload(cmd string, raw json.RawMessage) (json.RawMessage, []string
 		}
 		return mustJSON(p), nil, nil
 
-	case "playback.set_audio", "playback.set_subtitles":
+	case "playback.set_audio", "playback.set_subtitles", "playback.set_quality":
 		var p struct {
 			TrackID json.RawMessage `json:"track_id"`
 		}
@@ -191,8 +191,8 @@ func ValidatePayload(cmd string, raw json.RawMessage) (json.RawMessage, []string
 				return nil, nil, bad("track_id must be a string of 1-64 characters or null")
 			}
 			out.TrackID = &id
-		} else if cmd == "playback.set_audio" {
-			return nil, nil, bad("an audio track is required")
+		} else if cmd != "playback.set_subtitles" {
+			return nil, nil, bad("a track is required")
 		}
 		return mustJSON(out), nil, nil
 

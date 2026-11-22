@@ -1070,6 +1070,23 @@ browser ─GET compat.mp4?audio=&start=─▶ API (token, checks) ─POST /v1/re
   until its `mdat` is complete (`fragment.go`; boxes > 64 MB or non-box
   output pass through): a cut stream ends on a fragment boundary, which the
   player recovers from, instead of a half-written packet (MEDIA_ERR_DECODE).
+- **Lower quality on request** (`h=720|480|360`). A viewer on a slow link
+  (the ▼ panel's «Качество» on the TV, or the phone remote's
+  `playback.set_quality`) may pick a lower quality for a torrent: «Оригинал»
+  plus the heights below the file's own, for files ≤ 1080p
+  (`playback.VideoScalable`, any codec). The compat stream then re-encodes
+  with `scale=-2:'min(H,trunc(ih/2)*2)'` (never up) and a bitrate per height
+  (720: 1.8/2.5 Mbit/s, 480: 0.9/1.2, 360: 0.5/0.7 — average for GPU
+  encoders / peak for all; libx264 keeps CRF 21 under that peak). The choice
+  is never made for the viewer: every new title starts at «Оригинал», and it
+  stays across that title's episodes.
+- **Why a stream opened** (`why=`). The TV tags every compat (re)start with
+  its reason (start, seek, audio, quality, compat, error, network, starve =
+  the stall watchdog, key = OK on a stuck picture, first_load, refresh); the
+  api logs it on «compat stream» and «stream closed». The watchdog and OK
+  on a stuck picture also wait while the element still receives bytes (its
+  progress events, starve.ts `netProgress`): on a slow link a reopen threw
+  the buffer away and fetched the same bytes again.
 - **Video conversion** (`video=h264`, `PlaybackSource.compat_video`). For
   MPEG-4 Part 2 (XviD / DivX, `msmpeg4*`), MPEG-1/2, VC-1 / WMV and H.263 at
   ≤ 1080p (by `media_info`: width ≤ 2048, height ≤ 1088 —

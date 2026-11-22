@@ -54,11 +54,27 @@ export const STARVED_MAX_MS = 60_000;
  * `tries`: reopens since the picture last moved (each waits one step
  * longer; the watchdog never fails a playback, it keeps trying).
  */
-export function shouldReopen(w: StallWatch, o: { now: number; resumedAgoMs: number; rebufferMs: number | null; tries?: number }): boolean {
+export function shouldReopen(w: StallWatch, o: { now: number; resumedAgoMs: number; rebufferMs: number | null; tries?: number; netAgoMs?: number }): boolean {
   const tries = o.tries ?? 0;
   const base = tries === 0 && o.resumedAgoMs < RESUME_WINDOW_MS ? STARVED_AFTER_RESUME_MS : STARVED_MS;
   const limit = Math.min(STARVED_MAX_MS, base * (1 + tries));
-  return o.now - w.progressAt >= limit || (tries === 0 && o.rebufferMs !== null && o.rebufferMs >= REBUFFER_GIVE_UP_MS);
+  // The long «Буферизация» gives up only when the bytes stopped too
+  // (`netAgoMs`: since the element last received data, its progress
+  // events): reopening a slow but live stream throws its buffer away and
+  // fetches the same bytes again. A dead connection gets no bytes, so it is
+  // still reopened. Unknown (engines without progress events): as before.
+  const netQuiet = o.netAgoMs === undefined || o.netAgoMs >= STARVED_MS;
+  return o.now - w.progressAt >= limit || (tries === 0 && netQuiet && o.rebufferMs !== null && o.rebufferMs >= REBUFFER_GIVE_UP_MS);
+}
+
+/**
+ * The element received bytes (its progress event): the data is moving even
+ * when the buffered end isn't yet (a big fragment still arriving on a slow
+ * link), so the watchdog and OK on a stuck picture wait. The picture clock
+ * is untouched.
+ */
+export function netProgress(w: StallWatch, now: number): StallWatch {
+  return { ...w, progressAt: now };
 }
 
 /**

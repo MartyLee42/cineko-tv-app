@@ -413,7 +413,7 @@ func (s *Server) run(w http.ResponseWriter, r *http.Request, j *Job, kind, bin s
 	if j.Audio != nil {
 		audio = *j.Audio
 	}
-	log := s.log.With("kind", kind, "start", fmtSeconds(start), "audio", audio, "stream", j.Stream, "video", j.Video)
+	log := s.log.With("kind", kind, "start", fmtSeconds(start), "audio", audio, "stream", j.Stream, "video", j.Video, "height", j.Height)
 	if j.Video == VideoH264 {
 		log = log.With("encoder", j.enc.String())
 	}
