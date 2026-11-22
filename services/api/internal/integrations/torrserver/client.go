@@ -136,9 +136,20 @@ func New(cfg config.TorrServerConfig) *Client {
 	}
 	c.api = &http.Client{Transport: tr, Timeout: 10 * time.Second, CheckRedirect: noRedirect}
 	c.slow = &http.Client{Transport: tr, Timeout: 45 * time.Second, CheckRedirect: noRedirect}
-	c.stream = &http.Client{Transport: tr, CheckRedirect: noRedirect}
+	// /stream answers only once TorrServer has the first pieces: on a slow
+	// torrent (few peers, metadata still coming) that takes minutes, and a
+	// 60 s header limit turned it into a 502 the TV showed as «format error»
+	// while the download was still starting. The viewer leaving cancels the
+	// request anyway, and the body has its own idle watchdog.
+	streamTr := tr.Clone()
+	streamTr.ResponseHeaderTimeout = StreamHeaderTimeout
+	c.stream = &http.Client{Transport: streamTr, CheckRedirect: noRedirect}
 	return c
 }
+
+// StreamHeaderTimeout: how long a /stream request waits for TorrServer to
+// start answering (it waits for the first pieces of a slow torrent).
+const StreamHeaderTimeout = 3 * time.Minute
 
 // Configured reports whether a usable URL is set.
 func (c *Client) Configured() bool { return c.base != nil }

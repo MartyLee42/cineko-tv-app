@@ -72,7 +72,9 @@ function Banner({ m }: { m: Message }) {
 function MessageCard({ m, more }: { m: Message; more: number }) {
   const { t } = useI18n();
   useEffect(() => {
-    const c = claimKeys();
+    // Modal: drawn over everything on Home, so layers that claim the keys
+    // later (the quiz invite, a re-claiming player) must not take OK/Back.
+    const c = claimKeys({ modal: true });
     const close = (read: boolean) => {
       if (read) void unwrap(api.POST("/messages/{id}/read", { params: { path: { id: m.id } } })).catch(() => undefined);
       messageQueue.dismiss(m.id);

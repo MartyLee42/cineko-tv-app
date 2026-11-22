@@ -178,6 +178,11 @@ export class RealtimeClient {
 
   private connect() {
     const Impl = this.opts.WebSocketImpl ?? WebSocket;
+    // A socket still connecting (reconnectNow on visibility/online) is
+    // retired first: otherwise its late "hello" marked us open while
+    // this.ws was the new, still-connecting one, and send() threw
+    // InvalidStateError ("Still in CONNECTING state").
+    this.retire();
     this.setState("connecting");
     let ws: WebSocket;
     try {
@@ -190,10 +195,12 @@ export class RealtimeClient {
     let helloSeen = false;
 
     ws.onopen = () => {
+      if (this.ws !== ws) return;
       const token = this.opts.getToken?.();
       if (token) ws.send(JSON.stringify({ type: "auth", payload: { token } }));
     };
     ws.onmessage = (ev) => {
+      if (this.ws !== ws) return;
       this.lastHeard = this.now();
       let env: Envelope;
       try {
@@ -258,18 +265,22 @@ export class RealtimeClient {
     }
   }
 
+  /** Closes the current socket (if any) without its handlers firing. */
+  private retire() {
+    const ws = this.ws;
+    if (!ws) return;
+    this.detach();
+    ws.onclose = ws.onmessage = ws.onopen = ws.onerror = null;
+    try {
+      ws.close(4000, "stale");
+    } catch {
+      // already gone
+    }
+  }
+
   /** The socket is silently dead (standby, network switch): start over now. */
   private dropDead() {
-    const ws = this.ws;
-    this.detach();
-    if (ws) {
-      ws.onclose = ws.onmessage = ws.onopen = ws.onerror = null;
-      try {
-        ws.close(4000, "stale");
-      } catch {
-        // already gone
-      }
-    }
+    this.retire();
     this.setState("closed");
     clearTimeout(this.timer);
     this.attempt = 0;

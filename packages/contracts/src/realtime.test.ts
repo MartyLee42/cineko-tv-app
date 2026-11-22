@@ -137,6 +137,23 @@ describe("RealtimeClient", () => {
     expect(c.state).toBe("connecting");
   });
 
+  it("reconnectNow while connecting retires the first socket (its late hello is ignored)", () => {
+    const c = client();
+    c.start();
+    const first = last();
+    c.reconnectNow(); // page became visible / network came back mid-connect
+    const second = last();
+    expect(second).not.toBe(first);
+    first.receive({ type: "hello" });
+    expect(c.state).toBe("connecting");
+    c.send({ type: "ping" }); // queued, not sent on a socket still connecting
+    expect(second.sent).toEqual([]);
+    second.receive({ type: "hello" });
+    expect(c.state).toBe("open");
+    expect(second.sent).toContainEqual({ type: "ping" });
+    expect(first.sent).toEqual([]);
+  });
+
   it("resolves commands with the TV's ack", async () => {
     const rt = client();
     rt.start();
