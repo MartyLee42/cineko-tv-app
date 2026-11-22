@@ -40,7 +40,10 @@ function ImgInner({ src, className, alt }: { src: string; className: string; alt
       src={src}
       alt={alt}
       decoding={known ? "sync" : "async"}
-      loading={known ? "eager" : "lazy"}
+      // Always eager: rows and grids are virtualized already, and a lazy image
+      // in a row's clipped track waits for the browser's own distance check —
+      // the cards mounted ahead of the right edge (ROW_AHEAD) loaded late.
+      loading="eager"
       draggable={false}
       onLoad={(e) => {
         remember(src);

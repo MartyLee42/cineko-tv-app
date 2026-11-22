@@ -12,9 +12,12 @@ export function windowRange(focus: number, count: number, before: number, after:
  * Cards mounted past the row's right edge, so their posters have loaded
  * before they slide in. With one or two (the old window) holding → on a TV
  * gave each poster ~0.3 s: the cards coming in at the edge showed their
- * placeholder and faded in — «the last two blink».
+ * placeholder and faded in — «the last two blink». Three still gave only
+ * ~0.6 s at the remote's key repeat (a move every ~0.2 s): on a slow link the
+ * last three of a row still came in loading («the last 3 blink», seen in the
+ * TV emulator in every Home row but the first). Six: ~1.3 s.
  */
-export const ROW_AHEAD = 3;
+export const ROW_AHEAD = 6;
 
 /**
  * Items to render in a horizontal row: the focus window, widened to every
