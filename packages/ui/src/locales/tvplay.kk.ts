@@ -7,6 +7,7 @@ export const tvplayKk: Record<keyof typeof tvplayEn, string> = {
 
   "tvplay.compat.setting": "Үйлесімді дыбыс (AAC)",
   "tvplay.compat.auto": "Авто",
+  "tvplay.quality.original": "Түпнұсқа",
   "tvplay.compat.on": "Қосулы",
   "tvplay.compat.off": "Өшірулі",
   "tvplay.compat.off_bad": "Бұл теледидар {codec} дыбысын ойнатпайды, ал «Үйлесімді дыбыс» өшірулі.",

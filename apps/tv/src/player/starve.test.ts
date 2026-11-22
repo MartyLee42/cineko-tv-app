@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { keyReopens, shouldReopen, spinnerWanted, stallWatch0, watchStep, type StallWatch } from "./starve";
+import { keyReopens, netProgress, shouldReopen, spinnerWanted, stallWatch0, watchStep, type StallWatch } from "./starve";
 
 /** Ticks every 500 ms from `from` to `to` with the same observation. */
 function run(w: StallWatch, from: number, to: number, o: { wants: boolean; advancing: boolean; end: number }): StallWatch {
@@ -73,5 +73,17 @@ describe("the buffering spinner", () => {
     expect(spinnerWanted({ ...base, quiet: true, stuckMs: 2_000 })).toBe(false);
     expect(spinnerWanted({ ...base, quiet: true, stuckMs: 3_000 })).toBe(true);
     expect(spinnerWanted({ ...base, quiet: true, seeking: true })).toBe(true);
+  });
+  it("bytes still arriving on a slow link: no reopen (OK, the watchdog, a long «Буферизация»)", () => {
+    // Nothing plays and the buffered end stands (a big fragment on its way), but bytes come in.
+    let w = run(stallWatch0(0), 0, 20_000, { wants: true, advancing: false, end: 5 });
+    w = netProgress(w, 19_800);
+    expect(shouldReopen(w, { now: 20_000, resumedAgoMs: 1e9, rebufferMs: null })).toBe(false);
+    expect(keyReopens(w, { now: 20_000, readyState: 2 })).toBe(false);
+    // A «Буферизация» on for 50 s that still receives data stays.
+    const r = { end: 10, progressAt: 49_900, movedAt: 0 };
+    expect(shouldReopen(r, { now: 50_000, resumedAgoMs: 1e9, rebufferMs: 50_000, netAgoMs: 100 })).toBe(false);
+    // …and is reopened once the bytes stop too.
+    expect(shouldReopen(r, { now: 50_000, resumedAgoMs: 1e9, rebufferMs: 50_000, netAgoMs: 12_000 })).toBe(true);
   });
 });

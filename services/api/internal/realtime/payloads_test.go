@@ -35,6 +35,8 @@ func TestValidatePayload(t *testing.T) {
 		{"playback.set_audio", `{"track_id":null}`, false, ""},
 		{"playback.set_audio", `{"track_id":"a1"}`, true, `{"track_id":"a1"}`},
 		{"playback.set_audio", `{}`, false, ""},
+		{"playback.set_quality", `{"track_id":"480"}`, true, `{"track_id":"480"}`},
+		{"playback.set_quality", `{"track_id":null}`, false, ""},
 		{"device.show_message", `{"text":""}`, false, ""},
 		{"device.show_message", `{"text":"привет"}`, true, `{"text":"привет"}`},
 		{"media.select_source", `{"source_id":""}`, false, ""},

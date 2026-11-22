@@ -29,7 +29,7 @@ func TestEncodeArgsPerBackend(t *testing.T) {
 		{vaapi, []string{"-vf " + cpuFilters + ",format=nv12,hwupload -c:v h264_vaapi", "-b:v 5M -maxrate 8M -bufsize 16M"}, []string{"libx264", "-crf", "-threads"}},
 		{qsv, []string{",format=nv12,hwupload=extra_hw_frames=64,format=qsv -c:v h264_qsv", "-forced_idr 1"}, []string{"libx264", "-crf", "-threads"}},
 	} {
-		s := strings.Join(encodeArgs(tc.enc, 2), " ")
+		s := strings.Join(encodeArgs(tc.enc, 2, 0), " ")
 		// Every backend: H.264 High 4.0, keyframe every x264GOP seconds, one filter thread.
 		want := append(tc.want, "-filter_threads 1", "-force_key_frames expr:gte(t,n_forced*2)", "-profile:v high -level:v 4")
 		for _, w := range want {
@@ -291,5 +291,21 @@ func TestHLSGPUFailureRetriesOnCPU(t *testing.T) {
 	}
 	if n := len(h.srv.hls.list()); n != 1 {
 		t.Fatalf("%d sessions", n)
+	}
+}
+
+func TestEncodeArgsHeight(t *testing.T) {
+	s := strings.Join(encodeArgs(Encoder{}, 2, 480), " ")
+	for _, w := range []string{"scale=-2:'min(480,trunc(ih/2)*2)'", "-maxrate 1200k -bufsize 2400k", "-c:v libx264"} {
+		if !strings.Contains(s, w) {
+			t.Errorf("missing %q in %s", w, s)
+		}
+	}
+	s = strings.Join(encodeArgs(Encoder{Backend: BackendNVENC}, 2, 360), " ")
+	if !strings.Contains(s, "-b:v 500k -maxrate 700k -bufsize 1400k") {
+		t.Errorf("nvenc 360: %s", s)
+	}
+	if !ValidHeight(0) || !ValidHeight(720) || ValidHeight(1080) || ValidHeight(500) {
+		t.Error("ValidHeight")
 	}
 }

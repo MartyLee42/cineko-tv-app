@@ -7,6 +7,7 @@ export const tvplayRu: Record<keyof typeof tvplayEn, string> = {
 
   "tvplay.compat.setting": "Совместимый звук (AAC)",
   "tvplay.compat.auto": "Авто",
+  "tvplay.quality.original": "Оригинал",
   "tvplay.compat.on": "Вкл",
   "tvplay.compat.off": "Выкл",
   "tvplay.compat.off_bad": "Звук {codec} этот телевизор не воспроизводит, а «Совместимый звук» выключен.",

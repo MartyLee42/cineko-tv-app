@@ -48,11 +48,13 @@ import {
   fetchStreamStart,
   pickCompatAudio,
   rangesOf,
+  scaleChoices,
   sourceCodecLabel,
   trackIdOf,
   videoConvertNeeded,
   wantCompat,
   type CompatPref,
+  type StreamWhy,
 } from "./compat";
 import {
   bandwidthCheck,
@@ -75,7 +77,7 @@ import {
   type RateSample,
   type SlowHintLog,
 } from "./rebuffer";
-import { keyReopens, shouldReopen, spinnerWanted, stallWatch0, watchStep, type StallWatch } from "./starve";
+import { keyReopens, netProgress, shouldReopen, spinnerWanted, stallWatch0, watchStep, type StallWatch } from "./starve";
 import { devicePrefs } from "../settings/devicePrefs";
 import { clearStutter, noteStutter, provenSmooth, readFrames, STUTTER0, stutterStep, thisSmoothView, type FrameCounters, type StutterState } from "./smooth";
 import {
@@ -300,7 +302,19 @@ export class PlayerController {
   // Compat audio (server AAC transcode, see compat.ts): the playing stream's
   // keyframe offset, audio stream index and whether its video is re-encoded
   // to H.264 (video=h264); null = the original file.
-  private compat: { audio: number | null; offset: number; video: boolean } | null = null;
+  private compat: { audio: number | null; offset: number; video: boolean; height: number } | null = null;
+  /**
+   * The quality the viewer picked in the ▼ panel / on the phone for this
+   * title (a torrent: 0 = the original file, else the height the server
+   * scales down to, compat h=). Never chosen for them: it starts at the
+   * original for every new title and stays across its episodes.
+   */
+  private scaleHeight = 0;
+  private scaleMedia: string | null = null;
+  /** Why the next compat stream opens (compat.mp4 why=), set by whoever (re)starts it. */
+  private nextWhy: StreamWhy | null = null;
+  /** When the element last received bytes (its progress events); 0 = none yet. */
+  private netAt = 0;
   /** Absolute target while a compat stream (re)starts (HEAD for its offset). */
   private compatPending: number | null = null;
   /** Whether the pending compat restart starts playing. */
@@ -1155,8 +1169,14 @@ export class PlayerController {
     const onThrough = () => {
       if (this.rebuf) this.rebuf.canPlayThrough = true;
     };
+    // Bytes arriving: the stall watchdog and OK on a stuck picture wait (starve.ts netProgress).
+    const onNet = () => {
+      this.netAt = Date.now();
+      this.stallW = netProgress(this.stallW, this.netAt);
+    };
     v.addEventListener("waiting", onWaiting);
     v.addEventListener("canplaythrough", onThrough);
+    v.addEventListener("progress", onNet);
     clearInterval(this.tickTimer);
     this.tickTimer = setInterval(() => this.tick(), 500);
     // The held frame goes once the new stream shows its own: playing, or
@@ -1181,6 +1201,7 @@ export class PlayerController {
       clearInterval(this.tickTimer);
       v.removeEventListener("waiting", onWaiting);
       v.removeEventListener("canplaythrough", onThrough);
+      v.removeEventListener("progress", onNet);
       metaEvents.forEach((e) => v.removeEventListener(e, onMeta));
       checkEvents.forEach((e) => v.removeEventListener(e, onCheck));
       frameEvents.forEach((e) => v.removeEventListener(e, onFrame));
@@ -1266,6 +1287,7 @@ export class PlayerController {
         this.support = assessSource(fresh, this.probe());
         if (!w.loaded) firstLoad(fresh);
         else if (this.video && !this.compat && this.compatPending === null && this.shouldCompat(fresh, false)) {
+          this.nextWhy = "compat";
           void this.startCompat(this.trustedPosition(), !this.video.paused || !!this.rebuf, null);
         }
         this.emit("playback");
@@ -1316,6 +1338,11 @@ export class PlayerController {
     this.metadata = false;
     this.lastSnap = null;
     if (f0.phase === "playing") this.beginSession(f0.ctx, src);
+    if (f0.phase === "playing" && f0.ctx.media_id !== this.scaleMedia) {
+      this.scaleMedia = f0.ctx.media_id;
+      this.scaleHeight = 0;
+    }
+    this.netAt = 0;
     if (f0.phase === "playing" && f0.ctx.player !== "builtin") return this.handOff(f0.ctx, src, f0.startAt);
     this.support = assessSource(src, this.probe());
     this.refreshes = 0;
@@ -1512,6 +1539,8 @@ export class PlayerController {
   private load(url: string, at: number, play: boolean, compat = false) {
     const v = this.video;
     if (!v) return;
+    // The original file opened instead: a reason set for a compat start is spent.
+    if (!compat) this.nextWhy = null;
     const lctx = this.ctx();
     if (lctx && !this.started) this.warmEpisodes(lctx);
     // A new stream mid-film (compat seek / track switch, refreshed URL,
@@ -1644,6 +1673,7 @@ export class PlayerController {
       // can leave the engine at the end of the film or at 0.
       this.resumeAt = this.trustedPosition();
       this.pendingSeek = null;
+      this.nextWhy = "network";
       void this.refreshUrl(true);
       return;
     }
@@ -1717,7 +1747,10 @@ export class PlayerController {
       }
       // Compat: restarts read the fresh compat_url from the flow anyway.
       if (this.compat) {
-        if (now) void this.startCompat(at, true, this.compat.audio);
+        if (now) {
+          this.nextWhy ??= "refresh";
+          void this.startCompat(at, true, this.compat.audio);
+        }
         return;
       }
       if (now || (v && v.paused)) this.load(src.stream_url, at, now ? true : false);
@@ -1792,6 +1825,7 @@ export class PlayerController {
         // No sound: the server's AAC conversion fixes it (once, if available).
         if (!this.compat && this.shouldCompat(f.source, true)) {
           this.audioChecked = false;
+          this.nextWhy = "compat";
           void this.startCompat(this.trustedPosition(), true, null);
           return;
         }
@@ -1827,11 +1861,13 @@ export class PlayerController {
     if (!this.compat && decodeErr && !this.compatTried && this.compatPossible(f.source) && (convertible || !videoUndecodable(this.support))) {
       this.compatTried = true;
       this.compatVideoForced = convertible;
+      this.nextWhy = "compat";
       void this.startCompat(this.trustedPosition(), true, null);
       return;
     }
     if (decodeErr && convertible && !this.compatVideoForced && !this.compat?.video && this.compatPossible(f.source)) {
       this.compatTried = this.compatVideoForced = true;
+      this.nextWhy = "compat";
       void this.startCompat(this.trustedPosition(), true, this.compat?.audio ?? null);
       return;
     }
@@ -1841,6 +1877,7 @@ export class PlayerController {
       // can leave the engine at the end of the film or at 0.
       this.resumeAt = this.trustedPosition();
       this.pendingSeek = null;
+      this.nextWhy = code === 2 ? "network" : "error";
       void this.refreshUrl(true);
       return;
     }
@@ -1910,6 +1947,7 @@ export class PlayerController {
     const f = this.flow;
     if (f.phase === "playing" && !this.compat && this.compatPending === null && compatUrlOf(f.source)) {
       this.compatTried = true;
+      this.nextWhy = "compat";
       void this.startCompat(this.trustedPosition(), true, null);
     }
     this.emit("playback");
@@ -1922,6 +1960,7 @@ export class PlayerController {
 
   /** Should this source play in compat mode (start, or after the no-sound detector fired)? */
   private shouldCompat(src: PlaybackSource, noSound: boolean): boolean {
+    if (this.scaleFor(src) > 0) return true;
     return wantCompat({
       compatUrl: compatUrlOf(src),
       pref: this.compatPref(),
@@ -1961,15 +2000,19 @@ export class PlayerController {
     }
     const base = compatUrlOf(f.source)!;
     // The server re-encodes the video when this TV can't decode it (or a
-    // decode error said so); keyframe offsets are the source's either way.
+    // decode error said so), or scales it down to the quality the viewer
+    // picked; keyframe offsets are the source's either way.
+    const height = this.scaleFor(f.source);
     const video = !!f.source.compat_video && (this.compatVideoForced || videoUndecodable(this.support ?? assessSource(f.source, this.probe())));
-    const k = await fetchStreamStart(compatSrc(base, { audio: idx, start: at, video }), at);
+    const why = this.nextWhy ?? "start";
+    this.nextWhy = null;
+    const k = await fetchStreamStart(compatSrc(base, { audio: idx, start: at, video, height }), at);
     if (stale()) return;
     const cur = this.flow as Extract<Flow, { phase: "playing" }>;
-    this.compat = { audio: idx, offset: k, video };
+    this.compat = { audio: idx, offset: k, video, height };
     this.compatPending = null;
     this.audioChecked = false;
-    this.load(compatSrc(compatUrlOf(cur.source) ?? base, { audio: idx, start: k, video }), k, play, true);
+    this.load(compatSrc(compatUrlOf(cur.source) ?? base, { audio: idx, start: k, video, height, why }), k, play, true);
     this.emit("playback");
   }
 
@@ -2000,7 +2043,10 @@ export class PlayerController {
     const at = this.trustedPosition();
     const play = !this.video!.paused || !!this.rebuf;
     const want = this.shouldCompat(f.source, false);
-    if (want && !this.compat && this.compatPending === null) void this.startCompat(at, play, null);
+    if (want && !this.compat && this.compatPending === null) {
+      this.nextWhy = "compat";
+      void this.startCompat(at, play, null);
+    }
     else if (!want && (this.compat || this.compatPending !== null) && p === "off" && f.source.stream_url) {
       this.load(f.source.stream_url, at, play);
       this.audioChecked = false;
@@ -2177,7 +2223,7 @@ export class PlayerController {
   resumeNow(): boolean {
     if (!this.rebuf) return false;
     this.resumedAt = Date.now();
-    if (this.stuckForKey()) this.reopen();
+    if (this.stuckForKey()) this.reopen("key");
     else this.endRebuffer(true);
     return true;
   }
@@ -2211,6 +2257,7 @@ export class PlayerController {
     w.tries++;
     w.since = now;
     this.resumeAt = this.resumeAt ?? this.lastGood;
+    this.nextWhy = "first_load";
     void this.refreshUrl(true);
   }
 
@@ -2305,9 +2352,9 @@ export class PlayerController {
     }
     // Stuck: the picture and the data stand still (a dead connection, a wedged engine, a «Буферизация» that
     // can't finish) — reopen the stream at the spot, like Stop + Play would.
-    if (wants && shouldReopen(this.stallW, { now, resumedAgoMs: now - this.resumedAt, rebufferMs: this.rebuf ? now - this.rebuf.since : null, tries: this.reopens })) {
+    if (wants && shouldReopen(this.stallW, { now, resumedAgoMs: now - this.resumedAt, rebufferMs: this.rebuf ? now - this.rebuf.since : null, tries: this.reopens, netAgoMs: this.netAt > 0 ? now - this.netAt : undefined })) {
       this.reopens++;
-      this.reopen();
+      this.reopen("starve");
       return;
     }
     const r = this.rebuf;
@@ -2396,10 +2443,11 @@ export class PlayerController {
    * Play did by hand). Not counted against MAX_RECOVERIES (the watchdog
    * backs off instead of failing the playback). One at a time.
    */
-  private reopen() {
+  private reopen(why: StreamWhy) {
     const now = Date.now();
     if (this.flow.phase !== "playing" || !this.video) return;
     if (this.reopenAt !== null && now - this.reopenAt < 30_000) return;
+    this.nextWhy = why;
     this.reopenAt = now;
     this.resumeAt = this.trustedPosition();
     this.rebuf = null;
@@ -2541,6 +2589,7 @@ export class PlayerController {
       return this.dispatch({ type: "fail", code: "network" });
     }
     this.emit("playback");
+    this.nextWhy ??= "network";
     void this.refreshUrl(true);
   }
 
@@ -2597,7 +2646,7 @@ export class PlayerController {
     if (!this.isPlaying()) return false;
     const v = this.video!;
     // The picture is stuck (a dead connection): reopen the stream here instead of waiting on it.
-    if (this.stuckForKey()) return this.reopen(), true;
+    if (this.stuckForKey()) return this.reopen("key"), true;
     // Play while rebuffering: the user resumes early (if that doesn't move soon either, the watchdog reopens it).
     this.resumedAt = Date.now();
     if (this.rebuf) return this.endRebuffer(true), true;
@@ -2662,7 +2711,10 @@ export class PlayerController {
       if (plan.kind === "local") v.currentTime = plan.at;
       // While a restart is pending the element may not play yet (the first
       // compat load): keep that restart's intent, else this seek would load paused.
-      else void this.startCompat(plan.at, !v.paused || !!this.rebuf || (this.compatPending !== null && this.compatPlay), this.compat?.audio ?? null);
+      else {
+        this.nextWhy = "seek";
+        void this.startCompat(plan.at, !v.paused || !!this.rebuf || (this.compatPending !== null && this.compatPlay), this.compat?.audio ?? null);
+      }
       this.emit("playback");
       return true;
     }
@@ -2732,6 +2784,7 @@ export class PlayerController {
       const idx = audioIndexOf(f.source.media_info, id);
       if (idx === null) return "bad_payload";
       if (this.compat?.audio === idx) return true;
+      this.nextWhy = "audio";
       void this.startCompat(this.trustedPosition(), !this.video!.paused || !!this.rebuf, idx);
       this.emit("playback");
       return true;
@@ -2761,10 +2814,53 @@ export class PlayerController {
     return true;
   }
 
+  /** The lower qualities a torrent can play at on this TV (compat stream there, MP4/AAC plays here). */
+  private scaleChoicesFor(src: PlaybackSource): number[] {
+    if (src.kind === "online" || src.live || !compatUrlOf(src) || !canPlayCompat(this.probe())) return [];
+    return scaleChoices(src.media_info);
+  }
+
+  /** The picked quality where it applies to `src` (0 = the original). */
+  private scaleFor(src: PlaybackSource): number {
+    return this.scaleHeight > 0 && this.scaleChoicesFor(src).includes(this.scaleHeight) ? this.scaleHeight : 0;
+  }
+
+  /**
+   * The viewer picked a quality for this torrent (the ▼ panel, the phone):
+   * restart at the same spot — the server's scaled-down stream, or back to
+   * what played before (the original file, or the compat stream when this
+   * TV needs it anyway).
+   */
+  private setScale(q: number): boolean {
+    const f = this.flow;
+    if (f.phase !== "playing" || !this.isPlaying() || !this.video) return false;
+    if (q !== 0 && !this.scaleChoicesFor(f.source).includes(q)) return false;
+    if (q === this.scaleFor(f.source)) return true;
+    this.scaleHeight = q;
+    this.scaleMedia = f.ctx.media_id;
+    const at = this.trustedPosition();
+    const play = !this.video.paused || !!this.rebuf;
+    this.nextWhy = "quality";
+    if (this.shouldCompat(f.source, false)) void this.startCompat(at, play, this.compat?.audio ?? null);
+    else if (f.source.stream_url) {
+      this.nextWhy = null;
+      this.compat = null;
+      this.audioChecked = false;
+      this.load(f.source.stream_url, at, play);
+    }
+    this.emit("playback");
+    return true;
+  }
+
   /** Online source: its qualities (best first) and the current one; null otherwise. */
   qualities(): { list: number[]; current: number | null } | null {
     const f = this.flow;
-    if (f.phase !== "playing" || f.source.kind !== "online") return null;
+    if (f.phase !== "playing") return null;
+    if (f.source.kind !== "online") {
+      // A torrent: «Оригинал» (0) and the lower qualities the server scales to.
+      const lower = this.scaleChoicesFor(f.source);
+      return lower.length > 0 ? { list: [0, ...lower], current: this.scaleFor(f.source) } : null;
+    }
     const list = [...(f.source.qualities ?? [])].sort((a, b) => b - a);
     return list.length > 1 ? { list, current: f.source.quality ?? list[0] ?? null } : null;
   }
@@ -2772,6 +2868,7 @@ export class PlayerController {
   /** Switches an online source's quality (PATCH), continuing at the same spot. */
   async setQuality(q: number): Promise<boolean> {
     const f = this.flow;
+    if (f.phase === "playing" && f.source.kind !== "online") return this.setScale(q);
     if (f.phase !== "playing" || f.source.kind !== "online" || !this.isPlaying()) return false;
     const gen = this.gen;
     const at = this.trustedPosition();
@@ -2831,6 +2928,11 @@ export class PlayerController {
       subtitle_tracks: tr?.subtitles ?? [],
       audio_track_id: tr?.audioId ?? null,
       subtitle_track_id: tr?.subtitleId ?? null,
+      // The ▼ panel's qualities for the phone (id "0" = the original file).
+      ...(() => {
+        const q = v ? this.qualities() : null;
+        return q ? { qualities: q.list.map((n) => ({ id: String(n), label: n === 0 ? "original" : `${n}p` })), quality_id: q.current !== null ? String(q.current) : null } : {};
+      })(),
       loading: external ? null : this.loadingState(),
     };
   }

@@ -57,7 +57,7 @@ const (
 var Commands = []string{
 	"media.open", "media.play", "media.pause", "media.resume", "media.stop",
 	"media.seek", "media.next_episode", "media.select_source",
-	"playback.set_audio", "playback.set_subtitles", "playback.set_volume",
+	"playback.set_audio", "playback.set_subtitles", "playback.set_quality", "playback.set_volume",
 	"device.show_message", "device.request_state",
 	"iptv.play",
 	"video.play",

@@ -4846,7 +4846,7 @@ export interface components {
             available: boolean;
         };
         /** @enum {string} */
-        CommandType: "media.open" | "media.play" | "media.pause" | "media.resume" | "media.stop" | "media.seek" | "media.next_episode" | "media.select_source" | "playback.set_audio" | "playback.set_subtitles" | "playback.set_volume" | "device.show_message" | "device.request_state" | "iptv.play" | "video.play";
+        CommandType: "media.open" | "media.play" | "media.pause" | "media.resume" | "media.stop" | "media.seek" | "media.next_episode" | "media.select_source" | "playback.set_audio" | "playback.set_subtitles" | "playback.set_quality" | "playback.set_volume" | "device.show_message" | "device.request_state" | "iptv.play" | "video.play";
         /**
          * @description device_offline, timeout (no ack in time), forbidden (no access to the TV),
          *     bad_message, bad_payload (failed server-side validation), unsupported (the
@@ -4912,7 +4912,7 @@ export interface components {
         SelectSourcePayload: {
             source_id: string;
         };
-        /** @description playback.set_audio / playback.set_subtitles (track_id null = subtitles off). */
+        /** @description playback.set_audio / playback.set_subtitles / playback.set_quality (track_id null = subtitles off; set_quality: a PlaybackState.qualities id). */
         SetTrackPayload: {
             track_id: string | null;
         };
@@ -4962,6 +4962,10 @@ export interface components {
             subtitle_tracks?: components["schemas"]["Track"][];
             audio_track_id?: string | null;
             subtitle_track_id?: string | null;
+            /** @description Qualities the viewer may pick (best first; id "0" = the original file, else the height: "720", "480", "360" — the server re-encodes; an online source: its own qualities). Switch with playback.set_quality. Optional; empty when there is no choice. */
+            qualities?: components["schemas"]["Track"][];
+            /** @description The qualities id playing now. */
+            quality_id?: string | null;
             /** @description Set while the TV's loading screen shows (no picture yet) or the player rebuffers. Optional. */
             loading?: components["schemas"]["PlaybackLoading"] | null;
         };

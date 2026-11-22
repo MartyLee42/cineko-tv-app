@@ -68,6 +68,7 @@ Payloads are validated by the server (`realtime/payloads.go`): a bad one is
 | `media.next_episode` | — | Series; «Видео»: the next related video |
 | `media.select_source` | `{source_id}` | Another release, same position |
 | `playback.set_audio` / `playback.set_subtitles` | `{track_id}` (`null` = subtitles off) | |
+| `playback.set_quality` | `{track_id}` = a `PlaybackState.qualities` id (`"0"` = the original file, `"720"` / `"480"` / `"360"` = re-encoded by the server; online sources: their own qualities) | The viewer's choice only; the TV never lowers it by itself |
 | `playback.set_volume` | `{volume?: 0..1, delta?: −1..1 (≠ 0), muted?: bool}`, at least one | The TV's level. `volume` wins over `delta`; a delta snaps to its grid (55 % + 0.1 → 60 %); changing the level without `muted` unmutes. Samsung Tizen with the `tv.audio` privilege: the TV's **system** volume (`tizen.tvaudiocontrol`), else Cineko's own player volume (0–100 % of the TV's level, saved per TV, applied to every new film / channel / video). Works with nothing playing (kept for the next playback). The state reports `volume`, `muted`, `volume_source` (`system` / `app`) and `system_volume` (`ok` / `absent` / `denied` / `error:<name>`) |
 | `iptv.play` | `{channel_id, profile_id?, force?}` | Live TV channel |
 | `video.play` | `{video_id, profile_id?, position_seconds?, quality?, force?}` | «Видео» (YouTube) |
@@ -288,7 +289,11 @@ Providers of things to play, one registry (design:
   stream](architecture.md#browser-compatibility-stream-servicestranscoder)):
   `GET|HEAD /stream/{token}/compat.mp4?audio=&start=&ch=[&video=h264]`
   (fragmented MP4, no Range, `X-Stream-Start`; `video=h264` re-encodes old
-  video codecs ≤ 1080p — only when the source has `compat_video: true`), `/stream/{token}/subs/{index}.vtt?start=`
+  video codecs ≤ 1080p — only when the source has `compat_video: true`;
+  `h=720|480|360` re-encodes any ≤ 1080p video scaled down to that height at a
+  bitrate that fits — the quality a viewer picked for a slow link; `why=` is
+  only logged: what made the player open the stream — start, seek, audio,
+  quality, compat, error, network, starve, key, first_load, refresh), `/stream/{token}/subs/{index}.vtt?start=`
   (WebVTT), and for Safari / iOS the HLS variant
   `GET|HEAD /stream/{token}/compat.m3u8?audio=&start=&ch=` → multivariant
   playlist (`X-Stream-Start`) → `/stream/{token}/compat/{session}/index.m3u8`

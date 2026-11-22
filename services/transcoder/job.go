@@ -40,6 +40,10 @@ type Job struct {
 	// Video: "" copies the video stream; "h264" re-encodes it with libx264
 	// (codecs the player can't decode; the API checks codec and size).
 	Video string `json:"video,omitempty"`
+	// Height (with Video "h264"): scale down to at most this many lines at a
+	// matching bitrate — a quality the viewer picked for a slow link
+	// (720, 480 or 360; 0 = the source's size).
+	Height int `json:"height,omitempty"`
 	// Start (seconds) of the requested position.
 	Start float64 `json:"start,omitempty"`
 	// Stream is the subtitle job's global stream index.
@@ -141,6 +145,9 @@ func (j *Job) validate() error {
 		return errBadJob
 	}
 	if j.Video != "" && (j.Video != VideoH264 || j.HVC1) {
+		return errBadJob
+	}
+	if !ValidHeight(j.Height) || (j.Height != 0 && j.Video != VideoH264) {
 		return errBadJob
 	}
 	if math.IsNaN(j.Start) || math.IsInf(j.Start, 0) || j.Start < 0 || j.Start > maxStart {

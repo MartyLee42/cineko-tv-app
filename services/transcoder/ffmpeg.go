@@ -99,7 +99,7 @@ func videoArgs(j *Job) []string {
 		}
 		return a
 	}
-	return encodeArgs(j.enc, videoThreads(j))
+	return encodeArgs(j.enc, videoThreads(j), j.Height)
 }
 
 // HLSArgs: the same streams as RemuxArgs, written as an fMP4 HLS EVENT

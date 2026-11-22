@@ -69,6 +69,7 @@ export interface CommandPayloads {
   "media.select_source": Schemas["SelectSourcePayload"];
   "playback.set_audio": Schemas["SetTrackPayload"];
   "playback.set_subtitles": Schemas["SetTrackPayload"];
+  "playback.set_quality": Schemas["SetTrackPayload"];
   "playback.set_volume": Schemas["SetVolumePayload"];
   "device.show_message": Schemas["ShowMessagePayload"];
   "device.request_state": undefined;

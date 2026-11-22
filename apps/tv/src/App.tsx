@@ -571,6 +571,12 @@ export function App() {
           const r = player.setSubtitles(cmd.track_id);
           return r === true ? ok() : r;
         }
+        case "set_quality":
+          if (handedOff) return "unsupported" as const;
+          // Acked when the quality is on offer; the switch itself shows in the next state.
+          if (!player.qualities()?.list.includes(cmd.quality)) return "failed" as const;
+          void player.setQuality(cmd.quality);
+          return ok();
       }
     },
     [currentState],
