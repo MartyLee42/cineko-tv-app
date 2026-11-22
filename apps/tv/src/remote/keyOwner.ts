@@ -2,20 +2,30 @@
 // window themselves (player, settings, message/rating overlays) claim the
 // keys while shown; only the most recent claim acts, so an overlay over the
 // player gets OK/Back instead of the player.
-const stack: object[] = [];
+//
+// A modal claim (an admin message card, drawn over everything on Home) stays
+// on top of claims made after it: a layer that appears later underneath it —
+// the taste-quiz invite 2.5 s after Home, a player whose effect re-claims —
+// must not take OK/Back from the card the viewer is looking at.
+const stack: { modal: boolean }[] = [];
 
 export interface KeyClaim {
-  /** True while this claim is the newest one. */
+  /** True while this claim is the one that acts. */
   readonly top: boolean;
   release(): void;
 }
 
-export function claimKeys(): KeyClaim {
-  const token = {};
+function owner(): object | undefined {
+  for (let i = stack.length - 1; i >= 0; i--) if (stack[i]!.modal) return stack[i];
+  return stack[stack.length - 1];
+}
+
+export function claimKeys(opts: { modal?: boolean } = {}): KeyClaim {
+  const token = { modal: !!opts.modal };
   stack.push(token);
   return {
     get top() {
-      return stack[stack.length - 1] === token;
+      return owner() === token;
     },
     release() {
       const i = stack.indexOf(token);

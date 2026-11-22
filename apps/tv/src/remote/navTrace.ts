@@ -53,6 +53,10 @@ export function installNavTrace(): void {
         // Another key pressed meanwhile (Right, Right… or Right, OK): not a one-press skip —
         // unless it's the same arrow < 120 ms later (too fast for a person: a duplicate event).
         const later = recent.filter((k) => k.t > t);
+        // Quick presses in a row (Right ×5 about 100 ms apart): focus lands as
+        // many tabs on as there were presses — that's no skip either.
+        const sameDir = later.filter((k) => k.code === e.keyCode || k.key === e.key).length;
+        if (later.length === sameDir && to === ids[Math.max(0, Math.min(ids.length - 1, i + dir * (1 + sameDir)))]) return;
         const duplicate = later.some((k) => k.key === e.key && !k.repeat && k.t - t < 120);
         if (later.length > 0 && !duplicate) return;
         reports++;
