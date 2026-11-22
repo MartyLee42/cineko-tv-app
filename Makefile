@@ -57,7 +57,7 @@ e2e:            ## Browser end-to-end tests against the dev stack
 tv-emu:         ## The TV emulator alone: slow CPU (TV_CPU=6), TV engine quirks, offline mid-film (dev stack)
 	-printf 'e2e-password-123\n' | $(DC_DEV) exec -T api go run -buildvcs=false ./cmd/martytv admin create --username e2e-admin --role super_admin
 	$(DC_DEV) exec -T api go run -buildvcs=false ./cmd/martytv admin set-role --username e2e-admin --role super_admin
-	$(DC_DEV) --profile e2e run --rm -e TV_CPU=$(or $(TV_CPU),6) e2e node_modules/.bin/playwright test tv-emulator
+	$(DC_DEV) --profile e2e run --rm -e TV_CPU=$(or $(TV_CPU),6) e2e node_modules/.bin/playwright test tv-emulator tv-rows
 
 install:        ## Guided install of the full stack (writes .env, starts, configures Prowlarr)
 	./install.sh
