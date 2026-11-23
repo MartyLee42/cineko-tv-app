@@ -194,6 +194,26 @@ export function isHlsSource(s: { format?: string | null; mime_type?: string | nu
   return m.includes("mpegurl");
 }
 
+/**
+ * Online MP4 straight from the CDN: `?direct=1` makes the server answer with
+ * a redirect to the provider's URL instead of streaming it (CDNVideoHub's
+ * links play from any IP), sparing the server's uplink. Null when the source
+ * can't (HLS, torrents) or the direct load already failed for this source:
+ * the plain stream_url (proxied) is the fallback.
+ */
+export function directStreamUrl(
+  s: { id: string; kind?: string | null; format?: string | null; stream_url?: string | null },
+  failed: ReadonlySet<string> | null = null,
+): string | null {
+  if (s.kind !== "online" || s.format !== "mp4" || !s.stream_url || failed?.has(s.id)) return null;
+  return `${s.stream_url}${s.stream_url.includes("?") ? "&" : "?"}direct=1`;
+}
+
+/** Was this URL loaded through the direct (CDN) path? */
+export function isDirectStreamUrl(url: string | null | undefined): boolean {
+  return !!url && /[?&]direct=1(&|$)/.test(url);
+}
+
 // ---------------------------------------------------------------- skip markers
 
 export type SkipKind = "opening" | "recap" | "ending";

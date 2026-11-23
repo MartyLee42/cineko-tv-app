@@ -476,6 +476,16 @@ func (h *Handlers) streamOnline(c fiber.Ctx, token, name string, src *source) er
 			return streamUnavailable()
 		}
 		if st.Format != "hls" {
+			// ?direct=1: send the player to the CDN itself (CDNVideoHub's
+			// srcIp isn't enforced), sparing the server's uplink. Only for
+			// URLs that need no headers; the player falls back to the
+			// proxied URL (no ?direct) on any error.
+			if c.Query("direct") == "1" && len(st.Headers) == 0 {
+				if _, err := upstreamURL(st.URL); err == nil {
+					c.Set(fiber.HeaderCacheControl, "no-store")
+					return c.Redirect().Status(fiber.StatusFound).To(st.URL)
+				}
+			}
 			// MP4: Range pass-through; an expired/IP-mismatched URL (403/410)
 			// is re-resolved once.
 			if done, err := h.serveMP4Cached(c, src, st, log); done {

@@ -847,6 +847,15 @@ The plugin itself is only a map: nothing is ported or evaluated from it.
   the provider's length for the TV player's resume/premature-end guards.
   MP4 is preferred in ranking (+0.02) and plays on every engine; Collaps only
   offers HLS.
+- **Direct MP4:** CDNVideoHub's `srcIp` isn't enforced (checked 2026-11-24: a
+  link resolved on the server plays from a home IP), so the TV and web players
+  load online MP4 as `stream_url?direct=1` (`directStreamUrl` in
+  `@martytv/media-types`). The server resolves as usual and answers `302` to
+  the CDN URL (`Cache-Control: no-store`; only when the stream needs no
+  request headers, else it proxies anyway), so the video doesn't cross the
+  server's uplink. Any media error on a direct load switches that source to
+  the plain, proxied `stream_url` at the same position, for the rest of the
+  page's life (no error budget spent). Downloads keep the proxied URL.
 - **Limits/caching:** GET only, no redirects, 10 s timeout, body cap
   (4/8 MB), requests ≥ 150 ms (CDNVideoHub) / 250 ms (Collaps) apart, 429 →
   back off until `Retry-After` (≤ 30 s). In memory, bounded: playlists 30 min

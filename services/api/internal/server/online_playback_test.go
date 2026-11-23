@@ -411,3 +411,40 @@ func TestOnlinePlaybackMP4ChunkCache(t *testing.T) {
 	// HEAD passes through.
 	anon.Do("HEAD", u, nil).Expect(200)
 }
+
+// ?direct=1 on an online MP4 redirects to the CDN (the player falls back to
+// the plain, proxied URL on errors); without it the server proxies as before.
+func TestOnlinePlaybackMP4Direct(t *testing.T) {
+	pe := newPlaybackEnv(t)
+	cdn := newFakeCDN(t)
+	prov := &fakeAnime{cdn: cdn}
+	lookup := fakeLookup{pe.movieID + "|ofilm": {ID: "ofilm", Provider: "anilibria", Voice: "AniLibria", VoiceKind: "mvo", MaxQuality: 720,
+		Qualities: []int{720}, Format: "mp4", Title: "Фильм", Ref: json.RawMessage(`{"r":1}`)}}
+	pe.Server.Playback.SetOnline(fakeProviders{prov}, lookup)
+	pe.Server.Playback.SetUpstreamClient(http.DefaultClient)
+	alice, _ := pe.NewUserClient("alice", "user")
+	anon := pe.Client()
+	src := alice.Do("POST", "/api/v1/playback/sources", map[string]any{"media_id": pe.movieID, "release_id": "ofilm"}).Expect(201).JSON()
+	u := src["stream_url"].(string)
+
+	before := cdn.sent.Load()
+	noFollow := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	req, _ := http.NewRequest("GET", pe.BaseURL+u+"?direct=1", nil)
+	req.Header.Set("Range", "bytes=0-99")
+	resp, err := noFollow.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = resp.Body.Close()
+	loc := resp.Header.Get("Location")
+	if resp.StatusCode != http.StatusFound || !strings.HasPrefix(loc, cdn.srv.URL+"/") || !strings.HasSuffix(strings.SplitN(loc, "?", 2)[0], ".mp4") {
+		t.Fatalf("direct: %d, location %q", resp.StatusCode, loc)
+	}
+	if resp.Header.Get("Cache-Control") != "no-store" || cdn.sent.Load() != before {
+		t.Fatalf("redirect: cache-control %q, CDN sent %d bytes", resp.Header.Get("Cache-Control"), cdn.sent.Load()-before)
+	}
+	// The fallback (no ?direct) still streams through the server.
+	if r := anon.Do("GET", u, nil, "Range", "bytes=0-99").Expect(206); !bytes.Equal(r.Body, cdn.mp4[:100]) {
+		t.Fatalf("proxied range: %d bytes", len(r.Body))
+	}
+}

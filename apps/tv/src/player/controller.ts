@@ -2,7 +2,7 @@
 // <video> element while the player is shown, answers remote commands
 // synchronously and reports PlaybackState. React components subscribe to it.
 import type { Episode, PlaybackLoading, PlaybackSource, PlaybackState, Release, Schemas } from "@martytv/contracts";
-import { hasMediaSource, hlsMode, isAndroid, skipTarget } from "@martytv/media-types";
+import { directStreamUrl, hasMediaSource, hlsMode, isAndroid, isDirectStreamUrl, skipTarget } from "@martytv/media-types";
 import { ApiError } from "@martytv/contracts";
 import { setMediaContext } from "@martytv/ui";
 import { hasAudio } from "./audio";
@@ -260,6 +260,8 @@ export class PlayerController {
   private seeks = 0;
   private freshUrl: string | null = null;
   private refreshes = 0;
+  /** Online sources whose direct (CDN) load failed: they stay on the proxy. */
+  private readonly directFailed = new Set<string>();
   private lastGood = 0;
   /**
    * Where the last load / seek was meant to land. Until the engine gets there
@@ -1233,7 +1235,12 @@ export class PlayerController {
 
   private loadDecided(src: PlaybackSource, at: number) {
     if (this.shouldCompat(src, false)) void this.startCompat(at, true, null);
-    else if (src.stream_url) this.load(src.stream_url, at, true);
+    else if (src.stream_url) this.load(this.playUrl(src), at, true);
+  }
+
+  /** What to load for a source: online MP4 straight from the CDN until that failed once for it, else stream_url (proxied). */
+  private playUrl(src: PlaybackSource): string {
+    return directStreamUrl(src, this.directFailed) ?? src.stream_url ?? "";
   }
 
   /**
@@ -1753,8 +1760,8 @@ export class PlayerController {
         }
         return;
       }
-      if (now || (v && v.paused)) this.load(src.stream_url, at, now ? true : false);
-      else this.freshUrl = src.stream_url;
+      if (now || (v && v.paused)) this.load(this.playUrl(src), at, now ? true : false);
+      else this.freshUrl = this.playUrl(src);
     } catch (e) {
       if (waited) this.endNetWait(gen);
       if (now && gen === this.gen) this.dispatch({ type: "fail", code: apiErrorCode(e) });
@@ -1843,6 +1850,16 @@ export class PlayerController {
     if (!v || !err || err.code === 1 || f.phase !== "playing") return;
     // Waiting for the network: the dead link's errors say nothing about the file.
     if (this.netWaiting()) return;
+    // Straight from the CDN failed (it may bind its links to the server's
+    // IP after all): through the server from here on, same spot. No budget spent.
+    if (isDirectStreamUrl(this.loadedUrl)) {
+      this.directFailed.add(f.source.id);
+      this.resumeAt = this.trustedPosition();
+      this.pendingSeek = null;
+      this.nextWhy = "network";
+      void this.refreshUrl(true);
+      return;
+    }
     // 403 (expired token) and network drops: fresh URL, same position. A 403
     // on the first request surfaces as SRC_NOT_SUPPORTED in Chrome, so that
     // gets one refresh too before it counts as "unplayable".
@@ -1903,6 +1920,7 @@ export class PlayerController {
       compat_tried: this.compatTried,
       source_id: src?.id ?? null,
       kind: src?.kind ?? null,
+      direct: isDirectStreamUrl(this.loadedUrl),
       container: info?.container ?? null,
       video_codec: info?.video_codec ?? null,
       video_profile: info?.video_profile ?? null,
@@ -2879,7 +2897,7 @@ export class PlayerController {
       this.dispatch({ type: "source", source: src });
       this.scheduleRefresh(src);
       this.resumeAt = null;
-      this.load(reloadUrl(src.stream_url, this.loadedUrl, q), at, play);
+      this.load(reloadUrl(this.playUrl(src), this.loadedUrl, q), at, play);
       this.emit("playback");
       return true;
     } catch {

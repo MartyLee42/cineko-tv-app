@@ -12,7 +12,7 @@ import { sessionThroughput } from "../devprefs/logic";
 import { api } from "../api";
 import { formatSpeed } from "../play/releases";
 import { releaseSummary } from "../play/PlayOnTv";
-import { autoSkipDue, chapterIndexAt, chapterTicks, fileChapters, hasMediaSource, hlsMode, isAndroid, isHlsSource, markerKey, skipTarget, type Chapter, type HlsMode, type SkipMode } from "@martytv/media-types";
+import { autoSkipDue, chapterIndexAt, chapterTicks, directStreamUrl, fileChapters, hasMediaSource, hlsMode, isAndroid, isDirectStreamUrl, isHlsSource, markerKey, skipTarget, type Chapter, type HlsMode, type SkipMode } from "@martytv/media-types";
 import { Spinner, useI18n } from "@martytv/ui";
 import {
   AudioTrackIcon,
@@ -215,6 +215,9 @@ interface VState {
   ended: boolean;
 }
 
+/** Online sources whose direct (CDN) load failed in this tab: they stay on the proxied stream_url. */
+const directFailed = new Set<string>();
+
 const V0: VState = { paused: true, time: 0, duration: 0, buffered: [], volume: 1, muted: false, rate: 1, waiting: false, ended: false };
 
 function readState(v: HTMLVideoElement, waiting: boolean): VState {
@@ -317,7 +320,7 @@ export function Player(props: PlayerProps) {
   }, []);
   const [shown, setShown] = useState(false);
   // Compat mode loads its first URL once the start is known (see below).
-  const [src, setSrc] = useState(() => (props.compat && source.compat_url ? "" : (source.stream_url ?? "")));
+  const [src, setSrc] = useState(() => (props.compat && source.compat_url ? "" : (directStreamUrl(source, directFailed) ?? source.stream_url ?? "")));
   const [vs, setVs] = useState<VState>(V0);
   const [controls, dispatch] = useReducer(controlsReducer, CONTROLS_INIT);
   const [scrub, setScrub] = useState<number | null>(null);
@@ -776,6 +779,13 @@ export function Player(props: PlayerProps) {
       if (kind === "aborted") return;
       const pos = P.current.positionRef.current;
       const wasPlaying = started.current && firstFrame.current;
+      // Straight from the CDN failed: through the server (stream_url) from here on, same spot.
+      if (isDirectStreamUrl(src) && P.current.source.stream_url) {
+        directFailed.add(P.current.source.id);
+        reload.current = { at: pos, play: wasPlaying || !v.paused };
+        setSrc(P.current.source.stream_url);
+        return;
+      }
       if (cmpRef.current) {
         // Compat: a busy transcoder can't be fixed by retrying; an expired
         // token or a dropped connection restarts at the current position.
@@ -863,7 +873,7 @@ export function Player(props: PlayerProps) {
         if (fresh.status !== "ready" || !fresh.stream_url) throw new Error("not ready");
         reload.current = plan;
         setQuality(fresh.quality ?? q);
-        setSrc((cur) => reloadUrl(fresh.stream_url!, cur, q));
+        setSrc((cur) => reloadUrl(directStreamUrl(fresh, directFailed) ?? fresh.stream_url!, cur, q));
         P.current.onSourceChange?.(fresh);
       } catch {
         setToast(t("sources.player.quality_failed"));
