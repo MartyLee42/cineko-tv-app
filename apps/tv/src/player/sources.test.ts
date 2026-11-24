@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PlaybackSource, Release } from "@martytv/contracts";
-import { variantRelease } from "@martytv/media-types";
+import { directStreamUrl, isDirectStreamUrl, variantRelease } from "@martytv/media-types";
 import { assessSource, type Probe } from "./codecs";
 import { LIST_H, pickerScroll, PITCH } from "./pickerLayout";
 import { hlsAhead, hlsConfig, reloadUrl, streamMode } from "./stream";
@@ -783,5 +783,31 @@ describe("waiting for media_info", () => {
       vi.useRealTimers();
       c.close();
     }
+  });
+});
+
+describe("directStreamUrl", () => {
+  const online = { id: "s1", kind: "online", format: "mp4", stream_url: "/api/v1/stream/tok/video.mp4" };
+
+  it("asks for the CDN redirect on online MP4 only", () => {
+    expect(directStreamUrl(online)).toBe("/api/v1/stream/tok/video.mp4?direct=1");
+    expect(directStreamUrl({ ...online, stream_url: "/x/video.mp4?q=720" })).toBe("/x/video.mp4?q=720&direct=1");
+    expect(directStreamUrl({ ...online, format: "hls", stream_url: "/x/index.m3u8" })).toBeNull();
+    expect(directStreamUrl({ ...online, kind: "torrent" })).toBeNull();
+    expect(directStreamUrl({ ...online, stream_url: null })).toBeNull();
+  });
+
+  it("falls back to the proxy once the direct load failed for that source", () => {
+    const failed = new Set(["s1"]);
+    expect(directStreamUrl(online, failed)).toBeNull();
+    expect(directStreamUrl({ ...online, id: "s2" }, failed)).not.toBeNull();
+  });
+
+  it("recognizes a direct URL, also after a reload suffix", () => {
+    expect(isDirectStreamUrl("/x/video.mp4?direct=1")).toBe(true);
+    expect(isDirectStreamUrl("/x/video.mp4?direct=1&q=720")).toBe(true);
+    expect(isDirectStreamUrl("/x/video.mp4?q=720")).toBe(false);
+    expect(isDirectStreamUrl("/x/video.mp4?direct=10")).toBe(false);
+    expect(isDirectStreamUrl(null)).toBe(false);
   });
 });
