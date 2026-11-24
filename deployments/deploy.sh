@@ -88,21 +88,39 @@ dk build -q --target hostmon --output "type=local,dest=$TMP/hostmon" "$SRC/servi
 
 echo "==> uploading images"
 remote 'mkdir -p /opt/martytv && chmod 700 /opt/martytv'
-# The image stream is large (~350 MB) and the link to the server sometimes
-# drops mid-transfer (ssh exit 255): save once locally, retry the upload.
-docker_save_gz() {
-  if [ "$DOCKER" = docker ]; then docker save "${IMAGES[@]}" | gzip -1
-  else sg docker -c "docker save ${IMAGES[*]}" | gzip -1; fi
+# Only what the server lacks: layers it already has (same chain) are left
+# out of the archive, which its `docker load` accepts (thin_images.py). The
+# link to the server can be slow and lossy: the upload goes in resumable,
+# individually retried parts (put_chunked). A rejected thin archive (other
+# image store, images pruned meanwhile) falls back to the full one.
+docker_save() {
+  if [ "$DOCKER" = docker ]; then docker save "${IMAGES[@]}"
+  else sg docker -c "docker save ${IMAGES[*]}"; fi
 }
-docker_save_gz > "$TMP/images.tar.gz"
-for attempt in 1 2 3; do
-  if remote_in 'gunzip | docker load -q' < "$TMP/images.tar.gz"; then break; fi
-  [ "$attempt" -lt 3 ] || { echo "image upload failed 3 times" >&2; exit 1; }
-  echo "image upload failed (attempt $attempt), retrying in 10 s…" >&2
-  ssh -O exit -o ControlPath="$TMP/cm" "$USER_@$HOST" 2>/dev/null || true # fresh connection
-  sleep 10
-done
-rm -f "$TMP/images.tar.gz"
+mkdir -p "$TMP/save"
+docker_save | tar -x -C "$TMP/save"
+(cd "$TMP/save" && tar -c .) | gzip -1 > "$TMP/images-full.tar.gz"
+THIN=""
+if command -v python3 >/dev/null &&
+  remote_quiet 'ids=$(docker image ls -q); [ -z "$ids" ] || docker image inspect -f "{{join .RootFS.Layers \" \"}}" $ids' > "$TMP/server-layers" &&
+  kept=$(python3 -I "$SRC/deployments/thin_images.py" "$TMP/save" "$TMP/server-layers"); then
+  (cd "$TMP/save" && tar -c .) | gzip -1 > "$TMP/images.tar.gz"
+  THIN=1
+  echo "    new layers: $(( ${kept%/*} / 1048576 )) of $(( ${kept#*/} / 1048576 )) MB"
+else
+  cp "$TMP/images-full.tar.gz" "$TMP/images.tar.gz"
+fi
+rm -rf "$TMP/save"
+load_images() {
+  put_chunked "$1" /opt/martytv/images.tar.gz &&
+    STEP_LABEL="docker load" remote 'gunzip < /opt/martytv/images.tar.gz | docker load -q; rc=$?; rm -f /opt/martytv/images.tar.gz; exit $rc'
+}
+if ! load_images "$TMP/images.tar.gz"; then
+  [ -n "$THIN" ] || { echo "image upload failed" >&2; exit 1; }
+  echo "thin image upload failed, sending the full images…" >&2
+  load_images "$TMP/images-full.tar.gz" || { echo "image upload failed" >&2; exit 1; }
+fi
+rm -f "$TMP/images.tar.gz" "$TMP/images-full.tar.gz"
 
 echo "==> system logs capped at 500 MB (journald)"
 put_small "$SRC/deployments/journald/martytv.conf" /tmp/martytv-journald.conf 644
@@ -116,7 +134,13 @@ remote "mkdir -p /etc/systemd/journald.conf.d
 
 echo "==> host monitor (martytv-hostmon systemd service)"
 # Idempotent; only touches its own binary, unit and /run/martytv.
-put_big "$TMP/hostmon/martytv-hostmon" /usr/local/bin/martytv-hostmon.new 755
+# Unchanged binary: not sent again (the link can be slow).
+HOSTMON_SUM=$(sha256sum < "$TMP/hostmon/martytv-hostmon" | cut -d' ' -f1)
+if [ "$(remote_quiet "sha256sum < /usr/local/bin/martytv-hostmon 2>/dev/null | cut -d' ' -f1" || true)" = "$HOSTMON_SUM" ]; then
+  remote 'cp -p /usr/local/bin/martytv-hostmon /usr/local/bin/martytv-hostmon.new'
+else
+  put_big "$TMP/hostmon/martytv-hostmon" /usr/local/bin/martytv-hostmon.new 755
+fi
 put_small "$SRC/deployments/hostmon/martytv-hostmon.service" /etc/systemd/system/martytv-hostmon.service.new 644
 remote "set -e
   mv /usr/local/bin/martytv-hostmon.new /usr/local/bin/martytv-hostmon
