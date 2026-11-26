@@ -547,6 +547,12 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
     hushRef.current = hush;
   });
   const controlsShown = !hush && ((controls && !chanOn) || paused);
+  // The skip pill: its first seconds in the range, then only with the controls.
+  const skipShown = !!skip.marker && (skip.fresh || controlsShown);
+  const skipShownRef = useRef(skipShown);
+  useEffect(() => {
+    skipShownRef.current = skipShown;
+  });
   // Paused: the overlay also hides after PAUSED_CONTROLS_MS without a key
   // (any key brings it back), so a paused frame isn't covered for good.
   const [keyTick, setKeyTick] = useState(0);
@@ -704,7 +710,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
       // «Cineko TV»: CH±/▲▼ switch picks, OK the programme, Back leaves (the panel, a seek and hints keep their keys).
       const ch = channelState.hooks();
       if (ch && !seekRef.current && st.countdown === null) {
-        const hint = !!(skipRef.current.marker || skipRef.current.undo || player.slowHint() || player.stutterHint() || player.compatOffBlocks() || sl.slow);
+        const hint = !!(skipShownRef.current || skipRef.current.undo || player.slowHint() || player.stutterHint() || player.compatOffBlocks() || sl.slow);
         if (ch.onKey(k, { panel: st.panel !== null, skip: hint, openPanel })) return;
       }
       if (flow.phase !== "playing") {
@@ -792,7 +798,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
           // «Буферизация…»: OK plays now.
           if (player.resumeNow()) return showControls();
           // An intro / recap / credits range (or «Вернуть» after an auto-skip): OK acts on it.
-          if (k === "ok" && skipRef.current.onOk()) return showControls();
+          if (k === "ok" && skipRef.current.onOk(skipShownRef.current)) return showControls();
           player.toggle();
           return showControls();
         case "play":
@@ -913,7 +919,7 @@ function PlayerView({ flow }: { flow: Extract<Flow, { phase: "preparing" | "play
   const pct = dur ? Math.max(0, Math.min(100, (pos / dur) * 100)) : 0;
   const playedPct = dur ? Math.max(0, Math.min(100, (player.position() / dur) * 100)) : 0;
   const ep = episodeLabel(ctx.season, ctx.episode, ctx.episode_name);
-  const skipKind = skip.marker?.kind ?? null;
+  const skipKind = skipShown ? (skip.marker?.kind ?? null) : null;
   // Anime keeps «опенинг».
   const anime = flow.phase === "playing" && flow.source.provider?.kind === "anime";
   // «Показывать буфер»: read on each render (Settings may change it between plays).
