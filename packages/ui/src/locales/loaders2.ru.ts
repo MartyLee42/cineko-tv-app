@@ -67,4 +67,8 @@ export const loaders2Ru = {
   "loaders2.paper_crane_hint": "Квадрат бумаги складывается в журавлика — сгиб за сгибом, а когда фильм готов, журавлик улетает.",
   "loaders2.paper_crane.caption": "Складываем…",
   "loaders2.paper_crane.done": "Летит!",
+  "loaders2.spectral_scan": "Спектральный скан",
+  "loaders2.spectral_scan_hint": "Янтарные полосы спектра загораются одна за другой, пока заполняется буфер, а в конце осциллограф расцветает розовым и бирюзовым.",
+  "loaders2.spectral_scan.caption": "Анализ образца…",
+  "loaders2.spectral_scan.done": "Образец подтверждён",
 };

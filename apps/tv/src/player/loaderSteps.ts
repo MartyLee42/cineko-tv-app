@@ -36,3 +36,15 @@ export function foldOf(p: number, done: boolean): number {
   for (let i = 0; i < FOLDS.length; i++) if (p >= FOLDS[i]!) f = i;
   return f;
 }
+
+/** «Спектральный скан»: how many of `steps` equal slices of the spectral band are lit at progress `p` (all once done). */
+export function scanReveal(p: number, done: boolean, steps = 24): number {
+  if (done) return 1;
+  return Math.floor(Math.min(1, Math.max(0, p)) * steps) / steps;
+}
+
+/** «Спектральный скан»: the oscilloscope's bloom grows a little with progress and opens fully at 100 %. */
+export function scanBloom(p: number, done: boolean): number {
+  if (done) return 1;
+  return +(0.12 + scanReveal(p, false, 8) * 0.38).toFixed(3);
+}

@@ -34,6 +34,7 @@ export const LOOK_LOADERS: Partial<Record<DesignSetting, Loader>> = {
   western: () => import("./scenes/western"),
   redroom: () => import("./scenes/redroom"),
   fivestars: () => import("./scenes/fivestars"),
+  replicant: () => import("./scenes/replicant"),
 };
 
 const loaded = new Map<DesignSetting, WebLook>();

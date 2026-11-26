@@ -1,0 +1,33 @@
+/* «replicant» design tokens: theme.css (PWA) imports every design, the TV app this one with its chunk. */
+/* «Репликант»: a neo-noir homage (original drawings only): a megacity drowned in violet fog under a
+   giant pink hologram, amber spectral readouts, an oscilloscope blooming pink and cyan. Violet-black,
+   hologram pink, amber, a cold cyan for focus; wide thin capitals (Unbounded Light) for titles and a
+   film-credits serif (Cormorant Garamond) for captions. The projector skeleton. */
+html.design-replicant {
+  --mt-bg: 9, 6, 18;
+  --mt-surface: 26, 16, 44;
+  --mt-surface-2: 40, 24, 64;
+  --mt-border: 96, 62, 136;
+  --mt-text: 246, 238, 252;
+  --mt-muted: 206, 190, 226;
+  --mt-accent: 255, 62, 180;
+  --mt-accent-strong: 255, 178, 74;
+  --mt-on-accent: 22, 6, 24;
+  --mt-focus: 128, 226, 255;
+  --mt-danger: 255, 104, 120;
+  --mt-ok: 110, 232, 190;
+  --mt-warn: 255, 178, 74;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 3px;
+  --mt-radius-control: 3px;
+  color-scheme: dark;
+  --mt-accent-text: 255, 128, 206;
+  /* The credits serif (captions, labels). */
+  --rp-serif: "Cormorant Garamond", "Times New Roman", Georgia, serif;
+}
+
+/* Headings (web and TV): wide, thin, letter-spaced capitals with a faint chromatic split. */
+html.design-replicant h1, html.design-replicant h2 {
+  font-family: var(--mt-font-display); font-weight: 300; text-transform: uppercase; letter-spacing: .14em;
+  text-shadow: -2px 0 0 rgba(90,220,255,.38), 2px 0 0 rgba(255,62,180,.42), 0 0 28px rgba(255,62,180,.35);
+}

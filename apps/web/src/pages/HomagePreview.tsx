@@ -4,7 +4,7 @@ import type { MessageKey } from "@martytv/ui";
 import type { LoadingStyle } from "../watch/settings";
 import "./homagePreview.css";
 
-const HOMAGE: readonly LoadingStyle[] = ["water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine", "metro_train", "paper_crane"];
+const HOMAGE: readonly LoadingStyle[] = ["water_glass", "poster_dig", "chocolate_box", "coffee_cup", "honey_pot", "hyperjump", "ghost_meter", "target_scan", "docking", "claw_machine", "metro_train", "paper_crane", "spectral_scan"];
 
 /** A film-homage style's name and hint (which film it nods to); null for the others. */
 export function homageKeys(s: LoadingStyle): { name: MessageKey; hint: MessageKey } | null {
@@ -138,6 +138,14 @@ export function HomagePreview({ style }: { style: LoadingStyle }) {
             <path d="M300 250 L530 110 L350 286 Z" fill="#e8503a" />
             <path d="M250 284 L300 340 L350 284 L300 252 Z" fill="#b8341f" />
           </svg>
+        </span>
+      );
+    case "spectral_scan":
+      return (
+        <span className="absolute inset-0 overflow-hidden bg-[#050308]">
+          <span className="hp-scan-bars absolute left-[6%] right-[6%] top-[18%] block h-[42%]" />
+          <span className="absolute bottom-[22%] left-0 block h-[3px] w-full bg-[#ff7a2a]" />
+          <span className="hp-bloom absolute bottom-[8%] right-[-10%] block h-[34%] w-[60%] rounded-full" />
         </span>
       );
     default:

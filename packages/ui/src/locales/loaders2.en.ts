@@ -67,4 +67,8 @@ export const loaders2En = {
   "loaders2.paper_crane_hint": "A square of paper folds into a crane, one fold at a time — and flies off when the film is ready.",
   "loaders2.paper_crane.caption": "Folding…",
   "loaders2.paper_crane.done": "Off it flies!",
+  "loaders2.spectral_scan": "Spectral scan",
+  "loaders2.spectral_scan_hint": "Amber spectral bars light up one by one as the buffer fills, and at the end the oscilloscope blooms pink and cyan.",
+  "loaders2.spectral_scan.caption": "Analysing the sample…",
+  "loaders2.spectral_scan.done": "Sample confirmed",
 };

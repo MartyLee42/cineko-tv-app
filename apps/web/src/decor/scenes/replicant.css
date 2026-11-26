@@ -1,0 +1,52 @@
+/* «Репликант» scenery (replicant.tsx): the fog city and the hologram behind the page. */
+.rp-scene { background-color: #090612; }
+.rp-city {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+/* Page text runs over the whole scene: a violet veil keeps it a backdrop (lighter on the hologram's side). */
+.rp-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(9, 6, 18, 0.78) 0%, rgba(9, 6, 18, 0.6) 50%, rgba(9, 6, 18, 0.34) 100%);
+}
+@media (max-width: 767px) {
+  .rp-scene::after { background: rgba(9, 6, 18, 0.7); }
+}
+/* The rain falls one screen height per cycle; the hologram flickers (both off for reduced motion). */
+@keyframes rp-rain {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, 1080px, 0); }
+}
+.rp-rain { animation: rp-rain 1.4s linear infinite; }
+@keyframes rp-flicker {
+  0%, 18%, 22%, 61%, 63%, 100% { opacity: 1; }
+  20% { opacity: 0.62; }
+  62% { opacity: 0.78; }
+  86% { opacity: 0.9; }
+}
+.rp-flicker { animation: rp-flicker 4.2s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .rp-rain, .rp-flicker { animation: none; }
+}
+/* Over Home's hero. */
+.rp-grade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(90, 220, 255, 0.1) 0%, rgba(120, 40, 200, 0.06) 45%, rgba(255, 62, 180, 0.2) 100%);
+}
+.rp-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, rgba(8, 4, 16, 0) 0px, rgba(8, 4, 16, 0) 3px, rgba(8, 4, 16, 0.2) 3px, rgba(8, 4, 16, 0.2) 4px);
+}
+.rp-band {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  opacity: 0.55;
+}

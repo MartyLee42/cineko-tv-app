@@ -19,6 +19,8 @@ describe("«Под фильм» loading style", () => {
     expect(matchLoader(info("Последний поезд метро уходит в полночь"))).toBe("metro_train");
     expect(matchLoader(info("A girl folds a thousand origami cranes", [18]))).toBe("paper_crane");
     expect(matchLoader(info("Девочка складывает тысячу бумажных журавликов"))).toBe("paper_crane");
+    expect(matchLoader(info("A detective hunts rogue androids in a rain-soaked city", [878]))).toBe("spectral_scan");
+    expect(matchLoader(info("Охотник на репликантов в антиутопическом мегаполисе"))).toBe("spectral_scan");
   });
 
   it("no false themes inside other words", () => {

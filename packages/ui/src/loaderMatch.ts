@@ -64,6 +64,7 @@ const THEMES: [LoaderAnimation, RegExp][] = [
   ["odyssey", /(\b(outer )?space\b|astronaut|\baliens?\b|spacecraft|spaceship|\bplanets?\b|galaxy|космос|космическ|космонавт|астронавт|инопланет|планет|галактик|звездолёт|звездолет)/],
   ["metro_train", /(\b(subway|metro|underground railway|trains?|railway|locomotive)\b|метро|подземк|(^|[^а-яё])поезд(?!к)|электричк|паровоз|железн[а-яё]* дорог)/],
   ["paper_crane", /(origami|paper cranes?|оригами|бумажн[а-яё]* журавл)/],
+  ["spectral_scan", /(\bandroids?\b|replicants?|\bcyborgs?\b|dystopi|neo-noir|андроид|репликант|киборг|антиутоп)/],
   ["paws", /(\bcats?\b|kitten|\bdogs?\b|pupp|animal|(^|[^а-яё])(кот|кота|коты|котик|котов|коту|котом)(?![а-яё])|кошк|котён|котен|собак|щен|животн)/],
 ];
 
@@ -84,7 +85,8 @@ function stable(id: string, list: readonly LoaderAnimation[]): LoaderAnimation {
 /**
  * The loader for a title: themes found in its keywords / text first
  * (hacker → matrix, time travel → 88 mph, space → odyssey, trains / the
- * metro → the arriving train, origami → the paper crane, cats → paws),
+ * metro → the arriving train, origami → the paper crane, androids /
+ * dystopias → the spectral scan, cats → paws),
  * then genres (animation / family → balloons or aquarium, horror / thriller
  * → minimal, sci-fi → odyssey, comedy → popcorn, documentary / drama /
  * history → film reel or poster reveal), else a stable pick per title.

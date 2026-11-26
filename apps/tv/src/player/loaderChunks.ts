@@ -34,7 +34,8 @@ export type LoaderKind =
   | "docking"
   | "claw_machine"
   | "metro_train"
-  | "paper_crane";
+  | "paper_crane"
+  | "spectral_scan";
 
 export type StyleProps = { m: LoaderModel; mood?: "loading" | "popcorn"; preview?: boolean };
 export type StyleModule = { default: ComponentType<StyleProps> };
@@ -65,13 +66,15 @@ const imports: Record<Exclude<LoaderKind, "minimal">, () => Promise<StyleModule>
   claw_machine: () => import("./loaders/Claw") as Promise<StyleModule>,
   metro_train: () => import("./loaders/MetroTrain") as Promise<StyleModule>,
   paper_crane: () => import("./loaders/PaperCrane") as Promise<StyleModule>,
+  spectral_scan: () => import("./loaders/SpectralScan") as Promise<StyleModule>,
 };
 
-/** Which loader draws: «Конструктивизм» / «Матрица» / «Метро» have their own whatever the style (not in Settings' previews). */
+/** Which loader draws: «Конструктивизм» / «Матрица» / «Метро» / «Репликант» have their own whatever the style (not in Settings' previews). */
 export function loaderKind(style: LoaderAnimation, design: DesignSetting, preview = false): LoaderKind {
   if (!preview && design === "constructivism") return "poster";
   if (!preview && design === "matrix") return "matrix";
   if (!preview && design === "metro") return "metro_train";
+  if (!preview && design === "replicant") return "spectral_scan";
   if (style === "marty_popcorn") return "marty";
   return style;
 }

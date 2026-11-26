@@ -1,0 +1,122 @@
+@import "@martytv/ui/themes/replicant.css"; /* the design's tokens (not in the startup CSS) */
+@import "@martytv/ui/fonts/unbounded-light.css";
+@import "@martytv/ui/fonts/cormorant-garamond.css";
+/* «replicant»: this design's own rules (loaded with the design's chunk, design/looks).
+   ---------------------------------------------------------------- Репликант (projector skeleton)
+   A neo-noir homage. Violet-black fog, hologram pink, amber readouts, a cold cyan. Titles are wide
+   thin capitals (Unbounded Light) with a faint chromatic split; row titles and captions are a
+   film-credits serif (Cormorant Garamond). Cards are dark glass with faint scanlines; focus is a
+   white hairline with the colour channels pulled apart (cyan left, pink right) and a pink glow. OK on
+   a card is a hologram glitch. Motion: the rain and the hologram's flicker (stopped when calm).
+   Transform/opacity/box-shadow only, no blur (old TV GPUs). */
+.rp-ground { background-color: rgb(9,6,18); }
+.rp-veil { background: linear-gradient(90deg, rgba(9,6,18,.62) 0%, rgba(9,6,18,.4) 45%, rgba(9,6,18,.12) 75%, rgba(9,6,18,0) 100%); }
+.rp-veil-dim { background: rgba(9,6,18,.58); }
+
+/* ---- the scene's motion (decor/replicant.tsx): rain falls one screen height per cycle; the hologram flickers. */
+@keyframes rp-rain { from { transform: translate3d(0,0,0); } to { transform: translate3d(0,1080px,0); } }
+.rp-rain { animation: rp-rain 1.4s linear infinite; }
+@keyframes rp-flicker {
+  0%, 18%, 22%, 61%, 63%, 100% { opacity: 1; }
+  20% { opacity: .62; }
+  62% { opacity: .78; }
+  86% { opacity: .9; }
+}
+.rp-flicker { animation: rp-flicker 4.2s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .rp-rain, .rp-flicker { animation: none; }
+}
+
+/* ---- Home's hero (looks/replicant.tsx HeroEdges): a hologram grade and scanlines. */
+.rp-grade { background: linear-gradient(180deg, rgba(90,220,255,.10) 0%, rgba(120,40,200,.06) 45%, rgba(255,62,180,.20) 100%); }
+.rp-scanlines { background: repeating-linear-gradient(180deg, rgba(8,4,16,0) 0px, rgba(8,4,16,0) 3px, rgba(8,4,16,.22) 3px, rgba(8,4,16,.22) 4px); }
+
+/* ---- cards: dark glass with faint scanlines and a pink hairline. */
+html.design-replicant .mt-card::after {
+  content: ""; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255,128,206,.3);
+  background: repeating-linear-gradient(180deg, rgba(8,4,16,0) 0px, rgba(8,4,16,0) 3px, rgba(8,4,16,.14) 3px, rgba(8,4,16,.14) 4px);
+}
+/* Focus: a white hairline, the colour channels pulled apart (cyan left, pink right), a pink glow. */
+html.design-replicant .tv-focus.is-focused {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 3px #f6eefc, -9px 0 0 3px rgba(90,220,255,.78), 9px 0 0 3px rgba(255,62,180,.85), 0 0 46px 12px rgba(255,62,180,.42);
+}
+html.design-replicant .mt-card.is-focused::after { box-shadow: none; background: none; }
+html.design-replicant .mt-card p.truncate { font-family: var(--mt-font-display); font-weight: 300; text-transform: uppercase; letter-spacing: .1em; }
+html.design-replicant .p-card-shade { background: linear-gradient(0deg, rgba(9,4,18,.92) 0%, rgba(9,4,18,.7) 32%, rgba(9,4,18,0) 64%); }
+
+/* ---- OK on a card: the hologram glitch (jitter + chromatic split + signal bands), then Details (skipped in calm motion). */
+@keyframes rp-jitter {
+  0% { transform: translate3d(0,0,0); }
+  15% { transform: translate3d(-7px,0,0) skewX(-5deg); }
+  32% { transform: translate3d(6px,0,0) skewX(4deg); }
+  50% { transform: translate3d(-3px,0,0) scale(1.02); }
+  70% { transform: translate3d(4px,0,0) skewX(-2deg) scale(1.04); }
+  100% { transform: translate3d(0,0,0) scale(1.06); }
+}
+@keyframes rp-bands { 0% { opacity: 0; transform: translate3d(0,-40%,0); } 30% { opacity: 1; } 100% { opacity: .25; transform: translate3d(0,40%,0); } }
+html.design-replicant .rp-glitch { position: relative; z-index: 6; }
+html.design-replicant .rp-glitch > .relative { animation: rp-jitter 260ms steps(1) both; }
+html.design-replicant .rp-glitch .tv-focus.is-focused {
+  box-shadow: 0 0 0 3px #f6eefc, -18px 0 0 3px rgba(90,220,255,.85), 18px 0 0 3px rgba(255,62,180,.9), 0 0 60px 18px rgba(255,62,180,.55);
+}
+html.design-replicant .rp-glitch > .relative::before {
+  content: ""; position: absolute; left: -14px; right: -14px; top: 0; bottom: 0; z-index: 5; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 16%, rgba(90,220,255,.6) 16%, rgba(90,220,255,.6) 19%, rgba(0,0,0,0) 19%, rgba(0,0,0,0) 46%, rgba(255,62,180,.65) 46%, rgba(255,62,180,.65) 52%, rgba(0,0,0,0) 52%, rgba(0,0,0,0) 72%, rgba(246,238,252,.55) 72%, rgba(246,238,252,.55) 73.5%, rgba(0,0,0,0) 73.5%);
+  animation: rp-bands 260ms steps(4) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.design-replicant .rp-glitch > .relative, html.design-replicant .rp-glitch > .relative::before { animation: none; }
+}
+
+/* ---- headings: wide thin capitals; row titles in the credits serif with an amber tick. */
+html.design-replicant [data-testid="hero"] h2, html.design-replicant [data-media-id] h1 {
+  font-family: var(--mt-font-display); font-weight: 300; text-transform: uppercase; letter-spacing: .16em; line-height: 1.16;
+  color: #f6eefc; text-shadow: -3px 0 0 rgba(90,220,255,.42), 3px 0 0 rgba(255,62,180,.48), 0 0 34px rgba(255,62,180,.4);
+}
+html.design-replicant h3 { font-family: var(--rp-serif); font-weight: 600; letter-spacing: .05em; line-height: 1.2; position: relative; top: -6px; }
+html.design-replicant h3 > * { font-family: var(--mt-font-body); }
+/* The hero's eyebrow and Details' meta line: spaced amber capitals, like a credit. */
+html.design-replicant [data-testid="hero"] p:first-child { font-family: var(--rp-serif); font-weight: 600; text-transform: uppercase; letter-spacing: .22em; color: #ffc47a; }
+
+/* ---- the projector skeleton: a violet glass bar with a pink rim, cyan focus glow, amber accents. */
+html.design-replicant .p-bar { background: rgba(14,8,26,.84); box-shadow: inset 0 0 0 1px rgba(255,128,206,.55), 0 0 30px rgba(255,62,180,.22); }
+html.design-replicant .p-tab { color: rgba(246,238,252,.88); text-transform: uppercase; letter-spacing: .08em; }
+html.design-replicant .p-tab-on { background: rgba(255,62,180,.16); color: #fff; box-shadow: inset 0 -3px 0 #ff3eb4; }
+html.design-replicant nav .p-tab.is-focused { background: #f6eefc; color: rgb(22,6,24); box-shadow: -4px 0 0 rgba(90,220,255,.8), 4px 0 0 rgba(255,62,180,.85), 0 0 24px 4px rgba(255,62,180,.5); }
+/* The clock: a cyan readout. */
+html.design-replicant nav[data-design-nav="projector"] > div:last-child > span:first-child {
+  font-family: var(--mt-font-display); font-weight: 300; letter-spacing: .14em; color: #a6ecff; text-shadow: 0 0 12px rgba(90,220,255,.65);
+}
+html.design-replicant .p-primary { background: #ff3eb4; color: rgb(22,6,24); text-transform: uppercase; letter-spacing: .08em; }
+html.design-replicant .p-glass { background: rgba(26,16,44,.84); color: #f6eefc; box-shadow: inset 0 0 0 1px rgba(255,128,206,.45); }
+html.design-replicant .p-primary.is-focused, html.design-replicant .p-glass.is-focused {
+  background: #f6eefc; color: rgb(22,6,24); box-shadow: 0 0 0 3px rgb(9,6,18), -7px 0 0 3px rgba(90,220,255,.8), 7px 0 0 3px rgba(255,62,180,.85), 0 0 30px 8px rgba(255,62,180,.45);
+}
+html.design-replicant .p-outline { border-color: rgba(246,238,252,.7); }
+html.design-replicant .p-scrim-left { background: linear-gradient(90deg, rgba(10,5,20,.95) 0%, rgba(10,5,20,.86) 34%, rgba(10,5,20,.7) 55%, rgba(10,5,20,.26) 74%, rgba(10,5,20,0) 90%); }
+html.design-replicant .p-scrim-bottom { background: linear-gradient(0deg, rgba(10,5,20,.97) 0%, rgba(10,5,20,.8) 24%, rgba(10,5,20,0) 52%); }
+html.design-replicant .p-scrim-top { background: linear-gradient(180deg, rgba(10,5,20,.86) 0%, rgba(10,5,20,.7) 50%, rgba(10,5,20,0) 100%); }
+html.design-replicant .tv-rate-chip { border-color: #ffb24a; background: rgba(10,5,20,.82); color: #ffc47a; }
+html.design-replicant .tv-chip.is-focused { background: #f6eefc; color: rgb(22,6,24); box-shadow: 0 0 18px 3px rgba(255,62,180,.5); }
+html.design-replicant .tv-progress-fill { background: linear-gradient(90deg, #ffb24a 0%, #ff3eb4 100%); }
+html.design-replicant .tv-check { background: #ff3eb4; color: rgb(22,6,24); }
+html.design-replicant .tv-key-hint { background: rgba(14,8,26,.92); box-shadow: inset 0 0 0 1px rgba(255,128,206,.55); }
+html.design-replicant .tv-release.is-focused { box-shadow: 0 0 0 3px #f6eefc, -6px 0 0 3px rgba(90,220,255,.7), 6px 0 0 3px rgba(255,62,180,.8), 0 0 26px 6px rgba(255,62,180,.4); }
+html.design-replicant .tv-panel, html.design-replicant .tv-release:not(.is-focused) { box-shadow: inset 0 0 0 1px rgba(255,128,206,.35); }
+
+/* ---- Details: the specimen readout (looks/replicant.tsx SpecimenPlate). */
+.rp-plate { display: inline-block; max-width: 1180px; }
+.rp-plate-label { font-family: var(--rp-serif); font-weight: 600; font-size: 30px; line-height: 1.2; letter-spacing: .24em; text-transform: uppercase; color: #ff9ad8; }
+.rp-plate h1 { margin-top: 6px; }
+.rp-plate-scan { display: flex; align-items: center; margin-top: 16px; }
+.rp-plate-scan svg { opacity: .9; }
+.rp-plate-caption { margin-left: 22px; font-family: var(--rp-serif); font-weight: 600; font-size: 24px; letter-spacing: .12em; text-transform: uppercase; color: #ffc47a; white-space: nowrap; }
+
+/* ---- «Конец записи» after a row's last card. */
+.rp-end-wrap { display: flex; align-items: center; justify-content: center; }
+.rp-end { text-align: center; }
+.rp-end-trace { display: block; margin: 0 auto 10px; }
+.rp-end-text { font-family: var(--mt-font-display); font-weight: 300; font-size: 26px; line-height: 1.2; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; color: #f6eefc; text-shadow: -2px 0 0 rgba(90,220,255,.4), 2px 0 0 rgba(255,62,180,.45); }
+.rp-end-note { margin-top: 10px; font-family: var(--rp-serif); font-weight: 600; font-size: 22px; letter-spacing: .06em; color: rgb(206,190,226); }

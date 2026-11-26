@@ -40,6 +40,7 @@ import { pocketpetRu } from "./pocketpet.ru";
 import { westernRu } from "./western.ru";
 import { fivestarsRu } from "./fivestars.ru";
 import { metroRu } from "./metro.ru";
+import { replicantRu } from "./replicant.ru";
 import { quickRu } from "./quick.ru";
 import { triviaRu } from "./trivia.ru";
 import { surpriseRu } from "./surprise.ru";
@@ -71,4 +72,4 @@ import { pcPlayRu } from "./pcplay.ru";
 import { cancelPreloadRu } from "./cancelpreload.ru";
 import { familyVisRu } from "./familyvis.ru";
 
-export const messagesRu: Record<MessageKey, string> = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...newEpMuteRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu, ...skipRu, ...pocketpetRu, ...surpriseRu, ...soundtrackRu, ...themesRu, ...smoothRu, ...chaptersRu, ...companionRu, ...devsettingsRu, ...loadersRu, ...loaders2Ru, ...filmthemeRu, ...multtarkovskyRu, ...andersonRu, ...westernRu, ...fivestarsRu, ...metroRu, ...quickRu, ...demoRu, ...errorsUserRu, ...devicedlRu, ...titleActionsRu, ...appupdateRu, ...iptvplayRu, ...uilangRu, ...learnWeightsRu, ...alertsRu, ...keepsakesRu, ...ytaudioRu, ...channelRu, ...instantPlayRu, ...pcPlayRu, ...cancelPreloadRu, ...familyVisRu };
+export const messagesRu: Record<MessageKey, string> = { ...coreRu, ...catalogRu, ...remoteRu, ...playerRu, ...settingsRu, ...adminRu, ...tvdesignRu, ...errorsRu, ...sourcesRu, ...importsRu, ...onlineRu, ...foryouRu, ...askRu, ...tasteRu, ...downloadsRu, ...iptvRu, ...designsRu, ...videoRu, ...seasonsRu, ...tvplayRu, ...playerStatsRu, ...devprefsRu, ...superplayRu, ...newEpisodesRu, ...newEpMuteRu, ...tasteQuizRu, ...cozyRu, ...martyRu, ...healthRu, ...curatedRu, ...awardsRu, ...idleRu, ...mascotRu, ...soundsRu, ...sleepRu, ...triviaRu, ...skipRu, ...pocketpetRu, ...surpriseRu, ...soundtrackRu, ...themesRu, ...smoothRu, ...chaptersRu, ...companionRu, ...devsettingsRu, ...loadersRu, ...loaders2Ru, ...filmthemeRu, ...multtarkovskyRu, ...andersonRu, ...westernRu, ...fivestarsRu, ...metroRu, ...replicantRu, ...quickRu, ...demoRu, ...errorsUserRu, ...devicedlRu, ...titleActionsRu, ...appupdateRu, ...iptvplayRu, ...uilangRu, ...learnWeightsRu, ...alertsRu, ...keepsakesRu, ...ytaudioRu, ...channelRu, ...instantPlayRu, ...pcPlayRu, ...cancelPreloadRu, ...familyVisRu };

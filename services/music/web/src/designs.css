@@ -679,7 +679,7 @@ html.design-western {
 
 /* Section headings and big titles in each design's display face. */
 :is(html.design-stickerbook, html.design-pocketpet, html.design-odyssey, html.design-mult, html.design-tarkovsky,
-  html.design-silent, html.design-anderson, html.design-noir, html.design-vague, html.design-western, html.design-redroom, html.design-fivestars, html.design-metro)
+  html.design-silent, html.design-anderson, html.design-noir, html.design-vague, html.design-western, html.design-redroom, html.design-fivestars, html.design-metro, html.design-replicant)
   :is(h1, h2) {
   font-family: var(--font-display);
 }
@@ -1377,3 +1377,27 @@ html.design-metro :is(.card-art .cover, .hero-art .cover) { box-shadow: 0 5px 0 
 html.design-metro .card:hover .card-art .cover { box-shadow: 0 0 0 3px #f0f2f5, 0 7px 0 2px rgb(213, 32, 40); }
 html.design-metro .track-row.active { background: rgba(213, 32, 40, 0.16); box-shadow: inset 4px 0 0 rgb(213, 32, 40); }
 html.design-metro :focus-visible { outline: 3px solid #f0f2f5; outline-offset: 3px; }
+
+/* ---------------------------------------------------------------- Репликант (neo-noir hologram) */
+
+/* Violet fog with a pink hologram glow on the right, an amber haze low on the left, faint scanlines. */
+html.design-replicant body { background: var(--bg); }
+html.design-replicant body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(180deg, rgba(8, 4, 16, 0) 0px, rgba(8, 4, 16, 0) 3px, rgba(8, 4, 16, 0.16) 3px, rgba(8, 4, 16, 0.16) 4px),
+    radial-gradient(ellipse 50% 70% at 88% 40%, rgba(255, 62, 180, 0.2), rgba(180, 60, 255, 0.06) 55%, rgba(9, 6, 18, 0) 75%),
+    radial-gradient(ellipse 50% 40% at 10% 100%, rgba(255, 154, 60, 0.14), rgba(255, 154, 60, 0)),
+    linear-gradient(180deg, #0a0616 0%, #1a0b2c 100%);
+}
+html.design-replicant h1,
+html.design-replicant h2 { font-weight: 300; text-transform: uppercase; letter-spacing: 0.14em; text-shadow: -2px 0 0 rgba(90, 220, 255, 0.38), 2px 0 0 rgba(255, 62, 180, 0.42); }
+html.design-replicant :is(.shelf-head h2, .shelf > h2) { font-family: var(--font-label); font-weight: 600; text-transform: none; letter-spacing: 0.04em; text-shadow: none; }
+html.design-replicant :is(.shelf-head h2, .shelf > h2)::after { content: ""; display: block; width: 64px; height: 2px; margin-top: 6px; background: rgb(255, 178, 74); box-shadow: 0 0 10px rgba(255, 178, 74, 0.7); }
+html.design-replicant :is(.card-art .cover, .hero-art .cover) { box-shadow: inset 0 0 0 1px rgba(255, 128, 206, 0.3), 0 8px 20px rgba(0, 0, 0, 0.5); }
+html.design-replicant .card:hover .card-art .cover { box-shadow: 0 0 0 2px #f6eefc, -6px 0 0 2px rgba(90, 220, 255, 0.75), 6px 0 0 2px rgba(255, 62, 180, 0.8), 0 0 30px 6px rgba(255, 62, 180, 0.4); }
+html.design-replicant .track-row.active { background: rgba(255, 62, 180, 0.12); box-shadow: inset 3px 0 0 rgb(255, 178, 74); }
+html.design-replicant :focus-visible { outline: 2px solid #80e2ff; outline-offset: 3px; }

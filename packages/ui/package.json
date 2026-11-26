@@ -16,6 +16,7 @@
     "./chunk-reload": "./src/chunkReload.ts",
     "./decor": "./src/decor/geometry.ts",
     "./decor/collage": "./src/decor/collage.tsx",
+    "./decor/replicant": "./src/decor/replicant.tsx",
     "./season-layer": "./src/SeasonLayer.tsx",
     "./cozy-layer": "./src/CozyLayer.tsx",
     "./popcorn": "./src/PopcornLoader.tsx",
