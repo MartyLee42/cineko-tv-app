@@ -7,7 +7,9 @@ import { autoSkipDue, markerKey, type SkipKind, type SkipMode } from "@martytv/m
 import { player } from "./controller";
 
 /** How long «Заставка пропущена · OK — вернуть» stays. */
-export const UNDO_MS = 6000;
+export const UNDO_MS = 5000;
+/** How long the skip pill stays after playback enters a range (then only with the controls). */
+export const PILL_MS = 5000;
 /** How often «Пропускать сами» looks at the position. */
 const AUTO_TICK_MS = 500;
 
@@ -19,9 +21,11 @@ export interface SkipUndo {
 
 export interface Skip {
   marker: ReturnType<typeof player.skipMarker>;
+  /** The first PILL_MS in the marker's range: the pill shows even without the controls. */
+  fresh: boolean;
   undo: SkipUndo | null;
-  /** OK: undo the automatic skip, skip the range, or go to the next episode. */
-  onOk(): boolean;
+  /** OK: undo the automatic skip, skip the range (when its pill is `shown`), or go to the next episode. */
+  onOk(shown: boolean): boolean;
 }
 
 export interface SkipOptions {
@@ -79,14 +83,28 @@ export function useSkip(o: SkipOptions): Skip {
   }, [undo]);
 
   const shownUndo = undo && undo.key === o.playKey ? undo : null;
+  const marker = o.active && o.mode !== "off" ? player.skipMarker(o.ending) : null;
+  // The pill's window: PILL_MS from entering the range (leaving and coming back opens a new one).
+  const pillKey = marker ? `${o.playKey}|${markerKey(marker)}` : "";
+  const [expired, setExpired] = useState("");
+  useEffect(() => {
+    if (!pillKey) return;
+    const id = setTimeout(() => setExpired(pillKey), PILL_MS);
+    return () => {
+      clearTimeout(id);
+      setExpired("");
+    };
+  }, [pillKey]);
   return {
-    marker: o.active && o.mode !== "off" ? player.skipMarker(o.ending) : null,
+    marker,
+    fresh: !!marker && expired !== pillKey,
     undo: shownUndo,
-    onOk() {
+    onOk(shown) {
       if (shownUndo) {
         setUndo(null);
         return player.seekTo(shownUndo.at);
       }
+      if (!shown) return false;
       const c = opts.current;
       const m = c.active && c.mode !== "off" ? player.skipMarker(c.ending) : null;
       if (!m) return false;

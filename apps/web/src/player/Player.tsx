@@ -235,6 +235,8 @@ function readState(v: HTMLVideoElement, waiting: boolean): VState {
 }
 
 const VOLUME_KEY = "martytv.volume";
+/** How long the skip pill (and «Вернуть» after an auto-skip) stays on its own. */
+const SKIP_PILL_MS = 5000;
 function readVolume(): { volume: number; muted: boolean } {
   try {
     const raw = JSON.parse(localStorage.getItem(VOLUME_KEY) ?? "null") as { volume?: number; muted?: boolean } | null;
@@ -1151,10 +1153,21 @@ export function Player(props: PlayerProps) {
   }, [skipModeNow, seek]);
   useEffect(() => {
     if (!skipUndo) return;
-    const id = setTimeout(() => setSkipUndo(null), 6000);
+    const id = setTimeout(() => setSkipUndo(null), SKIP_PILL_MS);
     return () => clearTimeout(id);
   }, [skipUndo]);
   const shownUndo = skipUndo && skipUndo.id === source.id ? skipUndo : null;
+  // The pill: SKIP_PILL_MS from entering the range, then only with the controls.
+  const skipKey = skipM ? `${source.id}|${markerKey(skipM)}` : "";
+  const [skipExpired, setSkipExpired] = useState("");
+  useEffect(() => {
+    if (!skipKey) return;
+    const id = setTimeout(() => setSkipExpired(skipKey), SKIP_PILL_MS);
+    return () => {
+      clearTimeout(id);
+      setSkipExpired("");
+    };
+  }, [skipKey]);
   const doSkip = () => {
     if (!skipM) return;
     skipDone().add(markerKey(skipM));
@@ -1510,7 +1523,7 @@ export function Player(props: PlayerProps) {
           </button>
         </div>
       )}
-      {skipM && !shownUndo && !props.covered && countdown == null && (
+      {skipM && (skipExpired !== skipKey || show) && !shownUndo && !props.covered && countdown == null && (
         <button
           type="button"
           onClick={doSkip}
