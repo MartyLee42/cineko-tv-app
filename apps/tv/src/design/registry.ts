@@ -11,7 +11,7 @@ export interface Skin {
   /** Has a light colour mode (Кинозал only). */
   light: boolean;
   /** Full-screen background layer drawn behind screens (null = plain bg colour / skeleton default). */
-  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | "intertitle" | "symmetry" | "gouache" | "rainwater" | "blinds" | "cards" | "desert" | "curtains" | "sunset" | "metromap" | null;
+  background: "synthwave" | "city" | "lacquer" | "vhs" | "desktop" | "comic" | "poster" | "rain" | "stickers" | "lcd" | "corridor" | "intertitle" | "symmetry" | "gouache" | "rainwater" | "blinds" | "cards" | "desert" | "curtains" | "sunset" | "metromap" | "hologram" | null;
   /** Animated background layers (transform-only); the calm mode stops them. */
   animatedLayers: 0 | 1;
   /** Headline size factor on the skeleton's sizes (wide display faces need less). */
@@ -58,6 +58,8 @@ export const SKINS: Record<DesignSetting, Skin> = {
   fivestars: { id: "fivestars", skeleton: "projector", light: false, background: "sunset", titleScale: 0.92, animatedLayers: 1, ornaments: { ...none, heroEdges: true } },
   // A night metro map: rows are coloured lines with a station under each poster (static; Jost signage capitals).
   metro: { id: "metro", skeleton: "kinozal", light: false, background: "metromap", titleScale: 0.94, animatedLayers: 0, ornaments: { ...none, titlePlate: true } },
+  // Unbounded Light runs wide in letter-spaced capitals: titles smaller. The rain (and the hologram's flicker) is the one animated layer.
+  replicant: { id: "replicant", skeleton: "projector", light: false, background: "hologram", titleScale: 0.74, animatedLayers: 1, ornaments: { ...none, heroEdges: true, titlePlate: true } },
 };
 
 export { DESIGNS };

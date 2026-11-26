@@ -66,4 +66,8 @@ export const loaders2Kk = {
   "loaders2.paper_crane_hint": "Қағаз шаршы бүктеліп, тырнаға айналады — фильм дайын болғанда, ол ұшып кетеді.",
   "loaders2.paper_crane.caption": "Бүктеп жатырмыз…",
   "loaders2.paper_crane.done": "Ұшты!",
+  "loaders2.spectral_scan": "Спектрлік скан",
+  "loaders2.spectral_scan_hint": "Буфер толған сайын қызғылт сары спектр жолақтары бірінен соң бірі жанады, ал соңында осциллограф қызғылт және көгілдір болып гүлдейді.",
+  "loaders2.spectral_scan.caption": "Үлгі талданып жатыр…",
+  "loaders2.spectral_scan.done": "Үлгі расталды",
 };

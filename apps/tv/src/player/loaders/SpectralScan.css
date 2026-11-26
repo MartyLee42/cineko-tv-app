@@ -1,0 +1,12 @@
+@import "@martytv/ui/fonts/cormorant-garamond.css"; /* the credits serif (not in the startup CSS) */
+/* «Спектральный скан» (SpectralScan.tsx). Transform/opacity only; the calm switch stops the cursor's pulse. */
+.ss-ground { background: radial-gradient(ellipse 1300px 520px at 50% 34%, #1a0c22 0%, #050308 72%); }
+.ss-credit { font-family: "Cormorant Garamond", "Times New Roman", serif; font-weight: 600; font-size: 30px; letter-spacing: .08em; color: rgba(246,238,252,.82); }
+/* The scan line on the lit edge: a thin white core in a cyan glow. */
+.ss-cursor { left: -2px; width: 4px; background: #f6f2ff; box-shadow: 0 0 10px 3px rgba(128,226,255,.85), 0 0 34px 10px rgba(128,226,255,.35); animation: ss-pulse 1.1s ease-in-out infinite; }
+@keyframes ss-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+[data-calm="1"] .ss-cursor { animation: none; }
+/* At 100 % the bloom flares once. */
+@keyframes ss-flare { 0% { opacity: .6; transform: scaleY(.7); } 60% { opacity: 1; transform: scaleY(1.12); } 100% { opacity: 1; transform: scaleY(1); } }
+.ss-bloom-on { animation: ss-flare .9s cubic-bezier(.2,.8,.2,1) both; transform-origin: 50% 50%; }
+[data-calm="1"] .ss-bloom-on { animation: none; }

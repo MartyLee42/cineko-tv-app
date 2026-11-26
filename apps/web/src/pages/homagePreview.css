@@ -31,6 +31,16 @@
 .hp-door-r { animation: hp-door-r 3s ease-in-out infinite; }
 @keyframes hp-crane { 0%, 50% { transform: translate(0, 0) scale(1); opacity: 1; } 90%, 100% { transform: translate(40%, -40%) scale(.5); opacity: 0; } }
 .hp-crane { animation: hp-crane 3s ease-in infinite; }
+/* «Спектральный скан»: amber bars light up from the left; the bloom swells. */
+.hp-scan-bars {
+  background-image: repeating-linear-gradient(90deg, #ffc46a 0 6%, rgba(0, 0, 0, 0) 6% 9%, #ff9a3c 9% 11%, rgba(0, 0, 0, 0) 11% 15%);
+  -webkit-mask-image: linear-gradient(90deg, #000 50%, rgba(0, 0, 0, 0.1) 50%); mask-image: linear-gradient(90deg, #000 50%, rgba(0, 0, 0, 0.1) 50%);
+  -webkit-mask-size: 200% 100%; mask-size: 200% 100%;
+  animation: hp-scan 3s steps(10) infinite;
+}
+@keyframes hp-scan { from { -webkit-mask-position: 100% 0; mask-position: 100% 0; } to { -webkit-mask-position: 0 0; mask-position: 0 0; } }
+.hp-bloom { background: radial-gradient(ellipse at 50% 50%, rgba(255, 210, 196, 0.9) 0%, rgba(255, 62, 180, 0.55) 35%, rgba(79, 216, 232, 0.35) 60%, rgba(79, 216, 232, 0) 75%); animation: hp-bloom 3s ease-in-out infinite; }
+@keyframes hp-bloom { 0%, 60% { transform: scale(.4); opacity: .4; } 85%, 100% { transform: scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .hp-ring, .hp-tear-l, .hp-tear-r, .hp-choc, .hp-fill, .hp-bee, .hp-streak, .hp-needle, .hp-lamp, .hp-scan, .hp-spin, .hp-dock, .hp-claw, .hp-door-l, .hp-door-r, .hp-crane { animation: none; }
+  .hp-ring, .hp-tear-l, .hp-tear-r, .hp-choc, .hp-fill, .hp-bee, .hp-streak, .hp-needle, .hp-lamp, .hp-scan, .hp-spin, .hp-dock, .hp-claw, .hp-door-l, .hp-door-r, .hp-crane, .hp-scan-bars, .hp-bloom { animation: none; }
 }

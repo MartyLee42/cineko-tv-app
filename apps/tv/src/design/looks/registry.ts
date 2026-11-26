@@ -36,6 +36,7 @@ const IMPORTS: Record<DesignSetting, () => Promise<Mod>> = {
   redroom: () => import("./redroom"),
   fivestars: () => import("./fivestars"),
   metro: () => import("./metro"),
+  replicant: () => import("./replicant"),
 };
 
 const loaders = new Map<DesignSetting, () => Promise<Mod>>();

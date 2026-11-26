@@ -30,6 +30,7 @@ export const LOADER_ANIMATIONS = [
   "claw_machine",
   "metro_train",
   "paper_crane",
+  "spectral_scan",
 ] as const;
 export type LoaderAnimation = (typeof LOADER_ANIMATIONS)[number];
 

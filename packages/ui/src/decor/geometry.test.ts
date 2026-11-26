@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { burstPoints, floorLines, hillPath, palm, rainStreaks, rand, skyline, starField, starPath, sunGaps, towers, wireRidge } from "./geometry";
+import { burstPoints, oscilloscope, spectralBarPath, spectralBars, floorLines, hillPath, palm, rainStreaks, rand, skyline, starField, starPath, sunGaps, towers, wireRidge } from "./geometry";
 
 describe("decor geometry", () => {
   it("rand is deterministic and stays in (0, 1)", () => {
@@ -109,5 +109,36 @@ describe("decor geometry", () => {
       }
     }
     expect(towers(7, 0, 1920, 900, 140, 420)).toEqual(t);
+  });
+  it("«Репликант» spectral bars: inside the band, in order, never overlapping, stable", () => {
+    const b = spectralBars(5, 1920);
+    expect(b.length).toBeGreaterThan(25);
+    for (let i = 0; i < b.length; i++) {
+      expect(b[i]!.x + b[i]!.w).toBeLessThanOrEqual(1920);
+      expect(b[i]!.o).toBeGreaterThan(0);
+      expect(b[i]!.o).toBeLessThanOrEqual(1);
+      if (i > 0) expect(b[i]!.x).toBeGreaterThan(b[i - 1]!.x + b[i - 1]!.w);
+    }
+    expect(spectralBars(5, 1920)).toEqual(b);
+  });
+
+  it("«Репликант» bar paths: closed; pinched bars curve in at the waist", () => {
+    expect(spectralBarPath({ x: 10, w: 20, o: 1, pinch: 0, hot: true }, 100, 200)).toBe("M10 100 H30 V300 H10 Z");
+    const p = spectralBarPath({ x: 10, w: 20, o: 1, pinch: 0.4, hot: false }, 100, 200);
+    expect(p).toContain("Q");
+    expect(p.endsWith("Z")).toBe(true);
+  });
+
+  it("«Репликант» oscilloscope: flat before the swell, the swing grows to the right", () => {
+    const d = oscilloscope(0, 1200, 300, 80, 6, 0.4);
+    const pts = d
+      .slice(1)
+      .split(" L")
+      .map((s) => s.trim().split(" ").map(Number));
+    expect(pts[0]).toEqual([0, 300]);
+    for (const [x, y] of pts) if (x! < 480) expect(y).toBe(300);
+    const swing = (a: number, b: number) => Math.max(...pts.filter(([x]) => x! >= a && x! < b).map(([, y]) => Math.abs(y! - 300)));
+    expect(swing(1000, 1200)).toBeGreaterThan(swing(600, 800));
+    expect(swing(1000, 1200)).toBeLessThanOrEqual(80);
   });
 });

@@ -508,6 +508,29 @@ html.design-metro {
   --round: 50%;
 }
 
+/* «Репликант»: neo-noir — violet-black fog, hologram pink, amber readouts, a cold cyan; wide thin capitals. */
+html.design-replicant {
+  --bg: rgb(9, 6, 18);
+  --panel: rgb(26, 16, 44);
+  --panel-2: rgb(40, 24, 64);
+  --panel-3: rgb(56, 34, 86);
+  --line: rgb(96, 62, 136);
+  --text: rgb(246, 238, 252);
+  --muted: rgb(206, 190, 226);
+  --dim: rgb(160, 140, 186);
+  --accent: rgb(255, 128, 206);
+  --accent-2: rgb(255, 178, 74);
+  --on-accent: rgb(22, 6, 24);
+  --accent-fill: rgb(255, 62, 180);
+  --on-accent-fill: rgb(22, 6, 24);
+  --radius: 3px;
+  --radius-ctl: 3px;
+  --font-body: "Onest", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-label: "Cormorant Garamond", "Times New Roman", Georgia, serif;
+  --round: 50%;
+}
+
 /* Headings use each design's display face, like Cineko. */
 html.design-deco h1, html.design-deco h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2,

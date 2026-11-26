@@ -28,6 +28,7 @@
      design-redroom            — «Красная комната»: red curtains, zigzag floor, ivory serif capitals (projector skeleton)
      design-fivestars          — «Пять звёзд»: a sticker collage on a purple grid desk, mission text, wanted stars (projector skeleton)
      design-metro              — «Метро»: a night metro map, signage capitals, the red line (kinozal skeleton)
+     design-replicant          — «Репликант»: neo-noir violet fog, hologram pink, amber readouts (projector skeleton)
    html.skel-* names the layout skeleton (see designs.ts).
    Colour mode: html.theme-light (Кинозал only; the others are dark by design). */
 :root {
@@ -563,6 +564,28 @@ html.design-metro {
   --mt-accent-text: 255, 120, 112;
 }
 
+/* «Репликант»: neo-noir — violet-black fog, hologram pink, amber readouts, a cold cyan focus; wide thin capitals. */
+html.design-replicant {
+  --mt-bg: 9, 6, 18;
+  --mt-surface: 26, 16, 44;
+  --mt-surface-2: 40, 24, 64;
+  --mt-border: 96, 62, 136;
+  --mt-text: 246, 238, 252;
+  --mt-muted: 206, 190, 226;
+  --mt-accent: 255, 62, 180;
+  --mt-accent-strong: 255, 178, 74;
+  --mt-on-accent: 22, 6, 24;
+  --mt-focus: 128, 226, 255;
+  --mt-danger: 255, 104, 120;
+  --mt-ok: 110, 232, 190;
+  --mt-warn: 255, 178, 74;
+  --mt-font-display: "Unbounded", "Onest", ui-sans-serif, system-ui, sans-serif;
+  --mt-radius-card: 3px;
+  --mt-radius-control: 3px;
+  color-scheme: dark;
+  --mt-accent-text: 255, 128, 206;
+}
+
 /* Headings in the later designs use their display face (web and TV). */
 html.design-deco h1, html.design-deco h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .01em; }
 html.design-wireframe h1, html.design-wireframe h2 { font-family: var(--mt-font-display); }
@@ -581,6 +604,7 @@ html.design-tarkovsky h1, html.design-tarkovsky h2 { font-family: var(--mt-font-
 html.design-silent h1, html.design-silent h2 { font-family: var(--mt-font-display); font-weight: 700; letter-spacing: .02em; }
 html.design-anderson h1, html.design-anderson h2 { font-family: var(--mt-font-display); font-weight: 500; text-transform: uppercase; letter-spacing: .12em; }
 html.design-metro h1, html.design-metro h2 { font-family: var(--mt-font-display); font-weight: 400; text-transform: uppercase; letter-spacing: .02em; }
+html.design-replicant h1, html.design-replicant h2 { font-family: var(--mt-font-display); font-weight: 300; text-transform: uppercase; letter-spacing: .14em; text-shadow: -2px 0 0 rgba(90, 220, 255, .38), 2px 0 0 rgba(255, 62, 180, .42); }
 html.design-noir h1, html.design-noir h2 { font-family: var(--mt-font-display); font-weight: 600; letter-spacing: -.01em; }
 html.design-vague h1, html.design-vague h2 { font-family: var(--mt-font-display); font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; }
 html.design-western h1, html.design-western h2 { font-family: var(--mt-font-display); font-weight: 400; letter-spacing: .02em; }

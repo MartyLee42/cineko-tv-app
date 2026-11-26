@@ -192,3 +192,56 @@ export function towers(seed: number, x0: number, x1: number, base: number, minH:
   }
   return out;
 }
+
+/** «Репликант»: one bar of the amber spectral readout (a sequencing scan). */
+export interface SpectralBar {
+  x: number;
+  w: number;
+  /** Brightness 0…1 (the dim ones read as gaps). */
+  o: number;
+  /** How far the bar's waist pinches in (0 = straight, 0.45 = an hourglass). */
+  pinch: number;
+  /** A white-hot core (the brightest bars). */
+  hot: boolean;
+}
+
+/** A band of `n`-ish spectral bars across `width`: uneven widths and gaps, some pinched, a few white-hot. */
+export function spectralBars(seed: number, width: number, minW = 10, maxW = 46): SpectralBar[] {
+  const r = rand(seed);
+  const out: SpectralBar[] = [];
+  let x = Math.round(r() * 12);
+  while (x < width) {
+    const w = Math.min(width - x, minW + Math.round(r() * (maxW - minW)));
+    if (w < 4) break;
+    const o = +(0.35 + r() * 0.65).toFixed(2);
+    out.push({ x, w, o, pinch: r() < 0.35 ? +(0.15 + r() * 0.3).toFixed(2) : 0, hot: o > 0.88 });
+    x += w + 4 + Math.round(r() * 22);
+  }
+  return out;
+}
+
+/** The SVG path of a spectral bar `h` tall from `top`: a rectangle whose sides pinch in at the middle. */
+export function spectralBarPath(b: SpectralBar, top: number, h: number): string {
+  const r = (n: number) => Math.round(n * 10) / 10;
+  if (!b.pinch) return `M${b.x} ${top} H${b.x + b.w} V${top + h} H${b.x} Z`;
+  const p = (b.w * b.pinch) / 2;
+  const mid = top + h / 2;
+  return `M${b.x} ${top} H${b.x + b.w} Q${r(b.x + b.w - p * 2)} ${r(mid)} ${b.x + b.w} ${top + h} H${b.x} Q${r(b.x + p * 2)} ${r(mid)} ${b.x} ${top} Z`;
+}
+
+/**
+ * «Репликант»: an oscilloscope trace along `y` from x0 to x1 — flat at first, then a wave whose
+ * amplitude swells to `amp` at the right end (`cycles` periods over the swelling part, which starts at
+ * `from` 0…1 of the way along).
+ */
+export function oscilloscope(x0: number, x1: number, y: number, amp: number, cycles: number, from = 0.35, step = 6): string {
+  const start = x0 + (x1 - x0) * from;
+  const span = x1 - start;
+  let d = `M${x0} ${y}`;
+  for (let x = x0 + step; x <= x1; x += step) {
+    const t = x < start ? 0 : (x - start) / span;
+    const v = y - Math.sin(t * cycles * Math.PI * 2) * amp * t * t;
+    d += ` L${x} ${v.toFixed(1)}`;
+  }
+  return d;
+}

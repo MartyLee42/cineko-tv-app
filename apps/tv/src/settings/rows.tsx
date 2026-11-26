@@ -46,6 +46,7 @@ const LOADING_LABEL = {
   claw_machine: "loaders2.claw_machine",
   metro_train: "loaders2.metro_train",
   paper_crane: "loaders2.paper_crane",
+  spectral_scan: "loaders2.spectral_scan",
 } as const;
 
 /** The focused style's one-line explanation (styles that need one). */
@@ -57,6 +58,7 @@ const MOTION_HINT: Partial<Record<string, MessageKey>> = {
   silent: "designs.motion_hint_silent",
   noir: "designs.motion_hint_noir",
   vague: "designs.motion_hint_vague",
+  replicant: "designs.motion_hint_replicant",
 };
 
 const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
@@ -81,6 +83,7 @@ const LOADING_HINT: Partial<Record<LoadingStyle, MessageKey>> = {
   claw_machine: "loaders2.claw_machine_hint",
   metro_train: "loaders2.metro_train_hint",
   paper_crane: "loaders2.paper_crane_hint",
+  spectral_scan: "loaders2.spectral_scan_hint",
 };
 
 export function useSettingRows() {

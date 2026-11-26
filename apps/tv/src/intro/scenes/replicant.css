@@ -1,0 +1,22 @@
+@import "@martytv/ui/fonts/unbounded-light.css"; /* not in the startup CSS */
+@import "@martytv/ui/fonts/cormorant-garamond.css";
+/* ---- replicant: an oscilloscope blooms, the hologram of Cineko flickers on, the credit and «CINEKO» fade in */
+.rpi-black { background: radial-gradient(ellipse 900px 420px at 50% 46%, #14081c 0%, #030205 70%); }
+@keyframes rpi-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.rpi-draw { transform-origin: 0 50%; animation: rpi-draw 1.1s cubic-bezier(.4,0,.2,1) .15s both; }
+@keyframes rpi-dim { 0%, 55% { opacity: 1; } 100% { opacity: .38; } }
+.rpi-scope { animation: rpi-dim 2.2s ease both; }
+/* The hologram switches on like a bad signal: dark, a flash, a drop, then steady with a faint shimmer. */
+@keyframes rpi-holo { 0% { opacity: 0; } 12% { opacity: .7; } 18% { opacity: .1; } 30% { opacity: .85; } 36% { opacity: .4; } 52%, 100% { opacity: .95; } }
+.rpi-holo { animation: rpi-holo 1s steps(1) both; }
+.rpi-credit { font-size: 26px; font-weight: 600; letter-spacing: .06em; color: rgba(246,238,252,.86); }
+.rpi-credit-big { font-size: 38px; letter-spacing: .02em; color: #fff; }
+@keyframes rpi-logo { 0% { opacity: 0; transform: scaleX(1.25); } 100% { opacity: 1; transform: scaleX(1); } }
+.rpi-logo {
+  margin-top: 18px; font-size: 76px; font-weight: 300; line-height: 1.1; color: #f6eefc; letter-spacing: .3em;
+  text-shadow: -4px 0 0 rgba(90,220,255,.55), 4px 0 0 rgba(255,62,180,.6), 0 0 40px rgba(255,62,180,.5);
+  transform-origin: 0 50%; animation: rpi-logo 1.1s cubic-bezier(.2,.8,.2,1) both;
+}
+.rpi-tag { margin-top: 14px; font-size: 24px; font-weight: 600; letter-spacing: .3em; text-transform: uppercase; color: #ffc47a; }
+@keyframes rpi-cover { from { transform: translate3d(0,0,0); } to { transform: translate3d(1280px,0,0); } }
+.rpi-cover { position: absolute; left: 0; top: 0; width: 1280px; height: 100%; background: #030205; animation: rpi-cover 1.2s cubic-bezier(.5,0,.3,1) both; }

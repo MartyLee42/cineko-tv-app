@@ -170,6 +170,15 @@ const RECIPES: Record<DesignSetting, Record<UiSoundKind, SoundRecipe>> = {
     tick: { tones: [tone("sine", 1250, 1180, 0.022, 0.22)], noise: [noise("bandpass", 3200, 0.01, 0.18, 4)] },
     click: { tones: [tone("sine", 1319, 1319, 0.05, 0.36), tone("sine", 1047, 1047, 0.06, 0.36, 0.055)], noise: [] },
   },
+  // Neo-noir synth: a move is a soft detuned sine pair sliding down a touch; OK a brassy analogue
+  // swell — two detuned saws a fifth apart over a sine — with a breath of filtered rain.
+  replicant: {
+    tick: { tones: [tone("sine", 880, 862, 0.05, 0.16), tone("sine", 884, 866, 0.05, 0.12)], noise: [] },
+    click: {
+      tones: [tone("sawtooth", 220, 220, 0.11, 0.1), tone("sawtooth", 221.6, 221.6, 0.11, 0.1), tone("sawtooth", 330, 331, 0.1, 0.07, 0.015), tone("sine", 440, 440, 0.11, 0.22)],
+      noise: [noise("lowpass", 1800, 0.1, 0.05)],
+    },
+  },
 };
 
 /** The recipe of `kind` for a design (unknown designs → Кинозал). */
